@@ -277,6 +277,8 @@ new Handle:g_hAdminClantag = INVALID_HANDLE;
 new bool:g_bAdminClantag;
 new Handle:g_hConnectMsg = INVALID_HANDLE;
 new bool:g_bConnectMsg;
+new Handle:g_hDisconnectMsg = INVALID_HANDLE;
+new bool:g_bDisconnectMsg;
 new Handle:g_hRadioCommands = INVALID_HANDLE;
 new bool:g_bRadioCommands;
 new Handle:g_hInfoBot = INVALID_HANDLE;
@@ -1274,6 +1276,13 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 		else
 			g_bConnectMsg = false;
 	}
+	if(convar == g_hDisconnectMsg)
+	{
+		if(newValue[0] == '1')
+			g_bDisconnectMsg = true;			
+		else
+			g_bDisconnectMsg = false;
+	}
 	if(convar == g_hPlayerSkinChange)
 	{
 		if(newValue[0] == '1')
@@ -1686,9 +1695,13 @@ public OnPluginStart()
 	
 	CreateConVar("ckSurf_version", VERSION, "ckSurf Version.", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
-	g_hConnectMsg = CreateConVar("ck_connect_msg", "1", "on/off - Enables a player connect message with country and disconnect message in chat", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hConnectMsg = CreateConVar("ck_connect_msg", "1", "on/off - Enables a player connect message with country", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bConnectMsg     = GetConVarBool(g_hConnectMsg);
 	HookConVarChange(g_hConnectMsg, OnSettingChanged);	
+
+	g_hDisconnectMsg = CreateConVar("ck_disconnect_msg", "1", "on/off - Enables a player disconnect message in chat", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bDisconnectMsg = GetConVarBool(g_hDisconnectMsg);
+	HookConVarChange(g_hDisconnectMsg, OnSettingChanged);	
 
 	g_hMapEnd = CreateConVar("ck_map_end", "1", "on/off - Allows map changes after the timelimit has run out (mp_timelimit must be greater than 0)", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bMapEnd     = GetConVarBool(g_hMapEnd);

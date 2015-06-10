@@ -439,7 +439,7 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 
 public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (g_bConnectMsg)
+	if (g_bDisconnectMsg)
 	{
 		decl String:szName[64];
 		decl String:disconnectReason[64];
