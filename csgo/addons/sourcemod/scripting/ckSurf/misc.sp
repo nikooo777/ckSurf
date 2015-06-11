@@ -778,6 +778,7 @@ public SetClientDefaults(client)
 	g_PlayerChatRank[client] = -1;
 	Format(g_szCurrentStage[client], 12, "1");
 	Format(g_szPersonalRecord[client], 32, "");
+	Format(g_szPersonalRecordBonus[client], 32, "");
 	bClientInStartZone[client]=false;
 	bClientInSpeedZone[client]=false;
 	g_bValidRun[client] = false;
@@ -1922,7 +1923,7 @@ public SpecListMenuDead(client)
 					Format(szPlayerRank,32,"Rank: #%s/%i",szRank,g_pr_RankedPlayers);
 				}
 				else
-					Format(szPlayerRank,32,"Rank: -/%i",g_pr_RankedPlayers);
+					Format(szPlayerRank,32,"Rank: NA / %i",g_pr_RankedPlayers);
 			}
 			
 			if (g_fPersonalRecord[ObservedUser] > 0.0)
@@ -1933,11 +1934,12 @@ public SpecListMenuDead(client)
 			else
 				Format(szProBest, 32, "None");	
 
-			if (g_mapZonesTypeCount[5]>0)
+			if (g_mapZonesTypeCount[5]>0) //  There are stages
 				Format(szStage, 32, "%i / %i", g_Stage[ObservedUser],(g_mapZonesTypeCount[5]+1));
 			else
 				Format(szStage, 32, "Linear map");
-			if (g_Stage[ObservedUser] == 999)
+
+			if (g_Stage[ObservedUser] == 999) // if player is in stage 999
 				Format(szStage, 32, "Bonus");
 
 			if(!StrEqual(sSpecs,""))
@@ -1990,7 +1992,7 @@ public SpecListMenuDead(client)
 				if (!g_bShowTime[client] && g_bShowSpecs[client])
 				{
 					if (ObservedUser != g_RecordBot && ObservedUser != g_BonusBot) 
-						Format(g_szPlayerPanelText[client], 512,  "%Specs (%i):\n%s\n \n%s\nRecord: %s\n\nStage: Bonus\n", count, sSpecs,szPlayerRank, szProBest);
+						Format(g_szPlayerPanelText[client], 512,  "%Specs (%i):\n%s\n \n%s\nRecord: %s\n\nStage: %s\n", count, sSpecs,szPlayerRank, szProBest, szStage);
 					else
 					{
 						if (ObservedUser == g_RecordBot)
@@ -2453,9 +2455,9 @@ public CenterHudAlive(client)
 				Format(g_szRecordString[client], 32, "%s \tRank: %i / %i", g_szPersonalRecordBonus[client], g_MapRankBonus[client], g_iBonusCount);
 			else
 				if (g_iBonusCount>0)
-					Format(g_szRecordString[client], 32, "N/A \t\tRank: N/A / %i", g_iBonusCount);
+					Format(g_szPersonalRecordBonus[client], 32, "N/A \t\tRank: N/A / %i", g_iBonusCount);
 				else
-					Format(g_szRecordString[client], 32, "N/A \t\tRank: N/A");
+					Format(g_szPersonalRecordBonus[client], 32, "N/A \t\tRank: N/A");
 
 		}
 		else // if in normal map, get normal times
@@ -2495,7 +2497,7 @@ public CenterHudAlive(client)
 					PrintHintText(client,"<font face=''>Timer: %s\nRecord: %s\nStage: %sSpeed: %i</font>",pAika[client], g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 				} else
 				{
-					PrintHintText(client,"<font face=''>Bonus Timer: %s\nRecord: %s\nStage: %sSpeed: %i</font>",pAika[client], g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>Bonus Timer: %s\nRecord: %s\nStage: %sSpeed: %i</font>",pAika[client], g_szPersonalRecordBonus[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 				}
 			} else {
 				PrintHintText(client,"<font face=''>Timer: <font color='#FF0000'>Stopped</font>\nRecord: %s\nStage: %sSpeed: %i</font>", g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
@@ -2535,22 +2537,26 @@ public Checkpoint(client, zone)
 	percent = percent*100.0;
 	Format(szPercnt, 24, "%1.f%%", percent);
 
-	if (g_fMaxPercCompleted[client] < 1.0) // First time a checkpoint is reached
-		g_fMaxPercCompleted[client] = percent;
-	else
-		if (g_fMaxPercCompleted[client] < percent) // The furthest checkpoint reached
+	if (g_bTimeractivated[client]) {
+		if (g_fMaxPercCompleted[client] < 1.0) // First time a checkpoint is reached
 			g_fMaxPercCompleted[client] = percent;
+		else
+			if (g_fMaxPercCompleted[client] < percent) // The furthest checkpoint reached
+				g_fMaxPercCompleted[client] = percent;
+	}
 
 	g_fCheckpointTimesNew[client][zone] = time;
 
-	// Set percent of completion to assist
-	if (CS_GetMVPCount(client) < 1)
-		CS_SetClientAssists(client, RoundToCeil(g_fMaxPercCompleted[client]));
-	else
-		CS_SetClientAssists(client, 100);
+
 
 	if (total > 1.0 && g_bTimeractivated[client])
 	{
+		// Set percent of completion to assist
+		if (CS_GetMVPCount(client) < 1)
+			CS_SetClientAssists(client, RoundToFloor(g_fMaxPercCompleted[client]));
+		else
+			CS_SetClientAssists(client, 100);
+
 		new Float:diff;
 		new Float:catchUp;
 		new String:szDiff[32];
@@ -2611,6 +2617,12 @@ public Checkpoint(client, zone)
 	else  // if first run 
 		if (g_bTimeractivated[client])
 		{
+			// Set percent of completion to assist
+			if (CS_GetMVPCount(client) < 1)
+				CS_SetClientAssists(client, RoundToFloor(g_fMaxPercCompleted[client]));
+			else
+				CS_SetClientAssists(client, 100);
+				
 			new String:szTime[32];
 			FormatTimeFloat(client, time, 3, szTime, 32);
 

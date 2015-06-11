@@ -1,5 +1,5 @@
 
-ckSurf 1.4 Beta
+ckSurf 1.5 Beta
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation

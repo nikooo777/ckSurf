@@ -455,7 +455,10 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 		return Plugin_Handled;
 	}
 	else
-		return Plugin_Continue;
+	{
+		SetEventBroadcast(event, true);
+		return Plugin_Handled;
+	}
 }
 
 public Action:Hook_SetTransmit(entity, client) 

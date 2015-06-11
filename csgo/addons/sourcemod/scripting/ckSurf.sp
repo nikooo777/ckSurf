@@ -515,7 +515,6 @@ new String:EntityList[][] = {"logic_timer", "team_round_timer", "logic_relay"};
 new const String:MAPPERS_PATH[] = "configs/ckSurf/mapmakers.txt";
 new const String:CK_REPLAY_PATH[] = "data/cKreplays/";
 new const String:BLOCKED_LIST_PATH[] = "configs/ckSurf/hidden_chat_commands.txt";
-new const String:EXCEPTION_LIST_PATH[] = "configs/ckSurf/exception_list.txt";
 new const String:PRO_FULL_SOUND_PATH[] = "sound/quake/holyshit.mp3";
 new const String:PRO_RELATIVE_SOUND_PATH[] = "*quake/holyshit.mp3";
 new const String:CP_FULL_SOUND_PATH[] = "sound/quake/wickedsick.mp3";
@@ -1989,22 +1988,6 @@ public OnPluginStart()
 	//mapcycle array
 	new arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = CreateArray(arraySize);	
-
-	//exception list
-	decl String:sPath[PLATFORM_MAX_PATH];
-	decl String:line[64];
-	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", EXCEPTION_LIST_PATH);
-	new Handle:fileHandle=OpenFile(sPath,"r");		
-	while(!IsEndOfFile(fileHandle)&&ReadFileLine(fileHandle,line,sizeof(line)))
-	{
-		if ((StrContains(line,"//",true) == -1))
-		{
-			TrimString(line);
-			AddCommandListener(Command_ext_Menu, line);
-		}
-	}
-	if (fileHandle != INVALID_HANDLE)
-		CloseHandle(fileHandle);
 		
 	//add command listeners	
 	AddCommandListener(Command_JoinTeam, "jointeam");
