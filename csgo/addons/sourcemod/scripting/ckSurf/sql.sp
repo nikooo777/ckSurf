@@ -217,7 +217,7 @@ public db_viewMapRankProCallback(Handle:owner, Handle:hndl, const String:error[]
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewMapRankProCallback): %s ", error);
 		return;
 	}
 
@@ -241,7 +241,7 @@ public sql_selectPlayerProCountCallback(Handle:owner, Handle:hndl, const String:
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectPlayerProCountCallback): %s", error);
 		return;
 	}
 
@@ -272,7 +272,7 @@ public SQL_UpdateStatCallback(Handle:owner, Handle:hndl, const String:error[], a
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_UpdateStatCallback): %s", error);
 		return;
 	}
 
@@ -285,7 +285,7 @@ public sql_updatePlayerRankPointsCallback(Handle:owner, Handle:hndl, const Strin
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_updatePlayerRankPointsCallback): %s", error);
 		return;
 	}
 
@@ -372,7 +372,7 @@ public sql_CountFinishedMapsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_CountFinishedMapsCallback): %s", error);
 		return;
 	}
 
@@ -429,7 +429,7 @@ public sql_selectPersonalAllRecordsCallback(Handle:owner, Handle:hndl, const Str
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error(sql_selectPersonalAllRecordsCallback): %s", error);
 		return;
 	}
 
@@ -473,7 +473,7 @@ public 	sql_selectPlayerRankCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectPlayerRankCallback): %s", error);
 		return;
 	}
 
@@ -499,7 +499,7 @@ public sql_selectPlayerRankCallback2(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectPlayerRankCallback2): %s", error);
 		return;
 	}
 
@@ -629,7 +629,7 @@ public sql_selectRankedPlayerCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectRankedPlayerCallback): %s", error);
 		return;
 	}
 
@@ -709,7 +709,7 @@ public db_viewPlayerPointsCallback(Handle:owner, Handle:hndl, const String:error
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewPlayerPointsCallback): %s", error);
 		return;
 	}
 
@@ -807,7 +807,7 @@ public SQL_ViewRankedPlayerCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback): %s", error);
 		return;
 	}
 
@@ -854,7 +854,7 @@ public sql_selectRankedPlayersRankCallback(Handle:owner, Handle:hndl, const Stri
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectRankedPlayersRankCallback): %s", error);
 		return;
 	}
 
@@ -874,7 +874,7 @@ public SQL_ViewRankedPlayerCallback2(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback2): %s", error);
 		return;
 	}
 
@@ -898,7 +898,7 @@ public SQL_ViewRankedPlayerCallback4(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback4): %s", error);
 		return;
 	}
 
@@ -920,7 +920,7 @@ public SQL_ViewRankedPlayerCallback5(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback5): %s", error);
 		return;
 	}
 
@@ -1130,7 +1130,7 @@ public SQL_ViewRankedPlayer2Callback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayer2Callback): %s", error);
 		return;
 	}
 
@@ -1171,7 +1171,7 @@ public SQL_ViewPlayerAll2Callback(Handle:owner, Handle:hndl, const String:error[
 
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewPlayerAll2Callback): %s", error);
 		return;
 	}
 
@@ -1213,7 +1213,7 @@ public SQL_ViewPlayerAllCallback(Handle:owner, Handle:hndl, const String:error[]
 {    
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewPlayerAllCallback): %s", error);
 		return;
 	}
 
@@ -1278,7 +1278,7 @@ public sql_selectTopChallengersCallback(Handle:owner, Handle:hndl, const String:
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectTopChallengersCallback): %s", error);
 		return;
 	}
 	new client = data;
@@ -1355,7 +1355,7 @@ public sql_selectChallengesCallbackCalc(Handle:owner, Handle:hndl, const String:
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectChallengesCallbackCalc): %s", error);
 		return;
 	}
 
@@ -1515,7 +1515,7 @@ public sql_selectChallengesCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectChallengesCallback): %s", error);
 		return;
 	}
 
@@ -1600,7 +1600,7 @@ public sql_selectChallengesCallback2(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectChallengesCallback2): %s", error);
 		return;
 	}
 
@@ -1659,7 +1659,7 @@ public sql_selectChallengesCompareCallback(Handle:owner, Handle:hndl, const Stri
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectChallengesCompareCallback): %s", error);
 		return;
 	}
 
@@ -1760,7 +1760,7 @@ public sql_insertChallengesCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_insertChallengesCallback): %s", error);
 		return;
 	}
 }	
@@ -1855,7 +1855,7 @@ public sql_selectMapRecordProCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectMapRecordProCallback): %s", error);
 		return;
 	}
 
@@ -1878,7 +1878,7 @@ public sql_selectTopClimbersCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectTopClimbersCallback): %s", error);
 		return;
 	}
 
@@ -1962,7 +1962,7 @@ public sql_selectProClimbersCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectProClimbersCallback): %s", error);
 		return;
 	}
 
@@ -2050,7 +2050,7 @@ public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback): %s", error);
 		return;
 	}
 
@@ -2072,7 +2072,7 @@ public sql_selectRecordCallback(Handle:owner, Handle:hndl, const String:error[],
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectRecordCallback): %s", error);
 		return;
 	}
 
@@ -2101,7 +2101,7 @@ public SQL_UpdateRecordCallback(Handle:owner, Handle:hndl, const String:error[],
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_UpdateRecordCallback): %s", error);
 		return;
 	}
 
@@ -2134,7 +2134,7 @@ public SQL_ViewRecordCallback(Handle:owner, Handle:hndl, const String:error[], a
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback): %s", error);
 		return;
 	}
 
@@ -2181,7 +2181,7 @@ public SQL_ViewRecordCallback2(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback2): %s", error);
 		return;
 	}
 
@@ -2208,7 +2208,7 @@ public SQL_ViewRecordCallback3(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback3): %s", error);
 		return;
 	}
 
@@ -2269,7 +2269,7 @@ public SQL_ViewRecordCallback4(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback4): %s", error);
 		return;
 	}
 
@@ -2292,7 +2292,7 @@ public SQL_ViewRecordCallback5(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback5): %s", error);
 		return;
 	}
 
@@ -2366,7 +2366,7 @@ public SQL_ViewAllRecordsCallback(Handle:owner, Handle:hndl, const String:error[
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback): %s", error);
 		return;
 	}
 
@@ -2470,7 +2470,7 @@ public SQL_ViewAllRecordsCallback2(Handle:owner, Handle:hndl, const String:error
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback2): %s", error);
 		return;
 	}
 
@@ -2498,7 +2498,7 @@ public SQL_ViewAllRecordsCallback3(Handle:owner, Handle:hndl, const String:error
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback3): %s", error);
 		return;
 	}
 
@@ -2543,7 +2543,7 @@ public SQL_SelectPlayerCallback(Handle:owner, Handle:hndl, const String:error[],
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_SelectPlayerCallback): %s", error);
 		return;
 	}
 
@@ -2575,7 +2575,7 @@ public SQL_InsertPlayerCallback(Handle:owner, Handle:hndl, const String:error[],
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_InsertPlayerCallback): %s", error);
 		return;
 	}
 }	
@@ -2592,7 +2592,7 @@ public SQL_selectPersonalRecordsCallback(Handle:owner, Handle:hndl, const String
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectPersonalRecordsCallback): %s", error);
 		return;
 	}
 
@@ -2652,7 +2652,7 @@ public SQL_LastRunCallback(Handle:owner, Handle:hndl, const String:error[], any:
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_LastRunCallback): %s", error);
 		return;
 	}
 	new client = data;	
@@ -2745,7 +2745,7 @@ public sql_ViewMapButtonsCallback(Handle:owner, Handle:hndl, const String:error[
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_ViewMapButtonsCallback): %s", error);
 		return;
 	}
 
@@ -2868,7 +2868,7 @@ public SQL_selectMapButtonsCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectMapButtonsCallback): %s", error);
 		return;
 	}
 
@@ -2938,7 +2938,7 @@ public SQL_selectCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectCheckpointsCallback): %s", error);
 		return;
 	}
 	new client = data;
@@ -2979,7 +2979,7 @@ public SQL_updateCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_updateCheckpointsCallback): %s", error);
 		return;
 	}
 	new client = data;
@@ -2990,7 +2990,7 @@ public SQL_insertCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_insertCheckpointsCallback): %s", error);
 		return;
 	}
 	new client = data;
@@ -3008,7 +3008,7 @@ public SQL_deleteCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteCheckpointsCallback): %s", error);
 		return;
 	}
 }
@@ -3049,7 +3049,7 @@ public SQL_deleteAllMapTiersCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteAllMapTiersCallback): %s", error);
 		return;
 	}
 	new client = data;
@@ -3061,7 +3061,7 @@ public SQL_selectMapTierCallback(Handle:owner, Handle:hndl, const String:error[]
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectMapTierCallback): %s", error);
 		return;
 	}
 
@@ -3139,7 +3139,7 @@ public db_viewMapRankBonusCallback(Handle:owner, Handle:hndl, const String:error
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewMapRankBonusCallback): %s", error);
 		return;
 	}
 
@@ -3172,7 +3172,7 @@ public db_viewMapRankBonusCallback2(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewMapRankBonusCallback2): %s", error);
 		return;
 	}
 
@@ -3197,7 +3197,7 @@ public sql_CountFinishedBonusCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_CountFinishedBonusCallback): %s", error);
 		return;
 	}
 
@@ -3273,7 +3273,7 @@ public SQL_updateBonusCallback(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_updateBonusCallback): %s", error);
 		return;
 	}
 
@@ -3290,7 +3290,7 @@ public SQL_deleteBonusCallback(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteBonusCallback): %s", error);
 		return;
 	}
 }
@@ -3299,7 +3299,7 @@ public SQL_insertBonusCallback(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_insertBonusCallback): %s", error);
 		return;
 	}
 
@@ -3316,7 +3316,7 @@ public SQL_selectFastestBonusCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectFastestBonusCallback): %s", error);
 		return;
 	}
 
@@ -3340,7 +3340,7 @@ public SQL_selectBonusTotalCountCallback(Handle:owner, Handle:hndl, const String
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectBonusTotalCountCallback): %s", error);
 		return;
 	}
 
@@ -3359,7 +3359,7 @@ public SQL_selectPersonalBonusRecordsCallback(Handle:owner, Handle:hndl, const S
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectPersonalBonusRecordsCallback): %s", error);
 		return;
 	}
 
@@ -3395,7 +3395,7 @@ public SQL_selectBonusCountCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectBonusCountCallback): %s", error);
 		return;
 	}
 
@@ -3450,7 +3450,7 @@ public SQL_deleteAllZonesCallback(Handle:owner, Handle:hndl, const String:error[
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteAllZonesCallback): %s", error);
 		return;
 	}
 
@@ -3470,7 +3470,7 @@ public SQL_insertZonesCallback(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_insertZonesCallback): %s", error);
 		return;
 	}
 
@@ -3488,7 +3488,7 @@ public SQL_saveZonesCallBack(Handle:owner, Handle:hndl, const String:error[], an
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_saveZonesCallBack): %s", error);
 		return;
 	}
 
@@ -3511,7 +3511,7 @@ public SQL_updateZoneCallback(Handle:owner, Handle:hndl, const String:error[], a
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_updateZoneCallback): %s", error);
 		return;
 	}
 
@@ -3529,7 +3529,7 @@ public SQL_selectzoneTypeIdsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectzoneTypeIdsCallback): %s", error);
 		return;
 	}
 
@@ -3594,7 +3594,7 @@ public SQL_selectMapZonesCallback(Handle:owner, Handle:hndl, const String:error[
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_selectMapZonesCallback): %s", error);
 		return;
 	}
 
@@ -3676,7 +3676,7 @@ public SQL_selectMapZonesCallback(Handle:owner, Handle:hndl, const String:error[
 							Format(g_mapZones[g_mapZonesCount][ZoneName], 32, "Checker-%i", g_mapZones[g_mapZonesCount][zoneTypeId]);
 							g_mapZonesTypeCount[10]++;
 						}
-				case -1: LogError("ZoneId out of sync");
+				case -1: LogError("[ckSurf] ZoneId out of sync");
 				default: Format(g_mapZones[g_mapZonesCount][ZoneName], 32, "Unknown", g_mapZones[g_mapZonesCount][zoneTypeId]);
 			}
 			if (g_mapZones[g_mapZonesCount][zoneType] == 5)
@@ -3701,7 +3701,7 @@ public SQL_deleteMapZonesCallback(Handle:owner, Handle:hndl, const String:error[
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteMapZonesCallback): %s", error);
 		return;
 	}
 }
@@ -3717,7 +3717,7 @@ public SQL_deleteZoneCallback(Handle:owner, Handle:hndl, const String:error[], a
 {	
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_deleteZoneCallback): %s", error);
 		return;
 	}
 
@@ -3760,7 +3760,7 @@ public db_insertLastPositionCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_insertLastPositionCallback): %s", error);
 		return;
 	}
 
@@ -3813,7 +3813,7 @@ public sql_selectLatestRecordsCallback(Handle:owner, Handle:hndl, const String:e
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectLatestRecordsCallback): %s", error);
 		return;
 	}
 
@@ -3866,7 +3866,7 @@ public GetDBNameCallback(Handle:owner, Handle:hndl, const String:error[], any:da
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (GetDBNameCallback): %s", error);
 		return;
 	}
 
@@ -3889,7 +3889,7 @@ public SQL_db_CalcAvgRunTimeCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_db_CalcAvgRunTimeCallback): %s", error);
 		return;
 	}
 
@@ -3929,7 +3929,7 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 {   
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_db_GetDynamicTimelimitCallback): %s", error);
 		return;
 	}
 
@@ -4016,7 +4016,7 @@ public sql_CountRankedPlayersCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_CountRankedPlayersCallback): %s", error);
 		return;
 	}
 
@@ -4032,7 +4032,7 @@ public sql_CountRankedPlayers2Callback(Handle:owner, Handle:hndl, const String:e
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_CountRankedPlayers2Callback): %s", error);
 		return;
 	}
 
@@ -4083,7 +4083,7 @@ public db_viewUnfinishedMapsCallback(Handle:owner, Handle:hndl, const String:err
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewUnfinishedMapsCallback): %s", error);
 		return;
 	}
 
@@ -4123,7 +4123,7 @@ public SQL_ViewPlayerProfile1Callback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewPlayerProfile1Callback): %s", error);
 		return;
 	}
 
@@ -4153,7 +4153,7 @@ public sql_selectPlayerNameCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectPlayerNameCallback): %s", error);
 		return;
 	}
 
@@ -4189,7 +4189,7 @@ public sql_selectRankedPlayersCallback(Handle:owner, Handle:hndl, const String:e
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (sql_selectRankedPlayersCallback): %s", error);
 		return;
 	}
 
@@ -4367,7 +4367,7 @@ public SQL_InsertPlayerCallBack(Handle:owner, Handle:hndl, const String:error[],
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_InsertPlayerCallBack): %s", error);
 		return;
 	}
 
@@ -4400,7 +4400,7 @@ public SQL_CheckCallback(Handle:owner, Handle:hndl, const String:error[], any:da
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_CheckCallback): %s", error);
 		return;
 	}
 }
@@ -4410,7 +4410,7 @@ public SQL_CheckCallback2(Handle:owner, Handle:hndl, const String:error[], any:d
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_CheckCallback2): %s", error);
 		return;
 	}
 
@@ -4422,7 +4422,7 @@ public SQL_CheckCallback3(Handle:owner, Handle:hndl, const String:error[], any:d
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_CheckCallback3): %s", error);
 		return;
 	}
 
@@ -4441,7 +4441,7 @@ public SQL_CheckCallback4(Handle:owner, Handle:hndl, const String:error[], any:d
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_CheckCallback4): %s", error);
 		return;
 	}
 
@@ -4482,7 +4482,7 @@ public db_viewPlayerOptionsCallback(Handle:owner, Handle:hndl, const String:erro
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_viewPlayerOptionsCallback): %s", error);
 		return;
 	}
 
@@ -4577,7 +4577,7 @@ public db_sql_selectMapRecordHoldersCallback(Handle:owner, Handle:hndl, const St
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_sql_selectMapRecordHoldersCallback): %s", error);
 		return;
 	}
 
@@ -4627,7 +4627,7 @@ public db_sql_selectMapRecordHoldersCallback2(Handle:owner, Handle:hndl, const S
 {       
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_sql_selectMapRecordHoldersCallback2): %s", error);
 		return;
 	}
 
@@ -4666,7 +4666,7 @@ public db_selectTop100PlayersCallback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (db_selectTop100PlayersCallback): %s", error);
 		return;
 	}
 
@@ -4749,7 +4749,7 @@ public SQL_ViewPlayerProfile2Callback(Handle:owner, Handle:hndl, const String:er
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error: %s", error);
+		LogError("[ckSurf] SQL Error (SQL_ViewPlayerProfile2Callback): %s", error);
 		return;
 	}
 
