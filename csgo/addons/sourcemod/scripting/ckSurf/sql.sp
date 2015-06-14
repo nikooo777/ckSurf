@@ -47,7 +47,7 @@ new String:sql_deleteCheckpoints[]				= "DELETE FROM checkpoints WHERE mapname =
 //TABLE LATEST 15 LOCAL RECORDS
 new String:sql_createLatestRecords[] 			= "CREATE TABLE IF NOT EXISTS LatestRecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date));";
 new String:sql_insertLatestRecords[] 			= "INSERT INTO LatestRecords (steamid, name, runtime, map) VALUES('%s','%s','%f','%s');";
-new String:sql_selectLatestRecords[] 			= "SELECT name, runtime, teleports, map, date FROM LatestRecords ORDER BY date DESC LIMIT 50";
+new String:sql_selectLatestRecords[] 			= "SELECT name, runtime, map, date FROM LatestRecords ORDER BY date DESC LIMIT 50";
 
 //TABLE PLAYEROPTIONS
 new String:sql_createPlayerOptions[] 			= "CREATE TABLE IF NOT EXISTS playeroptions2 (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', PRIMARY KEY(steamid));";
@@ -635,6 +635,7 @@ public sql_selectRankedPlayerCallback(Handle:owner, Handle:hndl, const String:er
 
 	new client = data;
 	decl String:szSteamId[32];
+
 	if (client>MAXPLAYERS)
 	{
 		if (!g_pr_RankingRecalc_InProgress && !g_bProfileRecalc[client])
@@ -859,6 +860,9 @@ public sql_selectRankedPlayersRankCallback(Handle:owner, Handle:hndl, const Stri
 	}
 
 	new client = data;
+	if (!IsValidClient(client))
+		return;
+
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
 		g_PlayerRank[client] = SQL_GetRowCount(hndl);
@@ -4265,7 +4269,7 @@ public db_Cleanup()
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery);
 	
 	//times
-	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM playertimes where runtime = -1.0 and runtimepro = -1.0");
+	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM playertimes where runtimepro = -1.0");
 }
 
 public db_dropMap(client)

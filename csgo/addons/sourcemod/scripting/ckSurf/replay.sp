@@ -803,8 +803,8 @@ public MRESReturn:DHooks_OnTeleport(client, Handle:hParams)
 		iAT[_:atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
 	if(!bVelocityNull)
 		iAT[_:atFlags] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
-	
-	PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
+	if (g_hRecordingAdditionalTeleport[client] != INVALID_HANDLE)
+		PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
 	
 	return MRES_Ignored;
 }
