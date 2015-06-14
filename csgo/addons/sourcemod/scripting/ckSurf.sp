@@ -1984,7 +1984,7 @@ public OnPluginStart()
 	HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre); 
 	HookEntityOutput("func_button", "OnPressed", ButtonPress);
-	
+
 	//mapcycle array
 	new arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = CreateArray(arraySize);	
