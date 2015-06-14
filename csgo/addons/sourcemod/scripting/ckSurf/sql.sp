@@ -3925,7 +3925,7 @@ public db_GetDynamicTimelimit()
 	if (!g_bDynamicTimelimit)
 		return;
 	decl String:szQuery[256];  
-	Format(szQuery, 256, "select runtime, runtimepro from playertimes where mapname = '%s'", g_szMapName);
+	Format(szQuery, 256, "select runtimepro from playertimes where mapname = '%s'", g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_GetDynamicTimelimitCallback, szQuery, DBPrio_Low);
 }
 
