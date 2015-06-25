@@ -1,3 +1,100 @@
+public Action:Command_normalMode(client, args)
+{
+	if(!IsValidClient(client))
+		return Plugin_Handled;
+
+	g_bCheckpointMode[client] = false;
+	PrintToChat(client, "[%cCK%c] %cNormal mode activated. Change to teleport mode by writing %c!tele", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+	return Plugin_Handled;
+}
+
+public Action:Command_createPlayerCheckpoint(client, args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	new Float:CheckpointTime = GetEngineTime();
+
+	// Move old checkpoint to the undo values, if the last checkpoint was made more than a second ago
+	if (g_bCreatedTeleport[client] && (CheckpointTime - g_fLastPlayerCheckpoint[client]) > 1.0)
+	{
+		g_fLastPlayerCheckpoint[client] = CheckpointTime;
+		Array_Copy(g_fCheckpointLocation[client], g_fCheckpointLocation_undo[client], 3);
+		Array_Copy(g_fCheckpointVelocity[client], g_fCheckpointVelocity_undo[client], 3);
+		Array_Copy(g_fCheckpointAngle[client], g_fCheckpointAngle_undo[client], 3);
+	} 
+
+	g_bCreatedTeleport[client] = true;
+	GetClientAbsOrigin(client, g_fCheckpointLocation[client]);
+	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCheckpointVelocity[client]);
+	GetEntPropVector(client, Prop_Data, "m_angRotation", g_fCheckpointAngle[client]); 
+
+	PrintToChat(client, "[%cCK%c] %cPlayer Checkpoint created. Use %c!tele %cto start the teleport mode.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+
+	return Plugin_Handled;
+}
+
+public Action:Command_goToPlayerCheckpoint(client, args)
+{
+	if(!IsValidClient(client))
+		return Plugin_Handled;
+
+	if (g_fCheckpointLocation[client][0] != 0.0 && g_fCheckpointLocation[client][1] != 0.0 && g_fCheckpointLocation[client][2] != 0.0)
+	{
+		if (g_bCheckpointMode[client] == false)
+		{
+			PrintToChat(client, "[%cCK%c] %cTeleport mode started! Use %c!normal%c or %c!n %c to get back to normal mode!", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+			PrintToChat(client, "[%cCK%c] %cCreate new checkpoints with %c!cp%c or undo your last checkpoint with %c!undo %c.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+			g_bCheckpointMode[client] = true;
+		}
+
+		decl Float:zero[3];
+		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], zero);
+
+		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], g_fCheckpointVelocity[client]);
+
+		//PrintToChat(client, "[%cCK%c] %cTeleported to last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
+	}
+	else
+		PrintToChat(client, "[%cCK%c] %cYou don't have a checkpoint to teleport to! Create one by using %c!cp", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+
+	return Plugin_Handled;
+}
+
+public Action:Command_undoPlayerCheckpoint(client, args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	if (g_fCheckpointLocation_undo[client][0] != 0.0 && g_fCheckpointLocation_undo[client][1] != 0.0 && g_fCheckpointLocation_undo[client][2] != 0.0)
+	{	
+		decl Float:tempLocation[3];
+		decl Float:tempVelocity[3];
+		decl Float:tempAngle[3];
+
+		// Location
+		Array_Copy(g_fCheckpointLocation_undo[client], tempLocation, 3);
+		Array_Copy(g_fCheckpointLocation[client], g_fCheckpointLocation_undo[client], 3);
+		Array_Copy(tempLocation, g_fCheckpointLocation[client], 3);
+
+		// Velocity
+		Array_Copy(g_fCheckpointVelocity_undo[client], tempVelocity, 3);
+		Array_Copy(g_fCheckpointVelocity[client], g_fCheckpointVelocity_undo[client], 3);
+		Array_Copy(tempVelocity, g_fCheckpointVelocity[client], 3);
+
+		// Angle
+		Array_Copy(g_fCheckpointAngle_undo[client], tempAngle, 3);
+		Array_Copy(g_fCheckpointAngle[client], g_fCheckpointAngle_undo[client], 3);
+		Array_Copy(tempAngle, g_fCheckpointAngle[client], 3);
+
+		PrintToChat(client, "[%cCK%c] %cUndid your last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
+	}
+	else
+		PrintToChat(client, "[%cCK%c] %cYou don't have a checkpoint to undo! Create a checkpoint by using %c!cp", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+
+	return Plugin_Handled;
+}
+
 public Action:Command_Teleport(client, args)
 {
 	new stageZoneId = -1;
@@ -254,6 +351,13 @@ public Action:Command_Restart(client, args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
+
+	if (g_bGotSpawnLocation)
+	{
+		decl Float:Velocity[3];
+		TeleportEntity(client, g_fSpawnLocation, g_fSpawnAngle, Velocity);
+		return Plugin_Handled;
+	}
 
 	new startZoneId = -1;
 	if (g_mapZonesCount > 0) 

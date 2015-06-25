@@ -162,14 +162,19 @@ public LoadReplays()
 	decl String:sPath1[256]; 
 	Format(sPath1, sizeof(sPath1), "%s%s.rec",CK_REPLAY_PATH,g_szMapName);
 	BuildPath(Path_SM, sPath1, sizeof(sPath1), "%s%s.rec", CK_REPLAY_PATH,g_szMapName);
+	new Handle:hFilex = OpenFile(sPath1, "r");
+
 	decl String:sPath2[256]; 
 	Format(sPath2, sizeof(sPath2), "%s%s_Bonus.rec",CK_REPLAY_PATH,g_szMapName);
 	BuildPath(Path_SM, sPath2, sizeof(sPath2), "%s%s_Bonus.rec", CK_REPLAY_PATH,g_szMapName);
+	new Handle:hFilex2 = OpenFile(sPath2, "r");
+
 	g_bMapReplay=false;
 	g_bMapBonusReplay=false;
+	g_RecordBot = -1;
+	g_BonusBot = -1
 	
 	// Record Bot
-	new Handle:hFilex = OpenFile(sPath1, "r");
 	if(hFilex != INVALID_HANDLE)
 	{
 		g_bMapReplay=true;
@@ -177,15 +182,12 @@ public LoadReplays()
 	}
 
 	// Bonus Bot
-	new Handle:hFilex2 = OpenFile(sPath2, "r");
 	if(hFilex2 != INVALID_HANDLE)
 	{
 		g_bMapBonusReplay=true;
 		CloseHandle(hFilex2);		
 	}
 
-	g_RecordBot = -1;
-	g_BonusBot = -1
 	if (g_bMapReplay)
 		LoadRecordReplay();
 	if (g_bMapBonusReplay)
@@ -328,13 +330,12 @@ public LoadRecordReplay()
 	{
 		if(!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_BonusBot)
 			continue;
-		if(!IsPlayerAlive(i))
-		{
-			CS_RespawnPlayer(i);
-			continue;
-		}
+
 		g_RecordBot = i;
 		g_fCurrentRunTime[g_RecordBot] = 0.0;
+		if(!IsPlayerAlive(i))
+			CS_RespawnPlayer(i);
+
 		break;
 	}
 
@@ -383,13 +384,13 @@ public LoadBonusReplay()
 	{
 		if(!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_RecordBot)
 			continue;
-		if(!IsPlayerAlive(i))
-		{
-			CS_RespawnPlayer(i);
-			continue;
-		}
+
 		g_BonusBot = i;
 		g_fCurrentRunTime[g_BonusBot] = 0.0;
+		
+		if(!IsPlayerAlive(i))
+			CS_RespawnPlayer(i);
+
 		break;
 	}
 

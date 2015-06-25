@@ -1,16 +1,18 @@
 // timer.sp
+public Action:NewsTimer(Handle:timer, any:client)
+{
+	if (IsValidClient(client))
+		PrintToChat(client, "[%cADMIN NEWS%c]: %cNew features: Teleport runs [%c!cp, !tele, !undo%c], Server Records displayed in checkpoints & admins can custom spawn !r point [%c!addspawn, !delspawn%c].", RED,WHITE,GREEN,WHITE,GREEN,WHITE,GREEN);
+}
 
 public Action:AnnounceMap(Handle:timer, any:client)
 {
 	if (IsValidClient(client)) 
 	{
 		PrintToChat(client, g_sTierString);
-		AnnounceTimer[client] = INVALID_HANDLE;
 	}
-	else
-	{
-		AnnounceTimer[client] = INVALID_HANDLE;
-	}
+
+	AnnounceTimer[client] = INVALID_HANDLE;
 }
 
 public Action:RefreshAdminMenu(Handle:timer, any:client)
@@ -173,6 +175,14 @@ public Action:CKTimer2(Handle:timer)
 		//overlay check
 		if (g_bOverlay[i] && GetEngineTime()-g_fLastOverlay[i] > 5.0)
 			g_bOverlay[i] = false;
+	
+
+		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
+		if(g_hRecording[i] != INVALID_HANDLE && g_fCurrentRunTime[i] > 6720.0)
+		{
+			StopRecording(i);
+			g_hRecording[i] = INVALID_HANDLE;
+		}	
 	
 		//Scoreboard			
 		if (!g_bPause[i]) 

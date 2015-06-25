@@ -2,131 +2,136 @@
 // PREPARED STATEMENTS //
 ////////////////////////
 
+//TABLE CK_SPAWNLOCATIONS
+new String:sql_createSpawnLocations[]			= "CREATE TABLE IF NOT EXISTS ck_spawnlocations (mapname VARCHAR(54) NOT NULL, pos_x FLOAT NOT NULL, pos_y FLOAT NOT NULL, pos_z FLOAT NOT NULL, ang_x FLOAT NOT NULL, ang_y FLOAT NOT NULL, ang_z FLOAT NOT NULL, PRIMARY KEY(mapname));";
+new String:sql_insertSpawnLocations[]			= "INSERT INTO ck_spawnlocations VALUES ('%s', '%f', '%f', '%f', '%f', '%f', '%f');";
+new String:sql_updateSpawnLocations[]			= "UPDATE ck_spawnlocations SET pos_x = '%f', pos_y = '%f', pos_z = '%f', ang_x = '%f', ang_y = '%f', ang_z = '%f' WHERE mapname = '%s'";
+new String:sql_selectSpawnLocations[]			= "SELECT * FROM ck_spawnlocations WHERE mapname ='%s';";
+new String:sql_deleteSpawnLocations[]			= "DELETE FROM ck_spawnlocations WHERE mapname = '%s'";
+
 //TABLE CHALLENGE
-new String:sql_createChallenges[] 				= "CREATE TABLE IF NOT EXISTS challenges (steamid VARCHAR(32), steamid2 VARCHAR(32), bet INT(12), map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,steamid2,date));";
-new String:sql_insertChallenges[] 				= "INSERT INTO challenges (steamid, steamid2, bet, map) VALUES('%s', '%s','%i','%s');";
-new String:sql_selectChallenges2[] 				= "SELECT steamid, steamid2, bet, map, date FROM challenges where steamid = '%s' OR steamid2 ='%s' ORDER BY date DESC";
-new String:sql_selectChallenges[] 				= "SELECT steamid, steamid2, bet, map FROM challenges where steamid = '%s' OR steamid2 ='%s'";
-new String:sql_selectChallengesCompare[] 		= "SELECT steamid, steamid2, bet FROM challenges where (steamid = '%s' AND steamid2 ='%s') OR (steamid = '%s' AND steamid2 ='%s')";
-new String:sql_deleteChallenges[] 				= "DELETE from challenges where steamid = '%s'";
+new String:sql_createChallenges[] 				= "CREATE TABLE IF NOT EXISTS ck_challenges (steamid VARCHAR(32), steamid2 VARCHAR(32), bet INT(12), map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,steamid2,date));";
+new String:sql_insertChallenges[] 				= "INSERT INTO ck_challenges (steamid, steamid2, bet, map) VALUES('%s', '%s','%i','%s');";
+new String:sql_selectChallenges2[] 				= "SELECT steamid, steamid2, bet, map, date FROM ck_challenges where steamid = '%s' OR steamid2 ='%s' ORDER BY date DESC";
+new String:sql_selectChallenges[] 				= "SELECT steamid, steamid2, bet, map FROM ck_challenges where steamid = '%s' OR steamid2 ='%s'";
+new String:sql_selectChallengesCompare[] 		= "SELECT steamid, steamid2, bet FROM ck_challenges where (steamid = '%s' AND steamid2 ='%s') OR (steamid = '%s' AND steamid2 ='%s')";
+new String:sql_deleteChallenges[] 				= "DELETE from ck_challenges where steamid = '%s'";
 
 //TABLE ZONES
-new String:sql_createZones[]					= "CREATE TABLE IF NOT EXISTS zones (mapname VARCHAR(54) NOT NULL, zoneid INT(12) DEFAULT '-1', zonetype INT(12) DEFAULT '-1', zonetypeid INT(12) DEFAULT '-1', pointa_x FLOAT DEFAULT '-1.0', pointa_y FLOAT DEFAULT '-1.0', pointa_z FLOAT DEFAULT '-1.0', pointb_x FLOAT DEFAULT '-1.0', pointb_y FLOAT DEFAULT '-1.0', pointb_z FLOAT DEFAULT '-1.0', vis INT(12) DEFAULT '0', team INT(12) DEFAULT '0', PRIMARY KEY(mapname, zoneid));";
-new String:sql_insertZones[]					= "INSERT INTO zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i')";
-new String:sql_updateZone[]						= "UPDATE zones SET zonetype = '%i', zonetypeid = '%i', pointa_x = '%f', pointa_y ='%f', pointa_z = '%f', pointb_x = '%f', pointb_y = '%f', pointb_z = '%f', vis = '%i', team = '%i'  WHERE zoneid = '%i' AND mapname = '%s'";
-new String:sql_selectzoneTypeIds[]				= "SELECT zonetypeid FROM zones WHERE mapname='%s' AND zonetype='%i'";
-new String:sql_selectMapZones[]					= "SELECT * FROM zones WHERE mapname = '%s' ORDER BY zonetypeid ASC";
-new String:sql_selectTotalBonusCount[]			= "SELECT * FROM zones WHERE zoneType = 3 GROUP BY mapname;";
-new String:sql_deleteMapZones[]					= "DELETE FROM zones WHERE mapname = '%s'";
-new String:sql_deleteZone[]						= "DELETE FROM zones WHERE mapname = '%s' AND zoneid = '%i'";
-new String:sql_deleteAllZones[]					= "DELETE FROM zones";
+new String:sql_createZones[]					= "CREATE TABLE IF NOT EXISTS ck_zones (mapname VARCHAR(54) NOT NULL, zoneid INT(12) DEFAULT '-1', zonetype INT(12) DEFAULT '-1', zonetypeid INT(12) DEFAULT '-1', pointa_x FLOAT DEFAULT '-1.0', pointa_y FLOAT DEFAULT '-1.0', pointa_z FLOAT DEFAULT '-1.0', pointb_x FLOAT DEFAULT '-1.0', pointb_y FLOAT DEFAULT '-1.0', pointb_z FLOAT DEFAULT '-1.0', vis INT(12) DEFAULT '0', team INT(12) DEFAULT '0', PRIMARY KEY(mapname, zoneid));";
+new String:sql_insertZones[]					= "INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i')";
+new String:sql_updateZone[]						= "UPDATE ck_zones SET zonetype = '%i', zonetypeid = '%i', pointa_x = '%f', pointa_y ='%f', pointa_z = '%f', pointb_x = '%f', pointb_y = '%f', pointb_z = '%f', vis = '%i', team = '%i'  WHERE zoneid = '%i' AND mapname = '%s'";
+new String:sql_selectzoneTypeIds[]				= "SELECT zonetypeid FROM ck_zones WHERE mapname='%s' AND zonetype='%i'";
+new String:sql_selectMapZones[]					= "SELECT * FROM ck_zones WHERE mapname = '%s' ORDER BY zonetypeid ASC";
+new String:sql_selectTotalBonusCount[]			= "SELECT * FROM ck_zones WHERE zoneType = 3 GROUP BY mapname;";
+new String:sql_deleteMapZones[]					= "DELETE FROM ck_zones WHERE mapname = '%s'";
+new String:sql_deleteZone[]						= "DELETE FROM ck_zones WHERE mapname = '%s' AND zoneid = '%i'";
+new String:sql_deleteAllZones[]					= "DELETE FROM ck_zones";
 
 //TABLE MAPTIER
-new String:sql_createMapTier[]					= "CREATE TABLE IF NOT EXISTS maptier (mapname VARCHAR(54) NOT NULL, tier INT(12) NOT NULL, PRIMARY KEY(mapname));";
-new String:sql_selectMapTier[]					= "SELECT * FROM maptier WHERE mapname = '%s'";
-new String:sql_deleteAllMapTiers[]				= "DELETE FROM maptier";
+new String:sql_createMapTier[]					= "CREATE TABLE IF NOT EXISTS ck_maptier (mapname VARCHAR(54) NOT NULL, tier INT(12) NOT NULL, PRIMARY KEY(mapname));";
+new String:sql_selectMapTier[]					= "SELECT * FROM ck_maptier WHERE mapname = '%s'";
+new String:sql_deleteAllMapTiers[]				= "DELETE FROM ck_maptier";
+new String:sql_insertmaptier[]					= "INSERT INTO ck_maptier (mapname, tier) VALUES ('%s', '%i');";
+new String:sql_updatemaptier[]					= "UPDATE ck_maptier SET tier = %i WHERE mapname ='%s'";
 
 //TABLE BONUS
-new String:sql_createBonus[]					= "CREATE TABLE IF NOT EXISTS bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid, mapname));";
-new String:sql_insertBonus[]					= "INSERT INTO bonus (steamid, name, mapname, runtime) VALUES ('%s', '%s', '%s', '%f')";	
-new String:sql_updateBonus[]					= "UPDATE bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s'";
-new String:sql_selectBonusCount[]				= "SELECT count(*) FROM bonus WHERE mapname = '%s'";
-new String:sql_selectPersonalBonusRecords[] 	= "SELECT runtime FROM bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
-new String:sql_selectPlayerRankBonus[] 			= "SELECT count(*) FROM bonus WHERE runtime <= (SELECT runtime FROM bonus WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0) AND mapname = '%s'";
-new String:sql_selectFastestBonus[]				= "SELECT MIN(runtime), name FROM bonus WHERE mapname = '%s'";
-new String:sql_selectPersonalBonusCompleted[]	= "SELECT count(*) FROM bonus WHERE steamid = '%s'";
-new String:sql_deleteBonus[]					= "DELETE FROM bonus WHERE mapname = '%s'";
+new String:sql_createBonus[]					= "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid, mapname));";
+new String:sql_insertBonus[]					= "INSERT INTO ck_bonus (steamid, name, mapname, runtime) VALUES ('%s', '%s', '%s', '%f')";	
+new String:sql_updateBonus[]					= "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s'";
+new String:sql_selectBonusCount[]				= "SELECT count(*) FROM ck_bonus WHERE mapname = '%s'";
+new String:sql_selectPersonalBonusRecords[] 	= "SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
+new String:sql_selectPlayerRankBonus[] 			= "SELECT count(*) FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0) AND mapname = '%s'";
+new String:sql_selectFastestBonus[]				= "SELECT MIN(runtime), name FROM ck_bonus WHERE mapname = '%s'";
+new String:sql_selectPersonalBonusCompleted[]	= "SELECT count(*) FROM ck_bonus WHERE steamid = '%s'";
+new String:sql_deleteBonus[]					= "DELETE FROM ck_bonus WHERE mapname = '%s'";
 
 //TABLE CHECKPOINTS
-new String:sql_createCheckpoints[] 				= "CREATE TABLE IF NOT EXISTS checkpoints (steamid VARCHAR(32), mapname VARCHAR(32), cp1 FLOAT DEFAULT '0.0', cp2 FLOAT DEFAULT '0.0', cp3 FLOAT DEFAULT '0.0', cp4 FLOAT DEFAULT '0.0', cp5 FLOAT DEFAULT '0.0', cp6 FLOAT DEFAULT '0.0', cp7 FLOAT DEFAULT '0.0', cp8 FLOAT DEFAULT '0.0', cp9 FLOAT DEFAULT '0.0', cp10 FLOAT DEFAULT '0.0', cp11 FLOAT DEFAULT '0.0', cp12 FLOAT DEFAULT '0.0', cp13 FLOAT DEFAULT '0.0', cp14 FLOAT DEFAULT '0.0', cp15 FLOAT DEFAULT '0.0', cp16 FLOAT DEFAULT '0.0', cp17  FLOAT DEFAULT '0.0', cp18 FLOAT DEFAULT '0.0', cp19 FLOAT DEFAULT '0.0', cp20  FLOAT DEFAULT '0.0', PRIMARY KEY(steamid, mapname));";
-new String:sql_updateCheckpoints[] 				= "UPDATE checkpoints SET cp1='%f', cp2='%f', cp3='%f', cp4='%f', cp5='%f', cp6='%f', cp7='%f', cp8='%f', cp9='%f', cp10='%f', cp11='%f', cp12='%f', cp13='%f', cp14='%f', cp15='%f', cp16='%f', cp17='%f', cp18='%f', cp19='%f', cp20='%f' WHERE steamid='%s' AND mapname='%s'";
-new String:sql_insertCheckpoints[] 				= "INSERT INTO checkpoints VALUES ('%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f')";
-new String:sql_selectCheckpoints[] 				= "SELECT * FROM checkpoints WHERE steamid='%s' AND mapname='%s'";
-new String:sql_deleteCheckpoints[]				= "DELETE FROM checkpoints WHERE mapname = '%s'";
+new String:sql_createCheckpoints[] 				= "CREATE TABLE IF NOT EXISTS ck_checkpoints (steamid VARCHAR(32), mapname VARCHAR(32), cp1 FLOAT DEFAULT '0.0', cp2 FLOAT DEFAULT '0.0', cp3 FLOAT DEFAULT '0.0', cp4 FLOAT DEFAULT '0.0', cp5 FLOAT DEFAULT '0.0', cp6 FLOAT DEFAULT '0.0', cp7 FLOAT DEFAULT '0.0', cp8 FLOAT DEFAULT '0.0', cp9 FLOAT DEFAULT '0.0', cp10 FLOAT DEFAULT '0.0', cp11 FLOAT DEFAULT '0.0', cp12 FLOAT DEFAULT '0.0', cp13 FLOAT DEFAULT '0.0', cp14 FLOAT DEFAULT '0.0', cp15 FLOAT DEFAULT '0.0', cp16 FLOAT DEFAULT '0.0', cp17  FLOAT DEFAULT '0.0', cp18 FLOAT DEFAULT '0.0', cp19 FLOAT DEFAULT '0.0', cp20  FLOAT DEFAULT '0.0', PRIMARY KEY(steamid, mapname));";
+new String:sql_updateCheckpoints[] 				= "UPDATE ck_checkpoints SET cp1='%f', cp2='%f', cp3='%f', cp4='%f', cp5='%f', cp6='%f', cp7='%f', cp8='%f', cp9='%f', cp10='%f', cp11='%f', cp12='%f', cp13='%f', cp14='%f', cp15='%f', cp16='%f', cp17='%f', cp18='%f', cp19='%f', cp20='%f' WHERE steamid='%s' AND mapname='%s'";
+new String:sql_insertCheckpoints[] 				= "INSERT INTO ck_checkpoints VALUES ('%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f')";
+new String:sql_selectCheckpoints[] 				= "SELECT * FROM ck_checkpoints WHERE steamid='%s' AND mapname='%s'";
+new String:sql_selectRecordCheckpoints[]		= "SELECT * FROM ck_checkpoints WHERE steamid = (SELECT steamid FROM ck_playertimes WHERE mapname = '%s' ORDER BY runtimepro DESC LIMIT 1) AND mapname = '%s'";
+new String:sql_deleteCheckpoints[]				= "DELETE FROM ck_checkpoints WHERE mapname = '%s'";
 
 //TABLE LATEST 15 LOCAL RECORDS
-new String:sql_createLatestRecords[] 			= "CREATE TABLE IF NOT EXISTS LatestRecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date));";
-new String:sql_insertLatestRecords[] 			= "INSERT INTO LatestRecords (steamid, name, runtime, map) VALUES('%s','%s','%f','%s');";
-new String:sql_selectLatestRecords[] 			= "SELECT name, runtime, map, date FROM LatestRecords ORDER BY date DESC LIMIT 50";
+new String:sql_createLatestRecords[] 			= "CREATE TABLE IF NOT EXISTS ck_latestrecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date));";
+new String:sql_insertLatestRecords[] 			= "INSERT INTO ck_latestrecords (steamid, name, runtime, map) VALUES('%s','%s','%f','%s');";
+new String:sql_selectLatestRecords[] 			= "SELECT name, runtime, map, date FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
 
 //TABLE PLAYEROPTIONS
-new String:sql_createPlayerOptions[] 			= "CREATE TABLE IF NOT EXISTS playeroptions2 (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', PRIMARY KEY(steamid));";
-new String:sql_insertPlayerOptions[] 			= "INSERT INTO playeroptions2 (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i');";
-new String:sql_selectPlayerOptions[] 			= "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3 FROM playeroptions2 where steamid = '%s'";
-new String:sql_updatePlayerOptions[]			= "UPDATE playeroptions2 SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i' where steamid = '%s'";
+new String:sql_createPlayerOptions[] 			= "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', PRIMARY KEY(steamid));";
+new String:sql_insertPlayerOptions[] 			= "INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i');";
+new String:sql_selectPlayerOptions[] 			= "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3 FROM ck_playeroptions where steamid = '%s'";
+new String:sql_updatePlayerOptions[]			= "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i' where steamid = '%s'";
 
 //TABLE PLAYERRANK
-new String:sql_createPlayerRank[]				= "CREATE TABLE IF NOT EXISTS playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12)  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', PRIMARY KEY(steamid));";
-new String:sql_insertPlayerRank[] 				= "INSERT INTO playerrank (steamid, name, country) VALUES('%s', '%s', '%s');";
-new String:sql_updatePlayerRankPoints[]			= "UPDATE playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i' where steamid='%s'";
-new String:sql_updatePlayerRankPoints2[]		= "UPDATE playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i', country ='%s' where steamid='%s'";
-new String:sql_updatePlayerRank[]				= "UPDATE playerrank SET finishedmaps ='%i', finishedmapspro='%i', multiplier ='%i'  where steamid='%s'";
-new String:sql_selectPlayerRankAll[] 			= "SELECT name, steamid FROM playerrank where name like '%c%s%c'";
-new String:sql_selectPlayerRankAll2[] 			= "SELECT name, steamid FROM playerrank where name = '%s'";
-new String:sql_selectPlayerName[] 				= "SELECT name FROM playerrank where steamid = '%s'";
-new String:sql_UpdateLastSeenMySQL[]			= "UPDATE playerrank SET lastseen = NOW() where steamid = '%s';";
-new String:sql_UpdateLastSeenSQLite[]			= "UPDATE playerrank SET lastseen = date('now') where steamid = '%s';";
-new String:sql_selectTopPlayers[]				= "SELECT name, points, finishedmapspro, steamid FROM playerrank ORDER BY points DESC LIMIT 100";
-new String:sql_selectTopChallengers[]			= "SELECT name, winratio, pointsratio, steamid FROM playerrank ORDER BY pointsratio DESC LIMIT 5";
-new String:sql_selectRankedPlayer[]				= "SELECT steamid, name, points, finishedmapspro, multiplier, country, lastseen from playerrank where steamid='%s'";
-new String:sql_selectRankedPlayersRank[]		= "SELECT name FROM playerrank WHERE points >= (SELECT points FROM playerrank WHERE steamid = '%s') ORDER BY points";
-new String:sql_selectRankedPlayers[]			= "SELECT steamid, name from playerrank where points > 0 ORDER BY points DESC";
-new String:sql_CountRankedPlayers[] 			= "SELECT COUNT(steamid) FROM playerrank";
-new String:sql_CountRankedPlayers2[] 			= "SELECT COUNT(steamid) FROM playerrank where points > 0";
+new String:sql_createPlayerRank[]				= "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12)  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
+new String:sql_insertPlayerRank[] 				= "INSERT INTO ck_playerrank (steamid, name, country) VALUES('%s', '%s', '%s');";
+new String:sql_updatePlayerRankPoints[]			= "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i' where steamid='%s'";
+new String:sql_updatePlayerRankPoints2[]		= "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i', country ='%s' where steamid='%s'";
+new String:sql_updatePlayerRank[]				= "UPDATE ck_playerrank SET finishedmaps ='%i', finishedmapspro='%i', multiplier ='%i'  where steamid='%s'";
+new String:sql_selectPlayerRankAll[] 			= "SELECT name, steamid FROM ck_playerrank where name like '%c%s%c'";
+new String:sql_selectPlayerRankAll2[] 			= "SELECT name, steamid FROM ck_playerrank where name = '%s'";
+new String:sql_selectPlayerName[] 				= "SELECT name FROM ck_playerrank where steamid = '%s'";
+new String:sql_UpdateLastSeenMySQL[]			= "UPDATE ck_playerrank SET lastseen = NOW() where steamid = '%s';";
+new String:sql_UpdateLastSeenSQLite[]			= "UPDATE ck_playerrank SET lastseen = date('now') where steamid = '%s';";
+new String:sql_selectTopPlayers[]				= "SELECT name, points, finishedmapspro, steamid FROM ck_playerrank ORDER BY points DESC LIMIT 100";
+new String:sql_selectTopChallengers[]			= "SELECT name, winratio, pointsratio, steamid FROM ck_playerrank ORDER BY pointsratio DESC LIMIT 5";
+new String:sql_selectRankedPlayer[]				= "SELECT steamid, name, points, finishedmapspro, multiplier, country, lastseen from ck_playerrank where steamid='%s'";
+new String:sql_selectRankedPlayersRank[]		= "SELECT name FROM ck_playerrank WHERE points >= (SELECT points FROM ck_playerrank WHERE steamid = '%s') ORDER BY points";
+new String:sql_selectRankedPlayers[]			= "SELECT steamid, name from ck_playerrank where points > 0 ORDER BY points DESC";
+new String:sql_CountRankedPlayers[] 			= "SELECT COUNT(steamid) FROM ck_playerrank";
+new String:sql_CountRankedPlayers2[] 			= "SELECT COUNT(steamid) FROM ck_playerrank where points > 0";
 
 //TABLE PLAYERTIMES
-new String:sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
-new String:sql_insertPlayer[] 					= "INSERT INTO playertimes (steamid, mapname, name) VALUES('%s', '%s', '%s');";
-new String:sql_insertPlayerTime[] 				= "INSERT INTO playertimes (steamid, mapname, name,runtimepro) VALUES('%s', '%s', '%s', '%f');";
-new String:sql_updateRecordPro[]				= "UPDATE playertimes SET name = '%s', runtimepro = '%f' WHERE steamid = '%s' AND mapname = '%s';"; 
-new String:sql_CountFinishedMaps[] 				= "SELECT mapname FROM playertimes where steamid='%s' AND runtimepro > -1.0";
-new String:sql_selectPlayer[] 					= "SELECT steamid FROM playertimes WHERE steamid = '%s' AND mapname = '%s';";
-new String:sql_selectMapRecord[] 				= "SELECT mapname, steamid, name, runtimepro FROM playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0;";
-new String:sql_selectRecord[] 					= "SELECT steamid, runtimepro FROM playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro  > -1.0";
-new String:sql_selectMapRecordPro[] 			= "SELECT db2.runtimepro, db1.name, db1.steamid, db2.steamid FROM playertimes as db2 INNER JOIN playerrank as db1 on db1.steamid = db2.steamid WHERE db2.mapname = '%s' AND db2.runtimepro  > -1.0 ORDER BY db2.runtimepro ASC LIMIT 1"; 
-new String:sql_selectPersonalRecords[] 			= "SELECT db2.mapname, db2.steamid, db1.name, db2.runtimepro, db1.steamid  FROM playertimes as db2 INNER JOIN playerrank as db1 on db1.steamid = db2.steamid WHERE db2.steamid = '%s' AND db2.mapname = '%s' AND db2.runtimepro > 0.0"; 
-new String:sql_selectPersonalAllRecords[] 		= "SELECT db1.name, db2.steamid, db2.mapname, db2.runtimepro as overall, db1.steamid FROM playertimes as db2 INNER JOIN playerrank as db1 on db2.steamid = db1.steamid WHERE db2.steamid = '%s' AND db2.runtimepro > -1.0 ORDER BY mapname ASC;";
-new String:sql_selectProClimbers[] 				= "SELECT db1.name, db2.runtimepro, db2.steamid, db1.steamid FROM playertimes as db2 INNER JOIN playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname = '%s' AND db2.runtimepro > -1.0 ORDER BY db2.runtimepro ASC LIMIT 20";
-new String:sql_selectTopClimbers2[] 			= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM playertimes as db2 INNER JOIN playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
-new String:sql_selectTopClimbers[] 				= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM playertimes as db2 INNER JOIN playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname = '%s' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
-new String:sql_selectPlayerProCount[] 			= "SELECT name FROM playertimes WHERE mapname = '%s' AND runtimepro  > -1.0;";
-new String:sql_selectPlayerRankProTime[] 		= "SELECT name,mapname FROM playertimes WHERE runtimepro <= (SELECT runtimepro FROM playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0) AND mapname = '%s' AND runtimepro > -1.0 ORDER BY runtimepro;";
-new String:sql_selectMapRecordHolders[] 		= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM playertimes where runtimepro > -1.0 GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid LIMIT 5;";
-new String:sql_selectMapRecordCount[] 			= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM playertimes where runtimepro > -1.0  GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y where y.steamid = '%s' GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid;";
+new String:sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
+new String:sql_insertPlayer[] 					= "INSERT INTO ck_playertimes (steamid, mapname, name) VALUES('%s', '%s', '%s');";
+new String:sql_insertPlayerTime[] 				= "INSERT INTO ck_playertimes (steamid, mapname, name,runtimepro) VALUES('%s', '%s', '%s', '%f');";
+new String:sql_updateRecordPro[]				= "UPDATE ck_playertimes SET name = '%s', runtimepro = '%f' WHERE steamid = '%s' AND mapname = '%s';"; 
+new String:sql_CountFinishedMaps[] 				= "SELECT mapname FROM ck_playertimes where steamid='%s' AND runtimepro > -1.0";
+new String:sql_selectPlayer[] 					= "SELECT steamid FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s';";
+new String:sql_selectMapRecord[] 				= "SELECT mapname, steamid, name, runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0;";
+new String:sql_selectRecord[] 					= "SELECT steamid, runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro  > -1.0";
+new String:sql_selectMapRecordPro[] 			= "SELECT db2.runtimepro, db1.name, db1.steamid, db2.steamid FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db1.steamid = db2.steamid WHERE db2.mapname = '%s' AND db2.runtimepro  > -1.0 ORDER BY db2.runtimepro ASC LIMIT 1"; 
+new String:sql_selectPersonalRecords[] 			= "SELECT db2.mapname, db2.steamid, db1.name, db2.runtimepro, db1.steamid  FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db1.steamid = db2.steamid WHERE db2.steamid = '%s' AND db2.mapname = '%s' AND db2.runtimepro > 0.0"; 
+new String:sql_selectPersonalAllRecords[] 		= "SELECT db1.name, db2.steamid, db2.mapname, db2.runtimepro as overall, db1.steamid FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.steamid = '%s' AND db2.runtimepro > -1.0 ORDER BY mapname ASC;";
+new String:sql_selectProClimbers[] 				= "SELECT db1.name, db2.runtimepro, db2.steamid, db1.steamid FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname = '%s' AND db2.runtimepro > -1.0 ORDER BY db2.runtimepro ASC LIMIT 20";
+new String:sql_selectTopClimbers2[] 			= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
+new String:sql_selectTopClimbers[] 				= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname = '%s' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
+new String:sql_selectPlayerProCount[] 			= "SELECT name FROM ck_playertimes WHERE mapname = '%s' AND runtimepro  > -1.0;";
+new String:sql_selectPlayerRankProTime[] 		= "SELECT name,mapname FROM ck_playertimes WHERE runtimepro <= (SELECT runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0) AND mapname = '%s' AND runtimepro > -1.0 ORDER BY runtimepro;";
+new String:sql_selectMapRecordHolders[] 		= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM ck_playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM ck_playertimes where runtimepro > -1.0 GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid LIMIT 5;";
+new String:sql_selectMapRecordCount[] 			= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM ck_playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM ck_playertimes where runtimepro > -1.0  GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y where y.steamid = '%s' GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid;";
 
 //TABLE PLAYERTMP
-new String:sql_createPlayertmp[] 				= "CREATE TABLE IF NOT EXISTS playertmp (steamid VARCHAR(32), mapname VARCHAR(32), cords1 FLOAT NOT NULL DEFAULT '-1.0', cords2 FLOAT NOT NULL DEFAULT '-1.0', cords3 FLOAT NOT NULL DEFAULT '-1.0', angle1 FLOAT NOT NULL DEFAULT '-1.0',angle2 FLOAT NOT NULL DEFAULT '-1.0',angle3 FLOAT NOT NULL DEFAULT '-1.0', EncTickrate INT(12) DEFAULT '-1.0', runtimeTmp FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
-new String:sql_insertPlayerTmp[]  				= "INSERT INTO playertmp (cords1, cords2, cords3, angle1,angle2,angle3,runtimeTmp,steamid,mapname,EncTickrate,BonusTimer,Stage) VALUES ('%f','%f','%f','%f','%f','%f','%f','%s', '%s', '%i', %i, %i);";
-new String:sql_updatePlayerTmp[] 				= "UPDATE playertmp SET cords1 = '%f', cords2 = '%f', cords3 = '%f', angle1 = '%f', angle2 = '%f', angle3 = '%f', runtimeTmp = '%f', mapname ='%s', EncTickrate='%i', BonusTimer = %i, Stage = %i where steamid = '%s';";
-new String:sql_deletePlayerTmp[] 				= "DELETE FROM playertmp where steamid = '%s';";
-new String:sql_selectPlayerTmp[] 				= "SELECT cords1,cords2,cords3, angle1, angle2, angle3,runtimeTmp, EncTickrate, BonusTimer, Stage FROM playertmp WHERE steamid = '%s' AND mapname = '%s';";
+new String:sql_createPlayertmp[] 				= "CREATE TABLE IF NOT EXISTS ck_playertemp (steamid VARCHAR(32), mapname VARCHAR(32), cords1 FLOAT NOT NULL DEFAULT '-1.0', cords2 FLOAT NOT NULL DEFAULT '-1.0', cords3 FLOAT NOT NULL DEFAULT '-1.0', angle1 FLOAT NOT NULL DEFAULT '-1.0',angle2 FLOAT NOT NULL DEFAULT '-1.0',angle3 FLOAT NOT NULL DEFAULT '-1.0', EncTickrate INT(12) DEFAULT '-1.0', runtimeTmp FLOAT NOT NULL DEFAULT '-1.0', BonusTimer INT, Stage INT, PRIMARY KEY(steamid,mapname));";
+new String:sql_insertPlayerTmp[]  				= "INSERT INTO ck_playertemp (cords1, cords2, cords3, angle1,angle2,angle3,runtimeTmp,steamid,mapname,EncTickrate,BonusTimer,Stage) VALUES ('%f','%f','%f','%f','%f','%f','%f','%s', '%s', '%i', %i, %i);";
+new String:sql_updatePlayerTmp[] 				= "UPDATE ck_playertemp SET cords1 = '%f', cords2 = '%f', cords3 = '%f', angle1 = '%f', angle2 = '%f', angle3 = '%f', runtimeTmp = '%f', mapname ='%s', EncTickrate='%i', BonusTimer = %i, Stage = %i where steamid = '%s';";
+new String:sql_deletePlayerTmp[] 				= "DELETE FROM ck_playertemp where steamid = '%s';";
+new String:sql_selectPlayerTmp[] 				= "SELECT cords1,cords2,cords3, angle1, angle2, angle3,runtimeTmp, EncTickrate, BonusTimer, Stage FROM ck_playertemp WHERE steamid = '%s' AND mapname = '%s';";
 
 // TABLE MAP BUTTONS
-new String:sql_createMapButtons[] 				= "CREATE TABLE IF NOT EXISTS MapButtons (mapname VARCHAR(32), cords1Start FLOAT NOT NULL DEFAULT '-1.0', cords2Start FLOAT NOT NULL DEFAULT '-1.0', cords3Start FLOAT NOT NULL DEFAULT '-1.0', cords1End FLOAT NOT NULL DEFAULT '-1.0', cords2End FLOAT NOT NULL DEFAULT '-1.0', cords3End FLOAT NOT NULL DEFAULT '-1.0', ang_start FLOAT NOT NULL DEFAULT '-1.0', ang_end FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(mapname));";
-new String:sql_deleteMapButtons[] 				= "DELETE FROM MapButtons where mapname= '%s';";
-new String:sql_insertMapButtons[] 				= "INSERT INTO MapButtons (mapname, cords1Start, cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end) VALUES('%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f');";
-new String:sql_selectMapButtons[] 				= "SELECT cords1Start,cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end FROM MapButtons WHERE mapname = '%s';";
-new String:sql_updateMapButtonsStart[] 			= "UPDATE MapButtons SET cords1Start ='%f', cords2Start ='%f', cords3Start ='%f', ang_start = '%f' WHERE mapname = '%s';";
-new String:sql_updateMapButtonsEnd[]			= "UPDATE MapButtons SET cords1End ='%f', cords2End ='%f', cords3End ='%f', ang_end = '%f' WHERE mapname = '%s';";
+new String:sql_createMapButtons[] 				= "CREATE TABLE IF NOT EXISTS ck_mapbuttons (mapname VARCHAR(32), cords1Start FLOAT NOT NULL DEFAULT '-1.0', cords2Start FLOAT NOT NULL DEFAULT '-1.0', cords3Start FLOAT NOT NULL DEFAULT '-1.0', cords1End FLOAT NOT NULL DEFAULT '-1.0', cords2End FLOAT NOT NULL DEFAULT '-1.0', cords3End FLOAT NOT NULL DEFAULT '-1.0', ang_start FLOAT NOT NULL DEFAULT '-1.0', ang_end FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(mapname));";
+new String:sql_deleteMapButtons[] 				= "DELETE FROM ck_mapbuttons where mapname= '%s';";
+new String:sql_insertMapButtons[] 				= "INSERT INTO ck_mapbuttons (mapname, cords1Start, cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end) VALUES('%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f');";
+new String:sql_selectMapButtons[] 				= "SELECT cords1Start,cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end FROM ck_mapbuttons WHERE mapname = '%s';";
+new String:sql_updateMapButtonsStart[] 			= "UPDATE ck_mapbuttons SET cords1Start ='%f', cords2Start ='%f', cords3Start ='%f', ang_start = '%f' WHERE mapname = '%s';";
+new String:sql_updateMapButtonsEnd[]			= "UPDATE ck_mapbuttons SET cords1End ='%f', cords2End ='%f', cords3End ='%f', ang_end = '%f' WHERE mapname = '%s';";
 
 // ADMIN 
-new String:sqlite_dropMap[] 					= "DROP TABLE MapButtons; VACCUM";
-new String:sql_dropMap[] 						= "DROP TABLE MapButtons;";
-new String:sqlite_dropChallenges[] 				= "DROP TABLE challenges; VACCUM";
-new String:sql_dropChallenges[] 				= "DROP TABLE challenges;";
-new String:sqlite_dropPlayer[] 					= "DROP TABLE playertimes; VACCUM";
-new String:sql_dropPlayer[] 					= "DROP TABLE playertimes;";
-new String:sql_dropPlayerRank[] 				= "DROP TABLE playerrank;";
-new String:sqlite_dropPlayerRank[] 				= "DROP TABLE playerrank; VACCUM";
-new String:sql_resetRecords[] 					= "DELETE FROM playertimes WHERE steamid = '%s'";
-new String:sql_resetRecords2[] 					= "DELETE FROM playertimes WHERE steamid = '%s' AND mapname LIKE '%s';";
-new String:sql_resetRecordPro[] 				= "UPDATE playertimes SET runtimepro = '-1.0' WHERE steamid = '%s' AND mapname LIKE '%s';";
-new String:sql_resetMapRecords[] 				= "DELETE FROM playertimes WHERE mapname = '%s'";
-
-
-
-
-
+new String:sqlite_dropMap[] 					= "DROP TABLE ck_mapbuttons; VACCUM";
+new String:sql_dropMap[] 						= "DROP TABLE ck_mapbuttons;";
+new String:sqlite_dropChallenges[] 				= "DROP TABLE ck_challenges; VACCUM";
+new String:sql_dropChallenges[] 				= "DROP TABLE ck_challenges;";
+new String:sqlite_dropPlayer[] 					= "DROP TABLE ck_playertimes; VACCUM";
+new String:sql_dropPlayer[] 					= "DROP TABLE ck_playertimes;";
+new String:sql_dropPlayerRank[] 				= "DROP TABLE ck_playerrank;";
+new String:sqlite_dropPlayerRank[] 				= "DROP TABLE ck_playerrank; VACCUM";
+new String:sql_resetRecords[] 					= "DELETE FROM ck_playertimes WHERE steamid = '%s'";
+new String:sql_resetRecords2[] 					= "DELETE FROM ck_playertimes WHERE steamid = '%s' AND mapname LIKE '%s';";
+new String:sql_resetRecordPro[] 				= "UPDATE ck_playertimes SET runtimepro = '-1.0' WHERE steamid = '%s' AND mapname LIKE '%s';";
+new String:sql_resetMapRecords[] 				= "DELETE FROM ck_playertimes WHERE mapname = '%s'";
 
 ////////////////////////
 //// DATABASE SETUP/////
@@ -160,13 +165,19 @@ public db_setupDatabase()
 		}
 		
 	SQL_FastQuery(g_hDb,"SET NAMES  'utf8'");
-	db_createTables();
-	
+
+	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank LIMIT 5;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank LIMIT 5;"))
+		db_renameTables();
+	else
+		if (!SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
+			db_createTables();
 }
+
 
 public db_createTables()
 {
-	SQL_LockDatabase(g_hDb);        
+	SQL_LockDatabase(g_hDb);
+
 	SQL_FastQuery(g_hDb, sql_createPlayertmp);
 	SQL_FastQuery(g_hDb, sql_createPlayertimes);
 	SQL_FastQuery(g_hDb, sql_createPlayerRank);
@@ -178,33 +189,255 @@ public db_createTables()
 	SQL_FastQuery(g_hDb, sql_createCheckpoints);
 	SQL_FastQuery(g_hDb, sql_createZones);
 	SQL_FastQuery(g_hDb, sql_createMapTier);
-	SQL_FastQuery(g_hDb, "ALTER TABLE playerrank ADD lastseen DATE"); //added in 1.54
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp ADD EncTickrate INT");	//added in 1.55
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp ADD BonusTimer INT"); //Bonus
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp ADD Stage INT"); // Stage
-
-	// Remove unused columns, if coming from KZTimer
-	SQL_FastQuery(g_hDb, "ALTER TABLE challenges DROP COLUMN cp_allowed");
-	SQL_FastQuery(g_hDb, "ALTER TABLE latestrecords DROP COLUMN teleports");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN colorchat");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN climbersmenu_sounds");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN strafesync");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN cpmessage");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN adv_menu");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN jumppenalty");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playerrank DROP COLUMN finishedmapstp");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN teleports");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN runtime");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN teleports_pro");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp DROP COLUMN teleports");
-	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp DROP COLUMN	checkpoints");
-	SQL_FastQuery(g_hDb, "ALTER TABLE LatestRecords DROP COLUMN	teleports");
-
-	SQL_FastQuery(g_hDb, "DROP TABLE playerjumpstats3");
+	SQL_FastQuery(g_hDb, sql_createSpawnLocations); 
 
 	SQL_UnlockDatabase(g_hDb);
 }
 
+public db_renameTables()
+{
+	g_bRenaming = true;
+
+	SQL_LockDatabase(g_hDb);
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerjumpstats3");
+	SQL_FastQuery(g_hDb, sql_createSpawnLocations); 
+	g_totalRenames = 0;
+	SQL_TQuery(g_hDb, SQL_BonusRenameCallback, "ALTER TABLE bonus RENAME TO ck_bonus;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_ChallengesRenameCallback, "ALTER TABLE challenges RENAME TO ck_challenges;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_CheckpointsRenameCallback, "ALTER TABLE checkpoints RENAME TO ck_checkpoints;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_LatestrecordsRenameCallback, "ALTER TABLE LatestRecords RENAME TO ck_latestrecords;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_MapButtonsRenameCallback, "ALTER TABLE MapButtons RENAME TO ck_mapbuttons;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_MaptierRenameCallback, "ALTER TABLE maptier RENAME TO ck_maptier;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_PlayeroptionsRenameCallback, "ALTER TABLE playeroptions2 RENAME TO ck_playeroptions;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_PlayerRankRenameCallback, "ALTER TABLE playerrank RENAME TO ck_playerrank;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_PlayertimesRenameCallback, "ALTER TABLE playertimes RENAME TO ck_playertimes;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_PlayertmpRenameCallback, "ALTER TABLE playertmp RENAME TO ck_playertemp;", 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_ZonesRenameCallback, "ALTER TABLE zones RENAME TO ck_zones;", 1, DBPrio_Low);
+
+	SQL_UnlockDatabase(g_hDb);
+}
+
+public db_renamingDone()
+{
+	g_bRenaming = false;
+	ForceChangeLevel(g_szMapName, "Database changes done");
+}
+
+public SQL_ChallengesRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_ChallengesRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS challenges");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+
+}
+
+
+public SQL_CheckpointsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_CheckpointsRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS checkpoints");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_LatestrecordsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_LatestrecordsRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS LatestRecords");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_MapButtonsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_MapButtonsRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS MapButtons");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_MaptierRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_MaptierRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS maptier");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_PlayeroptionsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_PlayeroptionsRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playeroptions2");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_PlayerRankRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_PlayerRankRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerrank");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_BonusRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_BonusRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS bonus");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_PlayertimesRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_PlayertimesRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playertimes");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+
+public SQL_PlayertmpRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_PlayertmpRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playertmp");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+public SQL_ZonesRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_ZonesRenameCallback): %s ", error);
+		return;
+	}
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS zones");
+
+	g_totalRenames++;
+	if (g_totalRenames == 11)
+		db_renamingDone();
+}
+
+
+
+/////////////////////////
+//// SPAWN LOCATIONS ////
+/////////////////////////
+
+public db_deleteSpawnLocations()
+{
+	g_bGotSpawnLocation = false;
+	decl String:szQuery[128];
+	Format(szQuery, 128, sql_deleteSpawnLocations, g_szMapName);
+	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, 1, DBPrio_Low);
+}
+
+
+public db_updateSpawnLocations(Float:position[3], Float:angle[3])
+{
+	decl String:szQuery[512];
+	Format(szQuery, 512, sql_updateSpawnLocations, position[0], position[1], position[2], angle[0], angle[1], angle[2], g_szMapName);
+	SQL_TQuery(g_hDb, db_editSpawnLocationsCallback, szQuery, 1, DBPrio_Low);
+}
+
+public db_insertSpawnLocations(Float:position[3], Float:angle[3])
+{
+	decl String:szQuery[512];
+	Format(szQuery, 512, sql_insertSpawnLocations, g_szMapName, position[0], position[1], position[2], angle[0], angle[1], angle[2]);
+	SQL_TQuery(g_hDb, db_editSpawnLocationsCallback, szQuery, 1, DBPrio_Low);
+}
+
+public db_editSpawnLocationsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (db_editSpawnLocationsCallback): %s ", error);
+		return;
+	}
+	db_selectSpawnLocations();
+}
+
+public db_selectSpawnLocations()
+{
+	g_bGotSpawnLocation = false;
+	decl String:szQuery[254];
+	Format(szQuery, 254, sql_selectSpawnLocations, g_szMapName);
+	SQL_TQuery(g_hDb, db_selectSpawnLocationsCallback, szQuery, 1, DBPrio_Low);
+}
+
+public db_selectSpawnLocationsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (db_selectSpawnLocationsCallback): %s ", error);
+		return;
+	}
+
+	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		g_bGotSpawnLocation = true;
+		g_fSpawnLocation[0] = SQL_FetchFloat(hndl, 1);
+		g_fSpawnLocation[1] = SQL_FetchFloat(hndl, 2);
+		g_fSpawnLocation[2] = SQL_FetchFloat(hndl, 3);
+		g_fSpawnAngle[0] = SQL_FetchFloat(hndl, 4);
+		g_fSpawnAngle[1] = SQL_FetchFloat(hndl, 5);
+		g_fSpawnAngle[2] = SQL_FetchFloat(hndl, 6);
+	}
+
+}
 
 
 
@@ -221,13 +454,18 @@ public db_viewMapRankProCallback(Handle:owner, Handle:hndl, const String:error[]
 		return;
 	}
 
-	new client = data;  
+	new Handle:pack = data;
+	ResetPack(pack);
+	new client = ReadPackCell(pack);
+	new rank = ReadPackCell(pack); 
+	CloseHandle(pack);
+
 	g_OldMapRank[client] = g_MapRank[client];
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl)){
 		g_MapRank[client] = SQL_GetRowCount(hndl); 
 	}
 	if (g_bMapRankToChat[client]){
-		MapFinishedMsgs(client, 1);		
+		MapFinishedMsgs(client, rank);		
 	}
 }
 
@@ -251,13 +489,18 @@ public sql_selectPlayerProCountCallback(Handle:owner, Handle:hndl, const String:
 		g_MapTimesCount = 0;
 }
 
-public db_viewMapRankPro(client)
+public db_viewMapRankPro(client, rank)
 {
 	decl String:szQuery[512];
 	if (!IsValidClient(client))
 		return;
+
+	new Handle:pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackCell(pack, rank);
+
 	Format(szQuery, 512, sql_selectPlayerRankProTime, g_szSteamID[client], g_szMapName, g_szMapName);
-	SQL_TQuery(g_hDb, db_viewMapRankProCallback, szQuery, client,DBPrio_Low);
+	SQL_TQuery(g_hDb, db_viewMapRankProCallback, szQuery, pack, DBPrio_Low);
 }
 
 public db_updateStat(client) 
@@ -590,7 +833,7 @@ public RecalcPlayerRank(client, String:steamid[128])
 	{
 		decl String:szQuery[255];
 		decl String:szsteamid[128*2+1];
-		SQL_QuoteString(g_hDb, steamid, szsteamid, 128*2+1);    
+		SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);    
 		Format(g_pr_szSteamID[i], 32, "%s", steamid); 	
 		Format(szQuery, 255, sql_selectPlayerName, szsteamid); 
 		new Handle:pack = CreateDataPack();
@@ -683,7 +926,7 @@ public sql_selectRankedPlayerCallback(Handle:owner, Handle:hndl, const String:er
 			decl String:szUName[MAX_NAME_LENGTH];
 			GetClientName(client, szUName, MAX_NAME_LENGTH);
 			decl String:szName[MAX_NAME_LENGTH*2+1];      
-			SQL_QuoteString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
+			SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
 			Format(szQuery, 255, sql_insertPlayerRank, szSteamId, szName,g_szCountry[client]); 
 			SQL_TQuery(g_hDb, SQL_InsertPlayerCallBack, szQuery, client, DBPrio_Low);
 			g_pr_multiplier[client] = 0;
@@ -739,7 +982,7 @@ public db_viewPlayerPointsCallback(Handle:owner, Handle:hndl, const String:error
 			else
 				return;			
 			decl String:szName[MAX_NAME_LENGTH*2+1];      
-			SQL_QuoteString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);	
+			SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);	
 			Format(szQuery, 512, sql_insertPlayerRank, g_szSteamID[client], szName,g_szCountry[client]); 
 			SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);
 			db_GetPlayerRank(client);
@@ -751,14 +994,14 @@ public db_resetPlayerRecords(client, String:steamid[128])
 {
 	decl String:szQuery[255];    
 	decl String:szsteamid[128*2+1];
-	SQL_QuoteString(g_hDb, steamid, szsteamid, 128*2+1);   	
+	SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);   	
 	Format(szQuery, 255, sql_resetRecords, szsteamid);       
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery);	        
 	PrintToConsole(client, "map times of %s cleared.", szsteamid);
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackString(pack, steamid);	
-	SQL_TQuery(g_hDb, SQL_CheckCallback3, "UPDATE playerrank SET multiplier ='0'", pack);
+	SQL_TQuery(g_hDb, SQL_CheckCallback3, "UPDATE ck_playerrank SET multiplier ='0'", pack);
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i))
@@ -786,7 +1029,7 @@ public db_dropPlayerRanks(client)
 
 public db_dropPlayer(client)
 {
-	SQL_TQuery(g_hDb, sql_selectMutliplierCallback, "UPDATE playerrank SET multiplier ='0'", client);
+	SQL_TQuery(g_hDb, sql_selectMutliplierCallback, "UPDATE ck_playerrank SET multiplier ='0'", client);
 	SQL_LockDatabase(g_hDb);
 	if(g_DbType == MYSQL)
 		SQL_FastQuery(g_hDb, sql_dropPlayer);
@@ -1103,7 +1346,12 @@ public SQL_ViewRankedPlayerCallback5(Handle:owner, Handle:hndl, const String:err
 			
 	new Handle:menu = CreateMenu(ProfileMenuHandler);
 	SetMenuTitle(menu, szTitle);
-	AddMenuItem(menu, "Current map time", "Current map time");
+
+	if (g_mapZonesTypeCount[3]>0 && g_fPersonalRecordBonus[client]>0.0)	
+		AddMenuItem(menu, "Current Map & Bonus time", "Current Map & Bonus time");			
+	else
+        AddMenuItem(menu, "Current Map time", "Current Map time");
+
 	AddMenuItem(menu, "Challenge history", "Challenge history");
 	AddMenuItem(menu, "Finished maps", "Finished maps");
 	if (IsValidClient(client))
@@ -1162,7 +1410,7 @@ public db_viewPlayerAll2(client, String:szPlayerName[MAX_NAME_LENGTH])
 {
 	decl String:szQuery[512];
 	decl String:szName[MAX_NAME_LENGTH*2+1];
-	SQL_QuoteString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
+	SQL_EscapeString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
 	Format(szQuery, 512, sql_selectPlayerRankAll, PERCENT,szName,PERCENT);
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -1207,7 +1455,7 @@ public db_viewPlayerAll(client, String:szPlayerName[MAX_NAME_LENGTH])
 {
 	decl String:szQuery[512];
 	decl String:szName[MAX_NAME_LENGTH*2+1];
-	SQL_QuoteString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
+	SQL_EscapeString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
 	Format(szQuery, 512, sql_selectPlayerRankAll, PERCENT,szName,PERCENT);
 	SQL_TQuery(g_hDb, SQL_ViewPlayerAllCallback, szQuery, client,DBPrio_Low);
 }
@@ -1414,7 +1662,7 @@ public db_resetPlayerResetChallenges(client, String:steamid[128])
 {
 	decl String:szQuery[255];
 	decl String:szsteamid[128*2+1];
-	SQL_QuoteString(g_hDb, steamid, szsteamid, 128*2+1);        
+	SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);        
 	Format(szQuery, 255, sql_deleteChallenges, szsteamid);       
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -1425,7 +1673,7 @@ public db_resetPlayerResetChallenges(client, String:steamid[128])
 
 public db_dropChallenges(client)
 {
-	SQL_TQuery(g_hDb, SQL_CheckCallback, "UPDATE playerrank SET winratio = '0',pointsratio = '0'", client);
+	SQL_TQuery(g_hDb, SQL_CheckCallback, "UPDATE ck_playerrank SET winratio = '0',pointsratio = '0'", client);
 	SQL_LockDatabase(g_hDb);
 	if(g_DbType == MYSQL)
 		SQL_FastQuery(g_hDb, sql_dropChallenges);
@@ -1587,9 +1835,9 @@ public sql_selectChallengesCallback(Handle:owner, Handle:hndl, const String:erro
 			//Query
 			decl String:szQuery[512];
 			if (WinnerTarget==1)
-				Format(szQuery, 512, "select name from playerrank where steamid = '%s'", szSteamId2);
+				Format(szQuery, 512, "select name from ck_playerrank where steamid = '%s'", szSteamId2);
 			else
-				Format(szQuery, 512, "select name from playerrank where steamid = '%s'", szSteamId);
+				Format(szQuery, 512, "select name from ck_playerrank where steamid = '%s'", szSteamId);
 			SQL_TQuery(g_hDb, sql_selectChallengesCallback2, szQuery, pack2,DBPrio_Low);						
 		}
 	}
@@ -1793,7 +2041,7 @@ public db_resetPlayerMapRecord(client, String:steamid[128], String:szMapName[128
 	decl String:szQuery[255];      
 	decl String:szsteamid[128*2+1];
 	
-	SQL_QuoteString(g_hDb, steamid, szsteamid, 128*2+1);      
+	SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);      
 	Format(szQuery, 255, sql_resetRecordPro, szsteamid, szMapName);   
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -1823,7 +2071,7 @@ public db_resetPlayerRecords2(client, String:steamid[128], String:szMapName[128]
 	decl String:szQuery[255];      
 	decl String:szsteamid[128*2+1];
 	
-	SQL_QuoteString(g_hDb, steamid, szsteamid, 128*2+1);      
+	SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);      
 	Format(szQuery, 255, sql_resetRecords2, szsteamid, szMapName); 
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -2043,9 +2291,15 @@ public db_updateRecordPro(client)
 	else
 		return;   
 	decl String:szName[MAX_NAME_LENGTH*2+1];
-	SQL_QuoteString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
+	SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
 	Format(szQuery, 1024, sql_updateRecordPro, szUName, g_fFinalTime[client], g_szSteamID[client], g_szMapName);
-	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery,client,DBPrio_Low);
+
+	new Handle:pack = CreateDataPack();
+	WritePackFloat(pack, g_fFinalTime[client]);
+	WritePackCell(pack, client);
+
+
+	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery, pack, DBPrio_Low);
 	FormatTimeFloat(client, g_fFinalTime[client], 3, g_szPersonalRecord[client], 32);
 	g_fPersonalRecord[client] = g_fFinalTime[client];
 }
@@ -2058,10 +2312,45 @@ public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error
 		return;
 	}
 
+	new Handle:pack = data;
+	ResetPack(pack);
+	new Float:time = ReadPackFloat(pack);
+	new client = ReadPackCell(pack);
+	CloseHandle(pack);
+
+	decl String:szQuery[512];
+	Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, time);
+	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
+}
+
+public SQL_UpdateRecordProCallback2(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback2): %s", error);
+		return;
+	}
+	new rank = 9999999;
+	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		rank = (1+SQL_GetRowCount(hndl));
+	}
+
 	new client = data;
 	g_bMapRankToChat[client]=true;
-	db_viewMapRankPro(client);
+	db_viewMapRankPro(client, rank);
 }
+
+public db_currentRunRank(client)
+{
+	if (!IsValidClient(client))
+		return;
+
+	decl String:szQuery[512];
+	Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
+	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
+}
+
 
 public db_selectRecord(client)
 {
@@ -2570,7 +2859,7 @@ public db_insertPlayer(client)
 	else
 		return;	
 	decl String:szName[MAX_NAME_LENGTH*2+1];      
-	SQL_QuoteString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
+	SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
 	Format(szQuery, 255, sql_insertPlayer, g_szSteamID[client], g_szMapName, szName); 
 	SQL_TQuery(g_hDb, SQL_InsertPlayerCallback, szQuery,client,DBPrio_Low);
 }
@@ -2609,7 +2898,7 @@ public SQL_selectPersonalRecordsCallback(Handle:owner, Handle:hndl, const String
 		if (g_fPersonalRecord[client]>0.0)
 		{
 			FormatTimeFloat(client, g_fPersonalRecord[client], 3, g_szPersonalRecord[client], 32);
-			db_viewMapRankPro(client);
+			db_viewMapRankPro(client, 1);
 		}
 		else
 		{
@@ -2931,6 +3220,36 @@ public db_deleteMapButtons(String:szMapName[128])
 //// Checkpoints //////
 ///////////////////////
 
+
+
+public db_viewRecordCheckpoints()
+{
+	for (new i = 0; i < 20; i++)
+		g_fCheckpointServerRecord[i] = 0.0;
+	
+	decl String:szQuery[512];
+	Format(szQuery, 512, sql_selectRecordCheckpoints, g_szMapName, g_szMapName);
+	SQL_TQuery(g_hDb, sql_selectRecordCheckpointsCallback, szQuery, 1, DBPrio_Low);
+}
+
+public sql_selectRecordCheckpointsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (sql_selectRecordCheckpointsCallback): %s", error);
+		return;
+	}
+
+	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		new k = 2;
+		for (new i = 0; i < 20; i++) {
+			g_fCheckpointServerRecord[i] = SQL_FetchFloat(hndl, k);
+			k++;
+		}
+	}	
+}
+
 public db_viewCheckpoints(client, String:szSteamID[32], String:szMapName[128])
 {
 	decl String:szQuery[1024];
@@ -3034,6 +3353,32 @@ public SQL_deleteCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 //////////////////////
 //// MapTier /////////
 //////////////////////
+
+public db_insertMapTier(tier)
+{
+	decl String:szQuery[256];
+	if (g_bTierFound)
+	{
+		Format(szQuery, 256, sql_updatemaptier, tier, g_szMapName);
+		SQL_TQuery(g_hDb, db_insertMapTierCallback, szQuery, 1, DBPrio_Low);
+	}
+	else
+	{
+		Format(szQuery, 256, sql_insertmaptier, g_szMapName, tier);
+		SQL_TQuery(g_hDb, db_insertMapTierCallback, szQuery, 1, DBPrio_Low);
+	}
+}
+
+public db_insertMapTierCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (db_insertMapTier): %s", error);
+		return;
+	}
+
+	db_selectMapTier();
+}
 
 public db_selectMapTier()
 {
@@ -3258,16 +3603,22 @@ public db_viewBonusTotalCount()
 	SQL_TQuery(g_hDb, SQL_selectBonusTotalCountCallback, szQuery, 1, DBPrio_Low);
 }
 	
-public db_insertBonus(client, String:szSteamId[32], String:szName[32], Float:FinalTime)
+public db_insertBonus(client, String:szSteamId[32], String:szUName[32], Float:FinalTime)
 {
 	decl String:szQuery[1024];
+	decl String:szName[MAX_NAME_LENGTH*2+1];
+	SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
+
 	Format(szQuery, 1024, sql_insertBonus, szSteamId, szName, g_szMapName, FinalTime);
 	SQL_TQuery(g_hDb, SQL_insertBonusCallback, szQuery, client, DBPrio_Low);
 }
 
-public db_updateBonus(client, String:szSteamId[32], String:szName[32], Float:FinalTime)
+public db_updateBonus(client, String:szSteamId[32], String:szUName[32], Float:FinalTime)
 {
 	decl String:szQuery[1024];
+	decl String:szName[MAX_NAME_LENGTH*2+1];
+	SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
+	
 	Format(szQuery, 1024, sql_updateBonus, FinalTime, szName, szSteamId, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_updateBonusCallback, szQuery, client, DBPrio_Low);
 }
@@ -3446,7 +3797,6 @@ public db_deleteAllZones(client)
 {
 	decl String:szQuery[128];
 	Format(szQuery, 128, sql_deleteAllZones);
-	PrintToChatAll("db_deleteAllZones");
 	SQL_TQuery(g_hDb, SQL_deleteAllZonesCallback, szQuery, client, DBPrio_Low);
 }
 
@@ -3458,7 +3808,6 @@ public SQL_deleteAllZonesCallback(Handle:owner, Handle:hndl, const String:error[
 		return;
 	}
 
-	PrintToChatAll("Callback");
 	new client = data;
 	Admin_InsertZonestoDatabase(client);
 }
@@ -3755,7 +4104,7 @@ public db_insertLastPosition(client, String:szMapName[128])
 		WritePackString(pack, szMapName);
 		WritePackString(pack, g_szSteamID[client]);
 		decl String:szQuery[512]; 
-		Format(szQuery, 512, "SELECT * FROM playertmp WHERE steamid = '%s'",g_szSteamID[client]);
+		Format(szQuery, 512, "SELECT * FROM ck_playertemp WHERE steamid = '%s'",g_szSteamID[client]);
 		SQL_TQuery(g_hDb,db_insertLastPositionCallback,szQuery,pack,DBPrio_Low);
 	}
 }
@@ -3804,7 +4153,7 @@ public db_insertLastPositionCallback(Handle:owner, Handle:hndl, const String:err
 public db_deletePlayerTmps()
 {	 
 	decl String:szQuery[64]; 
-	Format(szQuery, 64, "delete FROM playertmp");
+	Format(szQuery, 64, "delete FROM ck_playertemp");
 	SQL_TQuery(g_hDb,SQL_CheckCallback,szQuery,DBPrio_Low);	
 }
 
@@ -3885,7 +4234,7 @@ public GetDBNameCallback(Handle:owner, Handle:hndl, const String:error[], any:da
 public db_CalcAvgRunTime()
 {
 	decl String:szQuery[256];  
-	Format(szQuery, 256, "select runtimepro from playertimes where mapname = '%s'", g_szMapName);
+	Format(szQuery, 256, "select runtimepro from ck_playertimes where mapname = '%s'", g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunTimeCallback, szQuery, DBPrio_Low);
 }
 
@@ -3925,7 +4274,7 @@ public db_GetDynamicTimelimit()
 	if (!g_bDynamicTimelimit)
 		return;
 	decl String:szQuery[256];  
-	Format(szQuery, 256, "select runtimepro from playertimes where mapname = '%s'", g_szMapName);
+	Format(szQuery, 256, "select runtimepro from ck_playertimes where mapname = '%s'", g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_GetDynamicTimelimitCallback, szQuery, DBPrio_Low);
 }
 
@@ -4052,9 +4401,9 @@ public sql_CountRankedPlayers2Callback(Handle:owner, Handle:hndl, const String:e
 public db_ClearLatestRecords()
 {
 	if(g_DbType == MYSQL)
-		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM LatestRecords WHERE date < NOW() - INTERVAL 1 WEEK", DBPrio_Low);
+		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_latestrecords WHERE date < NOW() - INTERVAL 1 WEEK", DBPrio_Low);
 	else
-		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM LatestRecords WHERE date <= date('now','-7 day')", DBPrio_Low);
+		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_latestrecords WHERE date <= date('now','-7 day')", DBPrio_Low);
 }
 
 public db_viewUnfinishedMaps(client, String:szSteamId[32])
@@ -4067,7 +4416,9 @@ public db_viewUnfinishedMaps(client, String:szSteamId[32])
 		Format(szQuery, 1024, sql_selectRecord, szSteamId, map);  
 		new Handle:pack = CreateDataPack();			
 		WritePackString(pack, map);
+		WritePackString(pack, szSteamId);
 		WritePackCell(pack, client);
+
 		SQL_TQuery(g_hDb, db_viewUnfinishedMapsCallback, szQuery, pack,DBPrio_Low);
 	}	
 	if (IsValidClient(client))
@@ -4095,19 +4446,111 @@ public db_viewUnfinishedMapsCallback(Handle:owner, Handle:hndl, const String:err
 	ResetPack(pack);
 	decl String:szMap[128];
 	ReadPackString(pack, szMap, 128);
-	new client = ReadPackCell(pack);
-	new Float:protime;
-	CloseHandle(pack);
+	decl String:szSteamId[128];
+	ReadPackString(pack, szSteamId, 128);
+	//new client = ReadPackCell(pack);
+
+	new Float:maptime = -1.0;
+	//CloseHandle(pack);
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		protime = SQL_FetchFloat(hndl, 1);
-		if (protime <= 0.0)
-			PrintToConsole(client, "%s ",szMap);
+		maptime = SQL_FetchFloat(hndl, 1);
+		//if (protime <= 0.0)
+		//	PrintToConsole(client, "%s ",szMap);
 	}
-	else
+
+	WritePackFloat(pack, maptime);
+
+	decl String:szQuery[1024];
+	Format(szQuery, 1024, sql_selectBonusCount, szMap);
+	SQL_TQuery(g_hDb, SQL_viewUnfinishedBonusesCallback, szQuery, pack, DBPrio_Low);
+
+	/*else
 	{
 		if (IsValidClient(client))
 			PrintToConsole(client, "%s \n",szMap);
+	}*/
+}
+
+public SQL_viewUnfinishedBonusesCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_viewUnfinishedBonusesCallback): %s", error);
+		return;
+	}
+	new Handle:pack = data;
+	ResetPack(pack);
+	decl String:szMap[128];
+	ReadPackString(pack, szMap, 128);
+	decl String:szSteamId[128];
+	ReadPackString(pack, szSteamId, 128);
+
+	if(SQL_HasResultSet(hndl)) // has bonus{
+	{
+		decl String:szQuery[1024];
+		Format(szQuery, sizeof(szQuery), sql_selectPersonalBonusRecords, szSteamId, szMap);
+		SQL_TQuery(g_hDb, SQL_viewUnfinishedBonusesCallback2, szQuery, pack, DBPrio_Low);
+	}
+	else // no bonus on this map, print if not finished
+	{		
+		new client = ReadPackCell(pack);
+		new Float:runtime = ReadPackFloat(pack);
+		if (runtime < 0.0 && IsValidClient(client))
+			PrintToConsole(client, "%s unfinished:\t Map", szMap);
+	}
+}
+
+public SQL_viewUnfinishedBonusesCallback2(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (SQL_viewUnfinishedBonusesCallback2): %s", error);
+		return;
+	}
+
+	new Handle:pack = data;
+	ResetPack(pack);
+	decl String:szMap[128];
+	ReadPackString(pack, szMap, 128);
+	new client = ReadPackCell(pack);
+	new Float:MapTime = ReadPackFloat(pack);
+
+	new bool:unfinished = false;
+	new Float:BonusTime = -1.0;
+	decl String:printedLine[256];
+	Format(printedLine, 256, "%s unfinished: \t", szMap);
+	CloseHandle(pack);
+
+	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl)) // has bonus
+	{
+		BonusTime = SQL_FetchFloat(hndl, 3);
+	}
+
+	if (BonusTime < 0.0 && MapTime < 0.0)
+	{
+		Format(printedLine, 256, "%s Map & Bonus", printedLine);
+		unfinished = true;
+	}
+	else 
+	{
+		if (BonusTime < 0.0)
+		{
+			Format(printedLine, 256, "%s Bonus", printedLine);
+			unfinished = true;
+		}
+		else
+		{
+			if (MapTime < 0.0)
+			{
+				Format(printedLine, 256, "%s Map", printedLine);
+				unfinished = true;
+			}
+		}
+	}
+	if(unfinished && IsValidClient(client))
+	{
+		PrintToConsole(client, printedLine);
 	}
 }
 
@@ -4115,7 +4558,7 @@ public db_viewPlayerProfile1(client, String:szPlayerName[MAX_NAME_LENGTH])
 {
 	decl String:szQuery[512];
 	decl String:szName[MAX_NAME_LENGTH*2+1];
-	SQL_QuoteString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);    
+	SQL_EscapeString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);    
 	Format(szQuery, 512, sql_selectPlayerRankAll2, szName);
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -4146,7 +4589,7 @@ public SQL_ViewPlayerProfile1Callback(Handle:owner, Handle:hndl, const String:er
 	{
 		decl String:szQuery[512];
 		decl String:szName[MAX_NAME_LENGTH*2+1];
-		SQL_QuoteString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
+		SQL_EscapeString(g_hDb, szPlayerName, szName, MAX_NAME_LENGTH*2+1);      
 		Format(szQuery, 512, sql_selectPlayerRankAll, PERCENT,szName,PERCENT);
 		SQL_TQuery(g_hDb, SQL_ViewPlayerProfile2Callback, szQuery, client,DBPrio_Low);		
 	}
@@ -4265,11 +4708,11 @@ public db_Cleanup()
 	decl String:szQuery[255];
 	
 	//tmps
-	Format(szQuery, 255, "DELETE FROM playertmp where mapname != '%s'", g_szMapName);
+	Format(szQuery, 255, "DELETE FROM ck_playertemp where mapname != '%s'", g_szMapName);
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery);
 	
 	//times
-	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM playertimes where runtimepro = -1.0");
+	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_playertimes where runtimepro = -1.0");
 }
 
 public db_dropMap(client)

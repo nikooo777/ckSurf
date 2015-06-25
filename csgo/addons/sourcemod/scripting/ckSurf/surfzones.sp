@@ -143,17 +143,27 @@ StartTouch(client, action[])
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 		if (action[0] == 1) 						// Start
 		{	
-			if (iSpeedCapType == 2) { 
- 				if (!bClientInStartZone[client]) { 
- 					bClientInStartZone[client] = true; 
- 				} 
- 				LimitSpeed(client, 0); 
- 			} 
-			g_bBonusTimer[client] = false;
-			g_Stage[client] = 1;
-			Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
-			Client_Stop(client, 0);
-			lastCheckpoint[client] = 999;
+			if (g_Stage[client] == 1 && g_bCheckpointMode[client])
+ 				Command_goToPlayerCheckpoint(client, 1);
+ 			else
+ 			{
+				if (iSpeedCapType == 2) { 
+	 				if (!bClientInStartZone[client]) { 
+	 					bClientInStartZone[client] = true; 
+	 				} 
+	 				LimitSpeed(client, 0); 
+	 			}
+
+	 			
+
+				g_bBonusTimer[client] = false;
+				g_Stage[client] = 1;
+				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
+				Client_Stop(client, 0);
+
+
+				lastCheckpoint[client] = 999;
+			}
 		} 
 		else if (action[0] == 2) 					// End
 		{
@@ -163,23 +173,33 @@ StartTouch(client, action[])
 			{
 				Client_Stop(client, 0);
 				g_bBonusTimer[client] = false;
-			}  
+			} 
+			if (g_bCheckpointMode[client])
+				Command_normalMode(client, 1);
+			clearPlayerCheckPoints(client);
 			lastCheckpoint[client] = 999;
 		} 
 		else if (action[0] == 5) 					// Stage
 		{
-			g_bValidRun[client] = false;
-			if (g_bBonusTimer[client])
+			if (g_Stage[client] == (action[1]+2) && g_bCheckpointMode[client])
+				Command_goToPlayerCheckpoint(client, 1);
+			else
 			{
-				Client_Stop(client, 0);
-				g_bBonusTimer[client] = false;
-			}
-			g_Stage[client] = (action[1]+2);
-			Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
-			if (action[1] != lastCheckpoint[client]) 
-			{
-				Checkpoint(client, action[1]);
-				lastCheckpoint[client] = action[1];
+				g_bValidRun[client] = false;
+				if (g_bBonusTimer[client])
+				{
+					Client_Stop(client, 0);
+					g_bBonusTimer[client] = false;
+				}
+
+
+				g_Stage[client] = (action[1]+2);
+				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
+				if (action[1] != lastCheckpoint[client]) 
+				{
+					Checkpoint(client, action[1]);
+					lastCheckpoint[client] = action[1];
+				}
 			}
 		} 
 		else if (action[0] == 6) 					// Checkpoint
@@ -192,23 +212,34 @@ StartTouch(client, action[])
 		}
 		else if (action[0] == 7)					// Speed
 		{
-			if (iSpeedCapType == 2) {
-				if (!bClientInSpeedZone[client]) {
-					bClientInSpeedZone[client] = true;
+			if (g_Stage[client] == 1 && g_bCheckpointMode[client])
+ 				Command_goToPlayerCheckpoint(client, 1);
+			else
+			{
+				if (iSpeedCapType == 2) {
+					if (!bClientInSpeedZone[client]) {
+						bClientInSpeedZone[client] = true;
+					}
+					LimitSpeed(client, 1);
 				}
-				LimitSpeed(client, 1);
+
+				g_bBonusTimer[client] = false;
+				g_Stage[client] = 1;
+				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
+				Client_Stop(client, 0);
+				lastCheckpoint[client] = 999;
 			}
-			g_bBonusTimer[client] = false;
-			g_Stage[client] = 1;
-			Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
-			Client_Stop(client, 0);
-			lastCheckpoint[client] = 999;
 		} 
 		else if (action[0] == 3)					// BonusStart
 		{
-			Client_Stop(client, 0);
-			g_Stage[client] = 999;
-			lastCheckpoint[client] = 999;
+			if (g_Stage[client] == 999 && g_bCheckpointMode[client])
+ 				Command_goToPlayerCheckpoint(client, 1);
+ 			else	
+ 			{
+				Client_Stop(client, 0);
+				g_Stage[client] = 999;
+				lastCheckpoint[client] = 999;
+			}
 		}
 		else if (action[0] == 4)					// BonusEnd
 		{
@@ -216,6 +247,11 @@ StartTouch(client, action[])
 				CL_OnEndTimerPress(client);	
 			else
 				Client_Stop(client, 0);
+
+			if (g_bCheckpointMode[client])
+				Command_normalMode(client, 1);
+				
+			clearPlayerCheckPoints(client);
 			lastCheckpoint[client] = 999;
 		}
 		else if (action[0] == 0)					// Stop
@@ -251,44 +287,64 @@ EndTouch(client, action[])
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 		if (action[0] == 1) 						// Start
 		{
-			if (iSpeedCapType == 1) {
-				LimitSpeed(client, 0);
-			} else if (iSpeedCapType == 2) {
-				if (bClientInStartZone[client]) {
-					LimitSpeed(client, 0);
-					bClientInStartZone[client] = false;
+			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
+				CL_OnStartTimerPress(client);
+			else
+				if (!g_bCheckpointMode[client])
+				{
+					CL_OnStartTimerPress(client);
+			
+					if (iSpeedCapType == 1) {
+						LimitSpeed(client, 0);
+					} else if (iSpeedCapType == 2) {
+						if (bClientInStartZone[client]) {
+							LimitSpeed(client, 0);
+							bClientInStartZone[client] = false;
+						}
+					}
+					if (bSoundEnabled) {
+						EmitSoundToClient(client,sSoundPath);
+					}
+					g_Stage[client] = 1;
+					g_bValidRun[client] = false;
 				}
-			}
-			if (bSoundEnabled) {
-				EmitSoundToClient(client,sSoundPath);
-			}
-			g_Stage[client] = 1;
-			g_bValidRun[client] = false;
-			CL_OnStartTimerPress(client);
 		} 
 		else if (action[0] == 7) 					// Speed
 		{
-			if (iSpeedCapType == 1) {
-				LimitSpeed(client, 1);
-			} else if (iSpeedCapType == 2) {
-				if (bClientInSpeedZone[client]) {
-					bClientInSpeedZone[client] = false;
+			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
+				CL_OnStartTimerPress(client);
+			else
+				if (!g_bCheckpointMode[client])
+				{
+					CL_OnStartTimerPress(client);
+			
+					if (iSpeedCapType == 1) {
+						LimitSpeed(client, 1);
+					} else if (iSpeedCapType == 2) {
+						if (bClientInSpeedZone[client]) {
+							bClientInSpeedZone[client] = false;
+						}
+					} 
+					if (bSoundEnabled)
+						EmitSoundToClient(client,sSoundPath);
+					g_bValidRun[client] = false;
 				}
-			} 
-			if (bSoundEnabled)
-				EmitSoundToClient(client,sSoundPath);
-
-			g_bValidRun[client] = false;
-			CL_OnStartTimerPress(client);
 		} 
 		else if (action[0] == 3)					// BonusStart
 		{
-			if (bSoundEnabled)
-				EmitSoundToClient(client, sSoundPath);
 
-			g_bValidRun[client] = false;
-			g_bBonusTimer[client] = true;
-			CL_OnStartTimerPress(client);
+			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
+				CL_OnStartTimerPress(client);
+			else
+				if (!g_bCheckpointMode[client])
+				{
+					CL_OnStartTimerPress(client);
+					if (bSoundEnabled)
+						EmitSoundToClient(client, sSoundPath);
+
+					g_bValidRun[client] = false;
+					g_bBonusTimer[client] = true;
+				}
 		}
 	}
 }

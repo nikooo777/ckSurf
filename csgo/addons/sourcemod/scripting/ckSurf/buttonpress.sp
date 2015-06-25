@@ -229,8 +229,21 @@ public CL_OnEndTimerPress(client)
 	new String:szDiff[54];
 	new Float:diff;	
 
+	// If used teleports
+	if(g_bCheckpointMode[client])
+	{
+		if(g_bBonusTimer[client])
+			PrintToChat(client, "[%cCK%c] %c%s %cfinished the bonus with a time of [%c%s%c] using teleports!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
+		else
+			PrintToChat(client, "[%cCK%c] %c%s %cfinished the map with a time of [%c%s%c] using teleports!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
+	
+		return;
+	}
+
 	if (!g_bBonusTimer[client])
 	{
+		CS_SetClientAssists(client, 100);
+
 		if (g_fPersonalRecord[client] > 0.0)
 		{
 			hasRecord=true;
@@ -275,7 +288,7 @@ public CL_OnEndTimerPress(client)
 			}
 		}
 		
-		//NEW PRO RECORD
+		//NEW MAP RECORD
 		if((g_fFinalTime[client] < g_fRecordMapTime))
 		{
 			if (g_FinishingType[client] != 3 && g_FinishingType[client] != 4 && g_FinishingType[client] != 5)
@@ -291,7 +304,13 @@ public CL_OnEndTimerPress(client)
 				g_bNewReplay[client]=true;
 				CreateTimer(3.0, ReplayTimer, client,TIMER_FLAG_NO_MAPCHANGE);
 			}
-			db_InsertLatestRecords(g_szSteamID[client], szName, g_fFinalTime[client]);	
+			db_InsertLatestRecords(g_szSteamID[client], szName, g_fFinalTime[client]);
+			
+			// Update Checkpoints
+			for (new i = 0; i < 20; i++) 
+			{
+				g_fCheckpointServerRecord[i] = g_fCheckpointTimesNew[client][i];
+			}
 		} 
 		
 		if (newbest && g_Sound_Type[client] == -1)
@@ -393,7 +412,7 @@ public CL_OnEndTimerPress(client)
 		}
 		else
 		{
-			db_viewMapRankPro(client);
+			db_currentRunRank(client);
 		}
 		db_deleteTmp(client);
 	} 

@@ -19,8 +19,8 @@
 #include <mapchooser>
 #include <ckSurf>
 
-#define VERSION "1.05"
-#define PLUGIN_VERSION 105
+#define VERSION "1.01"
+#define PLUGIN_VERSION 101
 #define ADMIN_LEVEL ADMFLAG_UNBAN
 #define ADMIN_LEVEL2 ADMFLAG_ROOT
 #define MYSQL 0
@@ -136,6 +136,16 @@ new Float:obsTimer;
 new g_Stage[MAXPLAYERS+1];
 new tmpStage[MAXPLAYERS+1];
 
+
+/////////////////////////
+//// Spawn Locations ////
+/////////////////////////
+new Float:g_fSpawnLocation[3];
+new Float:g_fSpawnAngle[3];
+
+new bool:g_bGotSpawnLocation;
+
+
 ///////////////////
 //Bonus Variables//
 ///////////////////
@@ -158,6 +168,7 @@ new g_totalBonusCount;								// How many total bonuses there are
 ////////////////////////
 new Float:g_fCheckpointTimesRecord[MAXPLAYERS+1][20];	// Clients best run's times
 new Float:g_fCheckpointTimesNew[MAXPLAYERS+1][20];		// Clients current runs times
+new Float:g_fCheckpointServerRecord[20];
 new Float:tmpDiff[MAXPLAYERS+1];
 new lastCheckpoint[MAXPLAYERS+1];
 
@@ -208,6 +219,8 @@ new g_succesfullZoneQueries;
 new g_tierQueryNumber;
 new g_succesfullTierQueries;
 new g_totalTierQueries;
+
+new g_totalRenames;
 
 //////////////////////
 // ckSurf Variables//
@@ -349,6 +362,7 @@ new Float:g_fRecordMapTime;
 new Float:g_fStartButtonPos[3];
 new Float:g_fEndButtonPos[3];
 new Float:g_pr_finishedmaps_perc[MAX_PR_PLAYERS]; 
+new bool:g_bRenaming = false;
 new bool:g_bLateLoaded = false;
 new bool:g_bRoundEnd;
 new bool:g_bFirstStartButtonPush;
@@ -427,6 +441,20 @@ new bool:g_bLegitButtons[MAXPLAYERS+1];
 new bool:g_specToStage[MAXPLAYERS+1];
 new Float:g_fTeleLocation[MAXPLAYERS+1][3];
 new Float:g_fCurVelVec[MAXPLAYERS+1][3];
+
+// Player checkpoints
+new Float:g_fCheckpointLocation[MAXPLAYERS+1][3];
+new Float:g_fCheckpointVelocity[MAXPLAYERS+1][3];
+new Float:g_fCheckpointAngle[MAXPLAYERS+1][3];
+new Float:g_fCheckpointLocation_undo[MAXPLAYERS+1][3];
+new Float:g_fCheckpointVelocity_undo[MAXPLAYERS+1][3];
+new Float:g_fCheckpointAngle_undo[MAXPLAYERS+1][3];
+new Float:g_fLastPlayerCheckpoint[MAXPLAYERS+1];
+
+new bool:g_bCreatedTeleport[MAXPLAYERS+1];
+new bool:g_bCheckpointMode[MAXPLAYERS+1];
+
+
 new g_Beam[3];
 new g_TSpawns=-1;
 new g_CTSpawns=-1;
@@ -547,6 +575,10 @@ new bool:bClientInSpeedZone[MAXPLAYERS+1];
 // Teleport on spawn to start zone (or speed zone) stuff 
 new Handle:g_hSpawnToStartZone = INVALID_HANDLE; 
 new bool:bSpawnToStartZone; 
+
+// Min rank to announce in chat
+new Handle:g_hAnnounceRank = INVALID_HANDLE;
+new g_AnnounceRank;
 
 #include "ckSurf/misc.sp"
 #include "ckSurf/admin.sp"
@@ -746,14 +778,21 @@ public OnMapStart()
 	SetCashState();
 
 	//sql queries
-	db_GetMapRecord_Pro();
-	db_selectBonusCount();
-	db_CalculatePlayerCount();
-	db_viewMapProRankCount();
-	db_ClearLatestRecords();
-	db_GetDynamicTimelimit();
-	db_CalcAvgRunTime();
-	
+	if (!g_bRenaming)
+	{
+		db_GetMapRecord_Pro();
+		db_selectBonusCount();
+		db_CalculatePlayerCount();
+		db_viewMapProRankCount();
+		db_ClearLatestRecords();
+		db_GetDynamicTimelimit();
+		db_CalcAvgRunTime();
+		db_selectSpawnLocations();
+		db_viewRecordCheckpoints();
+		db_selectMapZones();
+		db_viewBonusTotalCount();
+		db_viewFastestBonus();
+	}
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -782,8 +821,7 @@ public OnMapStart()
 	//server infos
 	GetServerInfo();
 	
-	// Map Zones 
-	db_selectMapZones();
+
 
 	//Bots
 	LoadReplays();
@@ -865,8 +903,7 @@ public OnConfigsExecuted()
 		
 
 	//Bonus
-	db_viewBonusTotalCount();
-	db_viewFastestBonus();
+
 		
 	ServerCommand("sv_pure 0");
 }
@@ -941,18 +978,20 @@ public OnClientPutInServer(client)
 		DHookEntity(g_hTeleport, false, client);	
 			
 	//get client data
-	GetClientAuthString(client, g_szSteamID[client], 32);	
-	db_viewPlayerPoints(client);
-	db_viewPlayerOptions(client, g_szSteamID[client]);	
- 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
-	db_viewPersonalBonusRecords(client, g_szSteamID[client]); 
-	db_viewCheckpoints(client, g_szSteamID[client], g_szMapName); 
-
+	GetClientAuthString(client, g_szSteamID[client], 32);
+	if (!g_bRenaming)
+	{
+		db_viewPlayerPoints(client);
+		db_viewPlayerOptions(client, g_szSteamID[client]);	
+	 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
+		db_viewPersonalBonusRecords(client, g_szSteamID[client]); 
+		db_viewCheckpoints(client, g_szSteamID[client], g_szMapName); 
+	}
 	// ' char fix
 	FixPlayerName(client);
 	
 	//position restoring
-	if(g_bRestore)
+	if(g_bRestore && !g_bRenaming)
 		db_selectLastRun(client);		
 			
 	//console info
@@ -962,7 +1001,11 @@ public OnClientPutInServer(client)
 		PlayerSpawn(client);
 
 	if (g_bTierFound)
-		AnnounceTimer[client] = CreateTimer(30.0, AnnounceMap, client);
+		AnnounceTimer[client] = CreateTimer(30.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
+
+	//  SHow admin news message if client is admin
+	if(GetUserAdmin(client) != INVALID_ADMIN_ID)
+		CreateTimer(20.0, NewsTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public OnClientAuthorized(client)
@@ -1060,7 +1103,7 @@ public OnClientDisconnect(client)
 	g_bTmpBonusTimer[client] = g_bBonusTimer[client];
 
 	//Database	
-	if (IsValidClient(client))
+	if (IsValidClient(client) && !g_bRenaming)
 	{
 		db_insertLastPosition(client,g_szMapName);
 		db_updatePlayerOptions(client);
@@ -1557,6 +1600,9 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 	if (convar == g_hSoundPath) {
 		strcopy(sSoundPath, sizeof(sSoundPath), newValue);
 	}
+	if (convar == g_hAnnounceRank) {
+		g_AnnounceRank = StringToInt(newValue[0]);
+	}
 	if(g_hZoneTimer!= INVALID_HANDLE)
 	{
 		KillTimer(g_hZoneTimer);
@@ -1639,6 +1685,9 @@ public Action:OnEndTouch(client, entity) {
 	
 	// Make sure the entity isn't a player.
 	if (entity <= MaxClients && entity > 1)
+		return;
+
+	if (g_bCheckpointMode[client])
 		return;
 		
 	if (iSpeedCapType == 2) {
@@ -1871,6 +1920,10 @@ public OnPluginStart()
 	GetConVarString(g_hSoundPath, sSoundPath, sizeof(sSoundPath));
 	HookConVarChange(g_hSoundPath, OnSettingChanged);
 
+	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.");
+	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
+	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
+
 	db_setupDatabase();
 	
 	//client commands
@@ -1912,6 +1965,8 @@ public OnPluginStart()
 	RegConsoleCmd("sm_hide", Client_Hide, "[ckSurf] on/off - hides other players");
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");
+
+	// Teleportation commands
 	RegConsoleCmd("sm_stages", Command_SelectStage, "[ckSurf] Opens up the stage selector");
 	RegConsoleCmd("sm_r", Command_Restart, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_restart", Command_Restart, "[ckSurf] Teleports player back to the start");
@@ -1922,13 +1977,30 @@ public OnPluginStart()
 	RegConsoleCmd("sm_bonus", Command_ToBonus, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_s", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
 	RegConsoleCmd("sm_stage", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
+	
+	// MISC
 	RegConsoleCmd("sm_tier", Command_Tier, "[ckSurf] Prints information on the current map");
-	RegConsoleCmd("sm_map", Command_Tier, "[ckSurf] Prints information on the current map");
+	RegConsoleCmd("sm_mapinfo", Command_Tier, "[ckSurf] Prints information on the current map");
+	RegConsoleCmd("sm_mi", Command_Tier, "[ckSurf] Prints information on the current map");
+	RegConsoleCmd("sm_m", Command_Tier, "[ckSurf] Prints information on the current map");
 	RegConsoleCmd("sm_difficulty", Command_Tier, "[ckSurf] Prints information on the current map");
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
-	RegConsoleCmd("sm_teleport", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
+
+	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
-	RegConsoleCmd("sm_tele", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
+	RegConsoleCmd("sm_back", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
+
+	// Player Checkpoints
+	RegConsoleCmd("sm_teleport", Command_goToPlayerCheckpoint, "[ckSurf] Teleports player to his last checkpoint");
+	RegConsoleCmd("sm_tele", Command_goToPlayerCheckpoint, "[ckSurf] Teleports player to his last checkpoint");
+	RegConsoleCmd("sm_prac", Command_goToPlayerCheckpoint, "[ckSurf] Teleports player to his last checkpoint");
+	RegConsoleCmd("sm_practice", Command_goToPlayerCheckpoint, "[ckSurf] Teleports player to his last checkpoint");
+
+	RegConsoleCmd("sm_cp", Command_createPlayerCheckpoint, "[ckSurf] Creates a checkpoint, where the player can teleport back to");
+	RegConsoleCmd("sm_checkpoint", Command_createPlayerCheckpoint, "[ckSurf] Creates a checkpoint, where the player can teleport back to");
+	RegConsoleCmd("sm_undo", Command_undoPlayerCheckpoint, "[ckSurf] Undoes the players last checkpoint.");
+	RegConsoleCmd("sm_normal", Command_normalMode, "[ckSurf] Switches player back to normal mode.")
+	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode.")
 
 	RegAdminCmd("sm_ckadmin", Admin_ckPanel, ADMIN_LEVEL, "[ckSurf] Displays the ckSurf menu panel");
 	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, ADMIN_LEVEL, "[ckSurf] Recalculates player profile for given steam id");
@@ -1946,6 +2018,12 @@ public OnPluginStart()
 	RegAdminCmd("sm_insertmaptiers", Admin_InsertMapTiers, ADMIN_LEVEL2, "[ckSurf] Insert premade maptier information into the database (ONLY RUN THIS ONCE)");
 	RegAdminCmd("sm_insertmapzones", Admin_InsertMapZones, ADMIN_LEVEL2, "[ckSurf] Insert premade map zones into the database (ONLY RUN THIS ONCE)");
 	RegAdminCmd("sm_zones", Command_Zones, ADMFLAG_ROOT);
+
+	RegAdminCmd("sm_addmaptier", Admin_insertMapTier, ADMIN_LEVEL, "[ckSurf] Changes maps tier");
+	RegAdminCmd("sm_amt", Admin_insertMapTier, ADMIN_LEVEL, "[ckSurf] Changes maps tier");
+	RegAdminCmd("sm_addspawn", Admin_insertSpawnLocation, ADMIN_LEVEL, "[ckSurf] Changes the position !r takes players to");
+	RegAdminCmd("sm_delspawn", Admin_deleteSpawnLocation, ADMIN_LEVEL, "[ckSurf] Removes custom !r position");
+	RegAdminCmd("sm_clearassists", Admin_ClearAssists, ADMIN_LEVEL, "[ckSurf] Clears assist points (map progress) from all players");
 
 	//chat command listener
 	AddCommandListener(Say_Hook, "say");
