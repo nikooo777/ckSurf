@@ -41,6 +41,8 @@ Changelog
 - Updated zones. Update them with !insertmapzones.
 - Rebuilt the database with prefixes.
 - Added !mi / !m / !mapinfo to display map tier information
+- New CVar ck_min_rank_announce. Runtimes that are slower than the rank specified, don't get announced to all players on server. 0 announces all records.
+
 
 
 
