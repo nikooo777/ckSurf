@@ -2629,13 +2629,16 @@ public Checkpoint(client, zone)
 	if (checkRecord > 1.0)
 	{
 		new Float:f_srDiff = (g_fCheckpointServerRecord[zone] - time);
-		
+
 		FormatTimeFloat(client, f_srDiff, 5, sz_srDiff, 128);
 
 		if (f_srDiff > 0)
 			Format(sz_srDiff, 128, " %c(%cSR: %c-%s%c)",YELLOW, PURPLE, GREEN, sz_srDiff, YELLOW);
 		else
 			Format(sz_srDiff, 128, " %c(%cSR: %c+%s%c)",YELLOW, PURPLE, RED, sz_srDiff, YELLOW);
+
+		if (f_srDiff == (time * -1))
+			Format(sz_srDiff, 128, "");
 	}
 	else
 		Format(sz_srDiff, 128, "");
@@ -2661,7 +2664,9 @@ public Checkpoint(client, zone)
 			Format(szDiff, sizeof(szDiff), " %c-%s", GREEN, szDiff);
 		else
 			Format(szDiff, sizeof(szDiff), " %c+%s", RED,szDiff);
-
+		
+		if (diff == (time * -1))
+			Format(szDiff, 128, "");
 
 		// First checkpoint
 		if (tmpDiff[client] == 9999.0)
