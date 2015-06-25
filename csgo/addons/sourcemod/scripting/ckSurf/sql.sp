@@ -4524,7 +4524,7 @@ public SQL_viewUnfinishedBonusesCallback2(Handle:owner, Handle:hndl, const Strin
 
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl)) // has bonus
 	{
-		BonusTime = SQL_FetchFloat(hndl, 3);
+		BonusTime = SQL_FetchFloat(hndl, 0);
 	}
 
 	if (BonusTime < 0.0 && MapTime < 0.0)
