@@ -1,5 +1,5 @@
 
-ckSurf 1.5 Beta
+ckSurf 1.1
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,20 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+1.1 Release
+- Added practice mode:
+	- Create checkpoints by writing !cp and start practice mode with !prac/!practice/!tele/!teleport. This will teleport the player back to the location of the checkpoint, when ever the player uses the command again, or touches a start / stage zone.
+	- Get back to normal mode with !n/!normal
+- Checkpoints now also show the players time difference to server record, if data is available.
+- Admins can specify the point where !r spawns players by writing !addspawn (remove with !delspawn)
+- Admins can now add tier information to map in the game with !addmaptier/!amt <num>
+- Admins can now reset all players Assist scores with !clearassists
+- Updated zones. Update them with !insertmapzones.
+- Rebuilt the database with prefixes.
+- Added !mi / !m / !mapinfo to display map tier information
+
+
+
 - 1.5b
 	- Bonus bot support added!
 		- CVars: ck_bonus_bot (0/1) & ck_bonus_bot_color (R G B 0/255)
