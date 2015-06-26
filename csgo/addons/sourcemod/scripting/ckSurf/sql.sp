@@ -4298,59 +4298,51 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 
 	if(SQL_HasResultSet(hndl))
 	{
-		new rowcount = SQL_GetRowCount(hndl);
-		new i, maptimes;
-		new Float:total = 0.0,Float:time;	
+		new maptimes = 0;
+		new Float:total = 0.0,Float:time = 0.0;	
 		while (SQL_FetchRow(hndl))
-		{
-			
+		{	
 			time = SQL_FetchFloat(hndl, 0);
 			if (time > 0.0)
 			{
 				total += time;
 				maptimes++;
 			}
-			i++;
-			if (rowcount == i)
-			{
-				//requires min. 5 map times
-				if (maptimes > 5)
-				{				
-					new scale_factor = 3;
-					new avg = RoundToNearest((total) / 60.0 / float(maptimes)); 
-			
-					//scale factor
-					if (avg <= 10) 
-						scale_factor = 5;
-					if (avg <= 5) 
-						scale_factor = 8;
-					if (avg <= 3)
-						scale_factor = 10;
-					if (avg <= 2)
-						scale_factor = 12;
-					if (avg <= 1)
-						scale_factor = 14;
-
-					avg = avg * scale_factor;
-				
-					//timelimit: min 20min, max 120min
-					if (avg < 20)
-						avg = 20;
-					if (avg > 120)
-						avg = 120;
-						
-					//set timelimit
-					decl String:szTimelimit[32];
-					Format(szTimelimit,32,"mp_timelimit %i;mp_roundtime %i", avg, avg);
-					ServerCommand(szTimelimit);
-					ServerCommand("mp_restartgame 1");
-				}
-				else
-				{
-					ServerCommand("mp_timelimit 50");
-				}
-			}
 		}
+				//requires min. 5 map times
+		if (maptimes > 5)
+		{
+			new scale_factor = 3;
+			new avg = RoundToNearest((total) / 60.0 / float(maptimes)); 
+	
+			//scale factor
+			if (avg <= 10) 
+				scale_factor = 5;
+			if (avg <= 5) 
+				scale_factor = 8;
+			if (avg <= 3)
+				scale_factor = 10;
+			if (avg <= 2)
+				scale_factor = 12;
+			if (avg <= 1)
+				scale_factor = 14;
+
+			avg = avg * scale_factor;
+		
+			//timelimit: min 20min, max 120min
+			if (avg < 20)
+				avg = 20;
+			if (avg > 120)
+				avg = 120;
+				
+			//set timelimit
+			decl String:szTimelimit[32];
+			Format(szTimelimit,32,"mp_timelimit %i;mp_roundtime %i", avg, avg);
+			ServerCommand(szTimelimit);
+			ServerCommand("mp_restartgame 1");
+		}
+		else
+			ServerCommand("mp_timelimit 50");
 	}
 }
 
