@@ -4345,6 +4345,10 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 					ServerCommand(szTimelimit);
 					ServerCommand("mp_restartgame 1");
 				}
+				else
+				{
+					ServerCommand("mp_timelimit 50");
+				}
 			}
 		}
 	}
