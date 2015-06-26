@@ -2304,6 +2304,7 @@ public db_updateRecordPro(client)
 	g_fPersonalRecord[client] = g_fFinalTime[client];
 }
 
+
 public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if(hndl == INVALID_HANDLE)
@@ -2311,16 +2312,20 @@ public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error
 		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback): %s", error);
 		return;
 	}
-
+	new Float:time = -1.0;
 	new Handle:pack = data;
-	ResetPack(pack);
-	new Float:time = ReadPackFloat(pack);
-	new client = ReadPackCell(pack);
-	CloseHandle(pack);
+	if (pack != INVALID_HANDLE)
+	{
+		ResetPack(pack);
+		time = ReadPackFloat(pack);
+		new client = ReadPackCell(pack);
+		CloseHandle(pack);
+		
+		decl String:szQuery[512];
+		Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, time);
+		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
 
-	decl String:szQuery[512];
-	Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, time);
-	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
+	}
 }
 
 public SQL_UpdateRecordProCallback2(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -2385,8 +2390,13 @@ public sql_selectRecordCallback(Handle:owner, Handle:hndl, const String:error[],
 		GetClientName(client, szName, MAX_NAME_LENGTH);
 		Format(szQuery, 512, sql_insertPlayerTime, g_szSteamID[client], g_szMapName, szName, g_fFinalTime[client]);
 		FormatTimeFloat(client, g_fFinalTime[client], 3, g_szPersonalRecord[client], 32);
+		
+		new Handle:pack = CreateDataPack();
+		WritePackFloat(pack,  g_fFinalTime[client]);
+		WritePackCell(pack, client);
+
 		g_fPersonalRecord[client] = g_fFinalTime[client];
-		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery,client,DBPrio_Low);	
+		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery,pack,DBPrio_Low);	
 	}
 }
 
