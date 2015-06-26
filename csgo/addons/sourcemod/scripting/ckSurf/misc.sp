@@ -61,58 +61,6 @@ public CheckSpawnPoints()
 	}
 }
 
-
-public SetTimelimit()
-{
-	new maptimes;
-	new Float:time;
-
-	time = g_fRecordMapTime;
-	maptimes = g_MapTimesCount;
-	if (maptimes < 50)
-	{
-		ServerCommand("mp_timelimit 120");
-		ServerCommand("mp_roundtime 120");
-		ServerCommand("mp_restartgame 1");		
-		return;
-	}
-	if (time <= 180.0)
-	{
-		ServerCommand("mp_timelimit 30");
-		ServerCommand("mp_roundtime 30");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}		
-	if (time <= 300.0)
-	{
-		ServerCommand("mp_timelimit 40");
-		ServerCommand("mp_roundtime 40");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}		
-	if (time <= 600.0)
-	{
-		ServerCommand("mp_timelimit 60");
-		ServerCommand("mp_roundtime 60");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}	
-	if (time <= 1200.0)
-	{
-		ServerCommand("mp_timelimit 90");
-		ServerCommand("mp_roundtime 90");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}	
-	if (time > 1200.0)
-	{
-		ServerCommand("mp_timelimit 120");
-		ServerCommand("mp_roundtime 120");
-		ServerCommand("mp_restartgame 1");	
-		return;
-	}
-}
-
 public Action:CallAdmin_OnDrawOwnReason(client)
 {
 	g_bClientOwnReason[client] = true;

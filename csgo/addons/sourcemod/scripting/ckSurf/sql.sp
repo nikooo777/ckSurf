@@ -4300,21 +4300,14 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 	{
 		new rowcount = SQL_GetRowCount(hndl);
 		new i, maptimes;
-		new Float:total = 0.0,Float:TpTime,Float:ProTime;	
+		new Float:total = 0.0,Float:time;	
 		while (SQL_FetchRow(hndl))
 		{
 			
-			TpTime = SQL_FetchFloat(hndl, 0);
-			ProTime = SQL_FetchFloat(hndl, 1);
-			if (TpTime > 0.0 || ProTime > 0.0)
+			time = SQL_FetchFloat(hndl, 0);
+			if (time > 0.0)
 			{
-				if (TpTime > 0.0 && ProTime > 0.0)
-					total += ((TpTime+ProTime)/2);
-				else
-					if (TpTime > 0.0)
-						total += TpTime;
-					else
-						total += ProTime;
+				total += time;
 				maptimes++;
 			}
 			i++;
@@ -4324,7 +4317,7 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 				if (maptimes > 5)
 				{				
 					new scale_factor = 3;
-					new avg = RoundToNearest((total) / float(60) / float(maptimes)); ////output: x min
+					new avg = RoundToNearest((total) / 60.0 / float(maptimes)); 
 			
 					//scale factor
 					if (avg <= 10) 
@@ -4336,14 +4329,15 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 					if (avg <= 2)
 						scale_factor = 12;
 					if (avg <= 1)
-						scale_factor = 14;			
+						scale_factor = 14;
+
 					avg = avg * scale_factor;
 				
-					//timelimit: min 20min, max 180min
+					//timelimit: min 20min, max 120min
 					if (avg < 20)
 						avg = 20;
-					if (avg > 150)
-						avg = 150;
+					if (avg > 120)
+						avg = 120;
 						
 					//set timelimit
 					decl String:szTimelimit[32];
