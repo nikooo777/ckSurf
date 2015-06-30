@@ -1,8 +1,33 @@
 // timer.sp
-public Action:NewsTimer(Handle:timer, any:client)
+
+public Action:timerAfterTele(Handle:timer, any:client)
 {
-	if (IsValidClient(client))
-		PrintToChat(client, "[%cADMIN NEWS%c]: %cNew features: Teleport runs [%c!cp, !tele, !undo%c], Server Records displayed in checkpoints & admins can custom spawn !r point [%c!addspawn, !delspawn%c].", RED,WHITE,GREEN,WHITE,GREEN,WHITE,GREEN);
+    g_bTimeractivated[client] = false;
+    if (g_bToStart[client])
+    {
+		g_binBonusStartZone[client] = false;
+		g_bToStart[client] = false;
+    }
+    else
+    	if (g_bToStage[client])
+    	{
+			g_binBonusStartZone[client] = false;
+			g_binStartZone[client] = false;
+			g_binSpeedZone[client] = false;
+			g_bToStage[client] = false;
+    	}
+    	else
+    		if (g_bToBonus[client])
+	    	{
+				g_binBonusStartZone[client] = true;
+				g_bToBonus[client] = false;
+	    	}
+	    	else
+	    		if (g_bToGoto[client])
+	    		{
+
+	    			g_bToGoto[client] = false;
+				}
 }
 
 public Action:AnnounceMap(Handle:timer, any:client)
@@ -13,12 +38,15 @@ public Action:AnnounceMap(Handle:timer, any:client)
 	}
 
 	AnnounceTimer[client] = INVALID_HANDLE;
+	return Plugin_Handled;
 }
 
 public Action:RefreshAdminMenu(Handle:timer, any:client)
 {
 	if (IsValidEntity(client) && !IsFakeClient(client))
 		ckAdminMenu(client);
+
+	return Plugin_Handled;
 }
 
 public Action:SetPlayerWeapons(Handle:timer, any:client)
@@ -52,13 +80,17 @@ public Action:PlayerRanksTimer(Handle:timer)
 public Action:UpdatePlayerProfile(Handle:timer, any:client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))	
-		db_updateStat(client);	
+		db_updateStat(client);
+
+	return Plugin_Handled;
 }
 
 public Action:StartTimer(Handle:timer, any:client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))	
 		CL_OnStartTimerPress(client);
+
+	return Plugin_Handled;
 }
 
 public Action:AttackTimer(Handle:timer)
@@ -115,6 +147,8 @@ public Action:DelayedStuff(Handle:timer)
 		ServerCommand("exec sourcemod/ckSurf/main.cfg");
 	else
 		SetFailState("<ckSurf> cfg/sourcemod/ckSurf/main.cfg not found.");
+
+	return Plugin_Handled;
 }
 
 public Action:CKTimer2(Handle:timer)
@@ -168,9 +202,6 @@ public Action:CKTimer2(Handle:timer)
 	{	
 		if (!IsValidClient(i) || i == g_InfoBot)
 			continue;	
-
-		if (!IsFakeClient(i) && !g_bKickStatus[i])
-			QueryClientConVar(i, "fps_max", ConVarQueryFinished:FPSCheck, i);
 
 		//overlay check
 		if (g_bOverlay[i] && GetEngineTime()-g_fLastOverlay[i] > 5.0)
@@ -250,21 +281,6 @@ public Action:CKTimer2(Handle:timer)
 		}
 	}
 	return Plugin_Continue;
-}
-			
-public Action:CreateMapButtons(Handle:timer)
-{
-	db_selectMapButtons();
-}
-
-public Action:KickPlayer(Handle:Timer, any:client)
-{
-	if (IsValidClient(client) && !IsFakeClient(client))
-	{
-		decl String:szReason[64];
-		Format(szReason, 64, "Please set your fps_max greater than or equal to 120");		
-		KickClient(client, "%s", szReason);
-	}
 }
 
 
@@ -455,9 +471,10 @@ public Action:StartMsgTimer(Handle:timer, any:client)
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
 		
+		/* No other languages yet, so dont advert.
 		if (!g_bLanguageSelected[client])
 			PrintToChat(client, "%t", "LanguageSwitch", MOSSGREEN,WHITE,GRAY,WHITE);
-
+		*/
 		PrintMapRecords(client);	
 	}
 }

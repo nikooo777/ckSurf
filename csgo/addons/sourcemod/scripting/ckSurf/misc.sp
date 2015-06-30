@@ -61,58 +61,6 @@ public CheckSpawnPoints()
 	}
 }
 
-
-public SetTimelimit()
-{
-	new maptimes;
-	new Float:time;
-
-	time = g_fRecordMapTime;
-	maptimes = g_MapTimesCount;
-	if (maptimes < 50)
-	{
-		ServerCommand("mp_timelimit 120");
-		ServerCommand("mp_roundtime 120");
-		ServerCommand("mp_restartgame 1");		
-		return;
-	}
-	if (time <= 180.0)
-	{
-		ServerCommand("mp_timelimit 30");
-		ServerCommand("mp_roundtime 30");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}		
-	if (time <= 300.0)
-	{
-		ServerCommand("mp_timelimit 40");
-		ServerCommand("mp_roundtime 40");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}		
-	if (time <= 600.0)
-	{
-		ServerCommand("mp_timelimit 60");
-		ServerCommand("mp_roundtime 60");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}	
-	if (time <= 1200.0)
-	{
-		ServerCommand("mp_timelimit 90");
-		ServerCommand("mp_roundtime 90");
-		ServerCommand("mp_restartgame 1");		
-		return;	
-	}	
-	if (time > 1200.0)
-	{
-		ServerCommand("mp_timelimit 120");
-		ServerCommand("mp_roundtime 120");
-		ServerCommand("mp_restartgame 1");	
-		return;
-	}
-}
-
 public Action:CallAdmin_OnDrawOwnReason(client)
 {
 	g_bClientOwnReason[client] = true;
@@ -400,6 +348,12 @@ public PrintConsoleInfo(client)
 	PrintToConsole(client, "Score: How many players are lower ranked than the player. Higher number means higher rank");
 	PrintToConsole(client, "MVP Stars: Number of finished map runs on the current map");
 	PrintToConsole(client, " ");
+	PrintToConsole(client, "Practice Mode:");
+	PrintToConsole(client, "Create checkpoints with !cp / !checkpoint");
+	PrintToConsole(client, "Start practice mode with !tele / !prac");
+ 	PrintToConsole(client, "Undo failed checkpoints with !undo");
+ 	PrintToConsole(client, "Get back to normal mode with !n / !normal");
+ 	PrintToConsole(client, "");
 	PrintToConsole(client, "Skill groups:");
 	PrintToConsole(client, "%s (%ip), %s (%ip), %s (%ip), %s (%ip)",g_szSkillGroups[1],g_pr_rank_Percentage[1],g_szSkillGroups[2], g_pr_rank_Percentage[2],g_szSkillGroups[3], g_pr_rank_Percentage[3],g_szSkillGroups[4], g_pr_rank_Percentage[4]);
 	PrintToConsole(client, "%s (%ip), %s (%ip), %s (%ip), %s (%ip)",g_szSkillGroups[5], g_pr_rank_Percentage[5], g_szSkillGroups[6],g_pr_rank_Percentage[6], g_szSkillGroups[7], g_pr_rank_Percentage[7], g_szSkillGroups[8], g_pr_rank_Percentage[8]);
@@ -409,17 +363,6 @@ public PrintConsoleInfo(client)
 stock FakePrecacheSound( const String:szPath[] )
 {
 	AddToStringTable( FindStringTable( "soundprecache" ), szPath );
-}
-
-public SetStandingStartButton(client)
-{	
-	CreateButton(client,"climb_startbuttonx");
-}
-
-
-public SetStandingStopButton(client)
-{
-	CreateButton(client,"climb_endbuttonx");
 }
 
 public Action:BlockRadio(client, const String:command[], args) 
@@ -575,139 +518,6 @@ public PlayButtonSound(client)
 		}
 	}	
 }
-public DeleteButtons(client)
-{
-	decl String:classname[32];
-	Format(classname,32,"prop_physics_override");
-	for (new i; i < GetEntityCount(); i++)
-    {
-        if (IsValidEdict(i) && GetEntityClassname(i, classname, 32))
-		{
-			decl String:targetname[64];
-			GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-			if (StrEqual(targetname, "climb_startbuttonx", false) || StrEqual(targetname, "climb_endbuttonx", false))
-			{
-				if (StrEqual(targetname, "climb_startbuttonx", false))
-				{
-					g_fStartButtonPos[0] = -999999.9;
-					g_fStartButtonPos[1] = -999999.9;
-					g_fStartButtonPos[2] = -999999.9;
-				}
-				else
-				{
-					g_fEndButtonPos[0] = -999999.9;
-					g_fEndButtonPos[1] = -999999.9;
-					g_fEndButtonPos[2] = -999999.9;		
-				}
-				AcceptEntityInput(i, "Kill"); 
-				RemoveEdict(i);
-			}
-		}	
-	}
-	Format(classname,32,"env_sprite");
-	for (new i; i < GetEntityCount(); i++)
-	{
-        if (IsValidEdict(i) && GetEntityClassname(i, classname, 32))
-		{
-			decl String:targetname[64];
-			GetEntPropString(i, Prop_Data, "m_iName", targetname, sizeof(targetname));
-			if (StrEqual(targetname, "starttimersign", false) || StrEqual(targetname, "stoptimersign", false))
-			{
-				AcceptEntityInput(i, "Kill");
-				RemoveEdict(i);
-			}
-		}
-	}
-	g_bFirstEndButtonPush=true;
-	g_bFirstStartButtonPush=true;
-	//stop player times (global record fake)
-	for (new i = 1; i <= MaxClients; i++)
-	if (IsValidClient(i) && !IsFakeClient(i) && client != 67)	
-	{
-		Client_Stop(i,0);
-	}
-	if (IsValidClient(client))
-		ckAdminMenu(client);
-}
-
-public CreateButton(client,String:targetname[]) 
-{
-	if (IsValidClient(client) && IsPlayerAlive(client))
-	{
-		//location (crosshair)
-		new Float:locationPlayer[3];
-		new Float:location[3];
-		GetClientAbsOrigin(client, locationPlayer);
-		GetClientEyePosition(client, location);
-		new Float:ang[3];
-		GetClientEyeAngles(client, ang);
-		new Float:location2[3];
-		location2[0] = (location[0]+(100*((Cosine(DegToRad(ang[1]))) * (Cosine(DegToRad(ang[0]))))));
-		location2[1] = (location[1]+(100*((Sine(DegToRad(ang[1]))) * (Cosine(DegToRad(ang[0]))))));
-		ang[0] -= (2*ang[0]);
-		location2[2] = (location[2]+(100*(Sine(DegToRad(ang[0])))));
-		location2[2] = locationPlayer[2];
-	
-		new ent = CreateEntityByName("prop_physics_override");
-		if (ent != -1)
-		{  
-			DispatchKeyValue(ent, "model", "models/props/switch001.mdl");	
-			DispatchKeyValue(ent, "spawnflags", "264");
-			DispatchKeyValue(ent, "targetname",targetname);
-			DispatchSpawn(ent);  
-			ang[0] = 0.0;
-			ang[1] += 180.0;
-			TeleportEntity(ent, location2, ang, NULL_VECTOR);
-			SDKHook(ent, SDKHook_UsePost, OnUsePost);	
-			if (StrEqual(targetname, "climb_startbuttonx"))
-				PrintToChat(client,"%c[%cCK%c] Start button built!", WHITE,MOSSGREEN,WHITE);
-			else
-				PrintToChat(client,"%c[%cCK%c] Stop button built!", WHITE,MOSSGREEN,WHITE);
-			ang[1] -= 180.0;
-		}
-		new sprite = CreateEntityByName("env_sprite");
-		if(sprite != -1) 
-		{ 
-			DispatchKeyValue(sprite, "classname", "env_sprite");
-			DispatchKeyValue(sprite, "spawnflags", "1");
-			DispatchKeyValue(sprite, "scale", "0.2");
-			if (StrEqual(targetname, "climb_startbuttonx"))
-			{
-				DispatchKeyValue(sprite, "model", "materials/models/props/startkztimer.vmt"); 
-				DispatchKeyValue(sprite, "targetname", "starttimersign");
-			}
-			else
-			{
-				DispatchKeyValue(sprite, "model", "materials/models/props/stopkztimer.vmt"); 
-				DispatchKeyValue(sprite, "targetname", "stoptimersign");
-			}
-			DispatchKeyValue(sprite, "rendermode", "1");
-			DispatchKeyValue(sprite, "framerate", "0");
-			DispatchKeyValue(sprite, "HDRColorScale", "1.0");
-			DispatchKeyValue(sprite, "rendercolor", "255 255 255");
-			DispatchKeyValue(sprite, "renderamt", "255");
-			DispatchSpawn(sprite);
-			location = location2;	
-			location[2]+=95;
-			ang[0] = 0.0;
-			TeleportEntity(sprite, location, ang, NULL_VECTOR);
-		}
-		
-		if (StrEqual(targetname, "climb_startbuttonx"))
-		{
-			db_updateMapButtons(location2[0],location2[1],location2[2],ang[1],0);
-			g_fStartButtonPos = location2;
-		}
-		else
-		{
-			db_updateMapButtons(location2[0],location2[1],location2[2],ang[1],1);
-			g_fEndButtonPos =  location2;
-		}
-	}
-	else
-		PrintToChat(client, "%t", "AdminSetButton", MOSSGREEN,WHITE); 
-	ckAdminMenu(client);
-}
 
 public FixPlayerName(client)
 {
@@ -724,9 +534,50 @@ public FixPlayerName(client)
 	}
 }
 
+public LimitSpeed(client, type)
+{
+	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client))
+		return;
+	new Float:speedCap, Float:CurVelVec[3];
+	
+	// Types: 0 = StartZone, 1 = SpeedZone, 2 = BonusStart
+	switch (type)
+	{
+		case 0: speedCap = g_fStartPreSpeed;
+		case 1: speedCap = g_fSpeedPreSpeed;
+		case 2: speedCap = g_fBonusPreSpeed;
+	}
+
+	if (speedCap == 0.0)
+		return;
+
+	GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
+
+	if(CurVelVec[0] == 0.0)
+		CurVelVec[0] = 1.0;
+	if(CurVelVec[1] == 0.0)
+		CurVelVec[1] = 1.0;
+	if(CurVelVec[2] == 0.0)
+		CurVelVec[2] = 1.0;
+		
+	new Float:currentspeed = SquareRoot(Pow(CurVelVec[0],2.0)+Pow(CurVelVec[1],2.0));
+
+	if (currentspeed > speedCap)
+	{				
+		NormalizeVector(CurVelVec, CurVelVec);
+		ScaleVector(CurVelVec, speedCap);
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
+	}
+}
+
 public SetClientDefaults(client)
 {	
 	g_fLastOverlay[client] = GetEngineTime() - 5.0;	
+
+	g_binBonusStartZone[client] = false;
+	g_binStartZone[client] = false;
+	g_binSpeedZone[client] = false;
+
 	g_bProfileSelected[client]=false;
 	g_bNewReplay[client] = false;
 	g_bFirstButtonTouch[client]=true;
@@ -779,8 +630,6 @@ public SetClientDefaults(client)
 	Format(g_szCurrentStage[client], 12, "1");
 	Format(g_szPersonalRecord[client], 32, "");
 	Format(g_szPersonalRecordBonus[client], 32, "");
-	bClientInStartZone[client]=false;
-	bClientInSpeedZone[client]=false;
 	g_bValidRun[client] = false;
 	g_fMaxPercCompleted[client] = 0.0;
 
@@ -940,25 +789,6 @@ public InitPrecache()
 	FakePrecacheSound( PRO_RELATIVE_SOUND_PATH );
 	AddFileToDownloadsTable( CP_FULL_SOUND_PATH );
 	FakePrecacheSound( CP_RELATIVE_SOUND_PATH );	
-	AddFileToDownloadsTable("models/props/switch001.mdl");
-	AddFileToDownloadsTable("models/props/switch001.vvd");
-	AddFileToDownloadsTable("models/props/switch001.phy");
-	AddFileToDownloadsTable("models/props/switch001.vtx");
-	AddFileToDownloadsTable("models/props/switch001.dx90.vtx");		
-	AddFileToDownloadsTable("materials/models/props/switch.vmt");
-	AddFileToDownloadsTable("materials/models/props/switch.vtf");
-	AddFileToDownloadsTable("materials/models/props/switch001.vmt");
-	AddFileToDownloadsTable("materials/models/props/switch001.vtf");
-	AddFileToDownloadsTable("materials/models/props/switch001_normal.vmt");
-	AddFileToDownloadsTable("materials/models/props/switch001_normal.vtf");
-	AddFileToDownloadsTable("materials/models/props/switch001_lightwarp.vmt");
-	AddFileToDownloadsTable("materials/models/props/switch001_lightwarp.vtf");
-	AddFileToDownloadsTable("materials/models/props/switch001_exponent.vmt");
-	AddFileToDownloadsTable("materials/models/props/switch001_exponent.vtf");
-	AddFileToDownloadsTable("materials/models/props/startkztimer.vmt");
-	AddFileToDownloadsTable("materials/models/props/startkztimer.vtf");	
-	AddFileToDownloadsTable("materials/models/props/stopkztimer.vmt");
-	AddFileToDownloadsTable("materials/models/props/stopkztimer.vtf");
 	AddFileToDownloadsTable("materials/sprites/bluelaser1.vmt");
 	AddFileToDownloadsTable("materials/sprites/bluelaser1.vtf");
 	AddFileToDownloadsTable("materials/sprites/laser.vmt");
@@ -974,8 +804,6 @@ public InitPrecache()
 	g_Beam[0] = PrecacheModel("materials/sprites/laser.vmt", true);
 	g_Beam[1] = PrecacheModel("materials/sprites/halo01.vmt", true);
 	g_Beam[2] = PrecacheModel("materials/sprites/bluelaser1.vmt", true);
-	PrecacheModel("materials/models/props/startkztimer.vmt",true);
-	PrecacheModel("materials/models/props/stopkztimer.vmt",true);
 	PrecacheModel("models/props/switch001.mdl",true);	
 	PrecacheModel(g_sReplayBotArmModel,true);
 	PrecacheModel(g_sReplayBotPlayerModel,true);
@@ -1821,89 +1649,6 @@ public NoClipCheck(client)
 	}
 }
 
-public SpeedCap(client)
-{
-	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client))
-		return;
-	static bool:IsOnGround[MAXPLAYERS + 1]; 
-	if (g_bOnGround[client])
-	{
-		if (!IsOnGround[client])
-		{
-			IsOnGround[client] = true;    
-			decl Float:CurVelVec[3];
-			GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-			if (GetVectorLength(CurVelVec) > 3500.0)
-			{
-				
-				NormalizeVector(CurVelVec, CurVelVec);
-				ScaleVector(CurVelVec, 3500.0);
-				TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
-			}
-		}
-	}
-	else
-		IsOnGround[client] = false;	
-}
-
-public ButtonPressCheck(client, &buttons, Float: origin[3], Float:speed)
-{
-	if (IsValidClient(client) && !IsFakeClient(client) && g_LastButton[client] != IN_USE && buttons & IN_USE && ((g_fCurrentRunTime[client] > 0.1 || g_fCurrentRunTime[client] == -1.0)))
-	{
-		decl Float:diff; 
-		diff = GetEngineTime() - g_fLastTimeButtonSound[client];
-		if (diff > 0.1)
-		{
-			decl Float:dist; 
-			dist=70.0;		
-			decl  Float:distance1; 
-			distance1 = GetVectorDistance(origin, g_fStartButtonPos);
-			decl  Float: distance2;
-			distance2 = GetVectorDistance(origin, g_fEndButtonPos);
-			if (distance1 < dist && speed < 251.0 && !g_bFirstStartButtonPush)
-			{
-				new Handle:trace;
-				trace = TR_TraceRayFilterEx(origin, g_fStartButtonPos, MASK_SOLID,RayType_EndPoint,TraceFilterPlayers,client);
-				if (!TR_DidHit(trace))
-				{
-					CL_OnStartTimerPress(client);
-					g_fLastTimeButtonSound[client] = GetEngineTime();	
-				}
-				CloseHandle(trace);								
-			}
-			else
-				if (distance2 < dist  && !g_bFirstEndButtonPush)
-				{
-					new Handle:trace;
-					trace = TR_TraceRayFilterEx(origin, g_fEndButtonPos, MASK_SOLID,RayType_EndPoint,TraceFilterPlayers,client);
-					if (!TR_DidHit(trace))
-					{
-						CL_OnEndTimerPress(client);	
-						g_fLastTimeButtonSound[client] = GetEngineTime();
-					}
-					CloseHandle(trace);		
-				}
-		}
-	}		
-	else
-	{
-		if (IsValidClient(client) && IsFakeClient(client) && g_bTimeractivated[client] && g_LastButton[client] != IN_USE && buttons & IN_USE)
-		{
-			new Float: distance = GetVectorDistance(origin, g_fEndButtonPos);	
-			if (distance < 70.5  && !g_bFirstEndButtonPush)
-			{
-				new Handle:trace;
-				trace = TR_TraceRayFilterEx(origin, g_fEndButtonPos, MASK_SOLID,RayType_EndPoint,TraceFilterPlayers,client);
-				if (!TR_DidHit(trace))
-				{
-					CL_OnEndTimerPress(client);	
-					g_fLastTimeButtonSound[client] = GetEngineTime();
-				}
-				CloseHandle(trace);		
-			}			
-		}
-	}
-}
 
 public AutoBhopFunction(client,&buttons)
 {
@@ -2473,11 +2218,11 @@ public CenterHudDead(client)
 			}
 			new String:timerText[32] = "";
 			if (g_bBonusTimer[client])
-				Format(timerText, 32, "[BONUS]");
+				Format(timerText, 32, "[BONUS] ");
 			if (g_bCheckpointMode[client])
-				Format(timerText, 32, "[TELEPORT]");
+				Format(timerText, 32, "[PRACTICE] ");
 
-			PrintHintText(client,"<font face=''><font color='#75D1FF'>%s Timer:</font> %s\n<font color='#75D1FF'>Speed:</font> %.1f u/s\n%s", timerText, obsAika,g_fLastSpeed[ObservedUser],sResult);
+			PrintHintText(client,"<font face=''><font color='#75D1FF'>%sTimer:</font> %s\n<font color='#75D1FF'>Speed:</font> %.1f u/s\n%s", timerText, obsAika,g_fLastSpeed[ObservedUser],sResult);
 		}			
 	}	
 	else
@@ -2554,27 +2299,29 @@ public CenterHudAlive(client)
 		}
 
 		if (g_bBonusTimer[client])
-			Format(timerText, 32, "[BONUS]");
+			Format(timerText, 32, "[BONUS] ");
 		if (g_bCheckpointMode[client])
-			Format(timerText, 32, "[TELEPORT]");
+			Format(timerText, 32, "[PRACTICE] ");
 
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
 		{
 			if (g_bTimeractivated[client]) {
 				if (g_bPause[client]) {
-					PrintHintText(client,"<font face=''>%s Timer: <font color='#FF0000'>Paused</font>\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>%sTimer: <font color='#FF0000'>Paused</font>\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 				} else if (!g_bBonusTimer[client])
 				{
-					PrintHintText(client,"<font face=''>%s Timer: %s\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, pAika[client], g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>%sTimer: %s\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, pAika[client], g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 				} else
 				{
-					PrintHintText(client,"<font face=''>%s Timer: %s\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, pAika[client], g_szPersonalRecordBonus[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>%sTimer: %s\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, pAika[client], g_szPersonalRecordBonus[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 				}
-			} else {
-				PrintHintText(client,"<font face=''>%s Timer: <font color='#FF0000'>Stopped</font>\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
-			}
+			} else 
+				if (g_Stage[client] != 999)
+					PrintHintText(client,"<font face=''>%sTimer: <font color='#FF0000'>Stopped</font>\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, g_szRecordString[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
+				else
+					PrintHintText(client,"<font face=''>%sTimer: <font color='#FF0000'>Stopped</font>\nRecord: %s\nStage: %sSpeed: %i</font>", timerText, g_szPersonalRecordBonus[client], g_StageString[client], RoundToNearest(g_fLastSpeed[client]));			
 		}
-	}	
+	}
 }
 
 public Checkpoint(client, zone)

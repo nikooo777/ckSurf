@@ -100,10 +100,6 @@ PlayerSpawn(client)
 		return;
 	}
 	
-	//fps Check
-	QueryClientConVar(client, "fps_max", ConVarQueryFinished:FPSCheck, client);		
-	
-	
 	//change player skin
 	if (g_bPlayerSkinChange && (GetClientTeam(client) > 1))
 	{
@@ -161,7 +157,8 @@ PlayerSpawn(client)
 		}
 		else
 		{
-			TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,g_fCurVelVec[client]);
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+			TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,Float:{0.0,0.0,-100.0});
 			g_specToStage[client] = false;
 		}
 	
@@ -173,11 +170,6 @@ PlayerSpawn(client)
 			
 	//set speclist
 	Format(g_szPlayerPanelText[client], 512, "");		
-	
-	if (g_bClimbersMenuwasOpen[client] && (GetClientTeam(client) > 1))
-	{
-		g_bClimbersMenuwasOpen[client] = false;
-	}
 
 	//get speed & origin
 	g_fLastSpeed[client] = GetSpeed(client);
@@ -541,7 +533,6 @@ public Action:Event_OnRoundStart(Handle:event, const String:name[], bool:dontBro
 	}
 	
 	g_bRoundEnd=false;
-	db_selectMapButtons();
 	RefreshZones();
 	return Plugin_Continue; 
 }
@@ -572,19 +563,6 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 	return Plugin_Continue;
 }
 
-//fpscheck
-public FPSCheck(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
-{
-	if (IsValidClient(client) && !IsFakeClient(client) && !g_bKickStatus[client])
-	{
-		new fps_max = StringToInt(cvarValue);    
-		if (fps_max > 0 && fps_max < 120)
-		{
-			CreateTimer(10.0, KickPlayer, client, TIMER_FLAG_NO_MAPCHANGE);
-			g_bKickStatus[client]=true;
-		}		
-	}
-}
 
 //thx to TnTSCS (player slap stops timer)
 //https://forums.alliedmods.net/showthread.php?t=233966
@@ -618,7 +596,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		g_CurrentButton[client] = buttons;
 		GetClientAbsOrigin(client, origin);
 		GetClientEyeAngles(client, ang);		
-		//new MoveType:movetype = GetEntityMoveType(client);
+
 		speed = GetSpeed(client);		
 		if (GetEntityFlags(client) & FL_ONGROUND)
 			g_bOnGround[client]=true;
@@ -630,13 +608,22 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 
 		PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
 		RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
-		SpeedCap(client);		
 		AutoBhopFunction(client, buttons);
-		ButtonPressCheck(client, buttons, origin, speed);
 		NoClipCheck(client);
 		AttackProtection(client, buttons);
 		HookCheck(client);
-	
+
+		// If in start zone, cap speed
+		if (g_binStartZone[client])
+			LimitSpeed(client, 0);
+		else
+			if (g_binSpeedZone[client])
+				LimitSpeed(client, 1);
+			else
+				if (g_binBonusStartZone[client])
+					LimitSpeed(client, 2);
+
+
 		if (g_bOnGround[client])
 		{
 			g_bBeam[client] = false;

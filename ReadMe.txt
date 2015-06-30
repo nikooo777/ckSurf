@@ -1,5 +1,5 @@
 
-ckSurf 1.1
+ckSurf 1.11
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,18 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+
+1.11 Release
+- Added things to the ckAdmin & !help menu
+- Fixed bugs with checkpoints and SR, teleports and !addspawn
+- General optimization and bug fixes
+- Removed MapButtons
+- Reworked prespeed caps
+	- Added bonus speedcap
+	- Simply use ck_pre_start_speed, ck_pre_speed_speed and ck_pre_bonus_speed to limit prespeed on start zones.
+	- Removed prespeed type
+- Fixed !help2
+
 1.1 Release
 - Added practice mode:
 	- Create checkpoints by writing !cp and start practice mode with !prac/!practice/!tele/!teleport. This will teleport the player back to the location of the checkpoint, when ever the player uses the command again, or touches a start / stage zone.

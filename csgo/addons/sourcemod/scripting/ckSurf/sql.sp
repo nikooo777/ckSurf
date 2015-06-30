@@ -51,7 +51,7 @@ new String:sql_createCheckpoints[] 				= "CREATE TABLE IF NOT EXISTS ck_checkpoi
 new String:sql_updateCheckpoints[] 				= "UPDATE ck_checkpoints SET cp1='%f', cp2='%f', cp3='%f', cp4='%f', cp5='%f', cp6='%f', cp7='%f', cp8='%f', cp9='%f', cp10='%f', cp11='%f', cp12='%f', cp13='%f', cp14='%f', cp15='%f', cp16='%f', cp17='%f', cp18='%f', cp19='%f', cp20='%f' WHERE steamid='%s' AND mapname='%s'";
 new String:sql_insertCheckpoints[] 				= "INSERT INTO ck_checkpoints VALUES ('%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f')";
 new String:sql_selectCheckpoints[] 				= "SELECT * FROM ck_checkpoints WHERE steamid='%s' AND mapname='%s'";
-new String:sql_selectRecordCheckpoints[]		= "SELECT * FROM ck_checkpoints WHERE steamid = (SELECT steamid FROM ck_playertimes WHERE mapname = '%s' ORDER BY runtimepro DESC LIMIT 1) AND mapname = '%s'";
+new String:sql_selectRecordCheckpoints[]		= "SELECT * FROM ck_checkpoints WHERE steamid = (SELECT steamid FROM ck_playertimes WHERE mapname = '%s' ORDER BY runtimepro ASC LIMIT 1) AND mapname = '%s'";
 new String:sql_deleteCheckpoints[]				= "DELETE FROM ck_checkpoints WHERE mapname = '%s'";
 
 //TABLE LATEST 15 LOCAL RECORDS
@@ -111,17 +111,7 @@ new String:sql_updatePlayerTmp[] 				= "UPDATE ck_playertemp SET cords1 = '%f', 
 new String:sql_deletePlayerTmp[] 				= "DELETE FROM ck_playertemp where steamid = '%s';";
 new String:sql_selectPlayerTmp[] 				= "SELECT cords1,cords2,cords3, angle1, angle2, angle3,runtimeTmp, EncTickrate, BonusTimer, Stage FROM ck_playertemp WHERE steamid = '%s' AND mapname = '%s';";
 
-// TABLE MAP BUTTONS
-new String:sql_createMapButtons[] 				= "CREATE TABLE IF NOT EXISTS ck_mapbuttons (mapname VARCHAR(32), cords1Start FLOAT NOT NULL DEFAULT '-1.0', cords2Start FLOAT NOT NULL DEFAULT '-1.0', cords3Start FLOAT NOT NULL DEFAULT '-1.0', cords1End FLOAT NOT NULL DEFAULT '-1.0', cords2End FLOAT NOT NULL DEFAULT '-1.0', cords3End FLOAT NOT NULL DEFAULT '-1.0', ang_start FLOAT NOT NULL DEFAULT '-1.0', ang_end FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(mapname));";
-new String:sql_deleteMapButtons[] 				= "DELETE FROM ck_mapbuttons where mapname= '%s';";
-new String:sql_insertMapButtons[] 				= "INSERT INTO ck_mapbuttons (mapname, cords1Start, cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end) VALUES('%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f');";
-new String:sql_selectMapButtons[] 				= "SELECT cords1Start,cords2Start,cords3Start,cords1End,cords2End,cords3End,ang_start,ang_end FROM ck_mapbuttons WHERE mapname = '%s';";
-new String:sql_updateMapButtonsStart[] 			= "UPDATE ck_mapbuttons SET cords1Start ='%f', cords2Start ='%f', cords3Start ='%f', ang_start = '%f' WHERE mapname = '%s';";
-new String:sql_updateMapButtonsEnd[]			= "UPDATE ck_mapbuttons SET cords1End ='%f', cords2End ='%f', cords3End ='%f', ang_end = '%f' WHERE mapname = '%s';";
-
 // ADMIN 
-new String:sqlite_dropMap[] 					= "DROP TABLE ck_mapbuttons; VACCUM";
-new String:sql_dropMap[] 						= "DROP TABLE ck_mapbuttons;";
 new String:sqlite_dropChallenges[] 				= "DROP TABLE ck_challenges; VACCUM";
 new String:sql_dropChallenges[] 				= "DROP TABLE ck_challenges;";
 new String:sqlite_dropPlayer[] 					= "DROP TABLE ck_playertimes; VACCUM";
@@ -166,7 +156,9 @@ public db_setupDatabase()
 		
 	SQL_FastQuery(g_hDb,"SET NAMES  'utf8'");
 
-	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank LIMIT 5;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank LIMIT 5;"))
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS ck_mapbuttons");
+
+	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
 		db_renameTables();
 	else
 		if (!SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
@@ -182,7 +174,6 @@ public db_createTables()
 	SQL_FastQuery(g_hDb, sql_createPlayertimes);
 	SQL_FastQuery(g_hDb, sql_createPlayerRank);
 	SQL_FastQuery(g_hDb, sql_createChallenges);
-	SQL_FastQuery(g_hDb, sql_createMapButtons);
 	SQL_FastQuery(g_hDb, sql_createPlayerOptions);
 	SQL_FastQuery(g_hDb, sql_createLatestRecords);
 	SQL_FastQuery(g_hDb, sql_createBonus);
@@ -200,13 +191,14 @@ public db_renameTables()
 
 	SQL_LockDatabase(g_hDb);
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerjumpstats3");
-	SQL_FastQuery(g_hDb, sql_createSpawnLocations); 
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS mapbuttons");
+	SQL_FastQuery(g_hDb, sql_createSpawnLocations);
+
 	g_totalRenames = 0;
 	SQL_TQuery(g_hDb, SQL_BonusRenameCallback, "ALTER TABLE bonus RENAME TO ck_bonus;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_ChallengesRenameCallback, "ALTER TABLE challenges RENAME TO ck_challenges;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_CheckpointsRenameCallback, "ALTER TABLE checkpoints RENAME TO ck_checkpoints;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_LatestrecordsRenameCallback, "ALTER TABLE LatestRecords RENAME TO ck_latestrecords;", 1, DBPrio_Low);
-	SQL_TQuery(g_hDb, SQL_MapButtonsRenameCallback, "ALTER TABLE MapButtons RENAME TO ck_mapbuttons;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_MaptierRenameCallback, "ALTER TABLE maptier RENAME TO ck_maptier;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_PlayeroptionsRenameCallback, "ALTER TABLE playeroptions2 RENAME TO ck_playeroptions;", 1, DBPrio_Low);
 	SQL_TQuery(g_hDb, SQL_PlayerRankRenameCallback, "ALTER TABLE playerrank RENAME TO ck_playerrank;", 1, DBPrio_Low);
@@ -233,7 +225,7 @@ public SQL_ChallengesRenameCallback(Handle:owner, Handle:hndl, const String:erro
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS challenges");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 
 }
@@ -249,7 +241,7 @@ public SQL_CheckpointsRenameCallback(Handle:owner, Handle:hndl, const String:err
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS checkpoints");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_LatestrecordsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -262,22 +254,10 @@ public SQL_LatestrecordsRenameCallback(Handle:owner, Handle:hndl, const String:e
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS LatestRecords");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
-public SQL_MapButtonsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-	if(hndl == INVALID_HANDLE)
-	{
-		LogError("[ckSurf] SQL Error (SQL_MapButtonsRenameCallback): %s ", error);
-		return;
-	}
-	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS MapButtons");
 
-	g_totalRenames++;
-	if (g_totalRenames == 11)
-		db_renamingDone();
-}
 public SQL_MaptierRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if(hndl == INVALID_HANDLE)
@@ -288,7 +268,7 @@ public SQL_MaptierRenameCallback(Handle:owner, Handle:hndl, const String:error[]
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS maptier");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_PlayeroptionsRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -301,7 +281,7 @@ public SQL_PlayeroptionsRenameCallback(Handle:owner, Handle:hndl, const String:e
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playeroptions2");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_PlayerRankRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -314,7 +294,7 @@ public SQL_PlayerRankRenameCallback(Handle:owner, Handle:hndl, const String:erro
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerrank");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_BonusRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -327,7 +307,7 @@ public SQL_BonusRenameCallback(Handle:owner, Handle:hndl, const String:error[], 
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS bonus");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_PlayertimesRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -340,7 +320,7 @@ public SQL_PlayertimesRenameCallback(Handle:owner, Handle:hndl, const String:err
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playertimes");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 
@@ -354,7 +334,7 @@ public SQL_PlayertmpRenameCallback(Handle:owner, Handle:hndl, const String:error
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playertmp");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 public SQL_ZonesRenameCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -367,7 +347,7 @@ public SQL_ZonesRenameCallback(Handle:owner, Handle:hndl, const String:error[], 
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS zones");
 
 	g_totalRenames++;
-	if (g_totalRenames == 11)
+	if (g_totalRenames == 10)
 		db_renamingDone();
 }
 
@@ -2311,16 +2291,20 @@ public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error
 		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback): %s", error);
 		return;
 	}
-
+	new Float:time = -1.0;
 	new Handle:pack = data;
-	ResetPack(pack);
-	new Float:time = ReadPackFloat(pack);
-	new client = ReadPackCell(pack);
-	CloseHandle(pack);
+	if (pack != INVALID_HANDLE)
+	{
+		ResetPack(pack);
+		time = ReadPackFloat(pack);
+		new client = ReadPackCell(pack);
+		CloseHandle(pack);
+		
+		decl String:szQuery[512];
+		Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, time);
+		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
 
-	decl String:szQuery[512];
-	Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, time);
-	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
+	}
 }
 
 public SQL_UpdateRecordProCallback2(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -2350,6 +2334,7 @@ public db_currentRunRank(client)
 	Format(szQuery, 512, "SELECT runtimepro FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
 	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
 }
+
 
 
 public db_selectRecord(client)
@@ -2385,8 +2370,13 @@ public sql_selectRecordCallback(Handle:owner, Handle:hndl, const String:error[],
 		GetClientName(client, szName, MAX_NAME_LENGTH);
 		Format(szQuery, 512, sql_insertPlayerTime, g_szSteamID[client], g_szMapName, szName, g_fFinalTime[client]);
 		FormatTimeFloat(client, g_fFinalTime[client], 3, g_szPersonalRecord[client], 32);
+		
+		new Handle:pack = CreateDataPack();
+		WritePackFloat(pack,  g_fFinalTime[client]);
+		WritePackCell(pack, client);
+
 		g_fPersonalRecord[client] = g_fFinalTime[client];
-		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery,client,DBPrio_Low);	
+		SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback, szQuery,pack,DBPrio_Low);	
 	}
 }
 
@@ -3008,205 +2998,6 @@ public SQL_LastRunCallback(Handle:owner, Handle:hndl, const String:error[], any:
 		g_bTimeractivated[client] = false;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////
-//// MAP BUTTONS ///////
-////////////////////////
-
-
-public db_selectMapButtons()
-{
-	decl String:szQuery[1024];       
-	Format(szQuery, 1024, sql_selectMapButtons, g_szMapName);
-	SQL_TQuery(g_hDb, sql_ViewMapButtonsCallback, szQuery,DBPrio_Low);
-}
-
-public sql_ViewMapButtonsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-	if(hndl == INVALID_HANDLE)
-	{
-		LogError("[ckSurf] SQL Error (sql_ViewMapButtonsCallback): %s", error);
-		return;
-	}
-
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		new Float:StartCords[3];
-		new Float:CordsSprite[3];
-		new Float:EndCords[3];
-		new Float:Angs[3];
-		new Float: angstart;
-		new Float: angend;
-		Angs[0]=0.0;
-		Angs[2]=0.0;
-		StartCords[0] = SQL_FetchFloat(hndl, 0);
-		StartCords[1] = SQL_FetchFloat(hndl, 1);
-		StartCords[2] = SQL_FetchFloat(hndl, 2);
-		EndCords[0] = SQL_FetchFloat(hndl, 3);
-		EndCords[1] = SQL_FetchFloat(hndl, 4);
-		EndCords[2] = SQL_FetchFloat(hndl, 5);	
-		angstart = SQL_FetchFloat(hndl, 6);	
-		angend = SQL_FetchFloat(hndl, 7);
-
-		new Float:angstartbutton = angstart+180.0;
-		new Float:angendbutton = angend+180.0;
-		
-		//STARTBUTTON
-		if (StartCords[0] != -1.0 && StartCords[1] != -1.0 && StartCords[2] != -1.0)
-		{
-			new ent = CreateEntityByName("prop_physics_override");
-			if (ent != -1)
-			{  
-				Angs[1]=angstartbutton;
-				DispatchKeyValue(ent, "model", "models/props/switch001.mdl");
-				DispatchKeyValue(ent, "spawnflags", "264");
-				DispatchKeyValue(ent, "targetname","climb_startbuttonx");
-				DispatchSpawn(ent);   
-				TeleportEntity(ent, StartCords, Angs, NULL_VECTOR);
-				g_fStartButtonPos = StartCords;
-				SDKHook(ent, SDKHook_UsePost, OnUsePost);		
-			}
-			if (angstart != -1.0)
-			{
-				Angs[1]=angstart;
-				new spritestart = CreateEntityByName("env_sprite"); 
-				if(spritestart != -1) 
-				{ 
-					DispatchKeyValue(spritestart, "classname", "env_sprite");
-					DispatchKeyValue(spritestart, "spawnflags", "1");
-					DispatchKeyValue(spritestart, "scale", "0.2");
-					DispatchKeyValue(spritestart, "model", "materials/models/props/startcksurf.vmt"); 
-					DispatchKeyValue(spritestart, "targetname", "starttimersign");
-					DispatchKeyValue(spritestart, "rendermode", "1");
-					DispatchKeyValue(spritestart, "framerate", "0");
-					DispatchKeyValue(spritestart, "HDRColorScale", "1.0");
-					DispatchKeyValue(spritestart, "rendercolor", "255 255 255");
-					DispatchKeyValue(spritestart, "renderamt", "255");
-					DispatchSpawn(spritestart);
-					CordsSprite = StartCords;
-					CordsSprite[2]+=95;
-					TeleportEntity(spritestart, CordsSprite, Angs, NULL_VECTOR);
-				}	
-			}		
-		}
-		//ENDBUTTON
-		if (EndCords[0] != -1.0 && EndCords[1] != -1.0 && EndCords[2] != -1.0)
-		{		
-			new ent2 = CreateEntityByName("prop_physics_override");
-			if (ent2 != -1)
-			{  
-				Angs[1]=angendbutton;
-				DispatchKeyValue(ent2, "model", "models/props/switch001.mdl");
-				DispatchKeyValue(ent2, "spawnflags", "264");
-				DispatchKeyValue(ent2, "targetname","climb_endbuttonx");
-				DispatchSpawn(ent2);   
-				TeleportEntity(ent2, EndCords, Angs, NULL_VECTOR);
-				g_fEndButtonPos = EndCords;
-				SDKHook(ent2, SDKHook_UsePost, OnUsePost);		
-			}
-			if (angend != -1.0)
-			{
-				Angs[1]=angend;
-				new spritestop = CreateEntityByName("env_sprite");
-				if(spritestop != -1) 
-				{ 
-					DispatchKeyValue(spritestop, "classname", "env_sprite");
-					DispatchKeyValue(spritestop, "spawnflags", "1");
-					DispatchKeyValue(spritestop, "scale", "0.2");
-					DispatchKeyValue(spritestop, "model", "materials/models/props/stopcksurf.vmt"); 
-					DispatchKeyValue(spritestop, "targetname", "stoptimersign");
-					DispatchKeyValue(spritestop, "rendermode", "1");
-					DispatchKeyValue(spritestop, "framerate", "0");
-					DispatchKeyValue(spritestop, "HDRColorScale", "1.0");
-					DispatchKeyValue(spritestop, "rendercolor", "255 255 255");
-					DispatchKeyValue(spritestop, "renderamt", "255");	
-					DispatchSpawn(spritestop);
-					CordsSprite = EndCords;
-					CordsSprite[2]+=95;
-					TeleportEntity(spritestop, CordsSprite, Angs, NULL_VECTOR);
-				}	
-			}	
-		}
-	}
-}
-
-
-public db_updateMapButtons(Float:loc0, Float:loc1, Float:loc2, Float:ang0, index)
-{
-	decl String:szQuery[255];
-	new Handle:pack = CreateDataPack();
-	WritePackFloat(pack, loc0);
-	WritePackFloat(pack, loc1);
-	WritePackFloat(pack, loc2);
-	WritePackFloat(pack, ang0);
-	WritePackCell(pack, index);
-	Format(szQuery, 255, sql_selectMapButtons, g_szMapName);
-	SQL_TQuery(g_hDb, SQL_selectMapButtonsCallback, szQuery, pack,DBPrio_Low);
-}
-
-public SQL_selectMapButtonsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-	if(hndl == INVALID_HANDLE)
-	{
-		LogError("[ckSurf] SQL Error (SQL_selectMapButtonsCallback): %s", error);
-		return;
-	}
-
-	decl String:szQuery[512];
-	new Handle:pack = data;
-	ResetPack(pack);
-	new Float:loc0 = ReadPackFloat(pack);
-	new Float:loc1 = ReadPackFloat(pack);
-	new Float:loc2 = ReadPackFloat(pack);
-	new Float:ang0 = ReadPackFloat(pack);
-	new index = ReadPackCell(pack);
-	CloseHandle(pack);
-	
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		if (index==0)
-			Format(szQuery, 512, sql_updateMapButtonsStart, loc0,loc1,loc2,ang0, g_szMapName);
-		else
-			Format(szQuery, 512, sql_updateMapButtonsEnd, loc0,loc1,loc2,ang0, g_szMapName);
-		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);
-	}
-	else
-	{
-		if (index==0)
-			Format(szQuery, 512, sql_insertMapButtons, g_szMapName,loc0,loc1,loc2,-1.0,-1.0,-1.0,ang0,-1.0);
-		else
-			Format(szQuery, 512, sql_insertMapButtons, g_szMapName,-1.0,-1.0,-1.0,loc0,loc1,loc2,-1.0,ang0);
-		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);
-	}
-}
-
-
-public db_deleteMapButtons(String:szMapName[128])
-{
-	decl String:szQuery[256];
-	Format(szQuery, 256, sql_deleteMapButtons, g_szMapName); 
-	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);
-}
-
-
-
-
-
-
-
 
 
 
@@ -4278,6 +4069,7 @@ public db_GetDynamicTimelimit()
 	SQL_TQuery(g_hDb, SQL_db_GetDynamicTimelimitCallback, szQuery, DBPrio_Low);
 }
 
+
 public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const String:error[], any:data) 
 {   
 	if(hndl == INVALID_HANDLE)
@@ -4288,63 +4080,54 @@ public SQL_db_GetDynamicTimelimitCallback(Handle:owner, Handle:hndl, const Strin
 
 	if(SQL_HasResultSet(hndl))
 	{
-		new rowcount = SQL_GetRowCount(hndl);
-		new i, maptimes;
-		new Float:total = 0.0,Float:TpTime,Float:ProTime;	
+		new maptimes = 0;
+		new Float:total = 0.0,Float:time = 0.0;	
 		while (SQL_FetchRow(hndl))
-		{
-			
-			TpTime = SQL_FetchFloat(hndl, 0);
-			ProTime = SQL_FetchFloat(hndl, 1);
-			if (TpTime > 0.0 || ProTime > 0.0)
+		{	
+			time = SQL_FetchFloat(hndl, 0);
+			if (time > 0.0)
 			{
-				if (TpTime > 0.0 && ProTime > 0.0)
-					total += ((TpTime+ProTime)/2);
-				else
-					if (TpTime > 0.0)
-						total += TpTime;
-					else
-						total += ProTime;
+				total += time;
 				maptimes++;
 			}
-			i++;
-			if (rowcount == i)
-			{
-				//requires min. 5 map times
-				if (maptimes > 5)
-				{				
-					new scale_factor = 3;
-					new avg = RoundToNearest((total) / float(60) / float(maptimes)); ////output: x min
-			
-					//scale factor
-					if (avg <= 10) 
-						scale_factor = 5;
-					if (avg <= 5) 
-						scale_factor = 8;
-					if (avg <= 3)
-						scale_factor = 10;
-					if (avg <= 2)
-						scale_factor = 12;
-					if (avg <= 1)
-						scale_factor = 14;			
-					avg = avg * scale_factor;
-				
-					//timelimit: min 20min, max 180min
-					if (avg < 20)
-						avg = 20;
-					if (avg > 150)
-						avg = 150;
-						
-					//set timelimit
-					decl String:szTimelimit[32];
-					Format(szTimelimit,32,"mp_timelimit %i;mp_roundtime %i", avg, avg);
-					ServerCommand(szTimelimit);
-					ServerCommand("mp_restartgame 1");
-				}
-			}
 		}
+				//requires min. 5 map times
+		if (maptimes > 5)
+		{
+			new scale_factor = 3;
+			new avg = RoundToNearest((total) / 60.0 / float(maptimes)); 
+	
+			//scale factor
+			if (avg <= 10) 
+				scale_factor = 5;
+			if (avg <= 5) 
+				scale_factor = 8;
+			if (avg <= 3)
+				scale_factor = 10;
+			if (avg <= 2)
+				scale_factor = 12;
+			if (avg <= 1)
+				scale_factor = 14;
+
+			avg = avg * scale_factor;
+		
+			//timelimit: min 20min, max 120min
+			if (avg < 20)
+				avg = 20;
+			if (avg > 120)
+				avg = 120;
+				
+			//set timelimit
+			decl String:szTimelimit[32];
+			Format(szTimelimit,32,"mp_timelimit %i;mp_roundtime %i", avg, avg);
+			ServerCommand(szTimelimit);
+			ServerCommand("mp_restartgame 1");
+		}
+		else
+			ServerCommand("mp_timelimit 50");
 	}
 }
+
 
 public db_CalculatePlayerCount()
 {
@@ -4713,17 +4496,6 @@ public db_Cleanup()
 	
 	//times
 	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_playertimes where runtimepro = -1.0");
-}
-
-public db_dropMap(client)
-{
-	SQL_LockDatabase(g_hDb);       
-	if(g_DbType == MYSQL)
-		SQL_FastQuery(g_hDb, sql_dropMap);
-	else
-		SQL_FastQuery(g_hDb, sqlite_dropMap);	
-	SQL_UnlockDatabase(g_hDb);       
-	PrintToConsole(client, "map buttons table dropped. Please restart your server!");
 }
 
 public db_resetMapRecords(client, String:szMapName[128])

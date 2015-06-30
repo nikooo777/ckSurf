@@ -240,8 +240,6 @@ new Handle:g_hMainMenu = INVALID_HANDLE;
 new Handle:g_hAdminMenu = INVALID_HANDLE;
 new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_hDb = INVALID_HANDLE;
-new Handle:hStartPress = INVALID_HANDLE;
-new Handle:hEndPress = INVALID_HANDLE;
 new Handle:g_hLangMenu = INVALID_HANDLE;
 new Handle:g_hCookie = INVALID_HANDLE;
 new Handle:g_OnLangChanged = INVALID_HANDLE;
@@ -443,11 +441,11 @@ new Float:g_fTeleLocation[MAXPLAYERS+1][3];
 new Float:g_fCurVelVec[MAXPLAYERS+1][3];
 
 // Player checkpoints
-new Float:g_fCheckpointLocation[MAXPLAYERS+1][3];
-new Float:g_fCheckpointVelocity[MAXPLAYERS+1][3];
-new Float:g_fCheckpointAngle[MAXPLAYERS+1][3];
-new Float:g_fCheckpointLocation_undo[MAXPLAYERS+1][3];
 new Float:g_fCheckpointVelocity_undo[MAXPLAYERS+1][3];
+new Float:g_fCheckpointVelocity[MAXPLAYERS+1][3];
+new Float:g_fCheckpointLocation[MAXPLAYERS+1][3];
+new Float:g_fCheckpointLocation_undo[MAXPLAYERS+1][3];
+new Float:g_fCheckpointAngle[MAXPLAYERS+1][3];
 new Float:g_fCheckpointAngle_undo[MAXPLAYERS+1][3];
 new Float:g_fLastPlayerCheckpoint[MAXPLAYERS+1];
 
@@ -556,21 +554,29 @@ new String:RadioCMDS[][] = {"coverme", "takepoint", "holdpos", "regroup", "follo
 new String:g_BlockedChatText[256][256];
 new String:g_szReplay_PlayerName[MAXPLAYERS+1][64];
 
-// New Start Zone Caps
+// Speed Cap Variables
 new Handle:g_hStartPreSpeed = INVALID_HANDLE; 
-new Float:fStartPreSpeed; 
+new Float:g_fStartPreSpeed; 
 new Handle:g_hSpeedPreSpeed = INVALID_HANDLE; 
-new Float:fSpeedPreSpeed; 
-new Handle:g_hSpeedCapType = INVALID_HANDLE; 
-new iSpeedCapType; 
+new Float:g_fSpeedPreSpeed; 
+new Handle:g_hBonusPreSpeed = INVALID_HANDLE; 
+new Float:g_fBonusPreSpeed; 
+
+new bool:g_binStartZone[MAXPLAYERS+1]; 
+new bool:g_binSpeedZone[MAXPLAYERS+1];
+new bool:g_binBonusStartZone[MAXPLAYERS+1];
+
+new bool:g_bToStart[MAXPLAYERS+1];
+new bool:g_bToStage[MAXPLAYERS+1];
+new bool:g_bToBonus[MAXPLAYERS+1];
+new bool:g_bToGoto[MAXPLAYERS+1];
+
+
 new Handle:g_hSoundEnabled = INVALID_HANDLE; 
 new bool:bSoundEnabled; 
+
 new Handle:g_hSoundPath = INVALID_HANDLE; 
 new String:sSoundPath[64]; 
-
-// Speed Cap Type 2 Stuff 
-new bool:bClientInStartZone[MAXPLAYERS+1]; 
-new bool:bClientInSpeedZone[MAXPLAYERS+1]; 
 	 
 // Teleport on spawn to start zone (or speed zone) stuff 
 new Handle:g_hSpawnToStartZone = INVALID_HANDLE; 
@@ -637,8 +643,6 @@ public OnClientPostAdminCheck(client)
 
 public OnPluginEnd()
 {
-	//remove climb buttons
-	DeleteButtons(67);
 	
 	//remove clan tags
 	for (new x = 1; x <= MaxClients; x++)
@@ -653,8 +657,6 @@ public OnPluginEnd()
 		}
  	}
 
-	//unhook
-	UnhookEntityOutput("func_button", "OnPressed", ButtonPress);
 
 	//set server convars back to default
 	ServerCommand("sm_cvar sv_enablebunnyhopping 0;sv_friction 5.2;sv_accelerate 5.5;sv_airaccelerate 10;sv_maxvelocity 2000;sv_staminajumpcost .08;sv_staminalandcost .050");
@@ -799,8 +801,6 @@ public OnMapStart()
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	
-	//create buttons
-	CreateTimer(2.0, CreateMapButtons, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);	
 	if (g_bAutoRespawn)
 		ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
 	else
@@ -821,8 +821,6 @@ public OnMapStart()
 	//server infos
 	GetServerInfo();
 	
-
-
 	//Bots
 	LoadReplays();
 	LoadInfoBot();
@@ -951,7 +949,6 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_Think, OnPlayerThink);
 	SDKHook(client, SDKHook_PostThink, OnPlayerThink);
 	SDKHook(client, SDKHook_PostThinkPost, OnPlayerThink);
-	SDKHook(client, SDKHook_EndTouch, OnEndTouch);
 
 	if (IsFakeClient(client))
 	{
@@ -1002,10 +999,6 @@ public OnClientPutInServer(client)
 
 	if (g_bTierFound)
 		AnnounceTimer[client] = CreateTimer(30.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
-
-	//  SHow admin news message if client is admin
-	if(GetUserAdmin(client) != INVALID_ADMIN_ID)
-		CreateTimer(20.0, NewsTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public OnClientAuthorized(client)
@@ -1056,8 +1049,9 @@ public OnClientDisconnect(client)
 	if (IsFakeClient(client) && g_hRecordingAdditionalTeleport[client] != INVALID_HANDLE)
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
 
-	bClientInStartZone[client]=false;
-	bClientInSpeedZone[client]=false;
+	g_binBonusStartZone[client] = false;
+	g_binStartZone[client] = false;
+	g_binSpeedZone[client] = false;
 
 	g_fPlayerLastTime[client] = -1.0;
 	if(g_fStartTime[client] != -1.0 && g_bTimeractivated[client])
@@ -1575,13 +1569,13 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 		g_fChecker = StringToFloat(newValue[0]);
 	}
 	if (convar == g_hStartPreSpeed) {
-		fStartPreSpeed = StringToFloat(newValue[0]);
+		g_fStartPreSpeed = StringToFloat(newValue[0]);
 	}
 	if (convar == g_hSpeedPreSpeed) {
-		fSpeedPreSpeed = StringToFloat(newValue[0]);
+		g_fSpeedPreSpeed = StringToFloat(newValue[0]);
 	}
-	if (convar == g_hSpeedCapType) {
-		iSpeedCapType = StringToInt(newValue[0]);
+	if (convar == g_hBonusPreSpeed){
+		g_fBonusPreSpeed = StringToFloat(newValue[0]);
 	}
 	if (convar == g_hSpawnToStartZone) {
 		if (newValue[0] == '1') {
@@ -1658,8 +1652,6 @@ public Plugin:myinfo =
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	RegPluginLibrary("ckSurf");
-	hStartPress = CreateGlobalForward("CL_OnStartTimerPress", ET_Ignore, Param_Cell);
-	hEndPress = CreateGlobalForward("CL_OnEndTimerPress", ET_Ignore, Param_Cell);
 	CreateNative("ckSurf_GetTimerStatus", Native_GetTimerStatus);
 	CreateNative("ckSurf_StopUpdatingOfClimbersMenu", Native_StopUpdatingOfClimbersMenu);
 	CreateNative("ckSurf_StopTimer", Native_StopTimer);
@@ -1676,44 +1668,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	g_OnLangChanged = CreateGlobalForward("GeoLang_OnLanguageChanged", ET_Ignore, Param_Cell, Param_Cell);
 	g_bLateLoaded = late;
 	return APLRes_Success;
-}
-
-public Action:OnEndTouch(client, entity) {
-	// Make sure the client is valid.
-	if (1 > client > MaxClients)
-		return;
-	
-	// Make sure the entity isn't a player.
-	if (entity <= MaxClients && entity > 1)
-		return;
-
-	if (g_bCheckpointMode[client])
-		return;
-		
-	if (iSpeedCapType == 2) {
-		if (bClientInStartZone[client]) {
-			new Float:CurVelVec[3];
-			GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-			if (GetVectorLength(CurVelVec) > fStartPreSpeed) // MAX SPEED
-			{   
-				#if defined CAPSPEEDDEBUG then
-					PrintToChat(client, "\x03%f/%f", GetVectorLength(CurVelVec), fStartPreSpeed);
-				#endif
-				NormalizeVector(CurVelVec, CurVelVec);
-				ScaleVector(CurVelVec, fStartPreSpeed); // CAP TO
-				TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
-			}
-		} else if (bClientInSpeedZone[client]) {
-			new Float:CurVelVec[3];
-			GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-			if (GetVectorLength(CurVelVec) > fSpeedPreSpeed) // MAX SPEED
-			{   
-				NormalizeVector(CurVelVec, CurVelVec);
-				ScaleVector(CurVelVec, fSpeedPreSpeed); // CAP TO
-				TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
-			}
-		}
-	}
 }
 
 public OnPluginStart()
@@ -1896,17 +1850,17 @@ public OnPluginStart()
 	g_fChecker = GetConVarFloat(g_hChecker);
 	HookConVarChange(g_hChecker, OnSettingChanged);
 
-	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The prespeed for Start Zones");
-	fStartPreSpeed = GetConVarFloat(g_hStartPreSpeed);
+	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap");
+	g_fStartPreSpeed = GetConVarFloat(g_hStartPreSpeed);
 	HookConVarChange(g_hStartPreSpeed, OnSettingChanged);
 	
-	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The prespeed for Speed Zones");
-	fSpeedPreSpeed = GetConVarFloat(g_hSpeedPreSpeed);
+	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap");
+	g_fSpeedPreSpeed = GetConVarFloat(g_hSpeedPreSpeed);
 	HookConVarChange(g_hSpeedPreSpeed, OnSettingChanged);
-	
-	g_hSpeedCapType = CreateConVar("ck_pre_speed_cap_type", "2", "1 = Speed cap applies when user leaves start zone. 2 = Speed cap applies when user hits the ground in the start zone");
-	iSpeedCapType = GetConVarInt(g_hSpeedCapType);
-	HookConVarChange(g_hSpeedCapType, OnSettingChanged);	
+
+	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap");
+	g_fBonusPreSpeed = GetConVarFloat(g_hBonusPreSpeed);
+	HookConVarChange(g_hBonusPreSpeed, OnSettingChanged);
 	
 	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1", "1 = Automatically spawn to the start zone when the client joins the team.");
 	bSpawnToStartZone = GetConVarBool(g_hSpawnToStartZone);
@@ -2061,7 +2015,6 @@ public OnPluginStart()
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Post);
 	HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre); 
-	HookEntityOutput("func_button", "OnPressed", ButtonPress);
 
 	//mapcycle array
 	new arraySize = ByteCountToCells(PLATFORM_MAX_PATH);

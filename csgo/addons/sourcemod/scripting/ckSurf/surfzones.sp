@@ -6,13 +6,10 @@ CreateZoneEntity(zoneIndex)
 	{
 		return;
 	}
+	
+	Array_Copy(g_mapZones[zoneIndex][PointA], fMins, 3);
+	Array_Copy(g_mapZones[zoneIndex][PointB], fMaxs, 3);
 
-	fMins[0] = g_mapZones[zoneIndex][PointA][0];
-	fMins[1] = g_mapZones[zoneIndex][PointA][1];
-	fMins[2] = g_mapZones[zoneIndex][PointA][2];
-	fMaxs[0] = g_mapZones[zoneIndex][PointB][0];
-	fMaxs[1] = g_mapZones[zoneIndex][PointB][1];
-	fMaxs[2] = g_mapZones[zoneIndex][PointB][2];
 	Format(sZoneName, sizeof(sZoneName), "%s", g_mapZones[zoneIndex][ZoneName]);
 
 	new iEnt = CreateEntityByName("trigger_multiple");
@@ -143,90 +140,91 @@ StartTouch(client, action[])
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 		if (action[0] == 1) 						// Start
 		{	
-			if (g_Stage[client] == 1 && g_bCheckpointMode[client])
+			if (g_Stage[client] == 1 && g_bCheckpointMode[client]) // If practice mode is on
  				Command_goToPlayerCheckpoint(client, 1);
  			else
  			{
-				if (iSpeedCapType == 2) { 
-	 				if (!bClientInStartZone[client]) { 
-	 					bClientInStartZone[client] = true; 
-	 				} 
-	 				LimitSpeed(client, 0); 
-	 			}
-
-	 			
-
-				g_bBonusTimer[client] = false;
+	 			// In Start Zone
+				g_binBonusStartZone[client] = false;
+				g_binStartZone[client] = true;
+				g_binSpeedZone[client] = false;
 				g_Stage[client] = 1;
 				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
-				Client_Stop(client, 0);
 
-
+				// Making sure bonus timer is set off
+				g_bBonusTimer[client] = false;
+				// Timer is not running, as the player is inside the zone
+				g_bTimeractivated[client] = false;
+				// Resetting last checkpoint
 				lastCheckpoint[client] = 999;
 			}
 		} 
 		else if (action[0] == 2) 					// End
 		{
-			if (!g_bBonusTimer[client])
+			if (!g_bBonusTimer[client])	 //  Cant end bonus timer in this zone
 				CL_OnEndTimerPress(client);	
 			else 
 			{
-				Client_Stop(client, 0);
+				g_bTimeractivated[client] = false;
 				g_bBonusTimer[client] = false;
-			} 
-			if (g_bCheckpointMode[client])
+			}
+			if (g_bCheckpointMode[client]) // Go back to normal mode if checkpoint mode is on
+			{
 				Command_normalMode(client, 1);
-			clearPlayerCheckPoints(client);
+				clearPlayerCheckPoints(client);
+			}
+			// Resetting checkpoints
 			lastCheckpoint[client] = 999;
 		} 
 		else if (action[0] == 5) 					// Stage
 		{
-			if (g_Stage[client] == (action[1]+2) && g_bCheckpointMode[client])
+			if (g_Stage[client] == (action[1]+2) && g_bCheckpointMode[client]) // If practice mode is on
 				Command_goToPlayerCheckpoint(client, 1);
 			else
-			{
-				g_bValidRun[client] = false;
+			{	// Setting valid to false, in case of checkers
+				g_bValidRun[client] = false;	
 				if (g_bBonusTimer[client])
 				{
-					Client_Stop(client, 0);
+					// No stages in bonuses
+					g_bTimeractivated[client] = false;
 					g_bBonusTimer[client] = false;
 				}
 
-
+				// Setting player stage information
 				g_Stage[client] = (action[1]+2);
 				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
+
+				// Announcing checkpoint
 				if (action[1] != lastCheckpoint[client]) 
 				{
 					Checkpoint(client, action[1]);
 					lastCheckpoint[client] = action[1];
 				}
 			}
-		} 
+		}
 		else if (action[0] == 6) 					// Checkpoint
 		{
 			if (action[1] != lastCheckpoint[client]) 
 			{
+				// Announcing checkpoint in linear maps
 				Checkpoint(client, action[1]);
 				lastCheckpoint[client] = action[1];
 			}
 		}
-		else if (action[0] == 7)					// Speed
+		else if (action[0] == 7)					// Speed (Start with higher speedcap)
 		{
-			if (g_Stage[client] == 1 && g_bCheckpointMode[client])
+			if (g_Stage[client] == 1 && g_bCheckpointMode[client]) // Practice mode
  				Command_goToPlayerCheckpoint(client, 1);
 			else
 			{
-				if (iSpeedCapType == 2) {
-					if (!bClientInSpeedZone[client]) {
-						bClientInSpeedZone[client] = true;
-					}
-					LimitSpeed(client, 1);
-				}
-
-				g_bBonusTimer[client] = false;
+	 			// In Start Zone
+				g_binBonusStartZone[client] = false;
+				g_binStartZone[client] = false;
+				g_binSpeedZone[client] = true;
 				g_Stage[client] = 1;
 				Format(g_szCurrentStage[client], 12, "%i", g_Stage[client]);
-				Client_Stop(client, 0);
+
+				g_bTimeractivated[client] = false;
 				lastCheckpoint[client] = 999;
 			}
 		} 
@@ -236,8 +234,14 @@ StartTouch(client, action[])
  				Command_goToPlayerCheckpoint(client, 1);
  			else	
  			{
-				Client_Stop(client, 0);
-				g_Stage[client] = 999;
+	 			// In Start Zone
+				g_binBonusStartZone[client] = true;
+				g_binStartZone[client] = false;
+				g_binSpeedZone[client] = false;
+				g_Stage[client] = 999; // aka bonus
+				// No string stage handling because only one bonus supported yet
+				
+				g_bTimeractivated[client] = false;
 				lastCheckpoint[client] = 999;
 			}
 		}
@@ -246,24 +250,25 @@ StartTouch(client, action[])
 			if (g_bBonusTimer[client])
 				CL_OnEndTimerPress(client);	
 			else
-				Client_Stop(client, 0);
+				g_bTimeractivated[client] = false;
 
-			if (g_bCheckpointMode[client])
+			if (g_bCheckpointMode[client])	// Practice mode
+			{
 				Command_normalMode(client, 1);
-				
-			clearPlayerCheckPoints(client);
+				clearPlayerCheckPoints(client);
+			}
 			lastCheckpoint[client] = 999;
 		}
 		else if (action[0] == 0)					// Stop
 		{
 			g_bBonusTimer[client] = false;
-			Client_Stop(client, 0);
+			g_bTimeractivated[client] = false;
 			lastCheckpoint[client] = 999;
 		}
 		else if (action[0] == 8)					// TeleToStart
 		{
 			g_bBonusTimer[client] = false;
-			Client_Stop(client, 0);
+			g_bTimeractivated[client] = false;
 			lastCheckpoint[client] = 999;
 			Command_Restart(client, 1);
 		}
@@ -287,25 +292,23 @@ EndTouch(client, action[])
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 		if (action[0] == 1) 						// Start
 		{
-			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
+			if (g_bCheckpointMode[client] && !g_bTimeractivated[client]) // If on practice mode, but timer isn't on - start timer
 				CL_OnStartTimerPress(client);
 			else
 				if (!g_bCheckpointMode[client])
 				{
 					CL_OnStartTimerPress(client);
-			
-					if (iSpeedCapType == 1) {
-						LimitSpeed(client, 0);
-					} else if (iSpeedCapType == 2) {
-						if (bClientInStartZone[client]) {
-							LimitSpeed(client, 0);
-							bClientInStartZone[client] = false;
-						}
-					}
-					if (bSoundEnabled) {
+
+		 			// Left start zone
+					g_binBonusStartZone[client] = false;
+					g_binStartZone[client] = false;
+					g_binSpeedZone[client] = false;
+
+					g_bBonusTimer[client] = false;
+
+					if (bSoundEnabled) 
 						EmitSoundToClient(client,sSoundPath);
-					}
-					g_Stage[client] = 1;
+
 					g_bValidRun[client] = false;
 				}
 		} 
@@ -317,56 +320,40 @@ EndTouch(client, action[])
 				if (!g_bCheckpointMode[client])
 				{
 					CL_OnStartTimerPress(client);
-			
-					if (iSpeedCapType == 1) {
-						LimitSpeed(client, 1);
-					} else if (iSpeedCapType == 2) {
-						if (bClientInSpeedZone[client]) {
-							bClientInSpeedZone[client] = false;
-						}
-					} 
+
+					// Left start zone
+					g_binBonusStartZone[client] = false;
+					g_binStartZone[client] = false;
+					g_binSpeedZone[client] = false;
+
+					g_bBonusTimer[client] = false;
+
 					if (bSoundEnabled)
 						EmitSoundToClient(client,sSoundPath);
+
 					g_bValidRun[client] = false;
 				}
 		} 
 		else if (action[0] == 3)					// BonusStart
 		{
-
 			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
 				CL_OnStartTimerPress(client);
 			else
 				if (!g_bCheckpointMode[client])
 				{
 					CL_OnStartTimerPress(client);
+
+		 			// Left start zone
+					g_binBonusStartZone[client] = false;
+					g_binStartZone[client] = false;
+					g_binSpeedZone[client] = false;
+
 					if (bSoundEnabled)
 						EmitSoundToClient(client, sSoundPath);
 
 					g_bValidRun[client] = false;
 					g_bBonusTimer[client] = true;
 				}
-		}
-	}
-}
-
-stock LimitSpeed(client, type) {
-	if (type == 0) {
-		new Float:CurVelVec[3];
-		GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-		if (GetVectorLength(CurVelVec) > fStartPreSpeed) // MAX SPEED
-		{   
-			NormalizeVector(CurVelVec, CurVelVec);
-			ScaleVector(CurVelVec, fStartPreSpeed); // CAP TO
-			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
-		}
-	} else if (type == 1) {
-		new Float:CurVelVec[3];
-		GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-		if (GetVectorLength(CurVelVec) > fSpeedPreSpeed) // MAX SPEED
-		{   
-			NormalizeVector(CurVelVec, CurVelVec);
-			ScaleVector(CurVelVec, fSpeedPreSpeed); // CAP TO
-			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, CurVelVec);
 		}
 	}
 }
@@ -384,88 +371,6 @@ public InitZoneVariables()
 		g_mapZones[i][ZoneName] = 0;
 		g_mapZones[i][Vis] = 0;
 		g_mapZones[i][Team] = 0;
-	}
-}
-
-public ListStages(client)
-{
-		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
-	new Handle:sMenu = CreateMenu(MenuHandler_SelectStage);
-	SetMenuTitle(sMenu, "Stage selector");
-	new amount = 0, String:StageName[64], String:ZoneInfo[12];
-
-	decl StageIds[128];
-	for (new k = 0; k < 128 ;k++)
-		StageIds[k] = -1;
-
-	if (g_mapZonesCount > 0)
-	{
-		for(new i = 0; i<=g_mapZonesCount;i++)
-		{
-			if (g_mapZones[i][zoneType] == 5)
-			{
-				StageIds[i] = 1;
-				amount++;
-			}
-		}
-		if (amount == 0)
-		{
-			AddMenuItem(sMenu, "", "The map is linear.", ITEMDRAW_DISABLED);
-		} 
-		else 
-		{
-			amount = 0;
-			for(new t=0; t<128; t++) 
-			{
-				if (StageIds[t]>=0)
-				{
-					amount++;
-					Format(StageName, sizeof(StageName), "Stage %i", (amount+1));
-					Format(ZoneInfo, sizeof(ZoneInfo), "%i", t);
-					AddMenuItem(sMenu, ZoneInfo, StageName);
-				}
-			}
-		}
-	} 
-	else 
-	{
-		AddMenuItem(sMenu, "", "No stages are available.", ITEMDRAW_DISABLED);
-	}
-	
-	SetMenuExitButton(sMenu, true);
-	DisplayMenu(sMenu, client, MENU_TIME_FOREVER);
-}
-
-public MenuHandler_SelectStage(Handle:tMenu, MenuAction:action, client, item)
-{
-	switch(action)
-	{
-		case MenuAction_Select:
-		{
-			decl Float:posA[3];
-			decl Float:posB[3];
-			new String:aID[64];
-			GetMenuItem(tMenu, item, aID, sizeof(aID));
-			new id = StringToInt(aID);
-			posA[0] = g_mapZones[id][PointA][0];
-			posA[1] = g_mapZones[id][PointA][1];
-			posA[2] = g_mapZones[id][PointA][2];
-			posB[0] = g_mapZones[id][PointB][0];
-			posB[1] = g_mapZones[id][PointB][1];
-			posB[2] = g_mapZones[id][PointB][2];
-			
-			new Float:ZonePos[3];
-			AddVectors(posA, posB, ZonePos);
-			ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
-			ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
-			ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-			CreateTimer(0.1, TimerCallStop, client);
-			TeleportEntity(client, ZonePos, NULL_VECTOR, NULL_VECTOR);
-		}
-		case MenuAction_End:
-		{
-			CloseHandle(tMenu);
-		}
 	}
 }
 
@@ -923,7 +828,7 @@ public MenuHandler_Editor(Handle:tMenu, MenuAction:action, client, item)
 					ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
 					ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
 					ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-					CreateTimer(0.1, TimerCallStop, client);
+					CreateTimer(0.1, timerAfterTele, client);
 					TeleportEntity(client, ZonePos, NULL_VECTOR, NULL_VECTOR);
 					EditorMenu(client);
 				}

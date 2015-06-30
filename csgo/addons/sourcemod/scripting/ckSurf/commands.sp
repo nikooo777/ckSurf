@@ -27,7 +27,8 @@ public Action:Command_createPlayerCheckpoint(client, args)
 	g_bCreatedTeleport[client] = true;
 	GetClientAbsOrigin(client, g_fCheckpointLocation[client]);
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCheckpointVelocity[client]);
-	GetEntPropVector(client, Prop_Data, "m_angRotation", g_fCheckpointAngle[client]); 
+	GetClientEyeAngles(client, g_fCheckpointAngle[client]);
+
 
 	PrintToChat(client, "[%cCK%c] %cPlayer Checkpoint created. Use %c!tele %cto start the teleport mode.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
 
@@ -48,9 +49,7 @@ public Action:Command_goToPlayerCheckpoint(client, args)
 			g_bCheckpointMode[client] = true;
 		}
 
-		decl Float:zero[3];
-		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], zero);
-
+		SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,0.0});			
 		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], g_fCheckpointVelocity[client]);
 
 		//PrintToChat(client, "[%cCK%c] %cTeleported to last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
@@ -120,50 +119,42 @@ public Action:Command_Teleport(client, args)
 			}
 		}
 		
-		if (stageZoneId>=0) {
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
+		if (stageZoneId>=0) 
+		{
+
+			decl Float:positA[3];
+			decl Float:positB[3];
+
+			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // Spectating
 			{
-				g_specToStage[client] = true;
-				TeamChangeActual(client, 0);
-				new	Float:positA[3];
-				new	Float:positB[3];
-				positA[0] = g_mapZones[stageZoneId][PointA][0];
-				positA[1] = g_mapZones[stageZoneId][PointA][1];
-				positA[2] = g_mapZones[stageZoneId][PointA][2];
-				positB[0] = g_mapZones[stageZoneId][PointB][0];
-				positB[1] = g_mapZones[stageZoneId][PointB][1];
-				positB[2] = g_mapZones[stageZoneId][PointB][2];
+				Array_Copy(g_mapZones[stageZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[stageZoneId][PointB], positB, 3);
 
 				AddVectors(positA, positB, g_fTeleLocation[client]);
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
+				g_fCurVelVec[client][0] = 0.0;
+				g_fCurVelVec[client][1] = 0.0;
+				g_fCurVelVec[client][2] = 0.0;
 
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCurVelVec[client]);
-				NormalizeVector(g_fCurVelVec[client], g_fCurVelVec[client]);
-				ScaleVector(g_fCurVelVec[client], 0.0); // CAP TO	
+				g_specToStage[client] = true;
+				TeamChangeActual(client, 0);
+
 			}
-			decl Float:positA[3];
-			decl Float:positB[3];
-			positA[0] = g_mapZones[stageZoneId][PointA][0];
-			positA[1] = g_mapZones[stageZoneId][PointA][1];
-			positA[2] = g_mapZones[stageZoneId][PointA][2];
-			positB[0] = g_mapZones[stageZoneId][PointB][0];
-			positB[1] = g_mapZones[stageZoneId][PointB][1];
-			positB[2] = g_mapZones[stageZoneId][PointB][2];
+			else
+			{
+				Array_Copy(g_mapZones[stageZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[stageZoneId][PointB], positB, 3);
 
-			new Float:ZonePos[3];
-			AddVectors(positA, positB, ZonePos);
-			ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
-			ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
-			ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-
-			new Float:CurVelVec[3];
-			GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-			NormalizeVector(CurVelVec, CurVelVec);
-			ScaleVector(CurVelVec, 0.0); // CAP TO
-			
-			TeleportEntity(client, ZonePos, NULL_VECTOR, CurVelVec);
+				decl Float:ZonePos[3];
+				AddVectors(positA, positB, ZonePos);
+				ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
+				ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
+				ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
+			}
 		} else {
 			PrintToChat(client, "%t", "StageNotFound",MOSSGREEN,WHITE,g_Stage[client]);
 		}
@@ -204,52 +195,52 @@ public Action:Command_ToBonus(client, args)
 		
 		if (bonusZoneId>=0) 
 		{
+			// Zone changed
+			g_binBonusStartZone[client] = true;
+			g_binStartZone[client] = false;
+			g_binSpeedZone[client] = false;
+
+			// Timer settings
+			g_bToBonus[client] = true;
+			CreateTimer(0.1, timerAfterTele, client);
+
+			new	Float:positA[3];
+			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
 				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
-				new	Float:positA[3];
-				new	Float:positB[3];
-				positA[0] = g_mapZones[bonusZoneId][PointA][0];
-				positA[1] = g_mapZones[bonusZoneId][PointA][1];
-				positA[2] = g_mapZones[bonusZoneId][PointA][2];
-				positB[0] = g_mapZones[bonusZoneId][PointB][0];
-				positB[1] = g_mapZones[bonusZoneId][PointB][1];
-				positB[2] = g_mapZones[bonusZoneId][PointB][2];
+
+				Array_Copy(g_mapZones[bonusZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[bonusZoneId][PointB], positB, 3);
 
 				AddVectors(positA, positB, g_fTeleLocation[client]);
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
 
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCurVelVec[client]);
-				NormalizeVector(g_fCurVelVec[client], g_fCurVelVec[client]);
-				ScaleVector(g_fCurVelVec[client], 0.0); // CAP TO
+
+				g_fCurVelVec[client][0] = 0.0;
+				g_fCurVelVec[client][1] = 0.0;
+				g_fCurVelVec[client][2] = 0.0;
+
 			}
 			else
 			{
-				new	Float:positA[3];
-				new	Float:positB[3];
-				positA[0] = g_mapZones[bonusZoneId][PointA][0];
-				positA[1] = g_mapZones[bonusZoneId][PointA][1];
-				positA[2] = g_mapZones[bonusZoneId][PointA][2];
-				positB[0] = g_mapZones[bonusZoneId][PointB][0];
-				positB[1] = g_mapZones[bonusZoneId][PointB][1];
-				positB[2] = g_mapZones[bonusZoneId][PointB][2];
+				Array_Copy(g_mapZones[bonusZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[bonusZoneId][PointB], positB, 3);
 
-				new Float:ZonePos[3];
+				decl Float:ZonePos[3];
 				AddVectors(positA, positB, ZonePos);
 				ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
 				ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
 				ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
 				
-				new Float:CurVelVec[3];
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-				NormalizeVector(CurVelVec, CurVelVec);
-				ScaleVector(CurVelVec, 0.0); // CAP TO
-				
-				TeleportEntity(client, ZonePos, NULL_VECTOR, CurVelVec);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
+			g_bBonusTimer[client] = false;
+			g_Stage[client] = 999;
 		} else {
 			PrintToChat(client, "%t", "BonusNotFound",MOSSGREEN,WHITE);
 		}
@@ -262,6 +253,88 @@ public Action:Command_SelectStage(client, args)
 	if (IsValidClient(client))
 		ListStages(client);
 	return Plugin_Handled;
+}
+
+
+public ListStages(client)
+{
+		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+	new Handle:sMenu = CreateMenu(MenuHandler_SelectStage);
+	SetMenuTitle(sMenu, "Stage selector");
+	new amount = 0, String:StageName[64], String:ZoneInfo[12];
+
+	decl StageIds[128];
+	for (new k = 0; k < 128 ;k++)
+		StageIds[k] = -1;
+
+	if (g_mapZonesCount > 0)
+	{
+		for(new i = 0; i<=g_mapZonesCount;i++)
+		{
+			if (g_mapZones[i][zoneType] == 5)
+			{
+				StageIds[i] = 1;
+				amount++;
+			}
+		}
+		if (amount == 0)
+		{
+			AddMenuItem(sMenu, "", "The map is linear.", ITEMDRAW_DISABLED);
+		} 
+		else 
+		{
+			amount = 0;
+			for(new t=0; t<128; t++) 
+			{
+				if (StageIds[t]>=0)
+				{
+					amount++;
+					Format(StageName, sizeof(StageName), "Stage %i", (amount+1));
+					Format(ZoneInfo, sizeof(ZoneInfo), "%i", t);
+					AddMenuItem(sMenu, ZoneInfo, StageName);
+				}
+			}
+		}
+	} 
+	else 
+	{
+		AddMenuItem(sMenu, "", "No stages are available.", ITEMDRAW_DISABLED);
+	}
+	
+	SetMenuExitButton(sMenu, true);
+	DisplayMenu(sMenu, client, MENU_TIME_FOREVER);
+}
+
+public MenuHandler_SelectStage(Handle:tMenu, MenuAction:action, client, item)
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{
+			decl Float:posA[3];
+			decl Float:posB[3];
+			new String:aID[64];
+			GetMenuItem(tMenu, item, aID, sizeof(aID));
+			new id = StringToInt(aID);
+
+			Array_Copy(g_mapZones[id][PointA], posA, 3);
+			Array_Copy(g_mapZones[id][PointB], posB, 3);
+			
+			decl Float:ZonePos[3];
+			AddVectors(posA, posB, ZonePos);
+			ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
+			ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
+			ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
+			CreateTimer(0.1, timerAfterTele, client);
+
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+			TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
+		}
+		case MenuAction_End:
+		{
+			CloseHandle(tMenu);
+		}
+	}
 }
 
 public Action:Command_ToStage(client, args)
@@ -294,52 +367,47 @@ public Action:Command_ToStage(client, args)
 			}
 		}
 		
-		if (stageZoneId>=0) {
+		if (stageZoneId>=0)
+		{
+			g_bToStage[client] = true;
+			CreateTimer(0.1, timerAfterTele, client);
 
+			new	Float:positA[3];
+			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-				ckSurf_StopTimer(client);
 				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
-				new	Float:positA[3];
-				new	Float:positB[3];
-				positA[0] = g_mapZones[stageZoneId][PointA][0];
-				positA[1] = g_mapZones[stageZoneId][PointA][1];
-				positA[2] = g_mapZones[stageZoneId][PointA][2];
-				positB[0] = g_mapZones[stageZoneId][PointB][0];
-				positB[1] = g_mapZones[stageZoneId][PointB][1];
-				positB[2] = g_mapZones[stageZoneId][PointB][2];
+
+				Array_Copy(g_mapZones[stageZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[stageZoneId][PointB], positB, 3);
 
 				AddVectors(positA, positB, g_fTeleLocation[client]);
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
 
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCurVelVec[client]);
-				NormalizeVector(g_fCurVelVec[client], g_fCurVelVec[client]);
-				ScaleVector(g_fCurVelVec[client], 0.0); // CAP TO	
+				g_fCurVelVec[client][0] = 0.0;
+				g_fCurVelVec[client][1] = 0.0;
+				g_fCurVelVec[client][2] = 0.0;
+
 			}
 			else
 			{
-				ckSurf_StopTimer(client);
-				decl Float:positA[3];
-				decl Float:positB[3];
-				
-				positA[0] = g_mapZones[stageZoneId][PointA][0];
-				positA[1] = g_mapZones[stageZoneId][PointA][1];
-				positA[2] = g_mapZones[stageZoneId][PointA][2];
-				positB[0] = g_mapZones[stageZoneId][PointB][0];
-				positB[1] = g_mapZones[stageZoneId][PointB][1];
-				positB[2] = g_mapZones[stageZoneId][PointB][2];
+				Array_Copy(g_mapZones[stageZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[stageZoneId][PointB], positB, 3);
 
-				new Float:ZonePos[3];
+				decl Float:ZonePos[3];
 				AddVectors(positA, positB, ZonePos);
 				ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
 				ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
 				ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-				CreateTimer(0.1, TimerCallStop, client);
-				TeleportEntity(client, ZonePos, NULL_VECTOR, NULL_VECTOR);
+
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
+			g_bBonusTimer[client] = false;
+			g_Stage[client] = StageId;
 		} else {
 			PrintToChat(client, "%t", "StageNotFound",MOSSGREEN,WHITE,StageId);
 		}
@@ -352,11 +420,23 @@ public Action:Command_Restart(client, args)
 	if (!IsValidClient(client))
 		return Plugin_Handled;
 
+	if (g_bCheckpointMode[client])
+		Command_normalMode(client ,1);
+
 	if (g_bGotSpawnLocation)
 	{
-		decl Float:Velocity[3];
-		TeleportEntity(client, g_fSpawnLocation, g_fSpawnAngle, Velocity);
-		return Plugin_Handled;
+		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
+		{
+			Array_Copy(g_fSpawnLocation, g_fTeleLocation[client], 3);
+			TeamChangeActual(client, 0);
+			return Plugin_Handled;
+		}
+		else 
+		{
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+			TeleportEntity(client, g_fSpawnLocation, g_fSpawnAngle, Float:{0.0,0.0,-100.0});
+			return Plugin_Handled;
+		}
 	}
 
 	new startZoneId = -1;
@@ -371,51 +451,58 @@ public Action:Command_Restart(client, args)
 			}
 		}
 		
-		if (startZoneId>-1) {
+		if (startZoneId>-1) 
+		{
+			if (g_mapZones[startZoneId][zoneType] == 1)
+			{
+				g_binStartZone[client] = true;
+				g_binSpeedZone[client] = false;
+				g_binBonusStartZone[client] = false;
+			}
+			else
+				if (g_mapZones[startZoneId][zoneType] == 7)
+				{
+					g_binStartZone[client] = false;
+					g_binSpeedZone[client] = true;
+					g_binBonusStartZone[client] = false;
+				}
 
+			g_bToStart[client] = true;
+			CreateTimer(0.1, timerAfterTele, client);
+
+			new	Float:positA[3];
+			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-				g_specToStage[client] = true;
-				TeamChangeActual(client, 0);
-				new	Float:positA[3];
-				new	Float:positB[3];
-				positA[0] = g_mapZones[startZoneId][PointA][0];
-				positA[1] = g_mapZones[startZoneId][PointA][1];
-				positA[2] = g_mapZones[startZoneId][PointA][2];
-				positB[0] = g_mapZones[startZoneId][PointB][0];
-				positB[1] = g_mapZones[startZoneId][PointB][1];
-				positB[2] = g_mapZones[startZoneId][PointB][2];
+
+				Array_Copy(g_mapZones[startZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[startZoneId][PointB], positB, 3);
 
 				AddVectors(positA, positB, g_fTeleLocation[client]);
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
 
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCurVelVec[client]);
-				NormalizeVector(g_fCurVelVec[client], g_fCurVelVec[client]);
-				ScaleVector(g_fCurVelVec[client], 0.0); // CAP TO	
+				g_specToStage[client] = true;
+				TeamChangeActual(client, 0);
 			}
 			else
 			{
-				decl Float:positB[3], Float:positA[3], Float:ZonePos[3], Float:CurVelVec[3];
-				positA[0] = g_mapZones[startZoneId][PointA][0];
-				positA[1] = g_mapZones[startZoneId][PointA][1];
-				positA[2] = g_mapZones[startZoneId][PointA][2];
-				positB[0] = g_mapZones[startZoneId][PointB][0];
-				positB[1] = g_mapZones[startZoneId][PointB][1];
-				positB[2] = g_mapZones[startZoneId][PointB][2];
+				decl Float:ZonePos[3];
+
+				Array_Copy(g_mapZones[startZoneId][PointA], positA, 3);
+				Array_Copy(g_mapZones[startZoneId][PointB], positB, 3);
 
 				AddVectors(positA, positB, ZonePos);
 				ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
 				ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
 				ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-				
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", CurVelVec);
-				NormalizeVector(CurVelVec, CurVelVec);
-				ScaleVector(CurVelVec, 0.0); 
-				
-				TeleportEntity(client, ZonePos, NULL_VECTOR, CurVelVec);
+						
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
+			g_bBonusTimer[client] = false;
+			g_Stage[client] = 1;
 		} else {
 			PrintToChat(client, "%t", "StartNotFound",MOSSGREEN,WHITE);
 		}
@@ -882,6 +969,9 @@ public Action:Command_JoinTeam(client, const String:command[], argc)
 	GetCmdArg(1, arg, sizeof(arg));
 	new toteam = StringToInt(arg);	
 
+	if (toteam == 2)
+		toteam = 3;
+
 	TeamChangeActual(client, toteam);
 	return Plugin_Handled;
 }
@@ -891,7 +981,7 @@ TeamChangeActual(client, toteam)
 {
 	// Client is auto-assigning
 	if(toteam == 0)
-		toteam = GetRandomInt(2, 3);
+		toteam = 3;
 		
 	if(g_bSpectate[client])
 	{
@@ -914,23 +1004,9 @@ public Action:NoClip(client, args)
 {
 	if (!IsValidClient(client))					
 		return Plugin_Handled;	
-	if (g_bNoClipS || GetUserFlagBits(client) & ADMFLAG_RESERVATION || GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_GENERIC || StrEqual(g_pr_rankname[client],"MAPPER"))
-	{
-		if (!g_bMapFinished[client])
-		{
-			//BEST RANK || ADMIN || VIP
-			if ((StrEqual(g_pr_rankname[client],g_szSkillGroups[8]) || StrEqual(g_pr_rankname[client],"MAPPER") || GetUserFlagBits(client) & ADMFLAG_RESERVATION || GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_GENERIC) && !g_bNoClip[client])
-				Action_NoClip(client);
-			else
-				PrintToChat(client, "%t", "NoclipNotAvailable2",MOSSGREEN, WHITE, g_szSkillGroups[8]);
-		}
-		else
-			if (!g_bNoClip[client])
-				Action_NoClip(client);	
-	}
-	else
-		if (IsValidClient(client))
-			PrintToChat(client, "%t", "NoclipNotAvailable3",MOSSGREEN, WHITE);
+
+	Action_NoClip(client);	
+	
 	return Plugin_Handled;
 }
 
@@ -1504,48 +1580,9 @@ public Action:Client_Compare(client, args)
 public Action:Client_RankingSystem(client, args)
 {
 	PrintToChat(client,"[%cCK%c]%c Loading html page.. (requires cl_disablehtmlmotd 0)", MOSSGREEN,WHITE,LIMEGREEN);
-	ShowMOTDPanel(client, "rankingsystem" ,"http://kuala-lumpur-court-8417.pancakeapps.com/ranking_index.html", 2);
+	ShowMOTDPanel(client, "ckSurf - Ranking System" ,"http://koti.kapsi.fi/~mukavajoni/ranking/index.html", MOTDPANEL_TYPE_URL);
 	return Plugin_Handled;
 }
-/*
-public Action:Client_Start(client, args)
-{
-	if (!IsValidClient(client) || !IsPlayerAlive(client) || GetClientTeam(client) == 1) 
-		return Plugin_Handled;
-	
-	new Float: e_time = GetEngineTime();
-	new Float: diff = e_time - g_fStartCommandUsed_LastTime[client];
-	if (diff < 0.8)
-		return Plugin_Handled;	
-		
-	//spawn at Timer
-	if (!g_specToStage[client])
-	{
-		if (g_bRespawnAtTimer[client]==true)
-		{
-			TeleportEntity(client, g_fPlayerCordsRestart[client],g_fPlayerAnglesRestart[client], Float:{0.0,0.0,-100.0});		
-		}
-		else //else spawn at spawnpoint
-		{	
-			if (g_fSpawnpointOrigin[0] != -999999.9)
-			{
-				TeleportEntity(client, g_fSpawnpointOrigin,g_fSpawnpointAngle, Float:{0.0,0.0,-100.0});					
-			}
-			else
-				CS_RespawnPlayer(client);	
-		}
-	}
-	else
-		g_specToStage[client] = false;
-
-	if (g_bAutoTimer)
-		CL_OnStartTimerPress(client);
-		
-	g_bNoClip[client] = false;
-
-	return Plugin_Handled;	
-}
-*/
 
 public Action:Client_Pause(client, args) 
 {
@@ -1600,7 +1637,7 @@ public PauseMethod(client)
 			SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 		else
 			SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 5, true);
-		PrintToChatAll("PauseTele!!!");
+
 		TeleportEntity(client, NULL_VECTOR,NULL_VECTOR, Float:{0.0,0.0,-100.0});
 	}
 }
@@ -1691,10 +1728,10 @@ public GotoMethod(client, i)
 		new ducking = GetEntProp(i, Prop_Send, "m_bDucking");
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)
 		{
+			g_bToGoto[client] = true;
+			CreateTimer(0.1, timerAfterTele, client);
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-				g_specToStage[client] = true;
-				TeamChangeActual(client, 0);
 				new Float:position[3];
 				new Float:angles[3];
 				GetClientAbsOrigin(i,position);
@@ -1704,11 +1741,16 @@ public GotoMethod(client, i)
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
+				
 
-				GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCurVelVec[client]);
-				NormalizeVector(g_fCurVelVec[client], g_fCurVelVec[client]);
-				ScaleVector(g_fCurVelVec[client], 0.0); // CAP TO	
-	
+				g_fCurVelVec[client][0] = 0.0;
+				g_fCurVelVec[client][1] = 0.0;
+				g_fCurVelVec[client][2] = 0.0;
+			
+				
+
+				g_specToStage[client] = true;
+				TeamChangeActual(client, 0);
 			}
 			else
 			{
@@ -1716,12 +1758,7 @@ public GotoMethod(client, i)
 				new Float:angles[3];
 				GetClientAbsOrigin(i,position);
 				GetClientEyeAngles(i,angles);
-				new Float:fVelocity[3];
-				fVelocity[0] = 0.0;
-				fVelocity[1] = 0.0;
-				fVelocity[2] = 0.0;
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-				CreateTimer(0.1, TimerCallStop, client);
+
 				TeleportEntity(client, position,angles, Float:{0.0,0.0,-100.0});
 				decl String:szClientName[MAX_NAME_LENGTH];
 				GetClientName(client, szClientName, MAX_NAME_LENGTH);	
@@ -1742,10 +1779,6 @@ public GotoMethod(client, i)
 	}
 }
 
-public Action:TimerCallStop(Handle:timer, any:client)
-{
-    ckSurf_StopTimer(client);
-}
 
 
 public Action:Client_GoTo(client, args) 
