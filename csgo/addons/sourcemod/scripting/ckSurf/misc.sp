@@ -342,6 +342,12 @@ public PrintConsoleInfo(client)
 	PrintToConsole(client, "!hide, !hidespecs, !disablegoto, !bhop)");
 	PrintToConsole(client, "!hidechat, !hideweapon)");
 	PrintToConsole(client, " ");
+	PrintToConsole(client, "Practice Mode:");
+	PrintToConsole(client, "Create checkpoints with !cp / !checkpoint");
+	PrintToConsole(client, "Start practice mode with !tele / !prac");
+	PrintToConsole(client, "Undo failed checkpoints with !undo");
+	PrintToConsole(client, "Get back to normal mode with !n / !normal");
+	PrintToConsole(client, "");
 	PrintToConsole(client, "Live scoreboard:");
 	PrintToConsole(client, "Kills: Time in seconds");
 	PrintToConsole(client, "Assists: Number of % finished on current map")

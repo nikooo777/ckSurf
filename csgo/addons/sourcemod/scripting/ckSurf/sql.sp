@@ -2284,6 +2284,7 @@ public db_updateRecordPro(client)
 	g_fPersonalRecord[client] = g_fFinalTime[client];
 }
 
+
 public SQL_UpdateRecordProCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if(hndl == INVALID_HANDLE)

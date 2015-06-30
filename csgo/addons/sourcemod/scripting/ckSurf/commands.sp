@@ -1990,7 +1990,7 @@ public HelpPanel(client)
 	g_bClimbersMenuOpen[client]=false;
 	new Handle:panel = CreatePanel();
 	decl String:title[64];
-	Format(title, 64, "ckSurf Help (1/3) - v%s\nby Elzi",VERSION);
+	Format(title, 64, "ckSurf Help (1/4) - v%s\nby Elzi",VERSION);
 	DrawPanelText(panel, title);
 	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!help - opens this menu");
@@ -2022,7 +2022,7 @@ public HelpPanel2(client)
 {
 	new Handle:panel = CreatePanel();
 	decl String:szTmp[64];
-	Format(szTmp, 64, "ckSurf Help (2/3) - v%s\nby Elzi",VERSION);
+	Format(szTmp, 64, "ckSurf Help (2/4) - v%s\nby Elzi",VERSION);
 	DrawPanelText(panel, szTmp);
 	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!start/!r - go back to start");
@@ -2060,7 +2060,7 @@ public HelpPanel3(client)
 {
 	new Handle:panel = CreatePanel();
 	decl String:szTmp[64];
-	Format(szTmp, 64, "ckSurf Help (3/3) - v%s\nby Elzi",VERSION);
+	Format(szTmp, 64, "ckSurf Help (3/4) - v%s\nby Elzi",VERSION);
 	DrawPanelText(panel, szTmp);
 	DrawPanelText(panel, " ");	
 	DrawPanelText(panel, "!maptop <mapname> - displays map top for a given map");
@@ -2070,6 +2070,8 @@ public HelpPanel3(client)
 	DrawPanelText(panel, "!language - opens the language menu");
 	DrawPanelText(panel, "!wr - prints in chat the record of the current map");
 	DrawPanelText(panel, "!avg - prints in chat the average map time");
+	DrawPanelText(panel, "!stuck / !back - teleports player back to the start of the stage. Does not stop timer");
+	DrawPanelText(panel, "!avg - !");
 	DrawPanelText(panel, " ");
 	DrawPanelItem(panel, "previous page");
 	DrawPanelItem(panel, "exit");
@@ -2077,6 +2079,37 @@ public HelpPanel3(client)
 	CloseHandle(panel);
 }
 public HelpPanel3Handler(Handle:menu, MenuAction:action, param1, param2)
+{
+	if (action == MenuAction_Select)
+	{
+		if(param2==1)
+			HelpPanel2(param1);
+		else
+			if(param2==2)
+				HelpPanel4(param1);
+			else
+				g_bMenuOpen[param1] = false;
+	}
+}
+
+public HelpPanel4(client)
+{
+	new Handle:panel = CreatePanel();
+	decl String:szTmp[64];
+	Format(szTmp, 64, "ckSurf Help (4/4) - v%s\nby Elzi",VERSION);
+	DrawPanelText(panel, szTmp);
+	DrawPanelText(panel, " ");	
+	DrawPanelText(panel, "!cp - Creates a checkpoint to use in practice mode.");
+	DrawPanelText(panel, "!tele / !teleport / !practice / !prac - Starts practice mode");
+	DrawPanelText(panel, "!undo - Undoes your latest checkpoint");
+	DrawPanelText(panel, " ");
+	DrawPanelItem(panel, "previous page");
+	DrawPanelItem(panel, "exit");
+	SendPanelToClient(panel, client, HelpPanel4Handler, 10000);
+	CloseHandle(panel);
+}
+
+public HelpPanel4Handler(Handle:menu, MenuAction:action, param1, param2)
 {
 	if (action == MenuAction_Select)
 	{
