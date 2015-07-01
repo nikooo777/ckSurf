@@ -3034,12 +3034,15 @@ public sql_selectRecordCheckpointsCallback(Handle:owner, Handle:hndl, const Stri
 
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
+		g_bCheckpointRecordFound = true;
 		new k = 2;
 		for (new i = 0; i < 20; i++) {
 			g_fCheckpointServerRecord[i] = SQL_FetchFloat(hndl, k);
 			k++;
 		}
-	}	
+	}
+	else
+		g_bCheckpointRecordFound = false;
 }
 
 public db_viewCheckpoints(client, String:szSteamID[32], String:szMapName[128])
@@ -3056,38 +3059,40 @@ public SQL_selectCheckpointsCallback(Handle:owner, Handle:hndl, const String:err
 		LogError("[ckSurf] SQL Error (SQL_selectCheckpointsCallback): %s", error);
 		return;
 	}
+
 	new client = data;
+
+	if (!IsValidClient(client))
+		return;
+
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
 		new k = 2;
+		g_bCheckpointsFound[client] = true;
 		for (new i = 0; i < 20; i++) {
 			g_fCheckpointTimesRecord[client][i] = SQL_FetchFloat(hndl, k);
 			k++;
 		}
 	}
+	else
+		g_bCheckpointsFound[client] = false;
+
 }
 
 public db_UpdateCheckpoints(client, String:szSteamID[32])
 {
-	decl Float:total, Float:current;
-	for (new i = 0; i < 20; i++) {
-		total += g_fCheckpointTimesRecord[client][i];
-		current += g_fCheckpointTimesNew[client][i];
-	}
-	
-	if (total > 1.0 && current > 1.0)
+	if (g_bCheckpointsFound[client])
 	{
 		decl String:szQuery[1024];
 		Format(szQuery, 1024, sql_updateCheckpoints, g_fCheckpointTimesNew[client][0], g_fCheckpointTimesNew[client][1], g_fCheckpointTimesNew[client][2], g_fCheckpointTimesNew[client][3], g_fCheckpointTimesNew[client][4], g_fCheckpointTimesNew[client][5], g_fCheckpointTimesNew[client][6], g_fCheckpointTimesNew[client][7], g_fCheckpointTimesNew[client][8], g_fCheckpointTimesNew[client][9], g_fCheckpointTimesNew[client][10], g_fCheckpointTimesNew[client][11], g_fCheckpointTimesNew[client][12], g_fCheckpointTimesNew[client][13], g_fCheckpointTimesNew[client][14], g_fCheckpointTimesNew[client][15], g_fCheckpointTimesNew[client][16], g_fCheckpointTimesNew[client][17], g_fCheckpointTimesNew[client][18], g_fCheckpointTimesNew[client][19], szSteamID, g_szMapName);
 		SQL_TQuery(g_hDb, SQL_updateCheckpointsCallback, szQuery, client, DBPrio_Low);
 	}
 	else 
-		if (current > 1.0)
-		{
-			decl String:szQuery[1024];
-			Format(szQuery, 1024, sql_insertCheckpoints, szSteamID, g_szMapName, g_fCheckpointTimesNew[client][0], g_fCheckpointTimesNew[client][1], g_fCheckpointTimesNew[client][2], g_fCheckpointTimesNew[client][3], g_fCheckpointTimesNew[client][4], g_fCheckpointTimesNew[client][5], g_fCheckpointTimesNew[client][6], g_fCheckpointTimesNew[client][7], g_fCheckpointTimesNew[client][8], g_fCheckpointTimesNew[client][9], g_fCheckpointTimesNew[client][10], g_fCheckpointTimesNew[client][11], g_fCheckpointTimesNew[client][12], g_fCheckpointTimesNew[client][13], g_fCheckpointTimesNew[client][14], g_fCheckpointTimesNew[client][15], g_fCheckpointTimesNew[client][16], g_fCheckpointTimesNew[client][17], g_fCheckpointTimesNew[client][18], g_fCheckpointTimesNew[client][19]);
-			SQL_TQuery(g_hDb, SQL_insertCheckpointsCallback, szQuery, client, DBPrio_Low);
-		}
+	{
+		decl String:szQuery[1024];
+		Format(szQuery, 1024, sql_insertCheckpoints, szSteamID, g_szMapName, g_fCheckpointTimesNew[client][0], g_fCheckpointTimesNew[client][1], g_fCheckpointTimesNew[client][2], g_fCheckpointTimesNew[client][3], g_fCheckpointTimesNew[client][4], g_fCheckpointTimesNew[client][5], g_fCheckpointTimesNew[client][6], g_fCheckpointTimesNew[client][7], g_fCheckpointTimesNew[client][8], g_fCheckpointTimesNew[client][9], g_fCheckpointTimesNew[client][10], g_fCheckpointTimesNew[client][11], g_fCheckpointTimesNew[client][12], g_fCheckpointTimesNew[client][13], g_fCheckpointTimesNew[client][14], g_fCheckpointTimesNew[client][15], g_fCheckpointTimesNew[client][16], g_fCheckpointTimesNew[client][17], g_fCheckpointTimesNew[client][18], g_fCheckpointTimesNew[client][19]);
+		SQL_TQuery(g_hDb, SQL_insertCheckpointsCallback, szQuery, client, DBPrio_Low);
+	}
 }
 
 public SQL_updateCheckpointsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)

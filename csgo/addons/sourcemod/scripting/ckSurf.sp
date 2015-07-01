@@ -171,7 +171,8 @@ new Float:g_fCheckpointTimesNew[MAXPLAYERS+1][20];		// Clients current runs time
 new Float:g_fCheckpointServerRecord[20];
 new Float:tmpDiff[MAXPLAYERS+1];
 new lastCheckpoint[MAXPLAYERS+1];
-
+new bool:g_bCheckpointsFound[MAXPLAYERS+1];
+new bool:g_bCheckpointRecordFound;
 ///////////////////
 //Advert Variable//
 ///////////////////
@@ -739,6 +740,7 @@ public OnMapStart()
 			g_fCheckpointTimesRecord[k][i] = 0.0;
 		}
 	}
+	g_bCheckpointRecordFound = false;
 	g_insertingInformation = false;
 	g_bFirstStartButtonPush=true;
 	g_bTierFound = false;

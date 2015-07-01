@@ -638,6 +638,7 @@ public SetClientDefaults(client)
 	Format(g_szPersonalRecordBonus[client], 32, "");
 	g_bValidRun[client] = false;
 	g_fMaxPercCompleted[client] = 0.0;
+	g_bCheckpointsFound[client] = false;
 
 
 	// Player Checkpoints
@@ -2337,17 +2338,14 @@ public Checkpoint(client, zone)
 
 	if (zone > 19)
 	{
-		LogError("Maximum number of checkpoints reached! (20)");
 		return;
 	}
 	
 	new Float:time = g_fCurrentRunTime[client];
-	new Float:total = 0.0;
 	new totalPoints = 0;
 	new Float:percent = -1.0;
 	new String:szPercnt[24];
-	for (new i = 0; i < 5; i++)
-		total = total + g_fCheckpointTimesRecord[client][i];
+
 
 	if (g_mapZonesTypeCount[5]>0) // If staged map
 		totalPoints = g_mapZonesTypeCount[5];
@@ -2372,14 +2370,9 @@ public Checkpoint(client, zone)
 
 
 	// Server record difference
-	decl Float:checkRecord;
 	new String:sz_srDiff[128];
 
-	// Check that there is a record & data of it
-	for (new i = 0; i < 5; i++)
-		checkRecord = checkRecord + g_fCheckpointServerRecord[i];
-
-	if (checkRecord > 1.0)
+	if (g_bCheckpointRecordFound)
 	{
 		new Float:f_srDiff = (g_fCheckpointServerRecord[zone] - time);
 
@@ -2399,7 +2392,7 @@ public Checkpoint(client, zone)
 
 
 	// Has completed the map before
-	if (total > 1.0 && g_bTimeractivated[client] && !g_bCheckpointMode[client])  
+	if (g_bCheckpointsFound[client] && g_bTimeractivated[client] && !g_bCheckpointMode[client])  
 	{
 		// Set percent of completion to assist
 		if (CS_GetMVPCount(client) < 1)
