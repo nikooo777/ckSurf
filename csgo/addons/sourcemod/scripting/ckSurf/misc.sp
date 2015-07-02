@@ -811,7 +811,6 @@ public InitPrecache()
 	g_Beam[0] = PrecacheModel("materials/sprites/laser.vmt", true);
 	g_Beam[1] = PrecacheModel("materials/sprites/halo01.vmt", true);
 	g_Beam[2] = PrecacheModel("materials/sprites/bluelaser1.vmt", true);
-	PrecacheModel("models/props/switch001.mdl",true);	
 	PrecacheModel(g_sReplayBotArmModel,true);
 	PrecacheModel(g_sReplayBotPlayerModel,true);
 	PrecacheModel(g_sArmModel,true);
@@ -2336,7 +2335,7 @@ public CenterHudAlive(client)
 
 public Checkpoint(client, zone)
 {
-	if (!IsValidClient(client) || g_bPositionRestored[client])
+	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client))
 		return;
 
 	if (zone > 19)
