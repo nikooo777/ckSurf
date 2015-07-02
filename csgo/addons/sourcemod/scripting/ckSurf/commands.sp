@@ -46,6 +46,10 @@ public Action:Command_goToPlayerCheckpoint(client, args)
 		{
 			PrintToChat(client, "[%cCK%c] %cTeleport mode started! Use %c!normal%c or %c!n %c to get back to normal mode!", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
 			PrintToChat(client, "[%cCK%c] %cCreate new checkpoints with %c!cp%c or undo your last checkpoint with %c!undo %c.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+
+			g_binStartZone[client] = false;
+			g_binSpeedZone[client] = false;
+			g_binBonusStartZone[client] = false;
 			g_bCheckpointMode[client] = true;
 		}
 

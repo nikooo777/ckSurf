@@ -1507,6 +1507,8 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 					decl String:szBuffer[64];
 					if(g_bMapReplay)
 						count++;
+					if(g_bMapBonusReplay)
+						count++;
 					Format(szBuffer, sizeof(szBuffer), "bot_quota %i", count); 	
 					ServerCommand(szBuffer);							
 				}

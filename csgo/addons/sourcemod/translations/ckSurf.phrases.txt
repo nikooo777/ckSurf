@@ -361,20 +361,40 @@
 		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:s}"
 		"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your best run. ({6}{7}{8}).{9}"
 	}
+	"Checkpoint1-spec"
+	{
+		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:s}"
+		"en"		"[{1}CK{2}] {3}Spec-CP: {4} {5}compared to {6}{7}{8}'s best run. ({9}{10}{11}).{12}"
+	}
 	"Checkpoint2"
 	{
 		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:s}"
 		"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your PB. {6} {7}({8}{9}{10}).{11}"
+	}
+	"Checkpoint2-spec"
+	{
+		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:s},{10:c},{11:c},{12:s},{13:c},{14:s}"
+		"en"		"[{1}CK{2}] {3}Spec-CP: {4} {5}compared to {6}{7}{8}'s PB. {9} {10}({11}{12}{13}).{14}"
 	}
 	"Checkpoint3"
 	{
 		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:s}"
 		"en"		"[{1}CK{2}]{3} CP: Completed{4} {5} {6}of the map in {7}{8}.{9}"
 	}
+	"Checkpoint3-spec"
+	{
+		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:s}"
+		"en"		"[{1}CK{2}]{3} Spec-CP: {4}{5}{6} Completed{7} {8} {9}of the map in {10}{11}.{12}"
+	}
 	"Checkpoint4"
 	{
 		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:i}"
 		"en"	  	"[{1}CK{2}]{3} CP: Reached checkpoint{4} {5}"
+	}
+	"Checkpoint4-spec"
+	{
+		"#format" 	"{1:c},{2:c},{3:c},{4:c}{5:s},{6:c},{7:c},{8:i}"
+		"en"	  	"[{1}CK{2}]{3} Spec-CP: {4}{5}{6} Reached checkpoint{7} {8}"
 	}
 	"GrewCheckpoint"
 	{

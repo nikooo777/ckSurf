@@ -1507,7 +1507,8 @@ public SpecList(client)
 		return; 
 	if (g_bMenuOpen[client] || g_bClimbersMenuOpen[client]) 
 		return;
-	if(!StrEqual(g_szPlayerPanelText[client],""))
+
+	if(!StrEqual(g_szPlayerPanelText[client],"") && g_bShowSpecs[client])
 	{
 		new Handle:panel = CreatePanel();
 		DrawPanelText(panel, g_szPlayerPanelText[client]);
@@ -2123,6 +2124,8 @@ public LoadInfoBot()
 		new count = 0;
 		if (g_bMapReplay)
 			count++;
+		if (g_bMapBonusReplay)
+			count++;
 		if (g_bInfoBot)
 			count++;
 		if (count==0)
@@ -2342,9 +2345,10 @@ public Checkpoint(client, zone)
 	}
 	
 	new Float:time = g_fCurrentRunTime[client];
-	new totalPoints = 0;
 	new Float:percent = -1.0;
+	new totalPoints = 0;
 	new String:szPercnt[24];
+	new String:szSpecMessage[512];
 
 
 	if (g_mapZonesTypeCount[5]>0) // If staged map
@@ -2420,6 +2424,8 @@ public Checkpoint(client, zone)
 				//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}, {9:s}"
 				//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your best run. ({6}{7}{8}).{9}"
 				PrintToChat(client, "%t", "Checkpoint1", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint1-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,g_szProfileName[client],YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+				CheckpointToSpec(client, szSpecMessage);
 		}
 		else
 		{
@@ -2453,6 +2459,8 @@ public Checkpoint(client, zone)
 			//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:s}"
 			//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your PB. {6} {7}({8}{9}{10}).{11}"
 			PrintToChat(client, "%t", "Checkpoint2",MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint2-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,g_szProfileName[client],YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+			CheckpointToSpec(client, szSpecMessage);
 		}
 		// Saving difference time for next checkpoint
 		tmpDiff[client] = diff;	
@@ -2472,11 +2480,36 @@ public Checkpoint(client, zone)
 			// "#format" "{1:c},{2:c},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:s}"
 			// "en"		 "[{1}CK{2}]{3} CP: Completed{4} {5} {6}of the map in {7}{8}.{9}"
 			if (percent > -1.0)
+			{
 				PrintToChat(client, "%t", "Checkpoint3", MOSSGREEN, WHITE, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
-		}
+				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint3-spec", MOSSGREEN, WHITE, YELLOW, WHITE, g_szProfileName[client], YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
+				CheckpointToSpec(client, szSpecMessage);
+			}
+		}		
 			// "#format" "{1:c},{2:c},{3:c},{4:c},{5:i}"
 			// "en"		 "[{1}CK{2}]{3} CP: Reached checkpoint{4} {5}"
 		else
+		{
 			PrintToChat(client, "%t", "Checkpoint4", MOSSGREEN,WHITE,YELLOW,WHITE,(1+zone));
+			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint4-spec", MOSSGREEN,WHITE,YELLOW,WHITE,g_szProfileName[client],YELLOW,WHITE,(1+zone));
+			CheckpointToSpec(client, szSpecMessage);
+		}
 }
 
+public CheckpointToSpec(client, String:buffer[512])
+{
+	new SpecMode;
+	for(new x = 1; x <= MaxClients; x++) 
+	{
+		if (IsValidClient(x) && !IsPlayerAlive(x))
+		{			
+			SpecMode = GetEntProp(x, Prop_Send, "m_iObserverMode");
+			if (SpecMode == 4 || SpecMode == 5)
+			{		
+				new Target = GetEntPropEnt(x, Prop_Send, "m_hObserverTarget");	
+				if (Target == client)
+					PrintToChat(x, "%s", buffer); 
+			}					
+		}		
+	}
+}
