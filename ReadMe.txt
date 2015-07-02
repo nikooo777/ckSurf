@@ -1,5 +1,5 @@
 
-ckSurf 1.11
+ckSurf 1.12
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,10 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+
+1.12
+- Fixed issue with practice mode when starting in the start-zone
+- Checkpoints are now visible when spectating.
 
 1.11 Release
 - Added things to the ckAdmin & !help menu
