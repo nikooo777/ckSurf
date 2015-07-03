@@ -31,6 +31,14 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 Changelog 
 
+1.13
+- Chat spam protection added
+	- ck_chat_spam_protection - the amount of seconds inbetween messages a player can send
+- Practice mode strings moved to translation file
+- Disabled creating checkpoints in the start zones
+- Removing a maptime now removes checkpoints also
+- !togglecheckpoints - Hides checkpoints 
+
 1.12
 - Fixed issue with practice mode when starting in the start-zone
 - Checkpoints are now visible when spectating.
