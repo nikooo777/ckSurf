@@ -1,5 +1,60 @@
 "Phrases"
 {
+	"PracticeNormal"
+	{
+		"#format"	"{1:c},{2:c},{3:c}"
+		"en"		"[{1}CK{2}] Normal mode activated. Change to teleport mode by writing {3}!prac"
+	}
+	"PracticeInStartZone"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}CK{2}] Can't make a checkpoint inside the start zone!"
+	}
+	"PracticePointCreated"
+	{
+		"#format"   "{1:c},{2:c},{3:c},{4:c}"
+		"en"        "[{1}CK{2}] Player Checkpoint created. Use {3}!prac{4} to start the practice mode."
+	}
+	"PracticeStarted"
+	{
+		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:c}"
+		"en"        "[{1}CK{2}] Practice mode started! Use {3}!normal{4} or {5}!n {6} to get back to normal mode!"
+	}
+	"PracticeStarted2"
+	{
+		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:c}"
+		"en"        "[{1}CK{2}] Create new checkpoints with {3}!cp{4} or undo your last checkpoint with {5}!undo {6}."
+	}
+	"PracticeStartError"
+	{
+		"#format"   "{1:c},{2:c},{3:c}"
+		"en"        "[{1}CK{2}] You don't have a checkpoint to teleport to! Create one by using %c!cp"	
+	}
+	"PracticeUndo"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}CK{2}] Undid your last Player Checkpoint."	
+	}
+	"PracticeUndoError"
+	{
+		"#format"   "{1:c},{2:c},{3:c}"
+		"en"        "[{1}CK{2}] You don't have a checkpoint to undo! Create a checkpoint by using %c!cp"
+	}
+	"ToogleCheckpoints1"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}CK{2}] Checkpoints disabled."
+	}
+	"ToggleCheckpoints2"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}CK{2}] Checkpoints Enabled."
+	}
+	"ToggleCheckpoints3"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}CK{2}] Checkpoints will be enabled when you restart your timer."
+	}
 	"HideChat1"
 	{
 		"#format"   "{1:c},{2:c}"

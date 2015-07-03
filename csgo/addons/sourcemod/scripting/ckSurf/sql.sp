@@ -42,7 +42,7 @@ new String:sql_updateBonus[]					= "UPDATE ck_bonus SET runtime = '%f', name = '
 new String:sql_selectBonusCount[]				= "SELECT count(*) FROM ck_bonus WHERE mapname = '%s'";
 new String:sql_selectPersonalBonusRecords[] 	= "SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
 new String:sql_selectPlayerRankBonus[] 			= "SELECT count(*) FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0) AND mapname = '%s'";
-new String:sql_selectFastestBonus[]				= "SELECT MIN(runtime), name FROM ck_bonus WHERE mapname = '%s'";
+new String:sql_selectFastestBonus[]				= "SELECT db2.runtime, db1.name, db1.steamid, db2.steamid FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db1.steamid = db2.steamid WHERE db2.mapname = '%s' AND db2.runtime  > -1.0 ORDER BY db2.runtime ASC LIMIT 1";
 new String:sql_selectPersonalBonusCompleted[]	= "SELECT count(*) FROM ck_bonus WHERE steamid = '%s'";
 new String:sql_deleteBonus[]					= "DELETE FROM ck_bonus WHERE mapname = '%s'";
 
@@ -60,10 +60,10 @@ new String:sql_insertLatestRecords[] 			= "INSERT INTO ck_latestrecords (steamid
 new String:sql_selectLatestRecords[] 			= "SELECT name, runtime, map, date FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
 
 //TABLE PLAYEROPTIONS
-new String:sql_createPlayerOptions[] 			= "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', PRIMARY KEY(steamid));";
+new String:sql_createPlayerOptions[] 			= "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', checkpoints INT(12) DEFAULT '1', PRIMARY KEY(steamid));";
 new String:sql_insertPlayerOptions[] 			= "INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i');";
-new String:sql_selectPlayerOptions[] 			= "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3 FROM ck_playeroptions where steamid = '%s'";
-new String:sql_updatePlayerOptions[]			= "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i' where steamid = '%s'";
+new String:sql_selectPlayerOptions[] 			= "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints FROM ck_playeroptions where steamid = '%s'";
+new String:sql_updatePlayerOptions[]			= "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i' where steamid = '%s'";
 
 //TABLE PLAYERRANK
 new String:sql_createPlayerRank[]				= "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12)  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
@@ -121,6 +121,7 @@ new String:sqlite_dropPlayerRank[] 				= "DROP TABLE ck_playerrank; VACCUM";
 new String:sql_resetRecords[] 					= "DELETE FROM ck_playertimes WHERE steamid = '%s'";
 new String:sql_resetRecords2[] 					= "DELETE FROM ck_playertimes WHERE steamid = '%s' AND mapname LIKE '%s';";
 new String:sql_resetRecordPro[] 				= "UPDATE ck_playertimes SET runtimepro = '-1.0' WHERE steamid = '%s' AND mapname LIKE '%s';";
+new String:sql_resetCheckpoints[]				= "DELETE FROM ck_checkpoints WHERE steamid = '%s' AND mapname LIKE '%s';";
 new String:sql_resetMapRecords[] 				= "DELETE FROM ck_playertimes WHERE mapname = '%s'";
 
 ////////////////////////
@@ -157,6 +158,8 @@ public db_setupDatabase()
 	SQL_FastQuery(g_hDb,"SET NAMES  'utf8'");
 
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS ck_mapbuttons");
+	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playeroptions ADD checkpoints INT DEFAULT 1;");
+
 
 	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
 		db_renameTables();
@@ -2018,15 +2021,18 @@ public sql_insertChallengesCallback(Handle:owner, Handle:hndl, const String:erro
 
 public db_resetPlayerMapRecord(client, String:steamid[128], String:szMapName[128])
 {
-	decl String:szQuery[255];      
+	decl String:szQuery[255];
+	decl String:szQuery2[255];
 	decl String:szsteamid[128*2+1];
 	
 	SQL_EscapeString(g_hDb, steamid, szsteamid, 128*2+1);      
-	Format(szQuery, 255, sql_resetRecordPro, szsteamid, szMapName);   
+	Format(szQuery, 255, sql_resetRecordPro, szsteamid, szMapName);
+	Format(szQuery2, 255, sql_resetCheckpoints, szsteamid, szMapName);  
 	new Handle:pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackString(pack, steamid);	    
-	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery,pack);	    
+	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery,pack);
+	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery2,1);	    
 	PrintToConsole(client, "map time of %s on %s cleared.", steamid, szMapName);
     
 	if (StrEqual(szMapName,g_szMapName))
@@ -2620,7 +2626,7 @@ public SQL_ViewRecordCallback5(Handle:owner, Handle:hndl, const String:error[], 
 					          
 			DrawPanelText(panel, szVrRank);
 			DrawPanelText(panel, " ");
-			DrawPanelText(panel, "Pro time:");
+			DrawPanelText(panel, "Time:");
 			DrawPanelText(panel, szVrTimePro);
 			DrawPanelText(panel, szVrRankPro);
 			DrawPanelText(panel, " ");
@@ -3436,6 +3442,7 @@ public SQL_updateBonusCallback(Handle:owner, Handle:hndl, const String:error[], 
 			db_viewMapRankBonus2(i);
 	}
 	CalculatePlayerRank(client);
+	db_viewFastestBonus();
 }
 
 public SQL_deleteBonusCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -3462,6 +3469,7 @@ public SQL_insertBonusCallback(Handle:owner, Handle:hndl, const String:error[], 
 			db_viewMapRankBonus2(i);
 	}
 	CalculatePlayerRank(client);
+	db_viewFastestBonus();
 }	
 
 public SQL_selectFastestBonusCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -3474,13 +3482,12 @@ public SQL_selectFastestBonusCallback(Handle:owner, Handle:hndl, const String:er
 
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		SQL_FetchString(hndl, 1, szBonusFastest, 54);
+		SQL_FetchString(hndl, 1, szBonusFastest, MAX_NAME_LENGTH);
 		g_fBonusFastest = SQL_FetchFloat(hndl, 0);
 		FormatTimeFloat(1, g_fBonusFastest, 3, szBonusFastestTime, sizeof(szBonusFastestTime));
 	} 
 	else 
 	{
-		PrintToServer("Error getting fastest time: %s", error);
 		g_fBonusFastest = 9999999.0;
 	}
 	
@@ -4656,7 +4663,7 @@ public SQL_CheckCallback3(Handle:owner, Handle:hndl, const String:error[], any:d
 	new client = ReadPackCell(pack);
 	decl String:steamid[128];
 	ReadPackString(pack, steamid, 128);	
-	CloseHandle(pack);
+	CloseHandle(pack);	
 	RecalcPlayerRank(client, steamid);
 	db_viewMapProRankCount();
 	db_GetMapRecord_Pro();
@@ -4725,6 +4732,7 @@ public db_viewPlayerOptionsCallback(Handle:owner, Handle:hndl, const String:erro
 		g_bStartWithUsp[client]=IntoBool(SQL_FetchInt(hndl, 9));
 		g_bHideChat[client]=IntoBool(SQL_FetchInt(hndl, 10));
 		g_bViewModel[client]=IntoBool(SQL_FetchInt(hndl, 11));
+		g_bCheckpointsEnabled[client]=IntoBool(SQL_FetchInt(hndl, 12));
 		
 		//org
 		g_borg_AutoBhopClient[client] = g_bAutoBhopClient[client];
@@ -4738,7 +4746,7 @@ public db_viewPlayerOptionsCallback(Handle:owner, Handle:hndl, const String:erro
 		g_borg_ShowSpecs[client] = g_bShowSpecs[client]; 
 		g_borg_HideChat[client] = g_bHideChat[client];
 		g_borg_ViewModel[client] = g_bViewModel[client];
-
+		g_borg_CheckpointsEnabled[client] = g_bCheckpointsEnabled[client];
 	}
 	else
 	{
@@ -4746,28 +4754,31 @@ public db_viewPlayerOptionsCallback(Handle:owner, Handle:hndl, const String:erro
 		if (!IsValidClient(client))
 			return;
 
-		Format(szQuery, 512, sql_insertPlayerOptions, g_szSteamID[client], 1,1,1,1,1,0,0,1,"weapon_knife",0,0,1);
+		Format(szQuery, 512, sql_insertPlayerOptions, g_szSteamID[client], 1,1,1,1,1,0,0,1,"weapon_knife",0,0,1,1);
 		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);			
 		g_borg_InfoPanel[client] = true;
+		g_borg_EnableQuakeSounds[client] = true;
+		g_borg_AutoBhopClient[client] = true;
 		g_borg_ShowNames[client] = true;
 		g_borg_GoToClient[client] = true;
 		g_borg_ShowTime[client] = false; 
 		g_borg_Hide[client] = false;
-		g_borg_ShowSpecs[client] = true; 
+		g_borg_ShowSpecs[client] = true;
+		// weapon_knife
 		g_borg_StartWithUsp[client] = false;
-		g_borg_AutoBhopClient[client] = true;
 		g_borg_HideChat[client] = false;
 		g_borg_ViewModel[client] = true;
+		g_borg_CheckpointsEnabled[client] = true;
 	}
 }
 
 public db_updatePlayerOptions(client)
 {
-	if (g_borg_ViewModel[client] != g_bViewModel[client] || g_borg_HideChat[client] != g_bHideChat[client] || g_borg_StartWithUsp[client] != g_bStartWithUsp[client] || g_borg_AutoBhopClient[client] != g_bAutoBhopClient[client] || g_borg_InfoPanel[client] != g_bInfoPanel[client] || g_borg_EnableQuakeSounds[client] != g_bEnableQuakeSounds[client] || g_borg_ShowNames[client] != g_bShowNames[client] || g_borg_GoToClient[client] != g_bGoToClient[client] || g_borg_ShowTime[client] != g_bShowTime[client] || g_borg_Hide[client] != g_bHide[client] || g_borg_ShowSpecs[client] != g_bShowSpecs[client])
+	if (g_borg_ViewModel[client] != g_bViewModel[client] || g_borg_HideChat[client] != g_bHideChat[client] || g_borg_StartWithUsp[client] != g_bStartWithUsp[client] || g_borg_AutoBhopClient[client] != g_bAutoBhopClient[client] || g_borg_InfoPanel[client] != g_bInfoPanel[client] || g_borg_EnableQuakeSounds[client] != g_bEnableQuakeSounds[client] || g_borg_ShowNames[client] != g_bShowNames[client] || g_borg_GoToClient[client] != g_bGoToClient[client] || g_borg_ShowTime[client] != g_bShowTime[client] || g_borg_Hide[client] != g_bHide[client] || g_borg_ShowSpecs[client] != g_bShowSpecs[client] || g_borg_CheckpointsEnabled[client] != g_bCheckpointsEnabled[client])
 	{
 		decl String:szQuery[1024];
 
-		Format(szQuery, 1024, sql_updatePlayerOptions, BooltoInt(g_bInfoPanel[client]),	BooltoInt(g_bEnableQuakeSounds[client]), BooltoInt(g_bAutoBhopClient[client]),BooltoInt(g_bShowNames[client]),BooltoInt(g_bGoToClient[client]),BooltoInt(g_bShowTime[client]),BooltoInt(g_bHide[client]),BooltoInt(g_bShowSpecs[client]),"weapon_knife",BooltoInt(g_bStartWithUsp[client]),BooltoInt(g_bHideChat[client]),BooltoInt(g_bViewModel[client]),g_szSteamID[client]);
+		Format(szQuery, 1024, sql_updatePlayerOptions, BooltoInt(g_bInfoPanel[client]),	BooltoInt(g_bEnableQuakeSounds[client]), BooltoInt(g_bAutoBhopClient[client]),BooltoInt(g_bShowNames[client]),BooltoInt(g_bGoToClient[client]),BooltoInt(g_bShowTime[client]),BooltoInt(g_bHide[client]),BooltoInt(g_bShowSpecs[client]),"weapon_knife",BooltoInt(g_bStartWithUsp[client]),BooltoInt(g_bHideChat[client]),BooltoInt(g_bViewModel[client]),BooltoInt(g_bCheckpointsEnabled[client]),g_szSteamID[client]);
 		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, client,DBPrio_Low);
 	}
 }

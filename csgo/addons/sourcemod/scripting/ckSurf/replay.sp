@@ -11,7 +11,10 @@ public Action:RespawnBot(Handle:timer, any:userid)
 		return Plugin_Stop;
 	
 	if(g_hBotMimicsRecord[client] != INVALID_HANDLE && IsValidClient(client) && !IsPlayerAlive(client) && IsFakeClient(client) && GetClientTeam(client) >= CS_TEAM_T)
+	{
+		TeamChangeActual(client, 2);
 		CS_RespawnPlayer(client);
+	}
 	
 	return Plugin_Stop;
 }
@@ -235,7 +238,10 @@ public PlayRecord(client, type)
 	SDKHook(client, SDKHook_WeaponCanSwitchTo, Hook_WeaponCanSwitchTo);
 	// Respawn him to get him moving!
 	if(IsValidClient(client) && !IsPlayerAlive(client) && GetClientTeam(client) >= CS_TEAM_T)
+	{
+		TeamChangeActual(client, 2);
 		CS_RespawnPlayer(client);
+	}
 }
 
 
@@ -334,7 +340,10 @@ public LoadRecordReplay()
 		g_RecordBot = i;
 		g_fCurrentRunTime[g_RecordBot] = 0.0;
 		if(!IsPlayerAlive(i))
+		{
+			TeamChangeActual(i, 2);
 			CS_RespawnPlayer(i);
+		}
 
 		break;
 	}
@@ -389,7 +398,10 @@ public LoadBonusReplay()
 		g_fCurrentRunTime[g_BonusBot] = 0.0;
 		
 		if(!IsPlayerAlive(i))
+		{
+			TeamChangeActual(i, 2);
 			CS_RespawnPlayer(i);
+		}
 
 		break;
 	}

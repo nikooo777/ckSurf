@@ -4,7 +4,7 @@ public Action:Command_normalMode(client, args)
 		return Plugin_Handled;
 
 	g_bCheckpointMode[client] = false;
-	PrintToChat(client, "[%cCK%c] %cNormal mode activated. Change to teleport mode by writing %c!tele", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+	PrintToChat(client, "%t", "PracticeNormal", MOSSGREEN, WHITE, MOSSGREEN);
 	return Plugin_Handled;
 }
 
@@ -12,6 +12,12 @@ public Action:Command_createPlayerCheckpoint(client, args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
+
+	if (g_binBonusStartZone[client] || g_binStartZone[client] || g_binSpeedZone[client])
+	{
+		PrintToChat(client, "%t", "PracticeInStartZone", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
 
 	new Float:CheckpointTime = GetEngineTime();
 
@@ -30,7 +36,7 @@ public Action:Command_createPlayerCheckpoint(client, args)
 	GetClientEyeAngles(client, g_fCheckpointAngle[client]);
 
 
-	PrintToChat(client, "[%cCK%c] %cPlayer Checkpoint created. Use %c!tele %cto start the teleport mode.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+	PrintToChat(client, "%t", "PracticePointCreated", MOSSGREEN, WHITE, MOSSGREEN, WHITE);
 
 	return Plugin_Handled;
 }
@@ -44,8 +50,8 @@ public Action:Command_goToPlayerCheckpoint(client, args)
 	{
 		if (g_bCheckpointMode[client] == false)
 		{
-			PrintToChat(client, "[%cCK%c] %cTeleport mode started! Use %c!normal%c or %c!n %c to get back to normal mode!", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
-			PrintToChat(client, "[%cCK%c] %cCreate new checkpoints with %c!cp%c or undo your last checkpoint with %c!undo %c.", MOSSGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN, WHITE, LIMEGREEN);
+			PrintToChat(client, "%t", "PracticeStarted", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE);
+			PrintToChat(client, "%t", "PracticeStarted2", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE);
 
 			g_binStartZone[client] = false;
 			g_binSpeedZone[client] = false;
@@ -59,7 +65,7 @@ public Action:Command_goToPlayerCheckpoint(client, args)
 		//PrintToChat(client, "[%cCK%c] %cTeleported to last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
 	}
 	else
-		PrintToChat(client, "[%cCK%c] %cYou don't have a checkpoint to teleport to! Create one by using %c!cp", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+		PrintToChat(client, "%t", "PracticeStartError", MOSSGREEN, WHITE, MOSSGREEN);
 
 	return Plugin_Handled;
 }
@@ -90,10 +96,10 @@ public Action:Command_undoPlayerCheckpoint(client, args)
 		Array_Copy(g_fCheckpointAngle[client], g_fCheckpointAngle_undo[client], 3);
 		Array_Copy(tempAngle, g_fCheckpointAngle[client], 3);
 
-		PrintToChat(client, "[%cCK%c] %cUndid your last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
+		PrintToChat(client, "%t","PracticeUndo", MOSSGREEN, WHITE);
 	}
 	else
-		PrintToChat(client, "[%cCK%c] %cYou don't have a checkpoint to undo! Create a checkpoint by using %c!cp", MOSSGREEN, WHITE, LIMEGREEN, WHITE);
+		PrintToChat(client, "%t","PracticeUndoError", MOSSGREEN, WHITE, MOSSGREEN);
 
 	return Plugin_Handled;
 }
@@ -536,6 +542,34 @@ public HideChat(client)
 		g_bHideChat[client]=false;
 		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
 	}
+}
+
+public Action:ToggleCheckpoints(client, args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	if (g_bCheckpointsEnabled[client])
+	{
+		g_bCheckpointsEnabled[client] = false;
+		if (g_bActivateCheckpointsOnStart[client])
+			g_bActivateCheckpointsOnStart[client] = false;
+		PrintToChat(client, "%t", "ToogleCheckpoints1",MOSSGREEN, WHITE);
+	}
+	else
+	{
+		if (g_bTimeractivated[client])
+		{
+			PrintToChat(client, "%t", "ToggleCheckpoints3",MOSSGREEN, WHITE);
+			g_bActivateCheckpointsOnStart[client] = true;
+		}
+		else 
+		{
+			g_bCheckpointsEnabled[client] = true;
+			PrintToChat(client, "%t", "ToggleCheckpoints2",MOSSGREEN, WHITE);
+		}
+	}
+	return Plugin_Handled;
 }
 
 public Action:Client_HideWeapon(client, args)
@@ -2246,6 +2280,11 @@ public OptionMenu(client)
 	else 
 		AddMenuItem(optionmenu, "Hide Weapon - Hidden", "Hide Weapon - Hidden");
 
+	if (g_bCheckpointsEnabled[client])
+		AddMenuItem(optionmenu, "Checkpoints - Enabled", "Checkpoints - Enabled");
+	else 
+		AddMenuItem(optionmenu, "Checkpoints - Disabled", "Checkpoints - Disabled");
+
 	SetMenuOptionFlags(optionmenu, MENUFLAG_BUTTON_EXIT);
 	if (g_OptionsMenuLastPage[client] < 6)
 		DisplayMenuAtItem(optionmenu, client, 0, MENU_TIME_FOREVER);
@@ -2320,6 +2359,7 @@ public OptionMenuHandler(Handle:menu, MenuAction:action, param1,param2)
 			case 7: AutoBhop(param1);
 			case 8: HideChat(param1);
 			case 9: HideViewModel(param1);
+			case 10: ToggleCheckpoints(param1, 1);
 		}
 		g_OptionsMenuLastPage[param1] = param2;
 		OptionMenu(param1);					

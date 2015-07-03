@@ -6,14 +6,7 @@ public CL_OnStartTimerPress(client)
 	{	
 		if (g_bNewReplay[client])
 			return;
-	}
-	
-	//timer pos
-	if (g_bFirstStartButtonPush && !IsFakeClient(client))
-	{
-		GetClientAbsOrigin(client,g_fStartButtonPos);
-		g_bFirstStartButtonPush=false;
-	}				
+	}			
 	
 	//sound
 	PlayButtonSound(client);
@@ -37,11 +30,12 @@ public CL_OnStartTimerPress(client)
 		}
 	}			
 	if (!g_bSpectate[client] && !g_bNoClip[client] && time > 2.0) 
-	{	
+	{
+		if (g_bActivateCheckpointsOnStart[client])
+			g_bCheckpointsEnabled[client] = true;
 		tmpDiff[client] = 9999.0;
 		g_fPauseTime[client] = 0.0;
 		g_fStartPauseTime[client] = 0.0;
-		g_bRespawnAtTimer[client] = true;
 		g_bPause[client] = false;
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_NORMAL);
@@ -199,8 +193,9 @@ public CL_OnEndTimerPress(client)
 			FormatTimeFloat(client, difference, 3, szTime, sizeof(szTime));
 		}
 		else
-		{
-			db_UpdateCheckpoints(client, g_szSteamID[client]);
+		{	
+			if (g_bCheckpointsEnabled[client])
+				db_UpdateCheckpoints(client, g_szSteamID[client]);
 			g_pr_finishedmaps[client]++;
 		}
 		new bool: newbest;
@@ -211,7 +206,9 @@ public CL_OnEndTimerPress(client)
 				if (g_ExtraPoints > 0)
 					g_pr_multiplier[client]+=1;
 				Format(g_szTimeDifference[client], 32, "-%s", szTime);
-				db_UpdateCheckpoints(client, g_szSteamID[client]);
+
+				if (g_bCheckpointsEnabled[client])
+					db_UpdateCheckpoints(client, g_szSteamID[client]);
 				newbest=true;
 			}
 			else
@@ -255,9 +252,12 @@ public CL_OnEndTimerPress(client)
 			db_InsertLatestRecords(g_szSteamID[client], szName, g_fFinalTime[client]);
 			
 			// Update Checkpoints
-			for (new i = 0; i < 20; i++) 
+			if (g_bCheckpointsEnabled[client])
 			{
-				g_fCheckpointServerRecord[i] = g_fCheckpointTimesNew[client][i];
+				for (new i = 0; i < 20; i++) 
+				{
+					g_fCheckpointServerRecord[i] = g_fCheckpointTimesNew[client][i];
+				}
 			}
 		} 
 		

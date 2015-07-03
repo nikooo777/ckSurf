@@ -148,6 +148,10 @@ public Action:DelayedStuff(Handle:timer)
 	else
 		SetFailState("<ckSurf> cfg/sourcemod/ckSurf/main.cfg not found.");
 
+	//Bots
+	LoadReplays();
+	LoadInfoBot();
+
 	return Plugin_Handled;
 }
 

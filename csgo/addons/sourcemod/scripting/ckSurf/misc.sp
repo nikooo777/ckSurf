@@ -579,7 +579,6 @@ public LimitSpeed(client, type)
 public SetClientDefaults(client)
 {	
 	g_fLastOverlay[client] = GetEngineTime() - 5.0;	
-
 	g_binBonusStartZone[client] = false;
 	g_binStartZone[client] = false;
 	g_binSpeedZone[client] = false;
@@ -596,7 +595,6 @@ public SetClientDefaults(client)
 		g_bFirstTeamJoin[client] = true;	
 	g_bFirstSpawn[client] = true;
 	g_bSayHook[client] = false;
-	g_bRespawnAtTimer[client] = false;
 	g_bRecalcRankInProgess[client] = false;
 	g_bPause[client] = false;
 	g_bPositionRestored[client] = false;
@@ -620,6 +618,7 @@ public SetClientDefaults(client)
 	g_pr_points[client] = 0;
 	g_fCurrentRunTime[client] = -1.0;
 	g_fPlayerCordsLastPosition[client] = Float:{0.0,0.0,0.0};
+	g_fLastChatMessage[client] = GetEngineTime();
 	g_fPlayerConnectedTime[client] = GetEngineTime();			
 	g_fLastTimeButtonSound[client] = GetEngineTime();
 	g_fLastTimeNoClipUsed[client] = -1.0;
@@ -667,6 +666,7 @@ public SetClientDefaults(client)
 	g_bAutoBhopClient[client]=true;
 	g_bHideChat[client]=false;
 	g_bViewModel[client]=true;
+	g_bCheckpointsEnabled[client] = true;
 }
 
 public clearPlayerCheckPoints(client)
@@ -2335,7 +2335,7 @@ public CenterHudAlive(client)
 
 public Checkpoint(client, zone)
 {
-	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client))
+	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client) || !g_bCheckpointsEnabled[client])
 		return;
 
 	if (zone > 19)
@@ -2392,6 +2392,9 @@ public Checkpoint(client, zone)
 	else
 		Format(sz_srDiff, 128, "");
 
+	// Get clients name for spectators
+	new String:szName[MAX_NAME_LENGTH];
+	GetClientName(client, szName, MAX_NAME_LENGTH);
 
 
 	// Has completed the map before
@@ -2423,7 +2426,7 @@ public Checkpoint(client, zone)
 				//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}, {9:s}"
 				//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your best run. ({6}{7}{8}).{9}"
 				PrintToChat(client, "%t", "Checkpoint1", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
-				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint1-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,g_szProfileName[client],YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint1-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szName,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 				CheckpointToSpec(client, szSpecMessage);
 		}
 		else
@@ -2458,7 +2461,7 @@ public Checkpoint(client, zone)
 			//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:s}"
 			//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your PB. {6} {7}({8}{9}{10}).{11}"
 			PrintToChat(client, "%t", "Checkpoint2",MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
-			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint2-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,g_szProfileName[client],YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint2-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szName,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 			CheckpointToSpec(client, szSpecMessage);
 		}
 		// Saving difference time for next checkpoint
@@ -2481,7 +2484,7 @@ public Checkpoint(client, zone)
 			if (percent > -1.0)
 			{
 				PrintToChat(client, "%t", "Checkpoint3", MOSSGREEN, WHITE, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
-				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint3-spec", MOSSGREEN, WHITE, YELLOW, WHITE, g_szProfileName[client], YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
+				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint3-spec", MOSSGREEN, WHITE, YELLOW, WHITE, szName, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
 				CheckpointToSpec(client, szSpecMessage);
 			}
 		}		
@@ -2490,7 +2493,7 @@ public Checkpoint(client, zone)
 		else
 		{
 			PrintToChat(client, "%t", "Checkpoint4", MOSSGREEN,WHITE,YELLOW,WHITE,(1+zone));
-			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint4-spec", MOSSGREEN,WHITE,YELLOW,WHITE,g_szProfileName[client],YELLOW,WHITE,(1+zone));
+			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint4-spec", MOSSGREEN,WHITE,YELLOW,WHITE,szName,YELLOW,WHITE,(1+zone));
 			CheckpointToSpec(client, szSpecMessage);
 		}
 }

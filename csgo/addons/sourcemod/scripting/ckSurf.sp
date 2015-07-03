@@ -19,8 +19,8 @@
 #include <mapchooser>
 #include <ckSurf>
 
-#define VERSION "1.02"
-#define PLUGIN_VERSION 102
+#define VERSION "1.13"
+#define PLUGIN_VERSION 113
 #define ADMIN_LEVEL ADMFLAG_UNBAN
 #define ADMIN_LEVEL2 ADMFLAG_ROOT
 #define MYSQL 0
@@ -151,7 +151,7 @@ new bool:g_bGotSpawnLocation;
 ///////////////////
 new bool:g_bBonusTimer[MAXPLAYERS+1];				// True if client is using the bonus timer
 new bool:g_bTmpBonusTimer[MAXPLAYERS+1];
-new String:szBonusFastest[32]; 						// Name of the #1 in the current maps bonus
+new String:szBonusFastest[MAX_NAME_LENGTH];			// Name of the #1 in the current maps bonus
 new String:szBonusFastestTime[54];					// Fastest bonus time in 00:00:00:00 format
 new Float:g_fPersonalRecordBonus[MAXPLAYERS+1]; 	// Clients personal bonus record in the current map
 new String:g_szPersonalRecordBonus[MAXPLAYERS+1][32];
@@ -171,8 +171,13 @@ new Float:g_fCheckpointTimesNew[MAXPLAYERS+1][20];		// Clients current runs time
 new Float:g_fCheckpointServerRecord[20];
 new Float:tmpDiff[MAXPLAYERS+1];
 new lastCheckpoint[MAXPLAYERS+1];
+new bool:g_bCheckpointsEnabled[MAXPLAYERS+1];
+new bool:g_borg_CheckpointsEnabled[MAXPLAYERS+1];
 new bool:g_bCheckpointsFound[MAXPLAYERS+1];
+new bool:g_bActivateCheckpointsOnStart[MAXPLAYERS+1];
 new bool:g_bCheckpointRecordFound;
+
+
 ///////////////////
 //Advert Variable//
 ///////////////////
@@ -226,6 +231,8 @@ new g_totalRenames;
 //////////////////////
 // ckSurf Variables//
 //////////////////////
+
+new Float:g_fLastChatMessage[MAXPLAYERS+1];
 new bool:g_insertingInformation;
 new bool:g_bValidRun[MAXPLAYERS+1];
 new bool:g_bNewRecordBot;
@@ -364,7 +371,6 @@ new Float:g_pr_finishedmaps_perc[MAX_PR_PLAYERS];
 new bool:g_bRenaming = false;
 new bool:g_bLateLoaded = false;
 new bool:g_bRoundEnd;
-new bool:g_bFirstStartButtonPush;
 new bool:g_bFirstEndButtonPush;
 new bool:g_bMapReplay;
 new bool:g_bMapBonusReplay;
@@ -380,7 +386,6 @@ new bool:g_bChallenge_Checkpoints[MAXPLAYERS+1];
 new bool:g_bTopMenuOpen[MAXPLAYERS+1]; 
 new bool:g_bNoClipUsed[MAXPLAYERS+1];
 new bool:g_bMenuOpen[MAXPLAYERS+1];
-new bool:g_bRespawnAtTimer[MAXPLAYERS+1];
 new bool:g_bPause[MAXPLAYERS+1];
 new bool:g_bPauseWasActivated[MAXPLAYERS+1];
 new bool:g_bOverlay[MAXPLAYERS+1];
@@ -587,6 +592,10 @@ new bool:bSpawnToStartZone;
 new Handle:g_hAnnounceRank = INVALID_HANDLE;
 new g_AnnounceRank;
 
+// Chat spam limiter
+new Handle:g_hChatSpamFilter = INVALID_HANDLE;
+new Float:g_fChatSpamFilter
+
 #include "ckSurf/misc.sp"
 #include "ckSurf/admin.sp"
 #include "ckSurf/commands.sp"
@@ -742,7 +751,6 @@ public OnMapStart()
 	}
 	g_bCheckpointRecordFound = false;
 	g_insertingInformation = false;
-	g_bFirstStartButtonPush=true;
 	g_bTierFound = false;
 	g_bFirstEndButtonPush=true;			
 	g_fMapStartTime = GetEngineTime();
@@ -823,9 +831,6 @@ public OnMapStart()
 	//server infos
 	GetServerInfo();
 	
-	//Bots
-	LoadReplays();
-	LoadInfoBot();
 	if (g_bLateLoaded)
 	{
 		OnConfigsExecuted();
@@ -1601,6 +1606,9 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 	if (convar == g_hAnnounceRank) {
 		g_AnnounceRank = StringToInt(newValue[0]);
 	}
+	if (convar == g_hChatSpamFilter) {
+		g_fChatSpamFilter = StringToFloat(newValue[0]);
+	}
 	if(g_hZoneTimer!= INVALID_HANDLE)
 	{
 		KillTimer(g_hZoneTimer);
@@ -1882,6 +1890,10 @@ public OnPluginStart()
 	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
 	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
 
+	g_hChatSpamFilter = CreateConVar("ck_chat_spam_protection", "0.5", "The amount in seconds when a player can send a new message in chat. 0.0 = No filter.");
+	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
+	HookConVarChange(g_hChatSpamFilter, OnSettingChanged);
+
 	db_setupDatabase();
 	
 	//client commands
@@ -1921,6 +1933,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_latest", Client_Latest,"[ckSurf] shows latest map records");
 	RegConsoleCmd("sm_showtime", Client_Showtime,"[ckSurf] on/off - timer text in panel/menu");	
 	RegConsoleCmd("sm_hide", Client_Hide, "[ckSurf] on/off - hides other players");
+	RegConsoleCmd("sm_togglecheckpoints", ToggleCheckpoints, "[ckSurf] on/off - Enable player checkpoints");
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");
 

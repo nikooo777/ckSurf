@@ -1,5 +1,5 @@
 
-ckSurf 1.12
+ckSurf 1.13
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
