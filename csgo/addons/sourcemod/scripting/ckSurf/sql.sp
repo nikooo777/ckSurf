@@ -3219,15 +3219,12 @@ public SQL_selectMapTierCallback(Handle:owner, Handle:hndl, const String:error[]
 
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
+		g_bTierFound = true;
+
 		new tier = 0;
 		tier = SQL_FetchInt(hndl, 1);
-		if (tier == 0)
+		if (tier > 0 || tier < 7)
 		{
-				g_bTierFound = false;
-		}
-		else 
-		{
-			g_bTierFound = true;
 			Format(g_sTierString, sizeof(g_sTierString), " %cMap: %c%s %c| ", GREEN, LIMEGREEN, g_szMapName, GREEN);
 			switch(tier) {
 				case 1: Format(g_sTierString, sizeof(g_sTierString), "%s%cTier %i %c| ", g_sTierString, GRAY, tier, GREEN);

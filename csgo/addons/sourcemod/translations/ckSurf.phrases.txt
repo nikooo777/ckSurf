@@ -682,6 +682,16 @@
 		"#format"   "{1:c},{2:c}"
 		"en"        "[{1}CK{2}] Show keys disabled."
 	}
+	"QuakeSounds1"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}KZ{2}] Quake sounds enabled."
+	}
+	"QuakeSounds2"
+	{
+		"#format"   "{1:c},{2:c}"
+		"en"        "[{1}KZ{2}] Quake sounds disabled."
+	}
 	"HideSpecs1"
 	{
 		"#format"   "{1:c},{2:c}"
