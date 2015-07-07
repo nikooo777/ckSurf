@@ -157,8 +157,6 @@ public db_setupDatabase()
 		
 	SQL_FastQuery(g_hDb,"SET NAMES  'utf8'");
 
-	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS ck_mapbuttons");
-	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playeroptions ADD checkpoints INT DEFAULT 1;");
 
 
 	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
@@ -166,6 +164,10 @@ public db_setupDatabase()
 	else
 		if (!SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
 			db_createTables();
+
+	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS ck_mapbuttons");
+	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playeroptions ADD checkpoints INT DEFAULT 1;");
+
 }
 
 
@@ -196,6 +198,23 @@ public db_renameTables()
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerjumpstats3");
 	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS mapbuttons");
 	SQL_FastQuery(g_hDb, sql_createSpawnLocations);
+
+	// Remove unused columns, if coming from KZTimer
+	SQL_FastQuery(g_hDb, "ALTER TABLE challenges DROP COLUMN cp_allowed");
+	SQL_FastQuery(g_hDb, "ALTER TABLE latestrecords DROP COLUMN teleports");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN colorchat");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN climbersmenu_sounds");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN strafesync");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN cpmessage");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN adv_menu");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playeroptions2 DROP COLUMN jumppenalty");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playerrank DROP COLUMN finishedmapstp");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN teleports");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN runtime");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playertimes DROP COLUMN teleports_pro");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp DROP COLUMN teleports");
+	SQL_FastQuery(g_hDb, "ALTER TABLE playertmp DROP COLUMN	checkpoints");
+	SQL_FastQuery(g_hDb, "ALTER TABLE LatestRecords DROP COLUMN	teleports");
 
 	g_totalRenames = 0;
 	SQL_TQuery(g_hDb, SQL_BonusRenameCallback, "ALTER TABLE bonus RENAME TO ck_bonus;", 1, DBPrio_Low);
