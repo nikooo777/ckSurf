@@ -1007,8 +1007,9 @@ public Action:Command_JoinTeam(client, const String:command[], argc)
 	GetCmdArg(1, arg, sizeof(arg));
 	new toteam = StringToInt(arg);	
 
-	if (toteam == 2)
-		toteam = 3;
+	if (g_bForceCT)
+		if (toteam == 2)
+			toteam = 3;
 
 	TeamChangeActual(client, toteam);
 	return Plugin_Handled;
@@ -1017,10 +1018,16 @@ public Action:Command_JoinTeam(client, const String:command[], argc)
 //https://forums.alliedmods.net/showthread.php?t=206308
 TeamChangeActual(client, toteam)
 {
-	// Client is auto-assigning
-	if(toteam == 0)
-		toteam = 3;
-		
+	if (g_bForceCT) {
+		if (toteam == 0) {
+			toteam = 3;
+		}
+	} else {
+		if (toteam == 0) { // Client is auto-assigning
+			GetRandomInt(2, 3)
+		}
+	}
+	
 	if(g_bSpectate[client])
 	{
 		if(g_fStartTime[client] != -1.0 && g_bTimeractivated[client] == true)

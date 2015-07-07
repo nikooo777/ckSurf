@@ -583,7 +583,11 @@ new bool:bSoundEnabled;
 
 new Handle:g_hSoundPath = INVALID_HANDLE; 
 new String:sSoundPath[64]; 
-	 
+
+//////////////////////
+// CVARS//////////////
+//////////////////////
+
 // Teleport on spawn to start zone (or speed zone) stuff 
 new Handle:g_hSpawnToStartZone = INVALID_HANDLE; 
 new bool:bSpawnToStartZone; 
@@ -591,6 +595,9 @@ new bool:bSpawnToStartZone;
 // Min rank to announce in chat
 new Handle:g_hAnnounceRank = INVALID_HANDLE;
 new g_AnnounceRank;
+// Force players CT
+new Handle:g_hForceCT = INVALID_HANDLE;
+new bool:g_bForceCT;
 
 // Chat spam limiter
 new Handle:g_hChatSpamFilter = INVALID_HANDLE;
@@ -1606,6 +1613,9 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 	if (convar == g_hAnnounceRank) {
 		g_AnnounceRank = StringToInt(newValue[0]);
 	}
+	if (convar == g_hForceCT) {
+		g_bForceCT = IntoBool(StringToInt(newValue[0]));
+	}
 	if (convar == g_hChatSpamFilter) {
 		g_fChatSpamFilter = StringToFloat(newValue[0]);
 	}
@@ -1889,6 +1899,10 @@ public OnPluginStart()
 	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.");
 	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
 	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
+
+	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team.");
+	g_bForceCT = IntoBool(GetConVarInt(g_hForceCT));
+	HookConVarChange(g_hForceCT, OnSettingChanged);
 
 	g_hChatSpamFilter = CreateConVar("ck_chat_spam_protection", "0.5", "The amount in seconds when a player can send a new message in chat. 0.0 = No filter.");
 	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
