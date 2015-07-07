@@ -19,8 +19,8 @@
 #include <mapchooser>
 #include <ckSurf>
 
-#define VERSION "1.13"
-#define PLUGIN_VERSION 113
+#define VERSION "1.14"
+#define PLUGIN_VERSION 114
 #define ADMIN_LEVEL ADMFLAG_UNBAN
 #define ADMIN_LEVEL2 ADMFLAG_ROOT
 #define MYSQL 0

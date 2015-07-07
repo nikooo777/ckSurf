@@ -3,7 +3,10 @@ public Action:Command_normalMode(client, args)
 	if(!IsValidClient(client))
 		return Plugin_Handled;
 
+	g_bTimeractivated[client] = false;
 	g_bCheckpointMode[client] = false;
+	Command_Restart(client, 1);
+
 	PrintToChat(client, "%t", "PracticeNormal", MOSSGREEN, WHITE, MOSSGREEN);
 	return Plugin_Handled;
 }

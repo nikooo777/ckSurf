@@ -1,5 +1,5 @@
 
-ckSurf 1.13
+ckSurf 1.14
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,11 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+
+1.14
+- Fixed an exploit with practice mode
+- Added CVar ck_force_players_ct - forces players to join the CT team. (default 0)
+- General fixes and improvements
 
 1.13
 - Chat spam protection added

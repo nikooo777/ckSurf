@@ -175,9 +175,9 @@ public CL_OnEndTimerPress(client)
 	if(g_bCheckpointMode[client])
 	{
 		if(g_bBonusTimer[client])
-			PrintToChat(client, "[%cCK%c] %c%s %cfinished the bonus with a time of [%c%s%c] using teleports!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
+			PrintToChat(client, "[%cCK%c] %c%s %cfinished the bonus with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
 		else
-			PrintToChat(client, "[%cCK%c] %c%s %cfinished the map with a time of [%c%s%c] using teleports!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
+			PrintToChat(client, "[%cCK%c] %c%s %cfinished the map with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, szTime, WHITE);
 	
 		return;
 	}
