@@ -421,7 +421,7 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 			GetClientEyeAngles(client, g_fPlayerAnglesRestore[client]);
 			g_bRespawnPosition[client] = true;
 		}
-		if (g_bTimeractivated[client] == true)
+		if (g_bTimeractivated[client])
 		{	
 			g_fStartPauseTime[client] = GetEngineTime();
 			if (g_fPauseTime[client] > 0.0)

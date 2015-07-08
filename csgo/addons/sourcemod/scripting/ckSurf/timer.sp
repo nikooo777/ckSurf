@@ -25,7 +25,6 @@ public Action:timerAfterTele(Handle:timer, any:client)
 	    	else
 	    		if (g_bToGoto[client])
 	    		{
-
 	    			g_bToGoto[client] = false;
 				}
 }
@@ -323,8 +322,7 @@ public Action:BonusReplayTimer(Handle:timer, any:client)
 }
 public Action:CheckChallenge(Handle:timer, any:client)
 {
-	decl bool:oppenent;
-	oppenent=false;
+	new bool:oppenent = false;
 	decl String:szSteamId[128];
 	decl String:szName[32];
 	decl String:szNameTarget[32];

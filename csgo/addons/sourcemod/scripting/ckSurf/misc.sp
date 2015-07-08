@@ -685,7 +685,6 @@ public clearPlayerCheckPoints(client)
 	g_bCreatedTeleport[client] = false;
 }
 
-
 // - Get Runtime -
 public GetcurrentRunTime(client)
 {
@@ -713,15 +712,6 @@ public Float:GetSpeed(client)
 	decl Float:fVelocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 	new Float:speed = SquareRoot(Pow(fVelocity[0],2.0)+Pow(fVelocity[1],2.0));
-	return speed;
-}
-
-
-public Float:GetVelocity(client)
-{
-	decl Float:fVelocity[3];
-	GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-	new Float:speed = SquareRoot(Pow(fVelocity[0],2.0)+Pow(fVelocity[1],2.0)+Pow(fVelocity[2],2.0));
 	return speed;
 }
 
@@ -955,7 +945,7 @@ public MapFinishedMsgs(client, rankThisRun)
 	//recalc avg
 	db_CalcAvgRunTime();
 }
-// TODO remove tps from call
+
 public CheckMapRanks(client)
 {
 	for (new i = 1; i <= MaxClients; i++)
@@ -1507,7 +1497,7 @@ public SpecList(client)
 	if (g_bMenuOpen[client] || g_bClimbersMenuOpen[client]) 
 		return;
 
-	if(!StrEqual(g_szPlayerPanelText[client],"") && g_bShowSpecs[client])
+	if(!StrEqual(g_szPlayerPanelText[client],""))
 	{
 		new Handle:panel = CreatePanel();
 		DrawPanelText(panel, g_szPlayerPanelText[client]);
@@ -1844,7 +1834,7 @@ public SpecListMenuAlive(client)
 	if (IsFakeClient(client))
 		return;
 	
-	if (g_bMenuOpen[client])
+	if (g_bMenuOpen[client] || !g_bShowSpecs[client])
 		return;
 		
 	//Spec list for players
@@ -1879,8 +1869,7 @@ public SpecListMenuAlive(client)
 	{
 		if (g_bShowSpecs[client])
 			Format(g_szPlayerPanelText[client], 512, "Specs (%i):\n%s ", count, sSpecs);
-		else
-			Format(g_szPlayerPanelText[client], 512, "Specs (%i)\n ", count);
+
 		SpecList(client);
 	}
 	else
@@ -2031,70 +2020,6 @@ public bool:TraceFilterPlayers(entity,contentsMask)
 	return (entity > MaxClients) ? true : false;
 } //Thanks petsku
 
-//jsfunction.inc
-stock GetGroundOrigin(client, Float:pos[3])
-{
-	decl Float:fOrigin[3], Float:result[3];
-	GetClientAbsOrigin(client, fOrigin);
-	TraceClientGroundOrigin(client, result, 100.0);
-	pos = fOrigin;
-	pos[2] = result[2];
-}
-
-//jsfunction.inc
-stock TraceClientGroundOrigin(client, Float:result[3], Float:offset)
-{
-	decl Float:temp[2][3];
-	GetClientEyePosition(client, temp[0]);
-	temp[1] = temp[0];
-	temp[1][2] -= offset;
-	new Float:mins[] ={-16.0, -16.0, 0.0};
-	new Float:maxs[] =	{16.0, 16.0, 60.0};
-	new Handle:trace = TR_TraceHullFilterEx(temp[0], temp[1], mins, maxs, MASK_SHOT, TraceEntityFilterPlayer);
-	if(TR_DidHit(trace)) 
-	{
-		TR_GetEndPosition(result, trace);
-		CloseHandle(trace);
-		return 1;
-	}
-	CloseHandle(trace);
-	return 0;
-}
-
-//jsfunction.inc
-public bool:TraceEntityFilterPlayer(entity, contentsMask) 
-{
-    return entity > MaxClients;
-}
-
-public CreateNavFiles()
-{
-	decl String:DestFile[256];
-	decl String:SourceFile[256];
-	Format(SourceFile, sizeof(SourceFile), "maps/replay_bot.nav");
-	if (!FileExists(SourceFile))
-	{
-		LogError("<ckSurf> Failed to create .nav files. Reason: %s doesn't exist!", SourceFile);
-		return;
-	}
-	decl String:map[256];
-	new mapListSerial = -1;
-	if (ReadMapList(g_MapList,	mapListSerial, "mapcyclefile", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT) == INVALID_HANDLE)
-		if (mapListSerial == -1)
-			return;
-
-	for (new i = 0; i < GetArraySize(g_MapList); i++)
-	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		if (!StrEqual(map, "", false))
-		{
-			Format(DestFile, sizeof(DestFile), "maps/%s.nav", map);
-			if (!FileExists(DestFile))
-				File_Copy(SourceFile, DestFile);
-		}
-	}	
-}
-
 public LoadInfoBot()
 {
 	if (!g_bInfoBot)
@@ -2134,6 +2059,34 @@ public LoadInfoBot()
 		ServerCommand(szBuffer2);		
 		CreateTimer(0.5, RefreshInfoBot,TIMER_FLAG_NO_MAPCHANGE);
 	}
+}
+
+public CreateNavFiles()
+{
+	decl String:DestFile[256];
+	decl String:SourceFile[256];
+	Format(SourceFile, sizeof(SourceFile), "maps/replay_bot.nav");
+	if (!FileExists(SourceFile))
+	{
+		LogError("<ckSurf> Failed to create .nav files. Reason: %s doesn't exist!", SourceFile);
+		return;
+	}
+	decl String:map[256];
+	new mapListSerial = -1;
+	if (ReadMapList(g_MapList,	mapListSerial, "mapcyclefile", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT) == INVALID_HANDLE)
+		if (mapListSerial == -1)
+			return;
+
+	for (new i = 0; i < GetArraySize(g_MapList); i++)
+	{
+		GetArrayString(g_MapList, i, map, sizeof(map));
+		if (!StrEqual(map, "", false))
+		{
+			Format(DestFile, sizeof(DestFile), "maps/%s.nav", map);
+			if (!FileExists(DestFile))
+				File_Copy(SourceFile, DestFile);
+		}
+	}	
 }
 
 public Action:RefreshInfoBot(Handle:timer)

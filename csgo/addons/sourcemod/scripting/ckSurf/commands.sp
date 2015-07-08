@@ -152,6 +152,7 @@ public Action:Command_Teleport(client, args)
 				g_fCurVelVec[client][2] = 0.0;
 
 				g_specToStage[client] = true;
+				g_bRespawnPosition[client] = false;
 				TeamChangeActual(client, 0);
 
 			}
@@ -221,7 +222,6 @@ public Action:Command_ToBonus(client, args)
 			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
 
 				Array_Copy(g_mapZones[bonusZoneId][PointA], positA, 3);
@@ -232,11 +232,12 @@ public Action:Command_ToBonus(client, args)
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
 
-
 				g_fCurVelVec[client][0] = 0.0;
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
 
+				g_specToStage[client] = true;
+				g_bRespawnPosition[client] = false;
 			}
 			else
 			{
@@ -389,7 +390,6 @@ public Action:Command_ToStage(client, args)
 			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
 
 				Array_Copy(g_mapZones[stageZoneId][PointA], positA, 3);
@@ -403,7 +403,8 @@ public Action:Command_ToStage(client, args)
 				g_fCurVelVec[client][0] = 0.0;
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
-
+				g_specToStage[client] = true;
+				g_bRespawnPosition[client] = false;
 			}
 			else
 			{
@@ -487,7 +488,6 @@ public Action:Command_Restart(client, args)
 			new	Float:positB[3];
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
-
 				Array_Copy(g_mapZones[startZoneId][PointA], positA, 3);
 				Array_Copy(g_mapZones[startZoneId][PointB], positB, 3);
 
@@ -496,6 +496,7 @@ public Action:Command_Restart(client, args)
 				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
 
+				g_bRespawnPosition[client] = false;
 				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
 			}
@@ -1794,9 +1795,8 @@ public GotoMethod(client, i)
 				g_fCurVelVec[client][0] = 0.0;
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
-			
-				
 
+				g_bRespawnPosition[client] = false;
 				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
 			}
