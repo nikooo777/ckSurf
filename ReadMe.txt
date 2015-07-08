@@ -31,6 +31,12 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 Changelog 
 
+1.15
+- Fixed issues with spectator menu
+- Fixed an exploit with restore position (Thanks to apatcheeee)
+- Fixed issue with sm_gag not gagging properly
+- General fixes and improvements
+
 1.14
 - Fixed an exploit with practice mode
 - Added CVar ck_force_players_ct - forces players to join the CT team. (default 0)
