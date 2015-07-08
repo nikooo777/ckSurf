@@ -8,6 +8,7 @@
 #include <setname>
 #include <smlib>
 #include <geoip>
+#include <basecomm>
 #include <colors>
 #undef REQUIRE_EXTENSIONS
 #include <clientprefs>

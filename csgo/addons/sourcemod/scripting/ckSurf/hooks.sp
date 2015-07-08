@@ -185,6 +185,10 @@ public Action:Say_Hook(client, const String:command[], argc)
 		g_bClientOwnReason[client] = false;
 		return Plugin_Continue;
 	}
+
+	if (BaseComm_IsClientGagged(client))
+		return Plugin_Handled;
+
 	new Float:messageTime = GetEngineTime();
 	
 	//Chat trigger?

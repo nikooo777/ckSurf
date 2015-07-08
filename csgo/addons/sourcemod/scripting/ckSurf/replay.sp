@@ -545,11 +545,15 @@ public RecordReplay(client, &buttons, &subtype, &seed, &impulse, &weapon, Float:
 		}
 		if(g_OriginSnapshotInterval[client] > ORIGIN_SNAPSHOT_INTERVAL || GetArraySize(g_hRecordingAdditionalTeleport[client]) > g_CurrentAdditionalTeleportIndex[client])
 		{
-			new Float:origin2[3], iAT[AT_SIZE];
-			GetClientAbsOrigin(client, origin2);
-			Array_Copy(origin2, iAT[_:atOrigin], 3);
-			iAT[_:atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
-			PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
+			new iAT[AdditionalTeleport], Float:fBuffer[3];
+			GetClientAbsOrigin(client, fBuffer);
+			Array_Copy(fBuffer, iAT[atOrigin], 3);
+			GetClientEyeAngles(client, fBuffer);
+			Array_Copy(fBuffer, iAT[atAngles], 3);
+			Entity_GetAbsVelocity(client, fBuffer);
+			Array_Copy(fBuffer, iAT[atVelocity], 3); 
+			iAT[atFlags] = ADDITIONAL_FIELD_TELEPORTED_ORIGIN|ADDITIONAL_FIELD_TELEPORTED_ANGLES|ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
+			PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT[0], _:AdditionalTeleport);
 			g_OriginSnapshotInterval[client] = 0;
 		}			
 		g_OriginSnapshotInterval[client]++;		
@@ -816,6 +820,7 @@ public MRESReturn:DHooks_OnTeleport(client, Handle:hParams)
 		iAT[_:atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
 	if(!bVelocityNull)
 		iAT[_:atFlags] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
+		
 	if (g_hRecordingAdditionalTeleport[client] != INVALID_HANDLE)
 		PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
 	
