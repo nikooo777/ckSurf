@@ -121,6 +121,7 @@ public CL_OnEndTimerPress(client)
 		g_bTimeractivated[client] = false;	
 		return;
 	}
+
 	if (!g_bTimeractivated[client]) 
 	{
 		decl Float:diff; 
@@ -204,7 +205,7 @@ public CL_OnEndTimerPress(client)
 			if (difference > 0.0)
 			{
 				if (g_ExtraPoints > 0)
-					g_pr_multiplier[client]+=1;
+					g_pr_multiplier[client]+=1; // Improved time, increase multip
 				Format(g_szTimeDifference[client], 32, "-%s", szTime);
 
 				if (g_bCheckpointsEnabled[client])
@@ -340,7 +341,6 @@ public CL_OnEndTimerPress(client)
 		if (diff > 0.0) 
 		{ // Client's new record
 			PBRecord = true;
-		//	g_PersonalBonusCompleted[client]++;
 			db_updateBonus(client, g_szSteamID[client], szName, g_fFinalTime[client]);
 		}
 		db_viewPersonalBonusRecords(client, g_szSteamID[client]);
@@ -353,6 +353,7 @@ public CL_OnEndTimerPress(client)
 	//local db update
 	if (!g_bBonusTimer[client])
 	{
+		// New personal record
 		if ((g_fFinalTime[client] < g_fPersonalRecord[client] || g_fPersonalRecord[client] <= 0.0 ))
 		{
 			g_pr_showmsg[client] = true;
@@ -360,6 +361,7 @@ public CL_OnEndTimerPress(client)
 		}
 		else
 		{
+			// for ck_min_rank_announce
 			db_currentRunRank(client);
 		}
 		db_deleteTmp(client);

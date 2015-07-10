@@ -441,6 +441,8 @@ public Action:Command_Restart(client, args)
 	{
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
 		{
+			g_specToStage[client] = true;
+			g_bRespawnPosition[client] = false;
 			Array_Copy(g_fSpawnLocation, g_fTeleLocation[client], 3);
 			TeamChangeActual(client, 0);
 			return Plugin_Handled;
@@ -634,6 +636,17 @@ public Action:Client_Avg(client, args)
 		Format(szProTime,32,"00:00:00");
 
 	PrintToChat(client, "%t", "AvgTime", MOSSGREEN,WHITE,GRAY,DARKBLUE,WHITE,szProTime,g_MapTimesCount);
+
+	if (g_mapZonesTypeCount[3] > 0)
+	{
+		decl String:szBonusTime[32];
+		FormatTimeFloat(client, g_fAvg_BonusTime, 3, szBonusTime, sizeof(szBonusTime));
+
+		if (g_iBonusCount==0)
+			Format(szBonusTime,32,"00:00:00");
+		PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN,WHITE,GRAY,YELLOW,WHITE,szBonusTime,g_iBonusCount);
+	}
+
 	return Plugin_Handled;
 }
 
@@ -1011,10 +1024,6 @@ public Action:Command_JoinTeam(client, const String:command[], argc)
 	GetCmdArg(1, arg, sizeof(arg));
 	new toteam = StringToInt(arg);	
 
-	if (g_bForceCT)
-		if (toteam == 2)
-			toteam = 3;
-
 	TeamChangeActual(client, toteam);
 	return Plugin_Handled;
 }
@@ -1023,12 +1032,12 @@ public Action:Command_JoinTeam(client, const String:command[], argc)
 TeamChangeActual(client, toteam)
 {
 	if (g_bForceCT) {
-		if (toteam == 0) {
+		if (toteam == 0 || toteam == 2) {
 			toteam = 3;
 		}
 	} else {
 		if (toteam == 0) { // Client is auto-assigning
-			GetRandomInt(2, 3)
+			toteam = GetRandomInt(2, 3);
 		}
 	}
 	

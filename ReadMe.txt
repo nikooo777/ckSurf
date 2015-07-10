@@ -1,5 +1,5 @@
 
-ckSurf 1.15
+ckSurf 1.16
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,31 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+
+1.16 Changelog
+
+- Zones can now be made visible more easily:
+	CVars:
+	- ck_zone_drawstyle 	| defualt 1 | 0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones. (Also in !zones menu)
+	- ck_zone_drawzones 	| default 1 | Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.
+
+	Each zones color can be changed with the following CVars:
+	- ck_zone_startcolor 		| default 000 255 000 |
+	- ck_zone_endcolor 			| default 255 000 000 |
+	- ck_zone_checkercolor 		| default  255 255 000 |
+	- ck_zone_bonusstartcolor 	| default 000 255 255 |
+	- ck_zone_bonusendcolor 	| default 255 000 255 |
+	- ck_zone_stagecolor 		| default 000 000 255 |
+	- ck_zone_checkpointcolor 	| default 000 000 255 |
+	- ck_zone_speedcolor 		| default  255 000 000 |
+	- ck_zone_teletostartcolor	| default  255 255 000 |
+	- ck_zone_validatorcolor 	| default  255 255 255 |
+	- ck_zone_stopcolor 		| default 000 000 000 |
+
+- Fixed an issue with using tele commands while spectating
+- Commented and improved on calculating player points
+- Fixed unfinished maps command
+- General fixes and optimizations
 
 1.15
 - Fixed issues with spectator menu

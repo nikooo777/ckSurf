@@ -363,7 +363,7 @@ public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
 		}
 		if(param2 == 2)
 		{ 
-			ZoneMenu(param1)
+			ZoneMenu(param1);
 		}
 		if(param2 == 3)
 		{

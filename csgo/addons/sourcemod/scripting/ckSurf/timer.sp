@@ -48,6 +48,14 @@ public Action:RefreshAdminMenu(Handle:timer, any:client)
 	return Plugin_Handled;
 }
 
+public Action:RefreshZoneSettings(Handle:timer, any:client)
+{
+	if (IsValidEntity(client) && !IsFakeClient(client))
+		ZoneSettings(client);
+
+	return Plugin_Handled;
+}
+
 public Action:SetPlayerWeapons(Handle:timer, any:client)
 {
 	if ((GetClientTeam(client) > 1) && IsValidClient(client))
@@ -76,6 +84,9 @@ public Action:PlayerRanksTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
+//
+// Recounts players time
+//
 public Action:UpdatePlayerProfile(Handle:timer, any:client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))	
@@ -198,26 +209,26 @@ public Action:CKTimer2(Handle:timer)
 	}
 
 	//info bot name
-	SetInfoBotName(g_InfoBot);	
-	
+	SetInfoBotName(g_InfoBot);
+
 	decl i;
 	for (i = 1; i <= MaxClients; i++)
-	{	
+	{
 		if (!IsValidClient(i) || i == g_InfoBot)
-			continue;	
+			continue;
 
 		//overlay check
 		if (g_bOverlay[i] && GetEngineTime()-g_fLastOverlay[i] > 5.0)
 			g_bOverlay[i] = false;
-	
+
 
 		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
 		if(g_hRecording[i] != INVALID_HANDLE && g_fCurrentRunTime[i] > 6720.0)
 		{
-			StopRecording(i);
 			g_hRecording[i] = INVALID_HANDLE;
+			StopRecording(i);
 		}	
-	
+
 		//Scoreboard			
 		if (!g_bPause[i]) 
 		{
@@ -235,15 +246,13 @@ public Action:CKTimer2(Handle:timer)
 			}
 			if (!IsFakeClient(i) && !g_pr_Calculating[i])
 				CreateTimer(0.0, SetClanTag, i,TIMER_FLAG_NO_MAPCHANGE);		
-		}
-		
-		
+		}		
+
 		if (IsPlayerAlive(i)) 
 		{	
 			//spec hud
 			SpecListMenuAlive(i);
-			
-				
+
 			//challenge check
 			if (g_bChallenge_Request[i])
 			{
@@ -255,7 +264,7 @@ public Action:CKTimer2(Handle:timer)
 					g_bChallenge_Request[i] = false;
 				}
 			}
-			
+
 			//Last Cords & Angles
 			GetClientAbsOrigin(i,g_fPlayerCordsLastPosition[i]);
 			GetClientEyeAngles(i,g_fPlayerAnglesLastPosition[i]);
@@ -263,7 +272,7 @@ public Action:CKTimer2(Handle:timer)
 		else
 			SpecListMenuDead(i);
 	}
-	
+
 	//clean weapons on ground
 	decl maxEntities;
 	maxEntities = GetMaxEntities();

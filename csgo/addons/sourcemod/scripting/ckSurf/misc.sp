@@ -264,7 +264,7 @@ public SetSkillGroups()
 		mapcount = g_pr_MapCount;
 
 	g_pr_PointUnit = 1;
-	new Float: MaxPoints = (float(mapcount) * 700.0) + (float(g_totalBonusCount) * 150.0);
+	new Float: MaxPoints = (float(mapcount)*700.0) + (float(g_totalBonusCount)*150.0);
 	new g_RankCount = 0;
 	
 	decl String:sPath[PLATFORM_MAX_PATH], String:sBuffer[32];
@@ -1444,6 +1444,20 @@ public PlayerPanel(client)
 			CloseHandle(panel);
 		}
 	}
+}
+
+public StringRGBtoInt(String:color[24], intColor[4])
+{
+	decl String:sPart[4];
+	new iFirstSpace = FindCharInString(color, ' ', false) + 1;
+	new iLastSpace  = FindCharInString(color, ' ', true) + 1;
+	strcopy(sPart, iFirstSpace, color);
+	intColor[0] = StringToInt(sPart);
+	strcopy(sPart, iLastSpace - iFirstSpace, color[iFirstSpace]);
+	intColor[1] = StringToInt(sPart);
+	strcopy(sPart, strlen(color) - iLastSpace + 1, color[iLastSpace]);
+	intColor[2] = StringToInt(sPart);
+	intColor[3] = 255;
 }
 
 public GetRGBColor(bot, String:color[256])

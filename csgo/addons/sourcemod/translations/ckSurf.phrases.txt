@@ -125,6 +125,11 @@
 		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:s},{7:i}"
 		"en"        "[{1}CK{2}] {3}Avg. {4}map{5} time: {6} ({7})"
 	}
+	"AvgTimeBonus"
+	{
+		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:s},{7:i}"
+		"en"        "[{1}CK{2}] {3}Avg. {4}bonus{5} time: {6} ({7})"
+	}
 	"TimeleftCounter"
 	{
 	

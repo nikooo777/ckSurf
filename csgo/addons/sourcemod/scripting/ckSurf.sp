@@ -20,8 +20,8 @@
 #include <mapchooser>
 #include <ckSurf>
 
-#define VERSION "1.15"
-#define PLUGIN_VERSION 115
+#define VERSION "1.16"
+#define PLUGIN_VERSION 116
 #define ADMIN_LEVEL ADMFLAG_UNBAN
 #define ADMIN_LEVEL2 ADMFLAG_ROOT
 #define MYSQL 0
@@ -194,17 +194,77 @@ new Handle:AnnounceTimer[MAXPLAYERS+1];
 //////////////////
 //Zone Variables//
 //////////////////
-new Handle:g_hZoneTimer = INVALID_HANDLE;
+new Handle:g_hZoneDisplayType = INVALID_HANDLE;
+new g_zoneDisplayType;
+new Handle:g_hZonesToDisplay = INVALID_HANDLE;
+new g_zonesToDisplay;
 new Handle:g_hChecker;
+new Float:g_fChecker;
+
+new Handle:g_hZoneTimer = INVALID_HANDLE;
 new bool:g_bEditZoneType[MAXPLAYERS+1];
 new String:g_CurrentZoneName[MAXPLAYERS+1][64];
 new Float:g_Positions[MAXPLAYERS+1][2][3];
 new Float:g_AvaliableScales[5]={1.0, 5.0, 10.0, 50.0, 100.0};
-new Float:g_fChecker;
 new beamColorT[] = {255, 0, 0, 255};
 new beamColorCT[] = {0, 0, 255, 255};
 new beamColorN[] = {255, 255, 0, 255};
 new beamColorM[] = {0, 255, 0, 255};
+
+new g_zoneStartColor[4];
+new Handle:g_hzoneStartColor = INVALID_HANDLE;
+new String:g_szzoneStartColor[24];
+
+new g_zoneEndColor[4];
+new Handle:g_hzoneEndColor = INVALID_HANDLE;
+new String:g_szzoneEndColor[24];
+
+new g_zoneBonusStartColor[4];
+new Handle:g_hzoneBonusStartColor = INVALID_HANDLE;
+new String:g_szzoneBonusStartColor[24];
+
+
+new g_zoneBonusEndColor[4];
+new Handle:g_hzoneBonusEndColor = INVALID_HANDLE;
+new String:g_szzoneBonusEndColor[24];
+
+
+new g_zoneStageColor[4];
+new Handle:g_hzoneStageColor = INVALID_HANDLE;
+new String:g_szzoneStageColor[24];
+
+
+new g_zoneCheckpointColor[4];
+new Handle:g_hzoneCheckpointColor = INVALID_HANDLE;
+new String:g_szzoneCheckpointColor[24];
+
+
+new g_zoneSpeedColor[4];
+new Handle:g_hzoneSpeedColor = INVALID_HANDLE;
+new String:g_szzoneSpeedColor[24];
+
+
+new g_zoneTeleToStartColor[4];
+new Handle:g_hzoneTeleToStartColor = INVALID_HANDLE;
+new String:g_szzoneTeleToStartColor[24];
+
+
+new g_zoneValidatorColor[4];
+new Handle:g_hzoneValidatorColor = INVALID_HANDLE;
+new String:g_szzoneValidatorColor[24];
+
+
+new g_zoneCheckerColor[4];
+new Handle:g_hzoneCheckerColor = INVALID_HANDLE;
+new String:g_szzoneCheckerColor[24];
+
+
+new g_zoneStopColor[4];
+new Handle:g_hzoneStopColor = INVALID_HANDLE;
+new String:g_szzoneStopColor[24];
+
+
+
 new g_CurrentZoneTeam[MAXPLAYERS+1];
 new g_CurrentZoneVis[MAXPLAYERS+1];
 new g_CurrentZoneType[MAXPLAYERS+1];
@@ -356,6 +416,7 @@ new Float:g_fPlayerConnectedTime[MAXPLAYERS+1];
 new Float:g_fStartCommandUsed_LastTime[MAXPLAYERS+1];
 new Float:g_fProfileMenuLastQuery[MAXPLAYERS+1];
 new Float:g_favg_maptime;
+new Float:g_fAvg_BonusTime;
 new Float:g_fSpawnpointOrigin[3];
 new Float:g_fSpawnpointAngle[3];
 new Float:g_fLastSpeed[MAXPLAYERS+1];
@@ -459,7 +520,8 @@ new Float:g_fLastPlayerCheckpoint[MAXPLAYERS+1];
 new bool:g_bCreatedTeleport[MAXPLAYERS+1];
 new bool:g_bCheckpointMode[MAXPLAYERS+1];
 
-
+new g_unfinishedMaps[MAXPLAYERS+1];
+new g_unfinishedBonuses[MAXPLAYERS+1];
 new g_Beam[3];
 new g_TSpawns=-1;
 new g_CTSpawns=-1;
@@ -801,16 +863,14 @@ public OnMapStart()
 	if (!g_bRenaming)
 	{
 		db_GetMapRecord_Pro();
-		db_selectBonusCount();
+		db_viewBonusTotalCount();
 		db_CalculatePlayerCount();
 		db_viewMapProRankCount();
 		db_ClearLatestRecords();
 		db_GetDynamicTimelimit();
-		db_CalcAvgRunTime();
 		db_selectSpawnLocations();
 		db_viewRecordCheckpoints();
 		db_selectMapZones();
-		db_viewBonusTotalCount();
 		db_viewFastestBonus();
 	}
 	//timers
@@ -818,6 +878,7 @@ public OnMapStart()
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+	CreateTimer(2700.0, RestartBots, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT); // reset bots every 45minutes, testing
 	
 	if (g_bAutoRespawn)
 		ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
@@ -833,8 +894,6 @@ public OnMapStart()
 
 	//main cfg
 	CreateTimer(1.0, DelayedStuff, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
-
-
 
 	//server infos
 	GetServerInfo();
@@ -893,30 +952,13 @@ public OnConfigsExecuted()
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt");
 	PrecacheModel(g_sModel);
 	
-	//skillgroups
-	SetSkillGroups();
-
-	//get mapname
-	GetCurrentMap(g_szMapName, 128);
-	Format(g_szMapPath, sizeof(g_szMapPath), "maps/%s.bsp", g_szMapName); 	
-			
-	//workshop fix
-	new String:mapPieces[6][128];
-	new lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
-	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece-1]); 
-   
-	//get map tag
-	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
-		
+	// Count the amount of bonuses and then set skillgroups
+	db_selectBonusCount();	
 
 	//AutoBhop?
 	if(StrEqual(g_szMapPrefix[0],"surf") || StrEqual(g_szMapPrefix[0],"bhop") || StrEqual(g_szMapPrefix[0],"mg"))
 		if (g_bAutoBhopConVar)
-			g_bAutoBhop=true;		
-		
-
-	//Bonus
-
+			g_bAutoBhop=true;
 		
 	ServerCommand("sv_pure 0");
 }
@@ -1172,7 +1214,7 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 					}
 					else 
 					{
-						if (!g_bBonusBot) // if both bots are off
+						if (!g_bBonusBot) // if both bots are off, no need to record
 							if(g_hRecording[i] != INVALID_HANDLE)
 								StopRecording(i);
 					}				
@@ -1585,6 +1627,80 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 	{
 		g_fChecker = StringToFloat(newValue[0]);
 	}
+	if(convar == g_hZoneDisplayType)
+	{
+		g_zoneDisplayType = StringToInt(newValue[0]);
+	}
+	if(convar == g_hZonesToDisplay)
+	{
+		g_zonesToDisplay = StringToInt(newValue[0]);
+	}
+	if(convar == g_hzoneStartColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneStartColor);
+	}
+	if(convar == g_hzoneEndColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneEndColor);
+	}
+	if(convar == g_hzoneCheckerColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneCheckerColor);
+	}
+	if(convar == g_hzoneBonusStartColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneBonusStartColor);
+	}
+	if(convar == g_hzoneBonusEndColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneBonusEndColor);
+	}
+	if(convar == g_hzoneStageColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneStageColor);
+	}
+	if(convar == g_hzoneCheckpointColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneCheckpointColor);
+	}
+	if(convar == g_hzoneSpeedColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneSpeedColor);
+	}
+	if(convar == g_hzoneTeleToStartColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneTeleToStartColor);
+	}
+	if(convar == g_hzoneValidatorColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneValidatorColor);
+	}
+	if(convar == g_hzoneStopColor)
+	{
+		decl String:color[24];
+		Format(color, 28, "%s", newValue[0]);
+		StringRGBtoInt(color, g_zoneStopColor);
+	}
 	if (convar == g_hStartPreSpeed) {
 		g_fStartPreSpeed = StringToFloat(newValue[0]);
 	}
@@ -1620,12 +1736,15 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 	if (convar == g_hChatSpamFilter) {
 		g_fChatSpamFilter = StringToFloat(newValue[0]);
 	}
+
 	if(g_hZoneTimer!= INVALID_HANDLE)
 	{
 		KillTimer(g_hZoneTimer);
 		g_hZoneTimer = INVALID_HANDLE;
 	}
-	g_hZoneTimer = CreateTimer(g_fChecker, BeamBoxAll, _, TIMER_REPEAT);	
+
+	g_hZoneTimer = CreateTimer(g_fChecker, BeamBoxAll, _, TIMER_REPEAT);
+
 }
 
 public Native_GetTimerStatus(Handle:plugin, numParams)
@@ -1824,7 +1943,7 @@ public OnPluginStart()
 	g_ExtraPoints    = GetConVarInt(g_hExtraPoints);
 	HookConVarChange(g_hExtraPoints, OnSettingChanged);	
 
-	g_hExtraPoints2   = CreateConVar("ck_ranking_extra_points_firsttime", "25.0", "Gives players 2*x extra points for finishing a map for the first time.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	g_hExtraPoints2   = CreateConVar("ck_ranking_extra_points_firsttime", "50.0", "Gives players x extra points for finishing a map for the first time.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	g_ExtraPoints2    = GetConVarInt(g_hExtraPoints2);
 	HookConVarChange(g_hExtraPoints2, OnSettingChanged);	
 	
@@ -1869,43 +1988,106 @@ public OnPluginStart()
 	GetConVarString(g_hBonusBotColor,szRBotColor,256);
 	GetRGBColor(1,szRBotColor);
 
-	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "checks and beambox refreshs per second, low value = more precise but more CPU consume, More hight = less precise but less CPU consume");
+	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 99.0);
 	g_fChecker = GetConVarFloat(g_hChecker);
 	HookConVarChange(g_hChecker, OnSettingChanged);
 
-	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap");
+	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1.0", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_zoneDisplayType = GetConVarInt(g_hZoneDisplayType);
+	HookConVarChange(g_hZoneDisplayType, OnSettingChanged);
+
+	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1.0", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 1.0, true, 3.0);
+	g_zonesToDisplay = GetConVarInt(g_hZonesToDisplay);
+	HookConVarChange(g_hZonesToDisplay, OnSettingChanged);
+
+	g_hzoneStartColor = CreateConVar("ck_zone_startcolor", "000 255 000", "The color of START zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneStartColor, g_szzoneStartColor, 24);
+	StringRGBtoInt(g_szzoneStartColor, g_zoneStartColor);
+	HookConVarChange(g_hzoneStartColor, OnSettingChanged);
+
+	g_hzoneEndColor = CreateConVar("ck_zone_endcolor", "255 000 000", "The color of END zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneEndColor, g_szzoneEndColor, 24);
+	StringRGBtoInt(g_szzoneEndColor, g_zoneEndColor);
+	HookConVarChange(g_hzoneEndColor, OnSettingChanged);
+
+	g_hzoneCheckerColor = CreateConVar("ck_zone_checkercolor", "255 255 000", "The color of CHECKER zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneCheckerColor, g_szzoneCheckerColor, 24);
+	StringRGBtoInt(g_szzoneCheckerColor, g_zoneCheckerColor);
+	HookConVarChange(g_hzoneCheckerColor, OnSettingChanged);
+
+	g_hzoneBonusStartColor = CreateConVar("ck_zone_bonusstartcolor", "000 255 255", "The color of BONUS START zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneBonusStartColor, g_szzoneBonusStartColor, 24);
+	StringRGBtoInt(g_szzoneBonusStartColor, g_zoneBonusStartColor);
+	HookConVarChange(g_hzoneBonusStartColor, OnSettingChanged);
+
+	g_hzoneBonusEndColor = CreateConVar("ck_zone_bonusendcolor", "255 000 255", "The color of BONUS END zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneBonusEndColor, g_szzoneBonusEndColor, 24);
+	StringRGBtoInt(g_szzoneBonusEndColor, g_zoneBonusEndColor);
+	HookConVarChange(g_hzoneBonusEndColor, OnSettingChanged);
+
+	g_hzoneStageColor = CreateConVar("ck_zone_stagecolor", "000 000 255", "The color of STAGE zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneStageColor, g_szzoneStageColor, 24);
+	StringRGBtoInt(g_szzoneStageColor, g_zoneStageColor);
+	HookConVarChange(g_hzoneStageColor, OnSettingChanged);
+
+	g_hzoneCheckpointColor = CreateConVar("ck_zone_checkpointcolor", "000 000 255", "The color of CHECKPOINT zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneCheckpointColor, g_szzoneCheckpointColor, 24);
+	StringRGBtoInt(g_szzoneCheckpointColor, g_zoneCheckpointColor);
+	HookConVarChange(g_hzoneCheckpointColor, OnSettingChanged);
+
+	g_hzoneSpeedColor = CreateConVar("ck_zone_speedcolor", "255 000 000", "The color of SPEED zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneSpeedColor, g_szzoneSpeedColor, 24);
+	StringRGBtoInt(g_szzoneSpeedColor, g_zoneSpeedColor);
+	HookConVarChange(g_hzoneSpeedColor, OnSettingChanged);
+
+	g_hzoneTeleToStartColor = CreateConVar("ck_zone_teletostartcolor", "255 255 000", "The color of TELETOSTART zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneTeleToStartColor, g_szzoneTeleToStartColor, 24);
+	StringRGBtoInt(g_szzoneTeleToStartColor, g_zoneTeleToStartColor);
+	HookConVarChange(g_hzoneTeleToStartColor, OnSettingChanged);
+
+	g_hzoneValidatorColor = CreateConVar("ck_zone_validatorcolor", "255 255 255", "The color of VALIDATOR zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneValidatorColor, g_szzoneValidatorColor, 24);
+	StringRGBtoInt(g_szzoneValidatorColor, g_zoneValidatorColor);
+	HookConVarChange(g_hzoneValidatorColor, OnSettingChanged);
+
+	g_hzoneStopColor = CreateConVar("ck_zone_stopcolor", "000 000 000", "The color of CHECKER zones \"red green blue\" from 0 - 255", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	GetConVarString(g_hzoneStopColor, g_szzoneStopColor, 24);
+	StringRGBtoInt(g_szzoneStopColor, g_zoneStopColor);
+	HookConVarChange(g_hzoneStopColor, OnSettingChanged);
+
+	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_fStartPreSpeed = GetConVarFloat(g_hStartPreSpeed);
 	HookConVarChange(g_hStartPreSpeed, OnSettingChanged);
 	
-	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap");
+	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_fSpeedPreSpeed = GetConVarFloat(g_hSpeedPreSpeed);
 	HookConVarChange(g_hSpeedPreSpeed, OnSettingChanged);
 
-	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap");
+	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_fBonusPreSpeed = GetConVarFloat(g_hBonusPreSpeed);
 	HookConVarChange(g_hBonusPreSpeed, OnSettingChanged);
 	
-	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1", "1 = Automatically spawn to the start zone when the client joins the team.");
+	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	bSpawnToStartZone = GetConVarBool(g_hSpawnToStartZone);
 	HookConVarChange(g_hSpawnToStartZone, OnSettingChanged);	
 	
-	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1", "Enable the sound after leaving the start zone.");
+	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	bSoundEnabled = GetConVarBool(g_hSoundEnabled);
 	HookConVarChange(g_hSoundEnabled, OnSettingChanged);	
 	
-	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons/button3.wav", "The path to the sound file that plays after the client leaves the start zone..");
+	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons/button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	GetConVarString(g_hSoundPath, sSoundPath, sizeof(sSoundPath));
 	HookConVarChange(g_hSoundPath, OnSettingChanged);
 
-	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.");
+	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0.0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0);
 	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
 	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
 
-	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team.");
-	g_bForceCT = IntoBool(GetConVarInt(g_hForceCT));
+	g_hForceCT = CreateConVar("ck_force_players_ct", "0.0", "Forces all players to join the CT team.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bForceCT = GetConVarBool(g_hForceCT);
 	HookConVarChange(g_hForceCT, OnSettingChanged);
 
-	g_hChatSpamFilter = CreateConVar("ck_chat_spam_protection", "0.5", "The amount in seconds when a player can send a new message in chat. 0.0 = No filter.");
+	g_hChatSpamFilter = CreateConVar("ck_chat_spam_protection", "0.5", "The amount in seconds when a player can send a new message in chat. 0.0 = No filter.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0);
 	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
 	HookConVarChange(g_hChatSpamFilter, OnSettingChanged);
 

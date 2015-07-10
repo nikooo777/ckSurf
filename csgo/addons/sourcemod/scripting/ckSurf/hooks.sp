@@ -51,6 +51,7 @@ PlayerSpawn(client)
 {
 	if (!IsValidClient(client))
 		return;
+
 	g_fStartCommandUsed_LastTime[client] = GetEngineTime();
 	g_SpecTarget[client] = -1;	
 	g_bPause[client] = false;
@@ -153,14 +154,14 @@ PlayerSpawn(client)
 						if (bSpawnToStartZone) 
 							Command_Restart(client, 1);
 					}	
-			}
 		}
-		else
-		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,Float:{0.0,0.0,-100.0});
-			g_specToStage[client] = false;
-		}
+	}
+	else
+	{
+		SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+		TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,Float:{0.0,0.0,-100.0});
+		g_specToStage[client] = false;
+	}
 	
 	//hide radar
 	CreateTimer(0.0, HideRadar, client,TIMER_FLAG_NO_MAPCHANGE);
@@ -488,7 +489,7 @@ public Action:Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBr
 	if (IsValidClient(client))
 	{
 		if (!IsFakeClient(client))
-		{	
+		{
 			if(g_hRecording[client] != INVALID_HANDLE)
 				StopRecording(client);			
 			CreateTimer(2.0, RemoveRagdoll, client);

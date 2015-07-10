@@ -46,8 +46,9 @@ public StartRecording(client)
 
 public StopRecording(client)
 {
-	if(!IsValidClient(client) || g_hRecording[client] == INVALID_HANDLE)
+	if(!IsValidClient(client)||g_hRecording[client] == INVALID_HANDLE)
 		return;
+		
 	CloseHandle(g_hRecording[client]);
 	CloseHandle(g_hRecordingAdditionalTeleport[client]);	
 	g_hRecording[client] = INVALID_HANDLE;
@@ -151,7 +152,7 @@ WriteRecordToDisk(const String:sPath[], iFileHeader[FILE_HEADER_LENGTH])
 			iATIndex++;
 		}
 	}
-	
+
 	CloseHandle(hFile);	
 	LoadReplays();
 }
@@ -197,6 +198,11 @@ public LoadReplays()
 		LoadBonusReplay();
 }
 
+public Action:RestartBots(Handle:timer)
+{
+	LoadReplays();
+}
+
 public PlayRecord(client, type)
 {
 	decl String:buffer[256];
@@ -239,8 +245,9 @@ public PlayRecord(client, type)
 	// Respawn him to get him moving!
 	if(IsValidClient(client) && !IsPlayerAlive(client) && GetClientTeam(client) >= CS_TEAM_T)
 	{
-		TeamChangeActual(client, 2);
 		CS_RespawnPlayer(client);
+		if (g_bForceCT)
+			TeamChangeActual(client, 2);
 	}
 }
 
@@ -322,12 +329,14 @@ public LoadRecordFromFile(const String:path[], headerInfo[FILE_HEADER_LENGTH])
 	if(GetArraySize(hAdditionalTeleport) > 0)
 		SetTrieValue(g_hLoadedRecordsAdditionalTeleport, path, hAdditionalTeleport);
 	CloseHandle(hFile);
+
 	return;
 }
 
 public Action:RefreshBot(Handle:timer)
 {
 	LoadRecordReplay();
+	return Plugin_Handled;
 }
 public LoadRecordReplay()
 {
@@ -341,15 +350,16 @@ public LoadRecordReplay()
 		g_fCurrentRunTime[g_RecordBot] = 0.0;
 		if(!IsPlayerAlive(i))
 		{
-			TeamChangeActual(i, 2);
 			CS_RespawnPlayer(i);
+			if (g_bForceCT)
+				TeamChangeActual(i, 2);
 		}
 
 		break;
 	}
 
 	if(g_RecordBot > 0 && IsValidClient(g_RecordBot))
-	{		
+	{	
 		decl String:clantag[100];	
 		CS_GetClientClanTag(g_RecordBot, clantag, sizeof(clantag));			
 		if (StrContains(clantag,"REPLAY") == -1)		
@@ -631,6 +641,7 @@ public PlayReplay(client, &buttons, &subtype, &seed, &impulse, &weapon, Float:an
 				GetTrieValue(g_hLoadedRecordsAdditionalTeleport, sPath, hAdditionalTeleport);
 				if (hAdditionalTeleport != INVALID_HANDLE)
 					GetArrayArray(hAdditionalTeleport, g_CurrentAdditionalTeleportIndex[client], iAT, AT_SIZE);
+
 				new Float:fOrigin[3], Float:fAngles[3], Float:fVelocity[3];
 				Array_Copy(iAT[_:atOrigin], fOrigin, 3);
 				Array_Copy(iAT[_:atAngles], fAngles, 3);

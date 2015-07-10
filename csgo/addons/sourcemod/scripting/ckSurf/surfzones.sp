@@ -422,7 +422,12 @@ public Action:BeamBox(Handle:timer, any:client)
 
 public Action:BeamBoxAll(Handle:timer, any:data)
 {
-	decl Float:posA[3], Float:posB[3], zColor[4], beamTeam, beamVis, String:nombre[64];
+	decl Float:posA[3], Float:posB[3], zColor[4], beamTeam, beamVis, zType;
+
+
+	if (g_zoneDisplayType < 1)
+		return Plugin_Handled;
+
 	for(new i=0;i<g_mapZonesCount;++i)
 	{
 		posA[0] = g_mapZones[i][PointA][0];
@@ -431,23 +436,83 @@ public Action:BeamBoxAll(Handle:timer, any:data)
 		posB[0] = g_mapZones[i][PointB][0];
 		posB[1] = g_mapZones[i][PointB][1];
 		posB[2] = g_mapZones[i][PointB][2];
+		zType = g_mapZones[i][zoneType];
 		beamTeam = g_mapZones[i][Vis];
 		beamVis = g_mapZones[i][Team];
-		Format(nombre, 64, "%s", g_mapZones[i][ZoneName]);
 
 		for (new p = 1; p <= MaxClients; p++) 
 		{
-			if(IsClientInGame(p))
+			if(IsValidClient(p))
 			{
 				if(g_ClientSelectedZone[p]!=i && (beamVis==1 || GetClientTeam(p)==beamVis))
 				{
 					getZoneTeamColor(beamTeam, zColor);
 					TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
 				}
+				else
+				{
+					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 1 && ((0 < zType < 3)||zType == 7))
+					{
+						getZoneDisplayColor(zType, zColor);
+						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+					}
+					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 2 && ((0 < zType < 6 ) ||zType == 7))
+					{
+						getZoneDisplayColor(zType, zColor);
+						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+					}
+					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 3)
+					{	
+						getZoneDisplayColor(zType, zColor);
+						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+					}
+				}
 			}
 		}
-	}	
+	}
 	return Plugin_Continue;
+}
+
+public getZoneDisplayColor(type, zColor[4])
+{
+	// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+	switch (type)
+	{
+		case 1: {
+			 zColor = g_zoneStartColor;
+		}
+		case 2: {
+			zColor = g_zoneEndColor;
+		}
+		case 3: {
+			zColor = g_zoneBonusStartColor;
+		}
+		case 4: {
+			zColor = g_zoneBonusEndColor;
+		}
+		case 5: {
+			zColor = g_zoneStageColor;
+		}
+		case 6: {
+			zColor = g_zoneCheckpointColor;
+		}
+		case 7: {
+			zColor = g_zoneSpeedColor;
+		}
+		case 8: {
+			zColor = g_zoneTeleToStartColor;
+		}
+		case 9: {
+			zColor = g_zoneValidatorColor;
+		}
+		case 10: {
+			zColor = g_zoneCheckerColor;
+		}
+		case 0: {
+			zColor = g_zoneStopColor;
+		}
+		default: zColor = beamColorT;
+	}
 }
 
 public BeamBox_OnPlayerRunCmd(client)
@@ -469,56 +534,104 @@ public BeamBox_OnPlayerRunCmd(client)
 
 stock TE_SendBeamBoxToClient(client, Float:uppercorner[3], const Float:bottomcorner[3], ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, Float:Width, Float:EndWidth, FadeLength, Float:Amplitude, const Color[4], Speed)
 {
-	// Create the additional corners of the box
-	new Float:tc1[3];
-	AddVectors(tc1, uppercorner, tc1);
-	tc1[0] = bottomcorner[0];
-	
-	new Float:tc2[3];
-	AddVectors(tc2, uppercorner, tc2);
-	tc2[1] = bottomcorner[1];
-	
-	new Float:tc3[3];
-	AddVectors(tc3, uppercorner, tc3);
-	tc3[2] = bottomcorner[2];
-	
-	new Float:tc4[3];
-	AddVectors(tc4, bottomcorner, tc4);
-	tc4[0] = uppercorner[0];
-	
-	new Float:tc5[3];
-	AddVectors(tc5, bottomcorner, tc5);
-	tc5[1] = uppercorner[1];
-	
-	new Float:tc6[3];
-	AddVectors(tc6, bottomcorner, tc6);
-	tc6[2] = uppercorner[2];
-	
-	// Draw all the edges
-	TE_SetupBeamPoints(uppercorner, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(uppercorner, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(uppercorner, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc6, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc6, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc6, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc4, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc5, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc5, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc5, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc4, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
-	TE_SetupBeamPoints(tc4, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToClient(client);
+	//0 = Do not display zones, 1 = Display the lower edges of zones, 2 = Display whole zone
+	if (!IsValidClient(client) || g_zoneDisplayType < 1)
+		return;
+
+	if (g_zoneDisplayType > 1)
+	{
+		// Create the additional corners of the box
+		new Float:tc1[3];
+		AddVectors(tc1, uppercorner, tc1);
+		tc1[0] = bottomcorner[0];
+		
+		new Float:tc2[3];
+		AddVectors(tc2, uppercorner, tc2);
+		tc2[1] = bottomcorner[1];
+		
+		new Float:tc3[3];
+		AddVectors(tc3, uppercorner, tc3);
+		tc3[2] = bottomcorner[2];
+
+		new Float:tc4[3];
+		AddVectors(tc4, bottomcorner, tc4);
+		tc4[0] = uppercorner[0];
+		
+		new Float:tc5[3];
+		AddVectors(tc5, bottomcorner, tc5);
+		tc5[1] = uppercorner[1];
+		
+		new Float:tc6[3];
+		AddVectors(tc6, bottomcorner, tc6);
+		tc6[2] = uppercorner[2];
+
+		// Draw all the edges
+		TE_SetupBeamPoints(uppercorner, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(uppercorner, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(uppercorner, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc6, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc6, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc6, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc4, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc5, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc5, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc5, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc4, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+		TE_SetupBeamPoints(tc4, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+		TE_SendToClient(client);
+	}
+	else
+		if (g_zoneDisplayType == 1)
+		{
+			decl Float:corner1[3], Float:corner2[3], Float:corner3[3], Float:corner4[3], Float:extraCorner[3];
+
+			if (bottomcorner[2] < uppercorner[2]) { //  Get the corner, that has the lowest y-value
+				Array_Copy(bottomcorner, corner1, 3);
+				Array_Copy(uppercorner, extraCorner, 3);
+			}
+			else {
+				Array_Copy(uppercorner, corner1, 3);
+				Array_Copy(bottomcorner, extraCorner, 3);
+			}
+
+			// Get the point on the other side of the square
+			Array_Copy(extraCorner, corner2, 3);
+			corner2[2] = corner1[2];
+
+			// Move along the x-axis
+			Array_Copy(corner1, corner3, 3);
+			corner3[0] = extraCorner[0];
+
+			 // Move along the z-axis
+			Array_Copy(corner1, corner4, 3);
+			corner4[1] = extraCorner[1];
+
+			// lift a bit higher, so not under ground
+			corner1[2] += 5.0;
+			corner2[2] += 5.0;
+			corner3[2] += 5.0;
+			corner4[2] += 5.0;
+
+			TE_SetupBeamPoints(corner1, corner3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+			TE_SendToClient(client);
+			TE_SetupBeamPoints(corner1, corner4, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+			TE_SendToClient(client);
+			TE_SetupBeamPoints(corner3, corner2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+			TE_SendToClient(client);
+			TE_SetupBeamPoints(corner4, corner2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+			TE_SendToClient(client);
+		}
 }
 
 public ZoneMenu(client)
@@ -529,10 +642,10 @@ public ZoneMenu(client)
 	AddMenuItem(Menu, "", "Create Zone");
 	AddMenuItem(Menu, "", "Edit Zones");
 	AddMenuItem(Menu, "", "Save Zones");
+	AddMenuItem(Menu, "", "Edit Zone Settings");
 	AddMenuItem(Menu, "", "Reload Zones");
 	AddMenuItem(Menu, "", "Clear Zones");
 	SetMenuExitBackButton(Menu, true);
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(Menu, client, MENU_TIME_FOREVER);
 }
 
@@ -560,12 +673,16 @@ public Handle_ZoneMenu(Handle:tMenu, MenuAction:action, client, item)
 				}
 				case 3:
 				{
+					ZoneSettings(client);
+				}
+				case 4:
+				{
 					db_selectMapZones();
 					PrintToChat(client, "Zones are reloaded");
 					resetSelection(client);
 					ZoneMenu(client);
 				}
-				case 4:
+				case 5:
 				{
 					ClearZonesMenu(client);
 				}
@@ -574,6 +691,75 @@ public Handle_ZoneMenu(Handle:tMenu, MenuAction:action, client, item)
 		case MenuAction_End:
 		{
 			CloseHandle(tMenu);
+		}
+	}
+}
+
+public ZoneSettings(client)
+{
+	new Handle:ZoneSettingMenu = CreateMenu(Handle_ZoneSettingMenu);
+	SetMenuTitle(ZoneSettingMenu, "Global Zone Settings");
+	if (g_zoneDisplayType > 1)
+	{
+		AddMenuItem(ZoneSettingMenu, "1", "Visible: All sides");
+	}
+	else
+		if (g_zoneDisplayType == 1)
+		{
+			AddMenuItem(ZoneSettingMenu, "1", "Visible: Lower edges");
+		}
+		else
+			if (g_zoneDisplayType < 1)
+			{
+				AddMenuItem(ZoneSettingMenu, "1", "Visible: Nothing");
+			}
+	switch(g_zonesToDisplay)
+	{
+		case 1:
+			AddMenuItem(ZoneSettingMenu, "2", "Draw Zones: Start & End");
+		case 2:
+			AddMenuItem(ZoneSettingMenu, "2", "Draw Zones: Start, End, Stage, Bonus");
+		case 3:
+			AddMenuItem(ZoneSettingMenu, "2", "DrawZones: All zones");
+	}
+	SetMenuExitBackButton(ZoneSettingMenu, true);
+	DisplayMenu(ZoneSettingMenu, client, MENU_TIME_FOREVER);
+}
+
+public Handle_ZoneSettingMenu(Handle:tMenu, MenuAction:action, client, item)
+{
+	switch(action)
+	{
+
+		case MenuAction_Select:
+		{
+			switch(item)
+			{
+				case 0:
+				{
+					if (g_zoneDisplayType < 2)
+						g_zoneDisplayType++;
+					else
+						g_zoneDisplayType = 0;
+				}
+				case 1:
+				{
+					if (g_zonesToDisplay < 3)
+						g_zonesToDisplay++;
+					else
+						g_zonesToDisplay = 1;
+				}
+			}
+
+			if (tMenu != INVALID_HANDLE)
+				CloseHandle(tMenu);
+
+			CreateTimer(0.1, RefreshZoneSettings, client,TIMER_FLAG_NO_MAPCHANGE);
+		}
+		case MenuAction_End:
+		{
+			if (tMenu != INVALID_HANDLE)
+				CloseHandle(tMenu);
 		}
 	}
 }
@@ -602,7 +788,6 @@ public SelectZoneType(client)
 	AddMenuItem(SelectZoneMenu, "10", "Checker");
 	AddMenuItem(SelectZoneMenu, "0", "Stop");
 	SetMenuExitBackButton(SelectZoneMenu, true);
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(SelectZoneMenu, client, MENU_TIME_FOREVER);
 }
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
@@ -666,7 +851,6 @@ public ListZones(client)
 		AddMenuItem(Menu, "", "No zones are available", ITEMDRAW_DISABLED);
 	}
 	SetMenuExitBackButton(Menu, true);
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(Menu, client, MENU_TIME_FOREVER);
 }
 
@@ -739,7 +923,6 @@ public EditorMenu(client)
 		}
 	}
 	SetMenuExitBackButton(Menu, true);
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(Menu, client, MENU_TIME_FOREVER);
 }
 
@@ -914,7 +1097,6 @@ public ScaleMenu(client)
 	Format(ScaleSize, sizeof(ScaleSize), "Scale Size %f", g_AvaliableScales[g_ClientSelectedScale[client]]);
 	AddMenuItem(Menu, "", ScaleSize);
 	SetMenuExitBackButton(Menu, true);
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(Menu, client, MENU_TIME_FOREVER);
 }
 
@@ -1029,7 +1211,6 @@ public ClearZonesMenu(client)
 	AddMenuItem(Menu, "","NO GO BACK!");
 	AddMenuItem(Menu, "","NO GO BACK!");
 	AddMenuItem(Menu, "","YES! DO IT!");
-	ckSurf_StopUpdatingOfClimbersMenu(client);
 	DisplayMenu(Menu, client, 20);
 }
 
