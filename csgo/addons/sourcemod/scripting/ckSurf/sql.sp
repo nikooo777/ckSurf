@@ -2452,7 +2452,7 @@ public db_selectRecord(client)
 		return;
 
 	decl String:szQuery[255];
-	//SELECT mapname, steamid, name, runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro  > -1.0";
+	//SELECT mapname, runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro  > -1.0";
 	Format(szQuery, 255, sql_selectRecord, g_szSteamID[client], g_szMapName);
 	SQL_TQuery(g_hDb, sql_selectRecordCallback, szQuery, client,DBPrio_Low);
 }
@@ -2476,7 +2476,7 @@ public sql_selectRecordCallback(Handle:owner, Handle:hndl, const String:error[],
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
 		new Float:time;
-		time = SQL_FetchFloat(hndl, 3);
+		time = SQL_FetchFloat(hndl, 1);
 		// If old time was slower than the new time, update record
 		if((g_fFinalTime[client] <= time || time <= 0.0)) 
 		{
