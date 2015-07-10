@@ -750,10 +750,6 @@ public Handle_ZoneSettingMenu(Handle:tMenu, MenuAction:action, client, item)
 						g_zonesToDisplay = 1;
 				}
 			}
-
-			if (tMenu != INVALID_HANDLE)
-				CloseHandle(tMenu);
-
 			CreateTimer(0.1, RefreshZoneSettings, client,TIMER_FLAG_NO_MAPCHANGE);
 		}
 		case MenuAction_End:
