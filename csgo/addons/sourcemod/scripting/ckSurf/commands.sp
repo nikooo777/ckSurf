@@ -909,8 +909,13 @@ public Action:Client_Accept(client, args)
 public Action:Client_Usp(client, args)
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client))
-		return Plugin_Handled;	
+		return Plugin_Handled;
+
+	if ((GetEngineTime() - g_flastClientUsp[client]) < 10.0)
+		return Plugin_Handled;
 	
+	g_flastClientUsp[client] = GetEngineTime();
+
 	if(Client_HasWeapon(client, "weapon_hkp2000"))
 	{			
 		new weapon = Client_GetWeapon(client, "weapon_hkp2000");
@@ -1988,7 +1993,7 @@ public Action_UnNoClip(client)
 					SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				else
 					SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
-				g_bNoClip[client] = false;
+				g_bNoClip[client] = false;			
 			}
 		}
 	}

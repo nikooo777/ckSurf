@@ -294,6 +294,7 @@ new g_totalRenames;
 //////////////////////
 
 new Float:g_fLastChatMessage[MAXPLAYERS+1];
+new Float:g_flastClientUsp[MAXPLAYERS+1];
 new bool:g_insertingInformation;
 new bool:g_bValidRun[MAXPLAYERS+1];
 new bool:g_bNewRecordBot;

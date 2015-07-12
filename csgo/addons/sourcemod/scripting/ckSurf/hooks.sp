@@ -187,19 +187,20 @@ public Action:Say_Hook(client, const String:command[], argc)
 		return Plugin_Continue;
 	}
 
-	if (BaseComm_IsClientGagged(client))
-		return Plugin_Handled;
-
 	new Float:messageTime = GetEngineTime();
 	
 	//Chat trigger?
 	g_bSayHook[client]=true;
 	if (IsValidClient(client))
 	{
+		if (BaseComm_IsClientGagged(client))
+			return Plugin_Handled;
+
 		if ((messageTime - g_fLastChatMessage[client]) < g_fChatSpamFilter)
 		{
 			return Plugin_Handled;
 		}
+
 		g_fLastChatMessage[client] = messageTime;
 		decl String:sText[1024];
 		GetCmdArgString(sText, sizeof(sText));

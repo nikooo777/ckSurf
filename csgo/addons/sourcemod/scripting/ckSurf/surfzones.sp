@@ -297,6 +297,13 @@ EndTouch(client, action[])
 			else
 				if (!g_bCheckpointMode[client])
 				{
+
+					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					{
+						Command_Restart(client, 1);
+						return;
+					}
+
 					CL_OnStartTimerPress(client);
 
 		 			// Left start zone
@@ -319,6 +326,12 @@ EndTouch(client, action[])
 			else
 				if (!g_bCheckpointMode[client])
 				{
+					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					{
+						Command_Restart(client, 1);
+						return;
+					}
+
 					CL_OnStartTimerPress(client);
 
 					// Left start zone
@@ -341,6 +354,12 @@ EndTouch(client, action[])
 			else
 				if (!g_bCheckpointMode[client])
 				{
+					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					{
+						Command_Restart(client, 1);
+						return;
+					}
+					
 					CL_OnStartTimerPress(client);
 
 		 			// Left start zone

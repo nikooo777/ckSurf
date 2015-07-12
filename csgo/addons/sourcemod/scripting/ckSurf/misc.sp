@@ -578,7 +578,8 @@ public LimitSpeed(client, type)
 
 public SetClientDefaults(client)
 {	
-	g_fLastOverlay[client] = GetEngineTime() - 5.0;	
+	g_fLastOverlay[client] = GetEngineTime() - 5.0;
+	g_flastClientUsp[client] = GetEngineTime();
 	g_binBonusStartZone[client] = false;
 	g_binStartZone[client] = false;
 	g_binSpeedZone[client] = false;
