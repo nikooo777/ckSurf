@@ -2,31 +2,38 @@
 
 public Action:timerAfterTele(Handle:timer, any:client)
 {
-    g_bTimeractivated[client] = false;
-    if (g_bToStart[client])
-    {
+	g_bTimeractivated[client] = false;
+	if (g_bToStart[client])
+	{
 		g_binBonusStartZone[client] = false;
 		g_bToStart[client] = false;
-    }
-    else
-    	if (g_bToStage[client])
-    	{
+	}
+	else
+	{
+		if (g_bToStage[client])
+		{
 			g_binBonusStartZone[client] = false;
 			g_binStartZone[client] = false;
 			g_binSpeedZone[client] = false;
 			g_bToStage[client] = false;
-    	}
-    	else
-    		if (g_bToBonus[client])
-	    	{
+		}
+		else
+		{
+			if (g_bToBonus[client])
+			{
 				g_binBonusStartZone[client] = true;
 				g_bToBonus[client] = false;
-	    	}
-	    	else
-	    		if (g_bToGoto[client])
-	    		{
-	    			g_bToGoto[client] = false;
+			}
+			else
+			{
+				if (g_bToGoto[client])
+				{
+					g_bToGoto[client] = false;
 				}
+			}
+		}
+	}
+	return Plugin_Handled;
 }
 
 public Action:AnnounceMap(Handle:timer, any:client)
@@ -70,7 +77,9 @@ public Action:SetPlayerWeapons(Handle:timer, any:client)
 			if (weapon != -1 && !IsFakeClient(client))
 				 SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}
-	}	
+	}
+
+	return Plugin_Handled;
 }
 
 public Action:PlayerRanksTimer(Handle:timer)
@@ -225,7 +234,6 @@ public Action:CKTimer2(Handle:timer)
 		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
 		if(g_hRecording[i] != INVALID_HANDLE && g_fCurrentRunTime[i] > 6720.0)
 		{
-			g_hRecording[i] = INVALID_HANDLE;
 			StopRecording(i);
 		}	
 
@@ -390,17 +398,19 @@ public Action:LoadReplaysTimer(Handle:timer)
 {
 	if (g_bReplayBot)
 		LoadReplays();
+
+	return Plugin_Handled;
 }
 
 public Action:SetClanTag(Handle:timer, any:client)
 {
 	if (!IsValidClient(client) || IsFakeClient(client) || g_pr_Calculating[client])
-		return;
+		return Plugin_Handled;
 
 	if (!g_bCountry && !g_bPointSystem && !g_bAdminClantag && !g_bVipClantag)
 	{
 		CS_SetClientClanTag(client, ""); 	
-		return;
+		return Plugin_Handled;
 	}
 	
 	decl String:old_pr_rankname[32];  
@@ -429,23 +439,30 @@ public Action:SetClanTag(Handle:timer, any:client)
 	if (oldrank && g_bPointSystem)
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
 			CPrintToChat(client,"%t","SkillGroup", MOSSGREEN, WHITE, GRAY,GRAY, g_pr_chat_coloredrank[client]);
+
+	return Plugin_Handled;
 }
 
 public Action:TerminateRoundTimer(Handle:timer)
 {
 	CS_TerminateRound(1.0, CSRoundEnd_CTWin, true);
+	return Plugin_Handled;
 }
 
 public Action:WelcomeMsgTimer(Handle:timer, any:client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client) && !StrEqual(g_sWelcomeMsg,""))
 		CPrintToChat(client, "%s", g_sWelcomeMsg);
+
+	return Plugin_Handled;
 }
 
 public Action:HelpMsgTimer(Handle:timer, any:client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 		PrintToChat(client, "%t", "HelpMsg", MOSSGREEN,WHITE,GREEN,WHITE);
+
+	return Plugin_Handled;
 }
 
 
@@ -488,6 +505,7 @@ public Action:StartMsgTimer(Handle:timer, any:client)
 		*/
 		PrintMapRecords(client);	
 	}
+	return Plugin_Handled;
 }
 
 public Action:CenterMsgTimer(Handle:timer, any:client)
@@ -502,6 +520,8 @@ public Action:CenterMsgTimer(Handle:timer, any:client)
 		}
 		g_bRestorePositionMsg[client]=false;
 	}
+
+	return Plugin_Handled;
 }
 
 public Action:RemoveRagdoll(Handle:timer, any:victim)
@@ -513,6 +533,7 @@ public Action:RemoveRagdoll(Handle:timer, any:victim)
 	if (player_ragdoll != -1)
 		RemoveEdict(player_ragdoll);
     }
+    return Plugin_Handled;
 }
 
 public Action:HideRadar(Handle:timer, any:client)
@@ -522,6 +543,7 @@ public Action:HideRadar(Handle:timer, any:client)
 		SetEntPropEnt(client, Prop_Send, "m_bSpotted", 0);
 		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);	
 	}
+	return Plugin_Handled;
 }
 
 public Action:LoadPlayerSettings(Handle:timer)
@@ -531,6 +553,7 @@ public Action:LoadPlayerSettings(Handle:timer)
 		if(IsValidClient(c))
 			OnClientPutInServer(c);
 	}
+	return Plugin_Handled;
 }
 
 

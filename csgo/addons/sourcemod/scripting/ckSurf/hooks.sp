@@ -603,7 +603,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		return Plugin_Continue;	
 
 	if(IsPlayerAlive(client))	
-	{	
+	{
 		decl Float:speed, Float:origin[3],Float:ang[3];
 		g_CurrentButton[client] = buttons;
 		GetClientAbsOrigin(client, origin);
@@ -644,6 +644,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		g_fLastSpeed[client] = speed;
 		g_fLastPosition[client] = origin;
 		g_LastButton[client] = buttons;
+
 		BeamBox_OnPlayerRunCmd(client);
 	}
 	return Plugin_Continue;

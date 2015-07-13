@@ -24,6 +24,7 @@ new String:sql_updateZone[]						= "UPDATE ck_zones SET zonetype = '%i', zonetyp
 new String:sql_selectzoneTypeIds[]				= "SELECT zonetypeid FROM ck_zones WHERE mapname='%s' AND zonetype='%i'";
 new String:sql_selectMapZones[]					= "SELECT * FROM ck_zones WHERE mapname = '%s' ORDER BY zonetypeid ASC";
 new String:sql_selectTotalBonusCount[]			= "SELECT * FROM ck_zones WHERE zoneType = 3 GROUP BY mapname;";
+new String:sql_selectZoneIds[]					= "SELECT * FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
 new String:sql_deleteMapZones[]					= "DELETE FROM ck_zones WHERE mapname = '%s'";
 new String:sql_deleteZone[]						= "DELETE FROM ck_zones WHERE mapname = '%s' AND zoneid = '%i'";
 new String:sql_deleteAllZones[]					= "DELETE FROM ck_zones";
@@ -3741,6 +3742,60 @@ public SQL_selectBonusCountCallback(Handle:owner, Handle:hndl, const String:erro
 //// SQL Zones /////////////
 ////////////////////////////
 
+public db_checkAndFixZoneIds()
+{
+	decl String:szQuery[128];
+	Format(szQuery, 128, sql_selectZoneIds, g_szMapName);
+	SQL_TQuery(g_hDb, db_checkAndFixZoneIdsCallback, szQuery, 1, DBPrio_Low);
+}
+
+public db_checkAndFixZoneIdsCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		LogError("[ckSurf] SQL Error (db_checkAndFixZoneIdsCallback): %s", error);
+		return;
+	}
+
+	if(SQL_HasResultSet(hndl))
+	{
+		new bool:IDError = false, Float:x1[128], Float:y1[128], Float:z1[128], Float:x2[128], Float:y2[128], Float:z2[128], checker = 0, i, zonetype[128], zonetypeid[128], vis[128], team[128];
+
+		while (SQL_FetchRow(hndl))
+		{
+			i = SQL_FetchInt(hndl, 1);
+			zonetype[checker] = SQL_FetchInt(hndl, 2);
+			zonetypeid[checker] = SQL_FetchInt(hndl, 3);
+			x1[checker] = SQL_FetchFloat(hndl, 4);
+			y1[checker] = SQL_FetchFloat(hndl, 5);
+			z1[checker] = SQL_FetchFloat(hndl, 6);
+			x2[checker] = SQL_FetchFloat(hndl, 7);
+			y2[checker] = SQL_FetchFloat(hndl, 8);
+			z2[checker] = SQL_FetchFloat(hndl, 9);
+			vis[checker] = SQL_FetchInt(hndl, 10);
+			team[checker] = SQL_FetchInt(hndl, 11)
+
+			if (i != checker)
+				IDError = true;
+
+			checker++;
+		}
+
+		if (IDError)
+		{
+			decl String:szQuery[256];
+			Format(szQuery, 256, sql_deleteMapZones, g_szMapName);
+			SQL_FastQuery(g_hDb, szQuery);
+
+			for(new k = 0; k < checker; k++)
+			{
+				db_insertZoneCheap(k, zonetype[k], zonetypeid[k], x1[k], y1[k], z1[k], x2[k], y2[k], z2[k], vis[k], team[k]);
+			}
+		}
+	}
+	db_selectMapZones();
+}
+
 public db_deleteAllZones(client)
 {
 	decl String:szQuery[128];
@@ -3760,9 +3815,28 @@ public SQL_deleteAllZonesCallback(Handle:owner, Handle:hndl, const String:error[
 	Admin_InsertZonestoDatabase(client);
 }
 
+public db_insertZoneCheap(zoneid, zonetype, zonetypeid, Float:pointax, Float:pointay, Float:pointaz, Float:pointbx, Float:pointby, Float:pointbz, vis, team)
+{
+	decl String:szQuery[1024];
+	//"INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i')";
+	Format(szQuery, 1024, sql_insertZones, g_szMapName, zoneid, zonetype, zonetypeid, pointax, pointay, pointaz, pointbx, pointby, pointbz, vis, team);
+	SQL_TQuery(g_hDb, SQL_insertZonesCheapCallback, szQuery, 1, DBPrio_Low);
+}
+
+public SQL_insertZonesCheapCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if(hndl == INVALID_HANDLE)
+	{
+		PrintToChatAll("[%cCK%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, WHITE);
+		db_checkAndFixZoneIds();
+		return;
+	}
+}
+
 public db_insertZone(zoneid, zonetype, zonetypeid, Float:pointax, Float:pointay, Float:pointaz, Float:pointbx, Float:pointby, Float:pointbz, vis, team)
 {
 	decl String:szQuery[1024];
+	//"INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i')";
 	Format(szQuery, 1024, sql_insertZones, g_szMapName, zoneid, zonetype, zonetypeid, pointax, pointay, pointaz, pointbx, pointby, pointbz, vis, team);
 	SQL_TQuery(g_hDb, SQL_insertZonesCallback, szQuery, 1, DBPrio_Low);
 }
@@ -3771,7 +3845,8 @@ public SQL_insertZonesCallback(Handle:owner, Handle:hndl, const String:error[], 
 {
 	if(hndl == INVALID_HANDLE)
 	{
-		LogError("[ckSurf] SQL Error (SQL_insertZonesCallback): %s", error);
+		PrintToChatAll("[%cCK%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, WHITE);
+		db_checkAndFixZoneIds();
 		return;
 	}
 
@@ -3796,7 +3871,7 @@ public SQL_saveZonesCallBack(Handle:owner, Handle:hndl, const String:error[], an
 	for(new i = 0; i < g_mapZonesCount; i++)
 	{
 		if (g_mapZones[i][PointA][0] != -1.0 && g_mapZones[i][PointA][1]  != -1.0 && g_mapZones[i][PointA][2] != -1.0 )
-			db_insertZone(g_mapZones[i][zoneId], g_mapZones[i][zoneType], g_mapZones[i][zoneTypeId], g_mapZones[i][PointA][0], g_mapZones[i][PointA][1], g_mapZones[i][PointA][2], g_mapZones[i][PointB][0], g_mapZones[i][PointB][1], g_mapZones[i][PointB][2], g_mapZones[i][Vis], g_mapZones[i][Team]);
+			db_insertZoneCheap(g_mapZones[i][zoneId], g_mapZones[i][zoneType], g_mapZones[i][zoneTypeId], g_mapZones[i][PointA][0], g_mapZones[i][PointA][1], g_mapZones[i][PointA][2], g_mapZones[i][PointB][0], g_mapZones[i][PointB][1], g_mapZones[i][PointB][2], g_mapZones[i][Vis], g_mapZones[i][Team]);
 	}
 	db_selectMapZones();
 }
@@ -3878,7 +3953,6 @@ public SQL_selectzoneTypeIdsCallback(Handle:owner, Handle:hndl, const String:err
 		}
 
 		SetMenuExitBackButton(TypeMenu, true);
-		ckSurf_StopUpdatingOfClimbersMenu(client);
 		DisplayMenu(TypeMenu, client, MENU_TIME_FOREVER);
 	}
 }
@@ -3980,7 +4054,6 @@ public SQL_selectMapZonesCallback(Handle:owner, Handle:hndl, const String:error[
 				case -1: LogError("[ckSurf] ZoneId out of sync");
 				default: Format(g_mapZones[g_mapZonesCount][ZoneName], 32, "Unknown", g_mapZones[g_mapZonesCount][zoneTypeId]);
 			}
-			if (g_mapZones[g_mapZonesCount][zoneType] == 5)
 			g_mapZones[g_mapZonesCount][Vis] = SQL_FetchInt(hndl, 10);
 			g_mapZones[g_mapZonesCount][Team] = SQL_FetchInt(hndl, 11);
 			g_mapZonesCount++;
@@ -4023,7 +4096,7 @@ public SQL_deleteZoneCallback(Handle:owner, Handle:hndl, const String:error[], a
 		return;
 	}
 
-	RefreshZones();
+	db_checkAndFixZoneIds();
 }
 
 

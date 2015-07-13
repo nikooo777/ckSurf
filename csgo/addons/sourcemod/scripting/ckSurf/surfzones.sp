@@ -117,6 +117,10 @@ public Action:EndTouchTrigger(caller, activator)
 	// Ignore dead players
 	if(activator < 1 || activator > MaxClients || !IsClientInGame(activator) || !IsPlayerAlive(activator))
 		return;
+
+	// Ignore if teleporting out of the zone
+	if (g_bToStart[activator] || g_bToStage[activator] || g_bToBonus[activator] || g_bToGoto[activator])
+		return;
 		
 	decl String:sTargetName[256], action[2];
 	GetEntPropString(caller, Prop_Data, "m_iName", sTargetName, sizeof(sTargetName));
@@ -441,11 +445,12 @@ public Action:BeamBox(Handle:timer, any:client)
 
 public Action:BeamBoxAll(Handle:timer, any:data)
 {
-	decl Float:posA[3], Float:posB[3], zColor[4], beamTeam, beamVis, zType;
-
+	decl Float:posA[3], Float:posB[3], zColor[4], tzColor[4], beamTeam, beamVis, zType, bool:draw;
 
 	if (g_zoneDisplayType < 1)
+	{
 		return Plugin_Handled;
+	}
 
 	for(new i=0;i<g_mapZonesCount;++i)
 	{
@@ -456,34 +461,56 @@ public Action:BeamBoxAll(Handle:timer, any:data)
 		posB[1] = g_mapZones[i][PointB][1];
 		posB[2] = g_mapZones[i][PointB][2];
 		zType = g_mapZones[i][zoneType];
-		beamTeam = g_mapZones[i][Vis];
-		beamVis = g_mapZones[i][Team];
+		beamVis = g_mapZones[i][Vis];
+		beamTeam = g_mapZones[i][Team];
+		draw = false;
 
-		for (new p = 1; p <= MaxClients; p++) 
+		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+		if(0 < beamVis < 4)
 		{
-			if(IsValidClient(p))
+			draw = true;
+		}
+		else
+		{
+			if (g_zonesToDisplay == 1 && ((0 < zType < 3)||zType == 7))
 			{
-				if(g_ClientSelectedZone[p]!=i && (beamVis==1 || GetClientTeam(p)==beamVis))
+				draw = true;
+			}
+			else
+			{
+				if (g_zonesToDisplay == 2 && ((0 < zType < 6 ) ||zType == 7))
 				{
-					getZoneTeamColor(beamTeam, zColor);
-					TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+					draw = true;
 				}
 				else
 				{
-					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 1 && ((0 < zType < 3)||zType == 7))
+					if (g_zonesToDisplay == 3)
 					{
-						getZoneDisplayColor(zType, zColor);
-						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+						draw = true;
 					}
-					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 2 && ((0 < zType < 6 ) ||zType == 7))
+				}
+			}
+		}
+
+		if (draw)
+		{
+			getZoneDisplayColor(zType, zColor);
+			getZoneTeamColor(beamTeam, tzColor);
+			for (new p = 1; p <= MaxClients; p++) 
+			{
+				if(IsValidClient(p))
+				{
+					if (beamVis == 2 || beamVis == 3)
 					{
-						getZoneDisplayColor(zType, zColor);
-						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+						if (GetClientTeam(p) == beamVis && g_ClientSelectedZone[p]!=i)
+						{
+							TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, tzColor, 0);
+						}
 					}
-					if (g_ClientSelectedZone[p] != i && g_zonesToDisplay == 3)
-					{	
-						getZoneDisplayColor(zType, zColor);
-						TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
+					else
+					{
+						if(g_ClientSelectedZone[p]!=i)
+							TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite,  0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0);
 					}
 				}
 			}
@@ -1026,7 +1053,8 @@ public MenuHandler_Editor(Handle:tMenu, MenuAction:action, client, item)
 					ZonePos[0]=FloatDiv(ZonePos[0], 2.0);
 					ZonePos[1]=FloatDiv(ZonePos[1], 2.0);
 					ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
-					CreateTimer(0.1, timerAfterTele, client);
+					g_bToStage[client] = true;
+					CreateTimer(0.2, timerAfterTele, client);
 					TeleportEntity(client, ZonePos, NULL_VECTOR, NULL_VECTOR);
 					EditorMenu(client);
 				}

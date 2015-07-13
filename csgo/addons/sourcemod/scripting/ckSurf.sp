@@ -20,8 +20,8 @@
 #include <mapchooser>
 #include <ckSurf>
 
-#define VERSION "1.16"
-#define PLUGIN_VERSION 116
+#define VERSION "1.17"
+#define PLUGIN_VERSION 117
 #define ADMIN_LEVEL ADMFLAG_UNBAN
 #define ADMIN_LEVEL2 ADMFLAG_ROOT
 #define MYSQL 0
@@ -44,7 +44,7 @@
 #define QUOTE 0x22
 #define PERCENT 0x25
 #define CPLIMIT 50 
-#define MAX_PR_PLAYERS 20000
+#define MAX_PR_PLAYERS 1066
 #define HIDE_RADAR (1 << 12)
 #define HIDE_CHAT ( 1<<7 )
 #define CK_BUTTON_DONTMOVE (1<<0)		
@@ -58,7 +58,7 @@
 #define FRAME_INFO_SIZE 15
 #define FRAME_INFO_SIZE_V1 14
 #define AT_SIZE 10
-#define ORIGIN_SNAPSHOT_INTERVAL 100
+#define ORIGIN_SNAPSHOT_INTERVAL 150
 #define FILE_HEADER_LENGTH 74
 
 enum FrameInfo 
@@ -880,6 +880,8 @@ public OnMapStart()
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(2700.0, RestartBots, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT); // reset bots every 45minutes, testing
+	g_hZoneTimer = CreateTimer(g_fChecker, BeamBoxAll, _, TIMER_REPEAT);
+
 	
 	if (g_bAutoRespawn)
 		ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
@@ -1989,15 +1991,15 @@ public OnPluginStart()
 	GetConVarString(g_hBonusBotColor,szRBotColor,256);
 	GetRGBColor(1,szRBotColor);
 
-	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 99.0);
+	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	g_fChecker = GetConVarFloat(g_hChecker);
 	HookConVarChange(g_hChecker, OnSettingChanged);
 
-	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1.0", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	g_zoneDisplayType = GetConVarInt(g_hZoneDisplayType);
 	HookConVarChange(g_hZoneDisplayType, OnSettingChanged);
 
-	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1.0", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 1.0, true, 3.0);
+	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	g_zonesToDisplay = GetConVarInt(g_hZonesToDisplay);
 	HookConVarChange(g_hZonesToDisplay, OnSettingChanged);
 

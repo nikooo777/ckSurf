@@ -50,7 +50,10 @@ public StopRecording(client)
 		return;
 		
 	CloseHandle(g_hRecording[client]);
-	CloseHandle(g_hRecordingAdditionalTeleport[client]);	
+	
+	if (g_hRecordingAdditionalTeleport[client] != INVALID_HANDLE)
+		CloseHandle(g_hRecordingAdditionalTeleport[client]);	
+	
 	g_hRecording[client] = INVALID_HANDLE;
 	g_hRecordingAdditionalTeleport[client] = INVALID_HANDLE;
 	g_RecordedTicks[client] = 0;
@@ -99,7 +102,12 @@ public SaveRecording(client, type)
 	if(GetArraySize(g_hRecordingAdditionalTeleport[client]) > 0)
 		SetTrieValue(g_hLoadedRecordsAdditionalTeleport, sPath2, g_hRecordingAdditionalTeleport[client]);
 	else
-		CloseHandle(g_hRecordingAdditionalTeleport[client]);	
+		if (g_hRecordingAdditionalTeleport[client] != INVALID_HANDLE)
+		{
+			CloseHandle(g_hRecordingAdditionalTeleport[client]);
+			g_hRecordingAdditionalTeleport[client] = INVALID_HANDLE;
+		}
+
 	WriteRecordToDisk(sPath2, iHeader);
 	g_bNewReplay[client]=false;
 	
@@ -345,15 +353,18 @@ public LoadRecordReplay()
 	{
 		if(!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_BonusBot)
 			continue;
-
-		g_RecordBot = i;
-		g_fCurrentRunTime[g_RecordBot] = 0.0;
 		if(!IsPlayerAlive(i))
 		{
 			CS_RespawnPlayer(i);
+
 			if (g_bForceCT)
 				TeamChangeActual(i, 2);
+
+			continue;
 		}
+
+		g_RecordBot = i;
+		g_fCurrentRunTime[g_RecordBot] = 0.0;
 
 		break;
 	}
@@ -404,15 +415,19 @@ public LoadBonusReplay()
 		if(!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_RecordBot)
 			continue;
 
+		if(!IsPlayerAlive(i))
+		{
+			CS_RespawnPlayer(i);
+
+			if (g_bForceCT)
+				TeamChangeActual(i, 2);
+
+			continue;
+		}
+
 		g_BonusBot = i;
 		g_fCurrentRunTime[g_BonusBot] = 0.0;
 		
-		if(!IsPlayerAlive(i))
-		{
-			TeamChangeActual(i, 2);
-			CS_RespawnPlayer(i);
-		}
-
 		break;
 	}
 
@@ -453,6 +468,7 @@ public StopPlayerMimic(client)
 {
 	if(!IsValidClient(client))
 		return;
+
 	g_BotMimicTick[client] = 0;
 	g_CurrentAdditionalTeleportIndex[client] = 0;
 	g_BotMimicRecordTickCount[client] = 0;
@@ -467,8 +483,6 @@ public IsPlayerMimicing(client)
 		return false;	
 	return g_hBotMimicsRecord[client] != INVALID_HANDLE;
 }
-
-
 
 public DeleteReplay(client, type, String:map[])
 {
@@ -615,6 +629,7 @@ public PlayReplay(client, &buttons, &subtype, &seed, &impulse, &weapon, Float:an
 			g_BotMimicTick[client] = 0;
 			g_CurrentAdditionalTeleportIndex[client] = 0;
 		}
+
 		new iFrame[FRAME_INFO_SIZE];
 		GetArrayArray(g_hBotMimicsRecord[client], g_BotMimicTick[client], iFrame, _:FrameInfo);		
 		buttons = iFrame[playerButtons];
@@ -738,6 +753,9 @@ public PlayReplay(client, &buttons, &subtype, &seed, &impulse, &weapon, Float:an
 					new bool:hasweapon;	
 					if (client == g_RecordBot)
 						g_bNewRecordBot=false;
+					else
+						if (client == g_BonusBot)
+							g_bNewBonusBot = false;
 														
 					if (StrEqual(sAlias,"weapon_hkp2000") && !hasweapon)
 					{				

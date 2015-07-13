@@ -1,5 +1,5 @@
 
-ckSurf 1.16
+ckSurf 1.17
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +30,14 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+
+1.17 
+- Fixed issues with zone beams not showing sometimes
+- Zone beam optimization
+- Fixed an issue where sometimes you couldn't make new zones
+- Changes to replay code
+- General bug fixes
+
 
 1.16 Changelog
 
