@@ -1,5 +1,11 @@
 // timer.sp
 
+public Action:timerAfterNoclip(Handle:timer, any:client)
+{
+	if (IsValidClient(client))
+		Client_Stop(client, 1);
+}
+
 public Action:timerAfterTele(Handle:timer, any:client)
 {
 	g_bTimeractivated[client] = false;

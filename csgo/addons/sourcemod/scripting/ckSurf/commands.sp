@@ -1959,6 +1959,7 @@ public Action_NoClip(client)
 {    
 	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
+		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		new team = GetClientTeam(client);
 		if (team==2 || team==3)
 		{
@@ -1971,7 +1972,6 @@ public Action_NoClip(client)
 					g_fStartTime[client] = -1.0;
 					g_fCurrentRunTime[client] = -1.0;
 				}				
-				g_fLastTimeNoClipUsed[client] = GetEngineTime();
 				SetEntityMoveType(client, MOVETYPE_NOCLIP);
 				SetEntityRenderMode(client , RENDER_NONE); 
 				SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
@@ -1986,6 +1986,8 @@ public Action_UnNoClip(client)
 {    
 	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
+		g_fLastTimeNoClipUsed[client] = GetGameTime();
+		CreateTimer(5.0, timerAfterNoclip, client, TIMER_FLAG_NO_MAPCHANGE);
 		new team = GetClientTeam(client);
 		if (team==2 || team==3)
 		{
