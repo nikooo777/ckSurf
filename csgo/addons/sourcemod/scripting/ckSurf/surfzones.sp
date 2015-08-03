@@ -302,7 +302,7 @@ EndTouch(client, action[])
 				if (!g_bCheckpointMode[client])
 				{
 
-					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
 					{
 						Command_Restart(client, 1);
 						return;
@@ -330,7 +330,7 @@ EndTouch(client, action[])
 			else
 				if (!g_bCheckpointMode[client])
 				{
-					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
 					{
 						Command_Restart(client, 1);
 						return;
@@ -358,7 +358,7 @@ EndTouch(client, action[])
 			else
 				if (!g_bCheckpointMode[client])
 				{
-					if (((GetEngineTime() - g_fLastTimeNoClipUsed[client]) < 3.0) && GetSpeed(client) > 500.0)
+					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
 					{
 						Command_Restart(client, 1);
 						return;
