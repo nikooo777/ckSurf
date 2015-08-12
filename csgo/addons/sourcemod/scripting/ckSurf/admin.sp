@@ -311,8 +311,17 @@ public ckAdminMenu(client)
 	if (g_bChallengePoints)
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow challenges points  -  Enabled", menuItemNumber); 	
 	else
-		Format(szTmp, sizeof(szTmp), "[%i.] Allow challenges points  -  Disabled", menuItemNumber); 		
+		Format(szTmp, sizeof(szTmp), "[%i.] Allow challenges points  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
+	menuItemNumber++;
+
+	if (g_bAllowRoundEndCvar)
+		Format(szTmp, sizeof(szTmp), "[%i.] Allow to end the current round  -  Enabled", menuItemNumber); 	
+	else
+		Format(szTmp, sizeof(szTmp), "[%i.] Allow to end the current round  -  Disabled", menuItemNumber); 	
+	AddMenuItem(adminmenu, szTmp, szTmp);
+	menuItemNumber++;
+
 	SetMenuExitButton(adminmenu, true);
 	SetMenuOptionFlags(adminmenu, MENUFLAG_BUTTON_EXIT);	
 	if (g_AdminMenuLastPage[client] < 6)
@@ -342,6 +351,7 @@ public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
 {
 	if(action == MenuAction_Select)
 	{
+		new bool:refresh = true;
 		if(param2 == 0)
 		{ 
 			if (!g_pr_RankingRecalc_InProgress)
@@ -364,6 +374,7 @@ public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
 		if(param2 == 2)
 		{ 
 			ZoneMenu(param1);
+			refresh = false;
 		}
 		if(param2 == 3)
 		{
@@ -527,10 +538,19 @@ public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
 			else
 				ServerCommand("ck_challenge_points 0");
 		}
+		if (param2 == 26)
+		{
+			if (!g_bAllowRoundEndCvar)
+				ServerCommand("ck_round_end 1");
+			else
+				ServerCommand("ck_round_end 0");
+		}
 		g_AdminMenuLastPage[param1] = param2;
 		if (menu != INVALID_HANDLE)
 			CloseHandle(menu);
-		CreateTimer(0.1, RefreshAdminMenu, param1,TIMER_FLAG_NO_MAPCHANGE);
+
+		if (refresh)
+			CreateTimer(0.1, RefreshAdminMenu, param1,TIMER_FLAG_NO_MAPCHANGE);
 	}
 				
 	if(action == MenuAction_End)

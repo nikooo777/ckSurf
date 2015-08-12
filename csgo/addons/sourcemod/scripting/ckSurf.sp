@@ -394,6 +394,8 @@ new Handle:g_hExtraPoints2 = INVALID_HANDLE;
 new g_ExtraPoints2;
 new Handle:g_hReplayBotColor = INVALID_HANDLE;
 new Handle:g_hBonusBotColor = INVALID_HANDLE;
+new Handle:g_hAllowRoundEndCvar = INVALID_HANDLE;
+new bool:g_bAllowRoundEndCvar;
 new Float:g_fMapStartTime;
 new Float:g_fvMeasurePos[MAXPLAYERS+1][2][3];
 new Float:g_fStartTime[MAXPLAYERS+1];
@@ -1626,6 +1628,19 @@ public OnSettingChanged(Handle:convar, const String:oldValue[], const String:new
 		Format(color, 256, "%s", newValue[0]);
 		GetRGBColor(1, color);
 	}
+	if(convar == g_hAllowRoundEndCvar)
+	{
+		if(newValue[0] == '1')		
+		{
+			ServerCommand("mp_ignore_round_win_conditions 0");
+			g_bAllowRoundEndCvar = true;
+		}
+		else
+		{
+			ServerCommand("mp_ignore_round_win_conditions 1;mp_maxrounds 1");
+			g_bAllowRoundEndCvar = false;
+		}
+	}
 	if(convar == g_hChecker)
 	{
 		g_fChecker = StringToFloat(newValue[0]);
@@ -2093,6 +2108,10 @@ public OnPluginStart()
 	g_hChatSpamFilter = CreateConVar("ck_chat_spam_protection", "0.5", "The amount in seconds when a player can send a new message in chat. 0.0 = No filter.", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0);
 	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
 	HookConVarChange(g_hChatSpamFilter, OnSettingChanged);
+
+	g_hAllowRoundEndCvar = CreateConVar("ck_round_end", "0", "on/off - Allows to end the current round", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bAllowRoundEndCvar     = GetConVarBool(g_hAllowRoundEndCvar);
+	HookConVarChange(g_hAllowRoundEndCvar, OnSettingChanged);
 
 	db_setupDatabase();
 	

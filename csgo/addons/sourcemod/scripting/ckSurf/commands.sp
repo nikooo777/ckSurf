@@ -2217,6 +2217,7 @@ public ShowSrvSettings(client)
 	PrintToConsole(client, "ck_point_system %b", g_bPointSystem);
 	PrintToConsole(client, "ck_ranking_extra_points_firsttime %i", g_ExtraPoints2);
 	PrintToConsole(client, "ck_ranking_extra_points_improvements %i", g_ExtraPoints);
+	PrintToConsole(client, "ck_round_end %b", g_bAllowRoundEndCvar);
 	PrintToConsole(client, "ck_replay_bot %b", g_bReplayBot);
 	PrintToConsole(client, "ck_restore %b", g_bRestore);
 	PrintToConsole(client, "ck_use_radio %b", g_bRadioCommands);

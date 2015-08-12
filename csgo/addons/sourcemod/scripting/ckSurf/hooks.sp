@@ -509,15 +509,12 @@ public Action:Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBr
 					
 public Action:CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
 {
-	if (g_bRoundEnd)
-		return Plugin_Continue;
 	new timeleft;
 	GetMapTimeLeft(timeleft);
-	if (timeleft>= -1)
+	if (timeleft>= -1 && !g_bAllowRoundEndCvar)
 		return Plugin_Handled;
-	g_bRoundEnd=true;
 	return Plugin_Continue;
-}  
+} 
 
 public Action:Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
