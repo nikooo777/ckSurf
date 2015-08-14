@@ -299,7 +299,7 @@ EndTouch(client, action[])
 			if (g_bCheckpointMode[client] && !g_bTimeractivated[client]) // If on practice mode, but timer isn't on - start timer
 				CL_OnStartTimerPress(client);
 			else
-				if (!g_bCheckpointMode[client])
+				if (!g_bCheckpointMode[client] && !g_bToStart[client] && !g_bToStage[client] && !g_bToBonus[client] && !g_bToGoto[client])
 				{
 
 					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
@@ -328,7 +328,7 @@ EndTouch(client, action[])
 			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
 				CL_OnStartTimerPress(client);
 			else
-				if (!g_bCheckpointMode[client])
+				if (!g_bCheckpointMode[client] && !g_bToStart[client] && !g_bToStage[client] && !g_bToBonus[client] && !g_bToGoto[client])
 				{
 					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
 					{
@@ -356,7 +356,7 @@ EndTouch(client, action[])
 			if (g_bCheckpointMode[client] && !g_bTimeractivated[client])
 				CL_OnStartTimerPress(client);
 			else
-				if (!g_bCheckpointMode[client])
+				if (!g_bCheckpointMode[client] && !g_bToStart[client] && !g_bToStage[client] && !g_bToBonus[client] && !g_bToGoto[client])
 				{
 					if ((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0)
 					{

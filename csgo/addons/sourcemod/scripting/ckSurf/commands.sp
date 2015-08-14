@@ -216,7 +216,7 @@ public Action:Command_ToBonus(client, args)
 
 			// Timer settings
 			g_bToBonus[client] = true;
-			CreateTimer(0.1, timerAfterTele, client);
+			CreateTimer(1.0, timerAfterTele, client);
 
 			new	Float:positA[3];
 			new	Float:positB[3];
@@ -341,7 +341,7 @@ public MenuHandler_SelectStage(Handle:tMenu, MenuAction:action, client, item)
 			ZonePos[2]=FloatDiv(ZonePos[2], 2.0);
 
 			g_bToStage[client] = true;
-			CreateTimer(0.1, timerAfterTele, client);
+			CreateTimer(1.0, timerAfterTele, client);
 
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
 			TeleportEntity(client, ZonePos, NULL_VECTOR, Float:{0.0,0.0,-100.0});
@@ -386,7 +386,7 @@ public Action:Command_ToStage(client, args)
 		if (stageZoneId>=0)
 		{
 			g_bToStage[client] = true;
-			CreateTimer(0.2, timerAfterTele, client);
+			CreateTimer(1.0, timerAfterTele, client);
 
 			new	Float:positA[3];
 			new	Float:positB[3];
@@ -442,7 +442,7 @@ public Action:Command_Restart(client, args)
 	if (g_bGotSpawnLocation)
 	{
 		g_bToStart[client] = true;
-		CreateTimer(0.2, timerAfterTele, client);
+		CreateTimer(1.0, timerAfterTele, client);
 
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
 		{
@@ -489,7 +489,7 @@ public Action:Command_Restart(client, args)
 				}
 
 			g_bToStart[client] = true;
-			CreateTimer(0.2, timerAfterTele, client);
+			CreateTimer(1.0, timerAfterTele, client);
 
 			new	Float:positA[3];
 			new	Float:positB[3];
@@ -1797,7 +1797,7 @@ public GotoMethod(client, i)
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)
 		{
 			g_bToGoto[client] = true;
-			CreateTimer(0.2, timerAfterTele, client);
+			CreateTimer(1.0, timerAfterTele, client);
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
 				new Float:position[3];
