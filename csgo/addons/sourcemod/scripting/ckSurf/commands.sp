@@ -216,7 +216,7 @@ public Action:Command_ToBonus(client, args)
 
 			// Timer settings
 			g_bToBonus[client] = true;
-			CreateTimer(1.0, timerAfterTele, client);
+			CreateTimer(0.4, timerAfterTele, client);
 
 			new	Float:positA[3];
 			new	Float:positB[3];
@@ -442,7 +442,7 @@ public Action:Command_Restart(client, args)
 	if (g_bGotSpawnLocation)
 	{
 		g_bToStart[client] = true;
-		CreateTimer(1.0, timerAfterTele, client);
+		CreateTimer(0.4, timerAfterTele, client);
 
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
 		{
@@ -489,7 +489,7 @@ public Action:Command_Restart(client, args)
 				}
 
 			g_bToStart[client] = true;
-			CreateTimer(1.0, timerAfterTele, client);
+			CreateTimer(0.4, timerAfterTele, client);
 
 			new	Float:positA[3];
 			new	Float:positB[3];
