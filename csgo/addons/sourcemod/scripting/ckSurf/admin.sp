@@ -125,9 +125,9 @@ public ckAdminMenu(client)
 	
 	new Handle:adminmenu = CreateMenu(AdminPanelHandler);
 	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
-		Format(szTmp, sizeof(szTmp), "ckTimer %s Admin Menu (full access)\nNoclip: bind KEY +noclip",VERSION); 	
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)\nNoclip: bind KEY +noclip",VERSION); 	
 	else
-		Format(szTmp, sizeof(szTmp), "ckTimer %s Admin Menu (limited access)\nNoclip: bind KEY +noclip",VERSION); 	
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)\nNoclip: bind KEY +noclip",VERSION); 	
 	SetMenuTitle(adminmenu, szTmp);
 
 	
@@ -149,9 +149,15 @@ public ckAdminMenu(client)
 	AddMenuItem(adminmenu, "", "", ITEMDRAW_SPACER);
 
 	new menuItemNumber = 2;
-
-	Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
-	AddMenuItem(adminmenu, szTmp, szTmp);
+	Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 
+	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
+	{
+		AddMenuItem(adminmenu, szTmp, szTmp);
+	}
+	else
+	{
+		AddMenuItem(adminmenu, szTmp, szTmp, ITEMDRAW_DISABLED);
+	}
 	menuItemNumber++;
 
 	if (g_bgodmode)

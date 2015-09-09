@@ -1797,6 +1797,7 @@ public GotoMethod(client, i)
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)
 		{
 			g_bToGoto[client] = true;
+			Client_Stop(client, 1);
 			CreateTimer(1.0, timerAfterTele, client);
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{

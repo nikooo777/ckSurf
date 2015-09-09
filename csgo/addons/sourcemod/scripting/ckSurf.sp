@@ -44,7 +44,7 @@
 #define QUOTE 0x22
 #define PERCENT 0x25
 #define CPLIMIT 50 
-#define MAX_PR_PLAYERS 1066
+#define MAX_PR_PLAYERS 20000
 #define HIDE_RADAR (1 << 12)
 #define HIDE_CHAT ( 1<<7 )
 #define CK_BUTTON_DONTMOVE (1<<0)		
@@ -2207,7 +2207,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_deletecheckpoints", Admin_DeleteCheckpoints, ADMIN_LEVEL2, "[ckSurf] Reset checkpoints on the current map");
 	RegAdminCmd("sm_insertmaptiers", Admin_InsertMapTiers, ADMIN_LEVEL2, "[ckSurf] Insert premade maptier information into the database (ONLY RUN THIS ONCE)");
 	RegAdminCmd("sm_insertmapzones", Admin_InsertMapZones, ADMIN_LEVEL2, "[ckSurf] Insert premade map zones into the database (ONLY RUN THIS ONCE)");
-	RegAdminCmd("sm_zones", Command_Zones, ADMFLAG_ROOT);
+	RegAdminCmd("sm_zones", Command_Zones, ADMIN_LEVEL2);
 
 	RegAdminCmd("sm_addmaptier", Admin_insertMapTier, ADMIN_LEVEL, "[ckSurf] Changes maps tier");
 	RegAdminCmd("sm_amt", Admin_insertMapTier, ADMIN_LEVEL, "[ckSurf] Changes maps tier");
