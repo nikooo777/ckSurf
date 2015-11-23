@@ -1,0 +1,2 @@
+These are the plain database files for the data that comes with ckSurf.
+If you do not want to import these to your database manually, you can add the same data with the ingame commands !insertzones and !insertmaptiers (requires z admin flag).

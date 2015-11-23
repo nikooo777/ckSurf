@@ -1,9 +1,9 @@
 //button hook
-public Action:NormalSHook_callback(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
+public Action NormalSHook_callback(clients[64], &numClients, char sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
 {
     if(entity > MaxClients)
     {
-        new String:clsname[20]; GetEntityClassname(entity, clsname, sizeof(clsname));
+        char clsname[20]; GetEntityClassname(entity, clsname, sizeof(clsname));
         if(StrEqual(clsname, "func_button", false))
         {
             return Plugin_Handled;
@@ -13,12 +13,12 @@ public Action:NormalSHook_callback(clients[64], &numClients, String:sample[PLATF
 }  
 
 //attack spam protection
-public Action:Event_OnFire(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client   = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client   = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (client > 0 && IsClientInGame(client) && g_bAttackSpamProtection) 
 	{
-		decl String: weapon[64];
+		char weapon[64];
 		GetEventString(event, "weapon", weapon, 64);
 		if (StrContains(weapon,"knife",true) == -1 && g_AttackCounter[client] < 41)
 		{	
@@ -37,9 +37,9 @@ public Action:Event_OnFire(Handle:event, const String:name[], bool:dontBroadcast
 }
 
 // - PlayerSpawn -
-public Action:Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(client != 0)
 	{	
 		PlayerSpawn(client);
@@ -52,7 +52,7 @@ PlayerSpawn(client)
 	if (!IsValidClient(client))
 		return;
 
-	g_fStartCommandUsed_LastTime[client] = GetEngineTime();
+	g_fStartCommandUsed_LastTime[client] = GetGameTime();
 	g_SpecTarget[client] = -1;	
 	g_bPause[client] = false;
 	g_bFirstButtonTouch[client]=true;
@@ -67,7 +67,7 @@ PlayerSpawn(client)
 			GivePlayerItem(client, "weapon_usp_silencer");
 		if (!g_bStartWithUsp[client])
 		{
-			new weapon = GetPlayerWeaponSlot(client, 2);
+			int weapon = GetPlayerWeaponSlot(client, 2);
 			if (weapon != -1 && !IsFakeClient(client))
 				 SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}
@@ -86,7 +86,7 @@ PlayerSpawn(client)
 		SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 						
 	//botmimic2		
-	if(g_hBotMimicsRecord[client] != INVALID_HANDLE && IsFakeClient(client))
+	if(g_hBotMimicsRecord[client] != null && IsFakeClient(client))
 	{
 		g_BotMimicTick[client] = 0;
 		g_CurrentAdditionalTeleportIndex[client] = 0;
@@ -139,13 +139,14 @@ PlayerSpawn(client)
 				else
 					if (g_bAutoTimer)
 					{
-						if (bSpawnToStartZone) 
+						if (bSpawnToStartZone)
 							Command_Restart(client, 1);
 
-						CreateTimer(0.1, StartTimer, client,TIMER_FLAG_NO_MAPCHANGE);			
+						CreateTimer(0.1, StartTimer, client,TIMER_FLAG_NO_MAPCHANGE);
 					}
 					else
 					{
+						
 						g_bTimeractivated[client] = false;	
 						g_fStartTime[client] = -1.0;
 						g_fCurrentRunTime[client] = -1.0;	
@@ -177,37 +178,51 @@ PlayerSpawn(client)
 	GetClientAbsOrigin(client, g_fLastPosition[client]);	
 }
 
-public Action:Say_Hook(client, const String:command[], argc)
+public Action Say_Hook(client, const char[] command, argc)
 {
 	//Call Admin - Own Reason
 	if (g_bClientOwnReason[client])
 	{
-		StopClimbersMenu(client);
 		g_bClientOwnReason[client] = false;
 		return Plugin_Continue;
 	}
 
-	new Float:messageTime = GetEngineTime();
+	char sText[1024];
+	GetCmdArgString(sText, sizeof(sText));
+
+	if (IsValidClient(client) && g_ClientRenamingZone[client])
+	{
+		Admin_renameZone(client, sText);
+		return Plugin_Handled;
+	}
+
+	if (!g_benableChatProcessing)
+		return Plugin_Continue;	
+
+	float messageTime = GetGameTime();
 	
 	//Chat trigger?
 	g_bSayHook[client]=true;
 	if (IsValidClient(client))
 	{
-		if (BaseComm_IsClientGagged(client))
-			return Plugin_Handled;
 
-		if ((messageTime - g_fLastChatMessage[client]) < g_fChatSpamFilter)
+	/*	if((sText[1] == '/') || (sText[1] == '!'))
 		{
+			g_bSayHook[client]=false;
 			return Plugin_Handled;
-		}
+		}*/
 
-		g_fLastChatMessage[client] = messageTime;
-		decl String:sText[1024];
-		GetCmdArgString(sText, sizeof(sText));
-		StripQuotes(sText);
-		new team = GetClientTeam(client);		
-		TrimString(sText); 
+		if (client > 0)
+			if (BaseComm_IsClientGagged(client))
+				return Plugin_Handled;
+
+		if (checkSpam(client, messageTime))
+			return Plugin_Handled;
 		
+		StripQuotes(sText);
+		int team = GetClientTeam(client);
+		TrimString(sText);
+
 		ReplaceString(sText,1024,"{darkred}","",false);
 		ReplaceString(sText,1024,"{green}","",false);
 		ReplaceString(sText,1024,"{lightgreen}","",false);
@@ -236,7 +251,7 @@ public Action:Say_Hook(client, const String:command[], argc)
 		{
 			if(IsCharUpper(sText[1]))
 			{
-				for(new i = 0; i <= strlen(sText); ++i)
+				for(int i = 0; i <= strlen(sText); ++i)
 						sText[i] = CharToLower(sText[i]);
 				g_bSayHook[client]=false;
 				FakeClientCommand(client, "say %s", sText);
@@ -245,7 +260,7 @@ public Action:Say_Hook(client, const String:command[], argc)
 		}
 		
 		//blocked commands
-		for(new i = 0; i < sizeof(g_BlockedChatText); i++)
+		for(int i = 0; i < sizeof(g_BlockedChatText); i++)
 		{
 			if (StrEqual(g_BlockedChatText[i],sText,true))
 			{
@@ -257,21 +272,41 @@ public Action:Say_Hook(client, const String:command[], argc)
 		// !s and !stage commands
 		if (strlen(sText)>2 &&strlen(sText)<=5)
 		{
-			if (sText[0]=='!' && sText[1]=='s')
+			if (sText[0]=='!' && sText[1]=='s' && sText[2] == ' ')
 			{
 				g_bSayHook[client]=false;
 				return Plugin_Handled;	
 			}
 		}
+
 		if (strlen(sText)>6 &&strlen(sText)<=9)
 		{
-			if (sText[0]=='!' && sText[1]=='s' && sText[2]=='t' && sText[3]=='a' && sText[4]=='g' && sText[5]=='e')
+			if (sText[0]=='!' && sText[1]=='s' && sText[2]=='t' && sText[3]=='a' && sText[4]=='g' && sText[5]=='e' && sText[6]==' ')
 			{
 				g_bSayHook[client]=false;
 				return Plugin_Handled;	
 			}
 		}
 		
+		// !b and !bonus commands
+		if (strlen(sText)>2 &&strlen(sText)<=5)
+		{
+			if (sText[0]=='!' && sText[1]=='b' && sText[2] == ' ')
+			{
+				g_bSayHook[client]=false;
+				return Plugin_Handled;	
+			}
+		}
+
+		if (strlen(sText)>6 &&strlen(sText)<=9)
+		{
+			if (sText[0]=='!' && sText[1]=='b' && sText[2]=='o' && sText[3]=='n' && sText[4]=='u' && sText[5]=='s' && sText[6]==' ')
+			{
+				g_bSayHook[client]=false;
+				return Plugin_Handled;	
+			}
+		}
+
 		//chat trigger?
 		if((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' && (GetUserFlagBits(client) & ADMFLAG_ROOT ||  GetUserFlagBits(client) & ADMFLAG_GENERIC)))
 		{
@@ -279,7 +314,7 @@ public Action:Say_Hook(client, const String:command[], argc)
 			return Plugin_Continue;
 		}
 
-		decl String:szName[64];
+		char szName[64];
 		GetClientName(client,szName,64);		
 		ReplaceString(szName,64,"{darkred}","",false);
 		ReplaceString(szName,64,"{green}","",false);
@@ -357,11 +392,11 @@ public Action:Say_Hook(client, const String:command[], argc)
 		}
 		else
 		{
-			decl String:szChatRank[64];
+			char szChatRank[64];
 			Format(szChatRank, 64, "%s",g_pr_chat_coloredrank[client]);			
 			
-			if (g_bCountry && (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag) || ((StrEqual(g_pr_rankname[client], "VIP", false)) && g_bVipClantag)))
-			{						
+			if (g_bCountry && (g_bPointSystem || (StrEqual(g_pr_rankname[client], "ADMIN", false) && g_bAdminClantag)))
+			{	
 				if (StrEqual(sText,""))
 				{
 					g_bSayHook[client]=false;
@@ -376,7 +411,7 @@ public Action:Say_Hook(client, const String:command[], argc)
 			}
 			else
 			{
-				if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag) || ((StrEqual(g_pr_rankname[client], "VIP", false)) && g_bVipClantag))
+				if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
 				{
 					if (StrEqual(sText,""))
 					{
@@ -412,12 +447,12 @@ public Action:Say_Hook(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!IsValidClient(client) || IsFakeClient(client))
 		return Plugin_Continue;
-	new team = GetEventInt(event, "team");
+	int team = GetEventInt(event, "team");
 	if(team == 1)
 	{
 		SpecListMenuDead(client);
@@ -429,7 +464,7 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 		}
 		if (g_bTimeractivated[client])
 		{	
-			g_fStartPauseTime[client] = GetEngineTime();
+			g_fStartPauseTime[client] = GetGameTime();
 			if (g_fPauseTime[client] > 0.0)
 				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];	
 		}
@@ -441,19 +476,19 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Continue;
 }
 
-public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerDisconnect(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (g_bDisconnectMsg)
 	{
-		decl String:szName[64];
-		decl String:disconnectReason[64];
-		new clientid = GetEventInt(event,"userid");
-		new client = GetClientOfUserId(clientid);
+		char szName[64];
+		char disconnectReason[64];
+		int clientid = GetEventInt(event,"userid");
+		int client = GetClientOfUserId(clientid);
 		if (!IsValidClient(client) || IsFakeClient(client))
 			return Plugin_Handled;
 		GetEventString(event, "name", szName, sizeof(szName));
 		GetEventString(event, "reason", disconnectReason, sizeof(disconnectReason));  
-		for (new i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 			if (IsValidClient(i) && i != client && !IsFakeClient(i))
 				PrintToChat(i, "%t", "Disconnected1",WHITE, MOSSGREEN, szName, WHITE, disconnectReason);	
 		return Plugin_Handled;
@@ -465,7 +500,7 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 	}
 }
 
-public Action:Hook_SetTransmit(entity, client) 
+public Action Hook_SetTransmit(entity, client) 
 { 
     if (client != entity && (0 < entity <= MaxClients) && IsValidClient(client)) 
 	{
@@ -484,19 +519,19 @@ public Action:Hook_SetTransmit(entity, client)
     return Plugin_Continue; 
 }  
 
-public Action:Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client = GetEventInt(event,"userid");
+	int client = GetEventInt(event,"userid");
 	if (IsValidClient(client))
 	{
 		if (!IsFakeClient(client))
 		{
-			if(g_hRecording[client] != INVALID_HANDLE)
+			if(g_hRecording[client] != null)
 				StopRecording(client);			
 			CreateTimer(2.0, RemoveRagdoll, client);
 		}
 		else 
-			if(g_hBotMimicsRecord[client] != INVALID_HANDLE)
+			if(g_hBotMimicsRecord[client] != null)
 			{
 				g_BotMimicTick[client] = 0;
 				g_CurrentAdditionalTeleportIndex[client] = 0;
@@ -507,16 +542,19 @@ public Action:Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBr
 	return Plugin_Continue;
 }
 					
-public Action:CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
+public Action CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
 {
-	new timeleft;
+	if (g_bRoundEnd)
+		return Plugin_Continue;
+	int timeleft;
 	GetMapTimeLeft(timeleft);
-	if (timeleft>= -1 && !g_bAllowRoundEndCvar)
+	if (timeleft>= -1)
 		return Plugin_Handled;
+	g_bRoundEnd=true;
 	return Plugin_Continue;
-} 
+}  
 
-public Action:Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	g_bRoundEnd=true;
 	return Plugin_Continue;
@@ -529,10 +567,10 @@ public OnPlayerThink(entity)
 
 
 // OnRoundRestart
-public Action:Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	new iEnt;
-	for(new i = 0; i < sizeof(EntityList); i++)
+	int iEnt;
+	for(int i = 0; i < sizeof(EntityList); i++)
 	{
 		while((iEnt = FindEntityByClassname(iEnt, EntityList[i])) != -1)
 		{
@@ -540,19 +578,42 @@ public Action:Event_OnRoundStart(Handle:event, const String:name[], bool:dontBro
 			AcceptEntityInput(iEnt, "Kill");
 		}
 	}
+
+	// PushFix by Mev, George, & Blacky
+	// https://forums.alliedmods.net/showthread.php?t=267131
+	iEnt = -1;
+	while((iEnt = FindEntityByClassname(iEnt, "trigger_push")) != -1)
+	{
+		SDKHook(iEnt, SDKHook_Touch, OnTouchPushTrigger);
+	}
 	
-	g_bRoundEnd=false;
 	RefreshZones();
+
+	g_bRoundEnd=false;
 	return Plugin_Continue; 
 }
 
+// PushFix by Mev, George, & Blacky
+// https://forums.alliedmods.net/showthread.php?t=267131
+public Action OnTouchPushTrigger(int entity, int other)
+{
+	if(0 < other <= MaxClients && g_bTriggerPushFixEnable == true)
+	{
+		DoPush(entity, other);
+		
+		return Plugin_Handled;
+	}
+	
+	return Plugin_Continue;
+}
+
 // PlayerHurt 
-public Action:Event_OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 {
 	if (!g_bgodmode && g_Autohealing_Hp > 0)
 	{
-		new client = GetClientOfUserId(GetEventInt(event, "userid"));
-		new remainingHeatlh = GetEventInt(event, "health");
+		int client = GetClientOfUserId(GetEventInt(event, "userid"));
+		int remainingHeatlh = GetEventInt(event, "health");
 		if (remainingHeatlh>0)
 		{
 			if ((remainingHeatlh+g_Autohealing_Hp) > 100)
@@ -565,7 +626,7 @@ public Action:Event_OnPlayerHurt(Handle:event, const String:name[], bool:dontBro
 }
 
 // PlayerDamage (if godmode 0)
-public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+public Action Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
 	if (g_bgodmode)
 		return Plugin_Handled;
@@ -575,13 +636,13 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 
 //thx to TnTSCS (player slap stops timer)
 //https://forums.alliedmods.net/showthread.php?t=233966
-public Action:OnLogAction(Handle:source, Identity:ident, client, target, const String:message[])
+public Action OnLogAction(Handle source, Identity:ident, client, target, const char[] message)
 {	
     if ((1 > target > MaxClients))
         return Plugin_Continue;
     if (IsValidClient(target) && IsPlayerAlive(target) && g_bTimeractivated[target] && !IsFakeClient(target))
 	{
-		decl String:logtag[PLATFORM_MAX_PATH];
+		char logtag[PLATFORM_MAX_PATH];
 		if (ident == Identity_Plugin)
 			GetPluginFilename(source, logtag, sizeof(logtag));
 		else
@@ -593,7 +654,7 @@ public Action:OnLogAction(Handle:source, Identity:ident, client, target, const S
     return Plugin_Continue;
 }  
 
-public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2])
+public Action OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2])
 {
 	
 	if (g_bRoundEnd || !IsValidClient(client))
@@ -601,7 +662,11 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 
 	if(IsPlayerAlive(client))	
 	{
-		decl Float:speed, Float:origin[3],Float:ang[3];
+		RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
+		if (IsFakeClient(client))
+			PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
+
+		float speed, origin[3], ang[3];
 		g_CurrentButton[client] = buttons;
 		GetClientAbsOrigin(client, origin);
 		GetClientEyeAngles(client, ang);		
@@ -611,27 +676,47 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 			g_bOnGround[client]=true;
 		else
 			g_bOnGround[client]=false;
-		
-		//menu refreshing
-		MenuTitleRefreshing(client);
 
-		PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
-		RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
+		if (speed < 10.0 && g_bOnGround[client]) // Not moving
+		{
+			if (!g_bClientStopped[client]) // Get start time
+			{
+				if (!IsFakeClient(client))
+					////PrintToServer("Stopped");
+				g_fClientLastMovement[client] = GetEngineTime();
+				g_bClientStopped[client] = true;
+			}
+			else if (GetEngineTime() - g_fClientLastMovement[client] > BEAMLIFE)
+			{
+				if (!IsFakeClient(client))
+					////PrintToServer("Refresh is true");
+				g_bRefreshTrail[client] = true;
+			}
+		}
+		else
+		{
+			if (!IsFakeClient(client))
+				g_bClientStopped[client] = false;
+		}
+
+		//menu refreshing
+		CheckRun(client);
+
+
 		AutoBhopFunction(client, buttons);
 		NoClipCheck(client);
 		AttackProtection(client, buttons);
 		HookCheck(client);
 
 		// If in start zone, cap speed
-		if (g_binStartZone[client])
-			LimitSpeed(client, 0);
+		if (g_iClientInZone[client][0] == 1 && g_iClientInZone[client][2] > 0)
+			LimitSpeed(client, 2);	// Bonus
 		else
-			if (g_binSpeedZone[client])
-				LimitSpeed(client, 1);
+			if (g_iClientInZone[client][0] == 1)
+				LimitSpeed(client, 0); // Normal Start
 			else
-				if (g_binBonusStartZone[client])
-					LimitSpeed(client, 2);
-
+				if (g_iClientInZone[client][0] == 5)
+					LimitSpeed(client, 1); // Speed Start
 
 		if (g_bOnGround[client])
 		{
@@ -644,19 +729,117 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 
 		BeamBox_OnPlayerRunCmd(client);
 	}
+
+	// Slope Boost Fix by Mev, & Blacky
+	// https://forums.alliedmods.net/showthread.php?t=266888
+	if(g_bSlopeFixEnable == true)
+	{
+		g_bLastOnGround[client] = g_bOnGroundFix[client];
+		
+		if (GetEntityFlags(client) & FL_ONGROUND)
+			g_bOnGroundFix[client] = true;
+		else
+			g_bOnGroundFix[client] = false;
+		
+		g_vLast[client][0]    = g_vCurrent[client][0];
+		g_vLast[client][1]    = g_vCurrent[client][1];
+		g_vLast[client][2]    = g_vCurrent[client][2];
+		g_vCurrent[client][0] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[0]");
+		g_vCurrent[client][1] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[1]");
+		g_vCurrent[client][2] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[2]");
+		
+		// Check if player landed on the ground
+		if (g_bOnGroundFix[client] == true && g_bLastOnGround[client] == false)
+		{
+			// Set up and do tracehull to find out if the player landed on a slope
+			float vPos[3];
+			GetEntPropVector(client, Prop_Data, "m_vecOrigin", vPos);
+
+			float vMins[3];
+			GetEntPropVector(client, Prop_Send, "m_vecMins", vMins);
+
+			float vMaxs[3];
+			GetEntPropVector(client, Prop_Send, "m_vecMaxs", vMaxs);
+
+			float vEndPos[3];
+			vEndPos[0] = vPos[0];
+			vEndPos[1] = vPos[1];
+			vEndPos[2] = vPos[2] - FindConVar("sv_maxvelocity").FloatValue;
+			
+			TR_TraceHullFilter(vPos, vEndPos, vMins, vMaxs, MASK_PLAYERSOLID_BRUSHONLY, TraceRayDontHitSelf, client);
+
+			if(TR_DidHit())
+			{
+				// Gets the normal vector of the surface under the player
+				float vPlane[3], vLast[3];
+				TR_GetPlaneNormal(INVALID_HANDLE, vPlane);
+				
+				// Make sure it's not flat ground and not a surf ramp (1.0 = flat ground, < 0.7 = surf ramp)
+				if(0.7 <= vPlane[2] < 1.0)
+				{
+					/*
+					Copy the ClipVelocity function from sdk2013 
+					(https://mxr.alliedmods.net/hl2sdk-sdk2013/source/game/shared/gamemovement.cpp#3145)
+					With some minor changes to make it actually work
+					*/
+					vLast[0]  = g_vLast[client][0];
+					vLast[1]  = g_vLast[client][1];
+					vLast[2]  = g_vLast[client][2];
+					vLast[2] -= (FindConVar("sv_gravity").FloatValue * GetTickInterval() * 0.5);
+					
+					float fBackOff = GetVectorDotProduct(vLast, vPlane);
+						
+					float change, vVel[3];
+					for(int i; i < 2; i++)
+					{
+						change  = vPlane[i] * fBackOff;
+						vVel[i] = vLast[i] - change;
+					}
+					
+					float fAdjust = GetVectorDotProduct(vVel, vPlane);
+					if(fAdjust < 0.0)
+					{
+						for(int i; i < 2; i++)
+						{
+							vVel[i] -= (vPlane[i] * fAdjust);
+						}
+					}
+					
+					vVel[2] = 0.0;
+					vLast[2] = 0.0;
+					
+					// Make sure the player is going down a ramp by checking if they actually will gain speed from the boost
+					if(GetVectorLength(vVel) > GetVectorLength(vLast))
+					{
+						// Teleport the player, also adds basevelocity
+						if(GetEntityFlags(client) & FL_BASEVELOCITY)
+						{
+							float vBase[3];
+							GetEntPropVector(client, Prop_Data, "m_vecBaseVelocity", vBase);
+							
+							AddVectors(vVel, vBase, vVel);
+						}
+						
+						TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vVel);		
+					}
+				}
+			}	
+		}
+	}
+
 	return Plugin_Continue;
 }
 
-public Action:Event_OnJump(Handle:Event, const String:Name[], bool:Broadcast)
+public Action Event_OnJump(Handle JumpEvent, const char[] Name, bool Broadcast)
 {
-	decl client;
-	client = GetClientOfUserId(GetEventInt(Event, "userid"));	
+	int client;
+	client = GetClientOfUserId(GetEventInt(JumpEvent, "userid"));	
 	g_bBeam[client]=true;
 	
 	//noclip check
-	decl Float: flEngineTime;
-	flEngineTime = GetEngineTime();
-	decl Float:flDiff;
+	float  flEngineTime;
+	flEngineTime = GetGameTime();
+	float flDiff;
 	flDiff = flEngineTime - g_fLastTimeNoClipUsed[client];
 	if (flDiff < 4.0)
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, Float:{0.0,0.0,-100.0});
@@ -668,14 +851,14 @@ public Hook_PostThinkPost(entity)
 	SetEntProp(entity, Prop_Send, "m_bInBuyZone", 0);
 } 
 
-public Action:Event_JoinTeamFailed(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_JoinTeamFailed(Handle event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(!client || !IsClientInGame(client))
 		return Plugin_Continue;
-	new EJoinTeamReason:m_eReason = EJoinTeamReason:GetEventInt(event, "reason");
-	new m_iTs = GetTeamClientCount(CS_TEAM_T);
-	new m_iCTs = GetTeamClientCount(CS_TEAM_CT);
+	EJoinTeamReason m_eReason = EJoinTeamReason:GetEventInt(event, "reason");
+	int m_iTs = GetTeamClientCount(CS_TEAM_T);
+	int m_iCTs = GetTeamClientCount(CS_TEAM_CT);
 	switch(m_eReason)
 	{
 		case k_OneTeamChange:

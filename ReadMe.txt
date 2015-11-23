@@ -1,5 +1,6 @@
 
-ckSurf 1.17
+ckSurf 1.18 BETA
+<h1>Remember to backup your database before updating to a beta version</h1>
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
@@ -30,6 +31,34 @@ ALWAYS keep mapcycle.txt updated, as that is used to check which maps are on you
 
 
 Changelog 
+1.18 beta
+- Multiple bonuses
+	- You can now create multiple bonuses by going to !zones -> Create Zones -> Bonus Zones
+	- You can now also add stages and other zones to bonuses
+
+- Increased the maximum amount of checkpoints or stages to 35
+- New title system
+	- Admins can give players titles that are defined in custom_chat_titles.txt with the !givetitle command.
+	- The first title holds VIP privileges, that give the player access to !vip command
+	- Titles support colors and you can make up to 20 of them
+	- Players can change their title with the !titles command
+		- If they set all titles to OFF, their rank will be displayed instead.
+
+- VIP -system
+	- Players with the VIP title can access !vip that holds special effects
+
+- Fixed issue where bots wouldn't spawn in certain maps due to broken spawn points.
+- Added trails for bots
+	- ck_record_bot_trail
+	- ck_bonus_bot_trail
+	
+- Checkpoints are now briefly showed in the timer panel.
+- Updated source code to compile with SM 1.8
+- A lot of optimization
+- Fixed issues with trigger_pushes. Made by Blacky, Mev and George (https://forums.alliedmods.net/showthread.php?t=267131)
+- Fixed inconsistent bhops. Made by Blacky and Mev (https://forums.alliedmods.net/showthread.php?t=266888)
+- Added in more natives and forwards
+
 
 1.17 
 - Fixed issues with zone beams not showing sometimes

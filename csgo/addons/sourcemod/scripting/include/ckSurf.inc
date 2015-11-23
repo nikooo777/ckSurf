@@ -4,15 +4,77 @@
 #define _CKSurf_included
 
 /* Natives */
-native bool:ckSurf_GetTimerStatus(client); // check if timer enabled
-native ckSurf_StopTimer(client); // stop timer
-native ckSurf_StopUpdatingOfClimbersMenu(client); // stops refreshing of the timer panel/menu
-native ckSurf_EmulateStartButtonPress(client); // stop button alternative (global records disabled)
-native ckSurf_EmulateStopButtonPress(client); // start button alternative (global records disabled)
-native Float:ckSurf_GetCurrentTime(client); //current run time
-native ckSurf_setStage(client, stage);
-native ckSurf_setBonus(client, bonus);
-native ckSurf_Checkpoint(client, zone);
+
+/**
+ * Checks clients timer status
+ *
+ * @param client    Client's id
+ * @return          True / False 
+ */
+native bool:ckSurf_GetTimerStatus(client);
+
+/**
+ * Stops client's timer.
+ *
+ * @param client    Client's id
+ * @return          No return
+ */
+native ckSurf_StopTimer(client);
+
+/**
+ * Starts client's timer
+ *
+ * @param client    Client's id
+ * @return          No return
+ */
+native ckSurf_EmulateStartButtonPress(client);
+
+/**
+ * Finishes a client's run.
+ *
+ * @param client    Client's id
+ * @return          No return
+ */
+native ckSurf_EmulateStopButtonPress(client);
+
+/**
+ * Get client's current runtime.
+ *
+ * @param client     Client's id
+ * @return           Client's curren runtime as a float.
+ */
+native Float:ckSurf_GetCurrentTime(client);
+
+
+
+/*
+		FORWARDS
+						*/
+
+/**
+ * Called when a player finishes a map
+ *
+ * @param client     Player index.
+ * @return           Plugin_Handled; to stop the player from searching.
+ */
+forward Action:ckSurf_OnMapFinished(client, Float:fRunTime, String:sRunTime[54], rank, total);
+
+/**
+ * Called when a player finishes a bonus
+ *
+ * @param client     Player index.
+ * @return           Plugin_Handled; to stop the player from searching.
+ */
+forward Action:ckSurf_OnBonusFinished(client, Float:fRunTime, String:sRunTime[54], rank, total, bonusid);
+
+/**
+ * Called when a player finishes a map in practice mode
+ *
+ * @param client     Player index.
+ * @return           Plugin_Handled; to stop the player from searching.
+ */
+ forward Action:ckSurf_OnPracticeFinished(client, Float:fRunTime, String:sRunTime[54]);
+
 
 public SharedPlugin:__pl_ckSurf =
 {
@@ -29,11 +91,7 @@ public __pl_ckSurf_SetNTVOptional()
 {
 	MarkNativeAsOptional("ckSurf_GetTimerStatus");
 	MarkNativeAsOptional("ckSurf_StopTimer");
-	MarkNativeAsOptional("ckSurf_StopUpdatingOfClimbersMenu");
 	MarkNativeAsOptional("ckSurf_EmulateStartButtonPress");	
 	MarkNativeAsOptional("ckSurf_EmulateStopButtonPress");
 	MarkNativeAsOptional("ckSurf_GetCurrentTime");
-	MarkNativeAsOptional("ckSurf_setStage");
-	MarkNativeAsOptional("ckSurf_setBonus");
-	MarkNativeAsOptional("ckSurf_Checkpoint");
 }
