@@ -151,10 +151,7 @@ public Action EndTouchTrigger(caller, activator)
 	else
 	{
 		if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
-		{
-			PrintToChatAll("Activated bot trail");
 			refreshTrail(activator);
-		}
 	}
 	// Set client location 
 	g_iClientInZone[activator][0] = -1;

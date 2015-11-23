@@ -1072,7 +1072,7 @@ public refreshTrail(client)
 		}
 		else if (client == g_RecordBot)
 		{
-			PrintToServer("TRAILING: RECORD BOT");
+			//PrintToServer("TRAILING: RECORD BOT");
 			TE_SetupBeamFollow(ent, 
 								g_BeamSprite, 
 								0, 
