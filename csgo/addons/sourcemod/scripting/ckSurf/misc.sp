@@ -1256,6 +1256,9 @@ public SetClientDefaults(client)
 	g_PlayerChatRank[client] = -1;
 	g_bValidRun[client] = false;
 	g_fMaxPercCompleted[client] = 0.0;
+	Format(g_szLastSRDifference[client], 64, "");
+	Format(g_szLastPBDifference[client], 64, "");
+
 
 
 	// Player Checkpoints
@@ -1272,7 +1275,6 @@ public SetClientDefaults(client)
 
 	for (int x = 0; x < MAXZONEGROUPS; x++)
 	{
-		Format(g_szLastDifference[x][client], 64, "");
 		g_bCheckpointsFound[x][client] = false;
 		g_MapRankBonus[x][client] = 9999999;
 		g_Stage[x][client] = 0;
@@ -1306,6 +1308,7 @@ public SetClientDefaults(client)
 	g_bHideChat[client]=false;
 	g_bViewModel[client]=true;
 	g_bCheckpointsEnabled[client] = true;
+	g_bEnableQuakeSounds[client] = true;
 }
 
 public clearPlayerCheckPoints(client)
@@ -1476,11 +1479,9 @@ public bool TRDontHitSelf(entity, mask, any:data)
 
 public PrintMapRecords(client)
 {
-	char szTime[32];
 	if (g_fRecordMapTime != 9999999.0)
 	{
-		FormatTimeFloat(client, g_fRecordMapTime, 3,szTime,sizeof(szTime));
-		PrintToChat(client, "%t", "MapRecord",MOSSGREEN,WHITE,DARKBLUE,WHITE, szTime, g_szRecordPlayer); 
+		PrintToChat(client, "%t", "MapRecord",MOSSGREEN,WHITE,DARKBLUE,WHITE, g_szRecordMapTime, g_szRecordPlayer); 
 	}
 	for (int i = 1; i <= g_mapZoneGroupCount; i++)
 	{
@@ -1495,14 +1496,12 @@ public MapFinishedMsgs(client, rankThisRun)
 {	
 	if (IsValidClient(client))
 	{
-		char szTime[32];
 		char szName[MAX_NAME_LENGTH];
 		GetClientName(client, szName, MAX_NAME_LENGTH);
 		int count;
 		int rank;
 		count = g_MapTimesCount;
 		rank = g_MapRank[client];
-		FormatTimeFloat(client, g_fRecordMapTime, 3, szTime, sizeof(szTime));	
 
 		if (rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0)
 		{
@@ -1511,20 +1510,20 @@ public MapFinishedMsgs(client, rankThisRun)
 				{
 					if (g_Time_Type[client] == 1)
 					{
-						PrintToChat(i, "%t", "MapFinished1",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE); 
-						PrintToConsole(i, "%s finished the map with a time of (%s). [rank #%i/%i | record %s]",szName,g_szFinalTime[client],rank,count,szTime);  
+						PrintToChat(i, "%t", "MapFinished1",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE); 
+						PrintToConsole(i, "%s finished the map with a time of (%s). [rank #%i/%i | record %s]",szName,g_szFinalTime[client],rank,count,g_szRecordMapTime);  
 					}			
 					else
 						if (g_Time_Type[client] == 3)
 						{
-							PrintToChat(i, "%t", "MapFinished3",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,GREEN, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE);  				
-							PrintToConsole(i, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,szTime); 	
+							PrintToChat(i, "%t", "MapFinished3",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,GREEN, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE);  				
+							PrintToConsole(i, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,g_szRecordMapTime); 	
 						}
 						else
 							if (g_Time_Type[client] == 5)
 							{
-								PrintToChat(i, "%t", "MapFinished5",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,RED, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE);  	
-								PrintToConsole(i, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,szTime); 
+								PrintToChat(i, "%t", "MapFinished5",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,RED, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE);  	
+								PrintToConsole(i, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,g_szRecordMapTime); 
 							}
 
 					if (g_bnewRecord[client])				
@@ -1538,20 +1537,20 @@ public MapFinishedMsgs(client, rankThisRun)
 			{
 				if (g_Time_Type[client] == 1)
 				{
-					PrintToChat(client, "%t", "MapFinished1",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE); 
-					PrintToConsole(client, "%s finished the map with a time of (%s). [rank #%i/%i | record %s]",szName,g_szFinalTime[client],rank,count,szTime);  
+					PrintToChat(client, "%t", "MapFinished1",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE); 
+					PrintToConsole(client, "%s finished the map with a time of (%s). [rank #%i/%i | record %s]",szName,g_szFinalTime[client],rank,count,g_szRecordMapTime);  
 				}			
 				else
 					if (g_Time_Type[client] == 3)
 					{
-						PrintToChat(client, "%t", "MapFinished3",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,GREEN, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE);  				
-						PrintToConsole(client, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,szTime); 	
+						PrintToChat(client, "%t", "MapFinished3",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,GREEN, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE);  				
+						PrintToConsole(client, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,g_szRecordMapTime); 	
 					}
 					else
 						if (g_Time_Type[client] == 5)
 						{
-							PrintToChat(client, "%t", "MapFinished5",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,RED, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,szTime,WHITE);  	
-							PrintToConsole(client, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,szTime); 
+							PrintToChat(client, "%t", "MapFinished5",MOSSGREEN,WHITE,LIMEGREEN,szName,GRAY,DARKBLUE,GRAY,LIMEGREEN, g_szFinalTime[client],GRAY,RED, g_szTimeDifference[client],GRAY, WHITE, LIMEGREEN, rank, WHITE,count,LIMEGREEN,g_szRecordMapTime,WHITE);  	
+							PrintToConsole(client, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]",szName,g_szFinalTime[client],g_szTimeDifference[client],rank,count,g_szRecordMapTime); 
 						}
 
 				if (g_bnewRecord[client])				
@@ -2854,7 +2853,7 @@ public CenterHudAlive(client)
 	if (!IsValidClient(client))
 		return;
 
-	char szRecordString[64], pAika[54], timerText[32], StageString[24];
+	char pAika[54], timerText[32], StageString[24];
 
 	if (g_bInfoPanel[client])
 	{
@@ -2868,28 +2867,6 @@ public CenterHudAlive(client)
 				Format(StageString, 24, "%i / %i\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3]+1)); // less \t's to make lines align
 			else
 				Format(StageString, 24, "%i / %i\t\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3]+1));
-		}
-
-		if (g_iClientInZone[client][2] > 0) // if in bonus stage, get bonus times
-		{
-			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
-				Format(szRecordString, 64, "%s \tRank: %i / %i", g_szPersonalRecordBonus[g_iClientInZone[client][2]][client], g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
-			else
-				if (g_iBonusCount[g_iClientInZone[client][2]]>0)
-					Format(szRecordString, 64, "N/A \t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
-				else
-					Format(szRecordString, 64, "N/A \t\tRank: N/A");
-
-		}
-		else // if in normal map, get normal times
-		{
-			if (g_fPersonalRecord[client] > 0.0) 
-				Format(szRecordString, 64, "%s \tRank: %i / %i",g_szPersonalRecord[client],g_MapRank[client],g_MapTimesCount);
-			else
-				if (g_MapTimesCount>0)
-					Format(szRecordString, 64, "N/A \t\tRank: N/A / %i", g_MapTimesCount);
-				else
-					Format(szRecordString, 64, "N/A \t\tRank: N/A");
 		}
 
 		if (g_bTimeractivated[client] && !g_bPause[client]) 
@@ -2910,31 +2887,64 @@ public CenterHudAlive(client)
 			}
 		}
 
-
-		if (g_iClientInZone[client][2] > 0)
-			Format(timerText, 32, "[%s]: ", g_szZoneGroupName[g_iClientInZone[client][2]]);
-		else if (g_bPracticeMode[client])
-			Format(timerText, 32, "[Practice]: ");
+		if (g_bPracticeMode[client])
+			Format(timerText, 32, "[PRAC]: ");
 		else
 			Format(timerText, 32, "");
 
-
-		if (GetGameTime() - g_fLastDifferenceTime[client] > 5.0)
+		// Set Checkpoint back to normal
+		if (GetGameTime() - g_fLastDifferenceTime[client] > 5.0) 
 		{
 			if (g_iClientInZone[client][2] == 0)
 			{
-				if (g_fRecordMapTime > 0.1)
+				if (g_fRecordMapTime != 9999999.0)
 				{
-					FormatTimeFloat(client, g_fRecordMapTime, 3, g_szLastDifference[client], 64);
-					Format(g_szLastDifference[client], 64, "\t\t(SR: %s)", g_szLastDifference[client]);
+					Format(g_szLastSRDifference[client], 64, "\t\tSR: %s", g_szRecordMapTime);
+					if (g_fPersonalRecord[client] > 0.0)
+					{
+						Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecord[client]);
+					}
+					else
+					{
+						Format(g_szLastPBDifference[client], 64, "N/A");
+					}
 				}
 				else
 				{
-					Format(g_szLastDifference[client], 64, "\t\t(SR: N/A)");
+					Format(g_szLastSRDifference[client], 64, "\t\tSR: N/A");
+					Format(g_szLastPBDifference[client], 64, "N/A");
 				}
 			}
 			else
-				Format(g_szLastDifference[client], 64, "(SR: %s)", g_szBonusFastestTime[g_iClientInZone[client][2]]);
+			{
+				Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecordBonus[g_iClientInZone[client][2]][client]);
+				Format(g_szLastSRDifference[client], 64, "\t\tSR: %s", g_szBonusFastestTime[g_iClientInZone[client][2]]);
+			}
+		}
+
+
+
+		char szRank[32];
+		if (g_iClientInZone[client][2] > 0) // if in bonus stage, get bonus times
+		{
+			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
+				Format(szRank, 64, "\tRank: %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+			else
+				if (g_iBonusCount[g_iClientInZone[client][2]]>0)
+					Format(szRank, 64, "\t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+				else
+					Format(szRank, 64, "\t\tRank: N/A");
+
+		}
+		else // if in normal map, get normal times
+		{
+			if (g_fPersonalRecord[client] > 0.0) 
+				Format(szRank, 64, "\tRank: %i / %i",g_MapRank[client],g_MapTimesCount);
+			else
+				if (g_MapTimesCount>0)
+					Format(szRank, 64, "\t\tRank: N/A / %i", g_MapTimesCount);
+				else
+					Format(szRank, 64, "\t\tRank: N/A");
 		}
 
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
@@ -2943,15 +2953,15 @@ public CenterHudAlive(client)
 			{
 				if (g_bPause[client])
 				{
-					PrintHintText(client,"<font face=''>%s<font color='#FF0000'>Paused</font> (%s)\nPB: %s\nStage: %sSpeed: %i</font>", timerText, g_szLastDifference[client], szRecordString, StageString, RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>%s<font color='#FF0000'>Paused</font> %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));			
 				} 
 				else 
 				{
-					PrintHintText(client,"<font face=''>%s%s %s\nPB: %s\nStage: %sSpeed: %i</font>", timerText, pAika, g_szLastDifference[client], szRecordString, StageString, RoundToNearest(g_fLastSpeed[client]));			
+					PrintHintText(client,"<font face=''>%s%s %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));			
 				}
 			}
 			else
-				PrintHintText(client,"<font face=''>%s<font color='#FF0000'>Stopped</font> %s\nPB: %s\nStage: %sSpeed: %i</font>", timerText, g_szLastDifference[client], szRecordString, StageString, RoundToNearest(g_fLastSpeed[client]));					
+				PrintHintText(client,"<font face=''>%s<font color='#FF0000'>Stopped</font> %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client],g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));					
 		}
 	}
 }
@@ -3007,17 +3017,23 @@ public Checkpoint(client, zone, zonegroup)
 		if (f_srDiff > 0)
 		{
 			Format (sz_srDiff_colorless, 128, "-%s", sz_srDiff);
-			Format(sz_srDiff, 128, " %c(%cSR: %c-%s%c)",YELLOW, PURPLE, GREEN, sz_srDiff, YELLOW);
-			Format(g_szLastDifference[client], 64, "\t\tSR: (<font color='#99ff99'>%s</font>)",sz_srDiff_colorless);
-			g_fLastDifferenceTime[client] = GetGameTime();
+			Format(sz_srDiff, 128, " %c%cSR: %c-%s%c",YELLOW, PURPLE, GREEN, sz_srDiff, YELLOW);
+			if (zonegroup > 0)
+				Format(g_szLastSRDifference[client], 64, "SR: <font color='#99ff99'>%s</font>",sz_srDiff_colorless);
+			else
+				Format(g_szLastSRDifference[client], 64, "\t\tSR: <font color='#99ff99'>%s</font>",sz_srDiff_colorless);
+
 		}
 		else
 		{
 			Format (sz_srDiff_colorless, 128, "+%s", sz_srDiff);
-			Format(sz_srDiff, 128, " %c(%cSR: %c+%s%c)",YELLOW, PURPLE, RED, sz_srDiff, YELLOW);
-			Format(g_szLastDifference[client], 64, "\t\tSR: (<font color='#FF9999'>%s</font>)",sz_srDiff_colorless);
-			g_fLastDifferenceTime[client] = GetGameTime();
+			Format(sz_srDiff, 128, " %c%cSR: %c+%s%c",YELLOW, PURPLE, RED, sz_srDiff, YELLOW);
+			if (zonegroup > 0)
+				Format(g_szLastSRDifference[client], 64, "SR: <font color='#FF9999'>%s</font>",sz_srDiff_colorless);
+			else
+				Format(g_szLastSRDifference[client], 64, "\t\tSR: <font color='#FF9999'>%s</font>",sz_srDiff_colorless);
 		}
+		g_fLastDifferenceTime[client] = GetGameTime();
 	}
 	else
 		Format(sz_srDiff, 128, "");
@@ -3043,20 +3059,40 @@ public Checkpoint(client, zone, zonegroup)
 
 		FormatTimeFloat(client, diff, 5, szDiff, 32);
 
+		// MOVE TO PB variable
 		if (diff > 0)
 		{
 			Format(szDiff_colorless, 32, "-%s", szDiff);
 			Format(szDiff, sizeof(szDiff), " %c-%s", GREEN, szDiff);
-			Format(g_szLastDifference[client], 64, "\t\t(<font color='#99ff99'>%s</font>)",szDiff_colorless);
-			g_fLastDifferenceTime[client] = GetGameTime();
+			if (zonegroup > 0)
+				Format(g_szLastPBDifference[client], 64, "<font color='#99ff99'>%s</font>\t", szDiff_colorless);
+			else
+				Format(g_szLastPBDifference[client], 64, "<font color='#99ff99'>%s</font>\t", szDiff_colorless);
+
+			/*
+			if (zonegroup > 0)
+				Format(g_szLastPBDifference[client], 64, "%s <font color='#99ff99' size='16'>%s</font>", g_szPersonalRecordBonus[zonegroup][client], szDiff_colorless);
+			else
+				Format(g_szLastPBDifference[client], 64, "%s <font color='#99ff99' size='16'>%s</font>", g_szPersonalRecord[client], szDiff_colorless);
+				*/
 		}
 		else
 		{
 			Format(szDiff_colorless, 32, "+%s", szDiff);
 			Format(szDiff, sizeof(szDiff), " %c+%s", RED,szDiff);
-			Format(g_szLastDifference[client], 64, "\t\t(<font color='#FF9999'>%s</font>)",szDiff_colorless);
-			g_fLastDifferenceTime[client] = GetGameTime();
+			if (zonegroup > 0)
+				Format(g_szLastPBDifference[client], 64, "<font color='#FF9999'>%s</font>\t", szDiff_colorless);
+			else
+				Format(g_szLastPBDifference[client], 64, "<font color='#FF9999'>%s</font>\t", szDiff_colorless);
+			/*
+			if (zonegroup > 0)
+				Format(g_szLastPBDifference[client], 64, "%s <font color='#FF9999' size='16'>%s</font>", g_szPersonalRecordBonus[zonegroup][client], szDiff_colorless);
+			else
+				Format(g_szLastPBDifference[client], 64, "%s <font color='#FF9999' size='16'>%s</font>", g_szPersonalRecord[client], szDiff_colorless);
+				*/
 		}
+		g_fLastDifferenceTime[client] = GetGameTime();
+
 		
 		if (g_fCheckpointTimesRecord[zonegroup][client][zone] <= 0.0)
 			Format(szDiff, 128, "");

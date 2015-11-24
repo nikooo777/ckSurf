@@ -224,7 +224,8 @@ char g_szBonusTimeDifference[MAXPLAYERS+1];
 float g_fCheckpointTimesRecord[MAXZONEGROUPS][MAXPLAYERS+1][CPLIMIT];	// Clients best run's times
 float g_fCheckpointTimesNew[MAXZONEGROUPS][MAXPLAYERS+1][CPLIMIT];		// Clients current runs times
 float g_fCheckpointServerRecord[MAXZONEGROUPS][CPLIMIT];
-char g_szLastDifference[MAXPLAYERS+1][64];
+char g_szLastSRDifference[MAXPLAYERS+1][64];
+char g_szLastPBDifference[MAXPLAYERS+1][64];
 float g_fLastDifferenceTime[MAXPLAYERS+1];
 float tmpDiff[MAXPLAYERS+1];
 int lastCheckpoint[MAXZONEGROUPS][MAXPLAYERS+1];
@@ -525,6 +526,7 @@ float g_fSpawnPosition[MAXPLAYERS+1][3];
 float g_fLastPosition[MAXPLAYERS+1][3];
 float g_fLastAngles[MAXPLAYERS+1][3];
 float g_fRecordMapTime;
+char g_szRecordMapTime[64];
 float g_pr_finishedmaps_perc[MAX_PR_PLAYERS]; 
 bool g_bRenaming = false;
 bool g_bLateLoaded = false;
@@ -2243,6 +2245,7 @@ public OnPluginStart()
 	
 	// Titles
 	RegConsoleCmd("sm_title", Command_SetTitle, "[ckSurf] Displays player's titles");
+	RegConsoleCmd("sm_titles", Command_SetTitle, "[ckSurf] Displays player's titles");
 	RegConsoleCmd("sm_vip", Command_Vip, "[ckSurf] VIP's commands and effects.");
 	RegConsoleCmd("sm_effects", Command_Vip, "[ckSurf] VIP's commands and effects.");
 	RegConsoleCmd("sm_effect", Command_Vip, "[ckSurf] VIP's commands and effects.");

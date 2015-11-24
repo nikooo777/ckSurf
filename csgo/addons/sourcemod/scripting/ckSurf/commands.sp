@@ -20,7 +20,7 @@ public Action Command_Vip(client, args)
 		Format(szMenuItem, 128, "[ON] Player Trail");
 	AddMenuItem(vipEffects, "", szMenuItem);
 
-	Format(szMenuItem, 128, "\tTrail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
+	Format(szMenuItem, 128, "Trail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
 	AddMenuItem(vipEffects, "", szMenuItem);
 
 	AddMenuItem(vipEffects, "", "More to come...", ITEMDRAW_DISABLED);

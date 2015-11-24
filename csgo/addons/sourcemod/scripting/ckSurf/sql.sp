@@ -2796,14 +2796,20 @@ public sql_selectMapRecordProCallback(Handle owner, Handle hndl, const char[] er
 		if (SQL_FetchFloat(hndl, 0) > -1.0)
 		{
 			g_fRecordMapTime = SQL_FetchFloat(hndl, 0);
-			// Todo:  Make string of this and use everywhere
+			FormatTimeFloat(0, g_fRecordMapTime, 3, g_szRecordMapTime, 64);
 			SQL_FetchString(hndl, 1, g_szRecordPlayer, MAX_NAME_LENGTH);	
 		}
 		else
+		{
+			Format(g_szRecordMapTime, 64, "N/A");
 			g_fRecordMapTime = 9999999.0;
+		}
 	}
 	else
+	{
+		Format(g_szRecordMapTime, 64, "N/A");
 		g_fRecordMapTime = 9999999.0;
+	}
 }
 
 
@@ -4431,6 +4437,7 @@ public sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] error, a
 public db_checkAndFixZoneIds()
 {
 	char szQuery[128];
+	//"SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
 	Format(szQuery, 128, sql_selectZoneIds, g_szMapName);
 	SQL_TQuery(g_hDb, db_checkAndFixZoneIdsCallback, szQuery, 1, DBPrio_Low);
 }
@@ -5898,7 +5905,8 @@ public db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[] erro
 	}
 
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{		// "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints FROM ck_playeroptions where steamid = '%s'";
+	{
+		//"SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints FROM ck_playeroptions where steamid = '%s'";
 
 		g_bInfoPanel[data]=bool:SQL_FetchInt(hndl, 0);
 		g_bEnableQuakeSounds[data]=bool:SQL_FetchInt(hndl, 1); 
@@ -5932,6 +5940,8 @@ public db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[] erro
 		char szQuery[512];      
 		if (!IsValidClient(data))
 			return;
+		
+		//"INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i');";
 
 		Format(szQuery, 512, sql_insertPlayerOptions, g_szSteamID[data], 1,1,1,1,1,0,0,1,"weapon_knife",0,0,1,1);
 		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);			

@@ -131,16 +131,22 @@ PlayerSpawn(client)
 				g_bRestorePosition[client]  = false;
 			}
 			else
+			{
 				if (g_bRespawnPosition[client])
 				{
 					TeleportEntity(client, g_fPlayerCordsRestore[client],g_fPlayerAnglesRestore[client],NULL_VECTOR);
 					g_bRespawnPosition[client] = false;
 				}
 				else
+				{
 					if (g_bAutoTimer)
 					{
 						if (bSpawnToStartZone)
-							Command_Restart(client, 1);
+						{
+							int startZoneId = getZoneID(0, 1);
+							TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+							//Command_Restart(client, 1);
+						}
 
 						CreateTimer(0.1, StartTimer, client,TIMER_FLAG_NO_MAPCHANGE);
 					}
@@ -153,8 +159,13 @@ PlayerSpawn(client)
 
 						// Spawn client to the start zone.
 						if (bSpawnToStartZone) 
-							Command_Restart(client, 1);
-					}	
+						{
+							int startZoneId = getZoneID(0, 1);
+							TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
+						}
+					}
+				}
+			}	
 		}
 	}
 	else
