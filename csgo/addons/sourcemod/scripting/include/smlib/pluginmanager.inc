@@ -222,17 +222,17 @@ stock IsDeveloper:Client_IsDeveloper(client){
 	if(adminid == INVALID_ADMIN_ID){
 		
 		//PrintToChat(client,"you are not admin at all");
-		PrintToServer("client: %N is not admin at all",client);
+		//PrintToServer("client: %N is not admin at all",client);
 		return ls_idIsDeveloper[client] = IsDeveloper_NotDeveloper;
 	}
 	else if(GetAdminFlag(adminid,g_afPlugin_Developer_Flag)){
 		
-		PrintToServer("client: %N is in developermode now (g_afPlugin_Developer_Flag: %d)",client,g_afPlugin_Developer_Flag);
+		//PrintToServer("client: %N is in developermode now (g_afPlugin_Developer_Flag: %d)",client,g_afPlugin_Developer_Flag);
 		return ls_idIsDeveloper[client] = IsDeveloper_Developer;
 	}
 	
 	//PrintToChat(client,"you don't have permission to be developer");
-	PrintToServer("client: %N has not the permission to be developer (g_afPlugin_Developer_Flag: %d)",client,g_afPlugin_Developer_Flag);
+	//PrintToServer("client: %N has not the permission to be developer (g_afPlugin_Developer_Flag: %d)",client,g_afPlugin_Developer_Flag);
 	return ls_idIsDeveloper[client] = IsDeveloper_NotDeveloper;
 }
 /**
