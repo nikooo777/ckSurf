@@ -614,6 +614,57 @@ public SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[] err
 	DisplayMenu(titleMenu, data, MENU_TIME_FOREVER);
 }
 
+public sql_disableTitleFromAllbyIndex(int index)
+{
+	// Do a transaction 
+	Transaction h_disableUnusedTitles = SQL_CreateTransaction();
+	char query[248];
+	for (int i = index; i < TITLE_COUNT; i++)
+	{
+		switch (i)
+		{
+			case 0: 
+			{
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET vip = 0;");
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET inuse = -1 WHERE inuse = 0;");
+			}
+			case 1: 
+			{
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET mapper = 0;");
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET inuse = -1 WHERE inuse = 1;");
+			}
+			case 2: 
+			{
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET teacher = 0;");
+				SQL_AddQuery(h_disableUnusedTitles, "UPDATE ck_playertitles SET inuse = -1 WHERE inuse = 2;");
+			}
+			default:
+			{
+				if (i > 2 && i < TITLE_COUNT)
+				{
+					Format(query, 248, "UPDATE ck_playertitles SET custom%i = 0;", (i-2));
+					SQL_AddQuery(h_disableUnusedTitles, query);
+					Format(query, 248, "UPDATE ck_playertitles SET inuse = -1 WHERE inuse = %i;", i);
+					SQL_AddQuery(h_disableUnusedTitles, query);
+				}
+			}
+		}
+	}
+	SQL_ExecuteTransaction(g_hDb, h_disableUnusedTitles, SQLTxn_disablingTitlesSuccess, SQLTxn_disablingTitlesFailed);
+}
+
+public SQLTxn_disablingTitlesFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+{
+	PrintToServer("ERROR DISABLING TITLES: %s", error);
+}
+
+public SQLTxn_disablingTitlesSuccess(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+{
+	PrintToServer("Succesfully disabled titles. Num of queries: %i", numQueries);
+
+}
+
+
 public db_viewPersonalFlags(client, char SteamID[32])
 {
 	char szQuery[728];
@@ -631,17 +682,24 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bflagTitles[data][i] = false;
-
+	
+	g_bHasTitle[data] = false;
+	
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		g_bHasTitle[data] = true;
 		for (int i = 0; i < TITLE_COUNT; i++)
+		{
 			if (SQL_FetchInt(hndl, i) > 0)
 			{
+				g_bHasTitle[data] = true;
 				g_bflagTitles[data][i] = true;
 			}
-
+		}
 		g_iTitleInUse[data] = SQL_FetchInt(hndl, 23);
+	}
+	else
+	{
+		g_bHasTitle[data] = false;
 	}
 	Array_Copy(g_bflagTitles[data], g_bflagTitles_orig[data], TITLE_COUNT);
 }
@@ -664,16 +722,22 @@ public db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] er
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bflagTitles[data][i] = false;
 
+	g_bHasTitle[data] = false;
+
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		g_bHasTitle[data] = true;
 		for (int i = 0; i < TITLE_COUNT; i++)
 			if (SQL_FetchInt(hndl, i) > 0)
 			{
+				g_bHasTitle[data] = true;
 				g_bflagTitles[data][i] = true;
 			}
 
 		g_iTitleInUse[data] = SQL_FetchInt(hndl, 23);
+	}
+	else
+	{
+		g_bHasTitle[data] = false;
 	}
 	
 	if (!IsValidClient(data))
@@ -4989,7 +5053,6 @@ public sql_selectZoneGroupCountCallback(Handle owner, Handle hndl, const char[] 
 	RefreshZones();
 	db_selectMapTier();
 	db_CalcAvgRunTime();
-	CheckSpawnPoints();
 
 	for (int i = 0; i < g_mapZoneGroupCount; i++)
 	{

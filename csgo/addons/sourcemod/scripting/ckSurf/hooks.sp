@@ -610,8 +610,15 @@ public Action OnTouchPushTrigger(int entity, int other)
 {
 	if(0 < other <= MaxClients && g_bTriggerPushFixEnable == true)
 	{
-		DoPush(entity, other);
-		
+		if (IsValidEntity(entity))
+		{
+			float m_vecPushDir[3];
+			GetEntPropVector(entity, Prop_Data, "m_vecPushDir", m_vecPushDir);
+			if (m_vecPushDir[2] == 0.0)
+				return Plugin_Continue;
+			else
+				DoPush(entity, other, m_vecPushDir);
+		}
 		return Plugin_Handled;
 	}
 	

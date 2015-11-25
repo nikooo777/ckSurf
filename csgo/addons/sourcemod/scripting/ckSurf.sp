@@ -173,7 +173,7 @@ char g_szAdminSelectedSteamID[MAXPLAYERS+1][32];
 int g_iAdminSelectedClient[MAXPLAYERS+1];
 int g_iAdminEditingType[MAXPLAYERS+1];
 int g_iTitleInUse[MAXPLAYERS+1];
-int g_customTitleCount;
+int g_iCustomTitleCount;
 
 ///////////////////////
 //// VIP Variables ////
@@ -691,7 +691,6 @@ char g_szCountryCode[MAXPLAYERS+1][16];
 char g_szSteamID[MAXPLAYERS+1][32];  
 char g_szSkillGroups[9][32];
 char g_szServerName[64];  
-char g_szMapPath[256]; 
 char g_szServerIp[32];
 char g_szServerCountry[100]; 
 char g_szServerCountryCode[32]; 
@@ -812,7 +811,6 @@ public OnClientPostAdminCheck(int client)
 
 public OnPluginEnd()
 {
-	
 	//remove clan tags
 	for (int x = 1; x <= MaxClients; x++)
 	{
@@ -853,15 +851,22 @@ public OnAllPluginsLoaded()
 
 public OnMapStart()
 {
+	//get mapname
+	GetCurrentMap(g_szMapName, 128);
+
 	CreateSpawns();
 
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
 	PrecacheModel(g_sModel);
 
-	//get mapname
-	GetCurrentMap(g_szMapName, 128);
-	Format(g_szMapPath, sizeof(g_szMapPath), "maps/%s.bsp", g_szMapName); 	
+	//workshop fix
+	char mapPieces[6][128];
+	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
+	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece-1]); 
+	
+	//get map tag
+	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
 
 	//sv_pure 1 could lead to problems with the ckSurf models
 	ServerCommand("sv_pure 0");
@@ -873,9 +878,10 @@ public OnMapStart()
 	
 	loadCustomTitles();
 
+	// TODO: Load config that disables push fix on certain maps.
+
 	g_insertingInformation = false;
 	g_bTierEntryFound = false;
-	g_bTierFound[0] = false;
 	g_fMapStartTime = GetGameTime();
 	g_fRecordMapTime=9999999.0;
 	g_fSpawnpointOrigin = Float:{-999999.9,-999999.9,-999999.9};
@@ -887,22 +893,12 @@ public OnMapStart()
 	g_bAutoBhop = false;
 	g_bRoundEnd = false;
 	CheatFlag("bot_zombie", false, true);
-	for (int i = 1; i<MAXZONEGROUPS; i++)
+	for (int i = 0; i<MAXZONEGROUPS; i++)
 	{
 		g_bTierFound[i] = false;
 		g_fBonusFastest[i]=9999999.0;
 		g_bCheckpointRecordFound[i] = false;
 	}
-
-
-
-	//workshop fix
-	char mapPieces[6][128];
-	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
-	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece-1]); 
-	
-	//get map tag
-	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
 
 	InitZoneVariables();
 	OnConfigsExecuted();
@@ -921,6 +917,7 @@ public OnMapStart()
 		db_GetDynamicTimelimit();
 		checkZoneTypeIds();
 	}
+
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -936,9 +933,8 @@ public OnMapStart()
 	ServerCommand("sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");	
 
 	//AutoBhop?
-	if(StrEqual(g_szMapPrefix[0],"surf") || StrEqual(g_szMapPrefix[0],"bhop") || StrEqual(g_szMapPrefix[0],"mg", false))
-		if (g_bAutoBhopConVar)
-			g_bAutoBhop=true;		
+	if (g_bAutoBhopConVar)
+		g_bAutoBhop=true;		
 
 	//main cfg
 	CreateTimer(1.0, DelayedStuff, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
@@ -948,7 +944,6 @@ public OnMapStart()
 	
 	if (g_bLateLoaded)
 	{
-		OnConfigsExecuted();
 		OnAutoConfigsBuffered();
 	}
 
@@ -1115,12 +1110,13 @@ public OnClientPutInServer(int client)
 	{
 		db_viewPlayerPoints(client);
 		db_viewPlayerOptions(client, g_szSteamID[client]);	
-	 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
-		db_viewPersonalBonusRecords(client, g_szSteamID[client]);
 		db_viewPersonalFlags(client, g_szSteamID[client]);
 
 		for (int i = 0; i < g_mapZoneGroupCount; i++) 
-			db_viewCheckpoints(client, g_szSteamID[client], g_szMapName, i); 
+			db_viewCheckpoints(client, g_szSteamID[client], g_szMapName, i);
+
+	 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
+		db_viewPersonalBonusRecords(client, g_szSteamID[client]);
 	}
 }
 
@@ -1523,10 +1519,7 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 		if(newValue[0] == '1')		
 		{		
 			g_bAutoBhopConVar = true;		
-			if(StrEqual(g_szMapPrefix[0],"surf") || StrEqual(g_szMapPrefix[0],"bhop") || StrEqual(g_szMapPrefix[0],"mg"))
-			{
-				g_bAutoBhop = true;
-			}
+			g_bAutoBhop = true;
 		}
 		else
 		{

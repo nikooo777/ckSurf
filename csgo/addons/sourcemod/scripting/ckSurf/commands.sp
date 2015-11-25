@@ -61,6 +61,11 @@ public Action Command_SetTitle(client, args)
 	if(!IsValidClient(client))
 		return Plugin_Handled;
 
+	if (!g_bHasTitle[client])
+	{
+		PrintToChat(client, "[%cCK%c] You don't have access to any custom titles.", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
 	Handle playersTitles = CreateMenu(H_PlayersTitles);
 	SetMenuTitle(playersTitles, "Your available titles: ");
 

@@ -23,7 +23,7 @@ public void SinCos( float radians, float &sine, float &cosine)
 	cosine = Cosine(radians);
 }
 
-void DoPush(int entity, int other)
+void DoPush(int entity, int other, float m_vecPushDir[3])
 {
 	if(0 < other <= MaxClients)
 	{
@@ -32,10 +32,9 @@ void DoPush(int entity, int other)
 			return;
 		}
 		
-		float m_vecPushDir[3], newVelocity[3], angRotation[3], fPushSpeed;
+		float newVelocity[3], angRotation[3], fPushSpeed;
 		
 		fPushSpeed = GetEntPropFloat(entity, Prop_Data, "m_flSpeed");
-		GetEntPropVector(entity, Prop_Data, "m_vecPushDir", m_vecPushDir);
 		GetEntPropVector(entity, Prop_Data, "m_angRotation", angRotation);
 		
 		// Rotate vector according to world
@@ -189,9 +188,9 @@ public loadHiddenChatCommands()
 
 
 public loadCustomTitles()
-{	
+{
 	char sPath[PLATFORM_MAX_PATH];
-
+	g_iCustomTitleCount = 0;
 	// Load custom titles:
 	for (int i = 0; i < TITLE_COUNT; i++)
 	{
@@ -209,14 +208,20 @@ public loadCustomTitles()
 		return false;
 	}
 
-	g_customTitleCount = 0;
-	char buffer[128];
 	for (int i = 0; i < TITLE_COUNT; i++)
 	{
 		KvGetString(kv, "title_name", g_szflagTitle_Colored[i], 128);
 		KvGetString(kv, "title_name", g_szflagTitle[i], 128);
-		if (!StrEqual(buffer, ""))
-			g_customTitleCount++;
+		PrintToServer("Title %i: %s", i, g_szflagTitle[i]);
+		if (!g_szflagTitle[i][0])
+		{
+			// Disable unused titles from all players
+			if (i != (TITLE_COUNT - 1))
+				sql_disableTitleFromAllbyIndex(i);
+			break;
+		}
+		else
+			g_iCustomTitleCount++;
 
 		//Array_Copy(g_szflagTitle_Colored[i], g_szflagTitle[i], 128);
 
@@ -257,11 +262,7 @@ public loadCustomTitles()
 		if (!KvGotoNextKey(kv))
 			break;
 	}
-
-
-
 	CloseHandle(kv);
-
 	return true;
 }
 
@@ -331,11 +332,13 @@ public CreateSpawns()
 
 	if (FindEntityByClassname(ctEnt, "info_player_counterterrorist") == -1 || FindEntityByClassname(tEnt, "info_player_terrorist") == -1) // No proper zones were found
 	{
+		PrintToServer("[CK] No valid spawns found in the map.");
 		int zoneEnt;
 		FindEntityByClassname(zoneEnt, "info_player_teamspawn"); // CSS/TF spawn found
 		
 		if (zoneEnt != -1)
 		{
+			PrintToServer("[CK] No valid spawns found in the map.");
 			GetEntPropVector(zoneEnt, Prop_Data, "m_angRotation", f_spawnLocation);
 			GetEntPropVector(zoneEnt, Prop_Send, "m_vecOrigin", f_spawnAngle);	
 		}
@@ -381,7 +384,7 @@ public CreateSpawns()
 		}
 	}
 }
-
+/*
 public CheckSpawnPoints() 
 {
 	if(StrEqual(g_szMapPrefix[0],"surf"))
@@ -444,6 +447,7 @@ public CheckSpawnPoints()
 	}
 }
 
+
 public Action CheckifEntities(Handle timer, any:data)
 {
 	int ent;
@@ -460,7 +464,7 @@ public Action CheckifEntities(Handle timer, any:data)
 	}
 	return Plugin_Handled;
 }
-
+*/
 public Action:CallAdmin_OnDrawOwnReason(client)
 {
 	g_bClientOwnReason[client] = true;

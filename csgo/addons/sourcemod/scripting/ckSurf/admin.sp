@@ -1,8 +1,14 @@
-public Action:Admin_giveTitle(client, args)
+public Action Admin_giveTitle(client, args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-		
+	
+	if (g_iCustomTitleCount == 0)
+	{
+		PrintToChat(client, "[%cCK%c] No custom titles loaded.", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
+
 	g_iAdminSelectedClient[client] = -1;
 	g_iAdminEditingType[client] = 1;
 	Format(g_szAdminSelectedSteamID[client], 32, "");
@@ -15,12 +21,12 @@ public Action:Admin_giveTitle(client, args)
 		Handle playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select Player to give title to:");
 
-		char szName[MAX_NAME_LENGTH], id[2];
-		for (int i = 1; i < (MAXPLAYERS+1); i++)
+		char szName[MAX_NAME_LENGTH], id[6];
+		for (int i = 1; i < MAXPLAYERS; i++)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i))
 			{
-				IntToString(i, id, 2);
+				IntToString(i, id, 6);
 				GetClientName(i, szName, MAX_NAME_LENGTH);
 				AddMenuItem(playerMenu, id, szName);
 			}
@@ -61,7 +67,6 @@ public Action:Admin_giveTitle(client, args)
 					GetClientName(i, sResult, MAX_NAME_LENGTH);
 					if (StrEqual(sResult, arg, false))
 					{
-						//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
 						g_iAdminSelectedClient[client] = i;
 						break;
@@ -88,18 +93,16 @@ public Handler_selectPlayer(Handle:tMenu, MenuAction:action, client, item)
 		case MenuAction_Select:
 		{
 			char aID[2];
-
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_iAdminSelectedClient[client] = StringToInt(aID);
-			GetClientAuthId(g_iAdminSelectedClient[client], AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
-			//GetClientAuthString(g_iAdminSelectedClient[client], g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
+			GetClientAuthId(g_iAdminSelectedClient[client], AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
+
 			switch (g_iAdminEditingType[client])
 			{
 				case 1: db_checkPlayersTitles(client);
 				case 2: db_deletePlayerTitles(client);
 				case 3: db_checkPlayersTitles(client);
 			}
-			
 		}
 		case MenuAction_End:
 		{
