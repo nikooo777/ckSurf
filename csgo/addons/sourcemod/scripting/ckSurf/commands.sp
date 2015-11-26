@@ -335,10 +335,19 @@ public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
 			char aID[3];
 			GetMenuItem(sMenu, item, aID, sizeof(aID));
 			int zoneGrp = StringToInt(aID);
-
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 1, zoneGrp);
-			//TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
+			{
+				g_specToStage[client] = true;
+				g_bRespawnPosition[client] = false;
+				Array_Copy(g_fZonePositions[getZoneID(zoneGrp, 1)], g_fTeleLocation[client], 3);
+				TeamChangeActual(client, 0);
+			}
+			else
+			{
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				performTeleport(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 1, zoneGrp);
+				//TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+			}
 		}
 		case MenuAction_End:
 		{
@@ -504,13 +513,23 @@ public MenuHandler_SelectStage(Handle tMenu, MenuAction action, client, item)
 	{
 		case MenuAction_Select:
 		{
+			Client_Stop(client, 0);
 			char aID[64];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int id = StringToInt(aID);
-
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 3, g_iClientInZone[client][2]);
-			//TeleportEntity(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
+			{
+				g_specToStage[client] = true;
+				g_bRespawnPosition[client] = false;
+				Array_Copy(g_fZonePositions[id], g_fTeleLocation[client], 3);
+				TeamChangeActual(client, 0);
+			}
+			else
+			{
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				performTeleport(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 3, g_iClientInZone[client][2]);
+				//TeleportEntity(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+			}
 		}
 		case MenuAction_End:
 		{
@@ -540,6 +559,9 @@ public Action Command_ToStage(client, args)
 
 	if (g_mapZonesCount > 0)
 	{
+
+		Client_Stop(client, 0);
+
 		int stageZoneId = getZoneID(g_iClientInZone[client][2], StageId);
 
 		if (stageZoneId>=0)
@@ -547,6 +569,7 @@ public Action Command_ToStage(client, args)
 
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
+				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
 
 				Array_Copy(g_fZonePositions[stageZoneId], g_fTeleLocation[client], 3);
@@ -555,7 +578,6 @@ public Action Command_ToStage(client, args)
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
 
-				g_specToStage[client] = true;
 				g_bRespawnPosition[client] = false;
 			}
 			else
@@ -585,6 +607,7 @@ public Action Command_Restart(client, args)
 
 	if (g_bGotSpawnLocation[0])
 	{
+		Client_Stop(client, 0);
 
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
 		{
@@ -1934,6 +1957,8 @@ public GotoMethod(client, i)
 	GetClientName(i, szTargetName, MAX_NAME_LENGTH);	
 	if (GetEntityFlags(i) & FL_ONGROUND)
 	{
+		Client_Stop(client, 0);
+
 		int ducked = GetEntProp(i, Prop_Send, "m_bDucked");
 		int ducking = GetEntProp(i, Prop_Send, "m_bDucking");
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)

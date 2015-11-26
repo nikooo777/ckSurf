@@ -122,6 +122,7 @@ PlayerSpawn(client)
 	//restore position
 	if (!g_specToStage[client])
 	{
+
 		if ((GetClientTeam(client) > 1))
 		{
 			if (g_bRestorePosition[client])
@@ -170,6 +171,8 @@ PlayerSpawn(client)
 	}
 	else
 	{
+		Array_Copy(g_fTeleLocation[client], g_fPlayerCordsRestore[client], 3);
+		Array_Copy(NULL_VECTOR, g_fPlayerAnglesRestore[client], 3);
 		SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
 		TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,Float:{0.0,0.0,-100.0});
 		g_specToStage[client] = false;
