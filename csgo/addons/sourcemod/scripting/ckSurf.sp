@@ -681,7 +681,7 @@ char g_szTimeDifference[MAXPLAYERS+1][32];
 char g_szFinalTime[MAXPLAYERS+1][32];
 char g_szMapName[128];
 char g_szMapTopName[MAXPLAYERS+1][128];
-char g_szTimerTitle[MAXPLAYERS+1][255];
+//char g_szTimerTitle[MAXPLAYERS+1][255];
 char g_szRecordPlayer[MAX_NAME_LENGTH];
 char g_szProfileName[MAXPLAYERS+1][MAX_NAME_LENGTH];
 char g_szPlayerPanelText[MAXPLAYERS+1][512];

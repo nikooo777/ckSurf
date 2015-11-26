@@ -469,7 +469,7 @@ public Action:BeamBox(Handle timer, any:client)
 public Action:BeamBoxAll(Handle timer, any:data)
 {
 	float posA[3], posB[3];
-	int zColor[4], tzColor[4], beamTeam, beamVis, zType;
+	int zColor[4], tzColor[4], beamTeam, beamVis, zType, zGrp;
 	bool draw;
 
 	if (g_zoneDisplayType < 1)
@@ -488,22 +488,24 @@ public Action:BeamBoxAll(Handle timer, any:data)
 		zType = g_mapZones[i][zoneType];
 		beamVis = g_mapZones[i][Vis];
 		beamTeam = g_mapZones[i][Team];
+		zGrp = g_mapZones[i][zoneGroup];
+
 		draw = false;
 
-		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 		if(0 < beamVis < 4)
 		{
 			draw = true;
 		}
 		else
 		{
-			if (g_zonesToDisplay == 1 && ((0 < zType < 3)||zType == 7))
+			if (g_zonesToDisplay == 1 && ((0 < zType < 3)||zType == 5))
 			{
 				draw = true;
 			}
 			else
 			{
-				if (g_zonesToDisplay == 2 && ((0 < zType < 6 ) ||zType == 7))
+				if (g_zonesToDisplay == 2 && ((0 < zType < 4 ) ||zType == 5))
 				{
 					draw = true;
 				}
@@ -519,7 +521,7 @@ public Action:BeamBoxAll(Handle timer, any:data)
 
 		if (draw)
 		{
-			getZoneDisplayColor(zType, zColor);
+			getZoneDisplayColor(zType, zColor, zGrp);
 			getZoneTeamColor(beamTeam, tzColor);
 			for (int p = 1; p <= MaxClients; p++) 
 			{
@@ -544,39 +546,40 @@ public Action:BeamBoxAll(Handle timer, any:data)
 	return Plugin_Continue;
 }
 
-public getZoneDisplayColor(type, zColor[4])
+public getZoneDisplayColor(type, zColor[4], zGrp)
 {
-	// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	switch (type)
 	{
 		case 1: {
-			 zColor = g_zoneStartColor;
+
+			if (zGrp > 0)
+				zColor = g_zoneBonusStartColor;
+			else
+				zColor = g_zoneStartColor;
 		}
 		case 2: {
-			zColor = g_zoneEndColor;
+			if (zGrp > 0)
+				zColor = g_zoneBonusEndColor;
+			else
+				zColor = g_zoneEndColor;
 		}
 		case 3: {
-			zColor = g_zoneBonusStartColor;
-		}
-		case 4: {
-			zColor = g_zoneBonusEndColor;
-		}
-		case 5: {
 			zColor = g_zoneStageColor;
 		}
-		case 6: {
+		case 4: {
 			zColor = g_zoneCheckpointColor;
 		}
-		case 7: {
+		case 5: {
 			zColor = g_zoneSpeedColor;
 		}
-		case 8: {
+		case 6: {
 			zColor = g_zoneTeleToStartColor;
 		}
-		case 9: {
+		case 7: {
 			zColor = g_zoneValidatorColor;
 		}
-		case 10: {
+		case 8: {
 			zColor = g_zoneCheckerColor;
 		}
 		case 0: {

@@ -1263,6 +1263,7 @@ public SetClientDefaults(client)
 	Format(g_szLastSRDifference[client], 64, "");
 	Format(g_szLastPBDifference[client], 64, "");
 
+	Format(g_szPersonalRecord[client], 64, "");
 
 
 	// Player Checkpoints
@@ -1282,7 +1283,6 @@ public SetClientDefaults(client)
 		g_bCheckpointsFound[x][client] = false;
 		g_MapRankBonus[x][client] = 9999999;
 		g_Stage[x][client] = 0;
-		Format(g_szPersonalRecord[x][client], 64, "");
 		for (int i = 0; i<CPLIMIT; i++) 
 		{
 			g_fCheckpointTimesNew[x][client][i] = 0.0;
@@ -1335,7 +1335,7 @@ public clearPlayerCheckPoints(client)
 public GetcurrentRunTime(client)
 {
 	g_fCurrentRunTime[client] = GetGameTime() - g_fStartTime[client] - g_fPauseTime[client];	
-	if (g_bPause[client])
+	/*if (g_bPause[client])
 		Format(g_szTimerTitle[client], 255, "%s\nTimer on Hold", g_szPlayerPanelText[client]);
 	else
 	{
@@ -1350,7 +1350,7 @@ public GetcurrentRunTime(client)
 		}
 		else
 			Format(g_szTimerTitle[client], 255, "%s",g_szPlayerPanelText[client]);
-	}	
+	}*/
 }
 
 public float GetSpeed(client)
@@ -2176,7 +2176,7 @@ public GetRGBColor(bot, char color[256])
 
 public SpecList(client)
 {
-	if (!IsValidClient(client) || IsFakeClient(client) || GetClientMenu(client) != MenuSource_None || g_bSpectate[client])
+	if (!IsValidClient(client) || IsFakeClient(client) || GetClientMenu(client) != MenuSource_None)
 		return;
 
 	if(!StrEqual(g_szPlayerPanelText[client],""))
@@ -2340,6 +2340,7 @@ public SpecListMenuDead(client) // What Spectators see
 	
 	if (SpecMode == 4 || SpecMode == 5)
 	{
+		PrintToServer("Spectating! %i", client);
 		g_SpecTarget[client] = ObservedUser;
 		int count;
 		count=0;
