@@ -2340,7 +2340,6 @@ public SpecListMenuDead(client) // What Spectators see
 	
 	if (SpecMode == 4 || SpecMode == 5)
 	{
-		PrintToServer("Spectating! %i", client);
 		g_SpecTarget[client] = ObservedUser;
 		int count;
 		count=0;
