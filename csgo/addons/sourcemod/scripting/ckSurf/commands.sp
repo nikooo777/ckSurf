@@ -597,6 +597,53 @@ public Action Command_ToStage(client, args)
 	return Plugin_Handled;
 }
 
+public Action Command_ToEnd(client, args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	int endZoneId = -1;
+
+	if (g_mapZonesCount <= 0)
+		return Plugin_Handled;
+
+	for (int i = 0; i < g_mapZonesCount; i++)
+	{
+		if (g_mapZones[i][zoneType] == 2)
+		{
+			endZoneId = i;
+			break;
+		}
+	}
+
+	if (endZoneId > -1)
+	{
+		Client_Stop(client, 0)
+
+		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
+		{
+			g_specToStage[client] = true;
+			TeamChangeActual(client, 0);
+
+			Array_Copy(g_fZonePositions[endZoneId], g_fTeleLocation[client], 3);
+
+			g_fCurVelVec[client][0] = 0.0;
+			g_fCurVelVec[client][1] = 0.0;
+			g_fCurVelVec[client][2] = 0.0;
+
+			g_bRespawnPosition[client] = false;
+		}
+		else
+		{
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 3,  g_iClientInZone[client][2]);
+		}
+
+	}
+
+	return Plugin_Handled;
+}
+
 public Action Command_Restart(client, args)
 {
 	if (!IsValidClient(client))
@@ -2179,7 +2226,10 @@ public ckTopMenu(int client)
 	if (g_bPointSystem)
 		AddMenuItem(cktopmenu, "Top 100 Players", "Top 100 Players");
 	AddMenuItem(cktopmenu, "Top 5 Challengers", "Top 5 Challengers");
-	AddMenuItem(cktopmenu, "Map Top", "Map Top");	
+	AddMenuItem(cktopmenu, "Map Top", "Map Top");
+	
+	AddMenuItem(cktopmenu, "Bonus Top", "Bonus Top", !g_bhasBonus);
+	
 	SetMenuOptionFlags(cktopmenu, MENUFLAG_BUTTON_EXIT);
 	DisplayMenu(cktopmenu, client, MENU_TIME_FOREVER);
 }
@@ -2195,6 +2245,7 @@ public TopMenuHandler(Handle menu, MenuAction action, param1,param2)
 				case 0: db_selectTopPlayers(param1);
 				case 1: db_selectTopChallengers(param1);
 				case 2: db_selectTopSurfers(param1,g_szMapName); 
+				case 3: BonusTopMenu(param1);
 			}
 		}
 		else
@@ -2204,12 +2255,51 @@ public TopMenuHandler(Handle menu, MenuAction action, param1,param2)
 				case 0: db_selectTopChallengers(param1);
 				case 1: db_selectTopProRecordHolders(param1);
 				case 2: db_selectTopSurfers(param1,g_szMapName);
+				case 3: BonusTopMenu(param1);
 			}
 		}
 	}
 	else
 		if (action == MenuAction_End)
 			CloseHandle(menu);
+}
+
+public BonusTopMenu(client)
+{
+	if (g_mapZoneGroupCount > 2)
+	{
+		char buffer[3];
+		Menu sMenu = new Menu(BonusTopMenuHandler);
+		sMenu.SetTitle("Bonus selector");
+
+		if (g_mapZoneGroupCount > 1)
+		{
+			for (int i = 1; i < g_mapZoneGroupCount; i++)
+			{
+				IntToString(i, buffer, 3);
+				sMenu.AddItem(buffer, g_szZoneGroupName[i]);
+			}
+		}
+		else
+		{
+			PrintToChat(client, "[%cCK%c] There are no bonuses in this map.", MOSSGREEN, WHITE);
+			return;
+		}
+
+		sMenu.ExitButton = true;
+		sMenu.Display(client, 60);
+	} 
+	else {
+		db_selectBonusTopSurfers(client, g_szMapName, 1);
+	}
+}
+
+public BonusTopMenuHandler(Handle menu, MenuAction action, param1,param2)
+{
+	if (action == MenuAction_Select)
+	{
+		db_selectBonusTopSurfers(param1, g_szMapName, param2+1);
+	}
 }
 
 public HelpPanel(client)

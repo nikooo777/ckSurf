@@ -2214,6 +2214,8 @@ public OnPluginStart()
 	RegConsoleCmd("sm_options", Client_OptionMenu, "[ckSurf] opens options menu");
 	RegConsoleCmd("sm_top", Client_Top, "[ckSurf] displays top rankings (Top 100 Players, Top 50 overall)");
 	RegConsoleCmd("sm_topSurfers", Client_Top, "[ckSurf] displays top rankings (Top 100 Players, Top 50 overall)");
+	RegConsoleCmd("sm_bonustop", Client_BonusTop, "[ckSurf] displays top rankings of the bonus");
+	RegConsoleCmd("sm_btop", Client_BonusTop, "[ckSurf] displays top rankings of the bonus");
 	RegConsoleCmd("sm_stop", Client_Stop, "[ckSurf] stops your timer");
 	RegConsoleCmd("sm_ranks", Client_Ranks, "[ckSurf] prints in chat the available player ranks");
 	RegConsoleCmd("sm_pause", Client_Pause,"[ckSurf] on/off pause (timer on hold and movement frozen)");
@@ -2235,6 +2237,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_bonuses", Command_ListBonuses, "[ckSurf] Displays a list of bonuses in current map");
 	RegConsoleCmd("sm_s", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
 	RegConsoleCmd("sm_stage", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
+	RegConsoleCmd("sm_end", Command_ToEnd, "[ckSurf] Teleports player to the end zone");
 	
 	// Titles
 	RegConsoleCmd("sm_title", Command_SetTitle, "[ckSurf] Displays player's titles");
