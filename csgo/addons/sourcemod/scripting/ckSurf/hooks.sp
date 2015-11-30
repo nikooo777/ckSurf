@@ -203,7 +203,7 @@ public Action Say_Hook(client, const char[] command, argc)
 
 	char sText[1024];
 	GetCmdArgString(sText, sizeof(sText));
-
+	
 	if (IsValidClient(client) && g_ClientRenamingZone[client])
 	{
 		Admin_renameZone(client, sText);
