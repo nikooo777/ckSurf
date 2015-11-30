@@ -297,23 +297,33 @@ public Action Command_ListBonuses(client, args)
 {
 	if (IsValidClient(client))
 	{
-		ListBonuses(client);
+		ListBonuses(client, 1);
 	}
 	return Plugin_Handled;
 }
 
-public ListBonuses(client)
+public ListBonuses(client, int type)
 {
 	// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 	char buffer[3];
-	Menu sMenu = new Menu(MenuHandler_SelectBonus);
-	sMenu.SetTitle("Bonus selector");
+	Menu listBonusesMenu;
+	if (type == 1)
+	{
+		listBonusesMenu = new Menu(MenuHandler_SelectBonus);
+	}
+	else
+	{
+		listBonusesMenu = new Menu(MenuHandler_SelectBonusTop);
+	}
+
+	listBonusesMenu.SetTitle("Choose a bonus");
+
 	if (g_mapZoneGroupCount > 1)
 	{
 		for (int i = 1; i < g_mapZoneGroupCount; i++)
 		{
 			IntToString(i, buffer, 3);
-			sMenu.AddItem(buffer, g_szZoneGroupName[i]);
+			listBonusesMenu.AddItem(buffer, g_szZoneGroupName[i]);
 		}
 	}
 	else
@@ -322,9 +332,28 @@ public ListBonuses(client)
 		return;
 	}
 
-	sMenu.ExitButton = true;
-	sMenu.Display(client, 60);
+	listBonusesMenu.ExitButton = true;
+	listBonusesMenu.Display(client, 60);
 }
+
+public MenuHandler_SelectBonusTop(Handle sMenu, MenuAction action, client, item)
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{	
+			char aID[3];
+			GetMenuItem(sMenu, item, aID, sizeof(aID));
+			int zoneGrp = StringToInt(aID);
+			db_selectBonusTopSurfers(client, g_szMapName, zoneGrp);
+		}
+		case MenuAction_End:
+		{
+			delete sMenu;
+		}
+	}
+}
+
 
 public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
 {
@@ -373,7 +402,7 @@ public Action Command_ToBonus(client, args)
 				PrintToChat(client, "[%c%i.%c] %s", YELLOW, i, WHITE, g_szZoneGroupName[i]);
 			}
 		}
-		ListBonuses(client);
+		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
 
@@ -609,7 +638,7 @@ public Action Command_ToEnd(client, args)
 
 	for (int i = 0; i < g_mapZonesCount; i++)
 	{
-		if (g_mapZones[i][zoneType] == 2)
+		if (g_mapZones[i][zoneType] == 2 && g_mapZones[i][zoneGroup] == g_iClientInZone[client][2])
 		{
 			endZoneId = i;
 			break;
@@ -623,9 +652,9 @@ public Action Command_ToEnd(client, args)
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 		{
 			g_specToStage[client] = true;
-			TeamChangeActual(client, 0);
-
 			Array_Copy(g_fZonePositions[endZoneId], g_fTeleLocation[client], 3);
+
+			TeamChangeActual(client, 0);
 
 			g_fCurVelVec[client][0] = 0.0;
 			g_fCurVelVec[client][1] = 0.0;
@@ -636,9 +665,8 @@ public Action Command_ToEnd(client, args)
 		else
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 3,  g_iClientInZone[client][2]);
+			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, 2,  g_iClientInZone[client][2]);
 		}
-
 	}
 
 	return Plugin_Handled;
@@ -1299,42 +1327,72 @@ public Action Client_BonusTop(client, args)
 		return Plugin_Handled;
 
 	switch(args) {
-		case 0: {
-			PrintToChat(client, "[%cCK%c] Usage: !btop <Optional:mapname> <bonus id>", MOSSGREEN, WHITE);
-			return Plugin_Handled;
-		}
-		case 1: {	
-			GetCmdArg(1, szArg, 128);
-			zGrp = StringToInt(szArg);
-			if (0 < zGrp < MAXZONEGROUPS)
+		case 0: { // !btop
+			if (g_mapZoneGroupCount == 1)
 			{
+				PrintToChat(client, "[%cCK%c] No bonus found on this map.", MOSSGREEN, WHITE);
+				PrintToChat(client, "[%cCK%c] Usage: !btop <bonus id> <mapname>", MOSSGREEN, WHITE);
+				return Plugin_Handled;
+			}
+			if (g_mapZoneGroupCount == 2)
+			{
+				zGrp = 1;
 				Format(szArg, 128, "%s", g_szMapName);
 			}
-			else
+			if (g_mapZoneGroupCount > 2)
 			{
-				PrintToChat(client, "[%cCK%c] Invalid bonus ID %i.", MOSSGREEN, WHITE, zGrp);
+				ListBonuses(client, 2);
 				return Plugin_Handled;
 			}
 		}
-		case 2: {
-			GetCmdArg(2, szArg, 128);
-			zGrp = StringToInt(szArg);
-			if (0 < zGrp < MAXZONEGROUPS)
+		case 1: { //!btop <mapname> / <bonus id>
+			// 1st check if bonus id or mapname
+			GetCmdArg(1, szArg, 128);
+			if (StringToInt(szArg) == 0 && szArg[0] != '0') // passes, if not a number (argument is mapname)
 			{
-				GetCmdArg(1, szArg, 128);
+				db_selectBonusesInMap(client, szArg);
+				return Plugin_Handled;
 			}
-			else
+			else // argument is a bonus id (Use current map)
+			{
+				zGrp = StringToInt(szArg);
+				if (0 < zGrp < MAXZONEGROUPS)
+				{
+					Format(szArg, 128, "%s", g_szMapName);
+				}
+				else
+				{
+					PrintToChat(client, "[%cCK%c] Invalid bonus ID %i.", MOSSGREEN, WHITE, zGrp);
+					return Plugin_Handled;
+				}
+			}
+		}
+		case 2: {
+			GetCmdArg(1, szArg, 128);
+			if (StringToInt(szArg) != 0 && szArg[0] != '0') // passes, if not a number (argument is mapname)
+			{
+				char szZGrp[128];
+				GetCmdArg(2, szZGrp, 128);
+				zGrp = StringToInt(szZGrp);
+			}
+			else // argument is a bonus id
+			{
+				zGrp = StringToInt(szArg);
+				GetCmdArg(2, szArg, 128);
+			}
+
+			if (0 > zGrp || zGrp > MAXZONEGROUPS)
 			{
 				PrintToChat(client, "[%cCK%c] Invalid bonus ID %i.", MOSSGREEN, WHITE, zGrp);
 				return Plugin_Handled;
 			}
 		}
 		default: {
-			PrintToChat(client, "[%cCK%c] Usage: !btop <Optional:mapname> <bonus id>", MOSSGREEN, WHITE);
+			PrintToChat(client, "[%cCK%c] Usage: !btop <bonus id> <mapname>", MOSSGREEN, WHITE);
 			return Plugin_Handled;
 		}
 	}
-	db_selectBonusTopSurfers(client,szArg, zGrp);
+	db_selectBonusTopSurfers(client, szArg, zGrp);
 	return Plugin_Handled;
 }
 

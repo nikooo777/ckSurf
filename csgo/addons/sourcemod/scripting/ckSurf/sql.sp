@@ -35,6 +35,7 @@ char sql_selectZoneGroupCount[]			= "SELECT zonegroup FROM ck_zones WHERE mapnam
 char sql_selectMapZones[]					= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zonetypeid ASC";
 char sql_selectTotalBonusCount[]			= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE zonetype = 3 GROUP BY mapname, zonegroup;";
 char sql_selectZoneIds[]					= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
+char sql_selectBonusesInMap[]				= "SELECT mapname, zonegroup, zonename FROM `ck_zones` WHERE mapname LIKE '%c%s%c' AND zonegroup > 0 GROUP BY zonegroup;"
 char sql_deleteMapZones[]					= "DELETE FROM ck_zones WHERE mapname = '%s'";
 char sql_deleteZone[]						= "DELETE FROM ck_zones WHERE mapname = '%s' AND zoneid = '%i'";
 char sql_deleteAllZones[]					= "DELETE FROM ck_zones";
@@ -63,7 +64,6 @@ char sql_selectPersonalBonusCompleted[]	= "SELECT mapname, zonegroup FROM ck_bon
 char sql_deleteBonus[]					= "DELETE FROM ck_bonus WHERE mapname = '%s'";
 char sql_selectAllBonusTimesinMap[]		= "SELECT runtime from ck_bonus WHERE mapname = '%s';";
 char sql_selectTopBonusSurfers[] 			= "SELECT db2.steamid, db1.name, db2.runtime as overall, db1.steamid, db2.mapname FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtime > -1.0 AND zonegroup = %i ORDER BY overall ASC LIMIT 100;";
-
 
 //TABLE CHECKPOINTS
 char sql_createCheckpoints[] 				= "CREATE TABLE IF NOT EXISTS ck_checkpoints (steamid VARCHAR(32), mapname VARCHAR(32), cp1 FLOAT DEFAULT '0.0', cp2 FLOAT DEFAULT '0.0', cp3 FLOAT DEFAULT '0.0', cp4 FLOAT DEFAULT '0.0', cp5 FLOAT DEFAULT '0.0', cp6 FLOAT DEFAULT '0.0', cp7 FLOAT DEFAULT '0.0', cp8 FLOAT DEFAULT '0.0', cp9 FLOAT DEFAULT '0.0', cp10 FLOAT DEFAULT '0.0', cp11 FLOAT DEFAULT '0.0', cp12 FLOAT DEFAULT '0.0', cp13 FLOAT DEFAULT '0.0', cp14 FLOAT DEFAULT '0.0', cp15 FLOAT DEFAULT '0.0', cp16 FLOAT DEFAULT '0.0', cp17  FLOAT DEFAULT '0.0', cp18 FLOAT DEFAULT '0.0', cp19 FLOAT DEFAULT '0.0', cp20  FLOAT DEFAULT '0.0', cp21 FLOAT DEFAULT '0.0', cp22 FLOAT DEFAULT '0.0', cp23 FLOAT DEFAULT '0.0', cp24 FLOAT DEFAULT '0.0', cp25 FLOAT DEFAULT '0.0', cp26 FLOAT DEFAULT '0.0', cp27 FLOAT DEFAULT '0.0', cp28 FLOAT DEFAULT '0.0', cp29 FLOAT DEFAULT '0.0', cp30 FLOAT DEFAULT '0.0', cp31 FLOAT DEFAULT '0.0', cp32  FLOAT DEFAULT '0.0', cp33 FLOAT DEFAULT '0.0', cp34 FLOAT DEFAULT '0.0', cp35 FLOAT DEFAULT '0.0', zonegroup INT(12) NOT NULL DEFAULT 0, PRIMARY KEY(steamid, mapname, zonegroup));";
@@ -2942,7 +2942,97 @@ public db_selectMapTopSurfers(client, char mapname[128])
 }
 
 
-//// BONUS //////////
+//// BONUS //////////'
+
+public db_selectBonusesInMap(client, char mapname[128])
+{
+	// SELECT mapname, zonegroup, zonename FROM `ck_zones` WHERE mapname LIKE '%c%s%c' AND zonegroup > 0 GROUP BY zonegroup;
+	char szQuery[512];
+	Format(szQuery, 512, sql_selectBonusesInMap, PERCENT, mapname, PERCENT);
+	SQL_TQuery(g_hDb, db_selectBonusesInMapCallback, szQuery, client, DBPrio_Low);
+}
+
+public db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[] error, any client)
+{
+	if(hndl == null)
+	{
+		LogError("[ckSurf] SQL Error (db_selectBonusesInMapCallback): %s", error);
+		return;
+	}
+	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		char mapname[128], MenuTitle[248], BonusName[128], MenuID[248];
+		int zGrp;
+
+		if (SQL_GetRowCount(hndl) == 1)
+		{
+			SQL_FetchString(hndl, 0, mapname, 128);
+			db_selectBonusTopSurfers(client, mapname, SQL_FetchInt(hndl, 1));
+			return;
+		}
+
+		Menu listBonusesinMapMenu = new Menu(MenuHandler_SelectBonusinMap);
+
+		SQL_FetchString(hndl, 0, mapname, 128);
+		zGrp = SQL_FetchInt(hndl, 1);
+		Format(MenuTitle, 248, "Choose a Bonus in %s", mapname);
+		listBonusesinMapMenu.SetTitle(MenuTitle);
+
+		SQL_FetchString(hndl, 2, BonusName, 128);
+
+		if (!BonusName[0])
+			Format(BonusName, 128, "BONUS %i", zGrp);
+
+		Format(MenuID, 248, "%s-%i", mapname, zGrp);
+
+		listBonusesinMapMenu.AddItem(MenuID, BonusName);
+
+
+		while (SQL_FetchRow(hndl))
+		{
+			SQL_FetchString(hndl, 2, BonusName, 128);
+			zGrp = SQL_FetchInt(hndl, 1);
+
+			if (StrEqual(BonusName, "NULL", false))
+				Format(BonusName, 128, "BONUS %i", zGrp);
+
+			Format(MenuID, 248, "%s-%i", mapname, zGrp);
+
+			listBonusesinMapMenu.AddItem(MenuID, BonusName);
+		}
+
+		listBonusesinMapMenu.ExitButton = true;
+		listBonusesinMapMenu.Display(client, 60);
+	}
+	else
+	{
+		PrintToChat(client, "[%cCK%c] No bonuses found.", MOSSGREEN, WHITE);
+		return;
+	}
+}
+
+public MenuHandler_SelectBonusinMap(Handle sMenu, MenuAction action, client, item)
+{
+	switch(action)
+	{
+		case MenuAction_Select:
+		{	
+			char aID[248];
+			char splits[2][128];
+			GetMenuItem(sMenu, item, aID, sizeof(aID));
+			ExplodeString(aID, "-", splits, sizeof(splits), sizeof(splits[]));
+
+			db_selectBonusTopSurfers(client, splits[0], StringToInt(splits[1]));
+		}
+		case MenuAction_End:
+		{
+			delete sMenu;
+		}
+	}
+}
+
+
+
 public db_selectBonusTopSurfers(client, char mapname[128], zGrp)
 {
 	char szQuery[1024];       
