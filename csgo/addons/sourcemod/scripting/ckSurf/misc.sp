@@ -471,16 +471,22 @@ public Action:CallAdmin_OnDrawOwnReason(client)
 	return Plugin_Continue;
 }
 
-public bool checkSpam(client, float time)
+public bool checkSpam(client)
 {
+	float time = GetGameTime();
 	if (g_fChatSpamFilter == 0.0)
 		return false;
 
 	if (!IsValidClient(client) || (GetUserFlagBits(client) & ADMFLAG_ROOT) || (GetUserFlagBits(client) & ADMFLAG_GENERIC))
 		return false;
 
+	bool result = false;
+
 	if (time - g_fLastChatMessage[client] < g_fChatSpamFilter)
+	{
+		result = true;
 		g_messages[client]++;
+	}
 	else
 		g_messages[client] = 0;
 
@@ -495,7 +501,7 @@ public bool checkSpam(client, float time)
 		}
 
 	g_fLastChatMessage[client] = time;
-	return false;
+	return result;
 }
 
 stock bool IsValidClient(client)
@@ -1220,7 +1226,6 @@ public SetClientDefaults(client)
 	if (!g_bLateLoaded)
 		g_bFirstTeamJoin[client] = true;	
 	g_bFirstSpawn[client] = true;
-	g_bSayHook[client] = false;
 	g_bRecalcRankInProgess[client] = false;
 	g_bPause[client] = false;
 	g_bPositionRestored[client] = false;

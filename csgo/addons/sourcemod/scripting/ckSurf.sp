@@ -578,7 +578,6 @@ bool g_bShowNames[MAXPLAYERS+1];
 bool g_bStartWithUsp[MAXPLAYERS+1];
 bool g_bShowTime[MAXPLAYERS+1]; 
 bool g_bHide[MAXPLAYERS+1];   
-bool g_bSayHook[MAXPLAYERS+1]; 
 bool g_bShowSpecs[MAXPLAYERS+1]; 
 bool g_bGoToClient[MAXPLAYERS+1]; 
 bool g_bMeasurePosSet[MAXPLAYERS+1][2];
@@ -2156,7 +2155,7 @@ public OnPluginStart()
 	g_bForceCT = GetConVarBool(g_hForceCT);
 	HookConVarChange(g_hForceCT, OnSettingChanged);
 
-	g_hChatSpamFilter = CreateConVar("ck_chat_spamprotection_time", "2.0", "The frequency in seconds that players are allowed to send chat messages. 0.0 = No chat cap.", FCVAR_NOTIFY, true, 0.0);
+	g_hChatSpamFilter = CreateConVar("ck_chat_spamprotection_time", "1.0", "The frequency in seconds that players are allowed to send chat messages. 0.0 = No chat cap.", FCVAR_NOTIFY, true, 0.0);
 	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
 	HookConVarChange(g_hChatSpamFilter, OnSettingChanged);
 

@@ -212,29 +212,17 @@ public Action Say_Hook(client, const char[] command, argc)
 
 	if (!g_benableChatProcessing)
 		return Plugin_Continue;	
-
-	float messageTime = GetGameTime();
 	
-	//Chat trigger?
-	g_bSayHook[client]=true;
 	if (IsValidClient(client))
 	{
-
-	/*	if((sText[1] == '/') || (sText[1] == '!'))
-		{
-			g_bSayHook[client]=false;
-			return Plugin_Handled;
-		}*/
-
 		if (client > 0)
 			if (BaseComm_IsClientGagged(client))
 				return Plugin_Handled;
 
-		if (checkSpam(client, messageTime))
+		if (checkSpam(client))
 			return Plugin_Handled;
 		
 		StripQuotes(sText);
-		int team = GetClientTeam(client);
 		TrimString(sText);
 
 		ReplaceString(sText,1024,"{darkred}","",false);
@@ -254,9 +242,8 @@ public Action Say_Hook(client, const char[] command, argc)
 		ReplaceString(sText,1024,"{lightred}","",false);
 
 		//empty message
-		if(StrEqual(sText, " ") || StrEqual(sText, ""))
+		if(StrEqual(sText, " ") || !sText[0])
 		{
-			g_bSayHook[client]=false;
 			return Plugin_Handled;		
 		}
 
@@ -267,7 +254,6 @@ public Action Say_Hook(client, const char[] command, argc)
 			{
 				for(int i = 0; i <= strlen(sText); ++i)
 						sText[i] = CharToLower(sText[i]);
-				g_bSayHook[client]=false;
 				FakeClientCommand(client, "say %s", sText);
 				return Plugin_Handled;
 			}
@@ -278,53 +264,21 @@ public Action Say_Hook(client, const char[] command, argc)
 		{
 			if (StrEqual(g_BlockedChatText[i],sText,true))
 			{
-				g_bSayHook[client]=false;
 				return Plugin_Handled;			
 			}
 		}
 
 		// !s and !stage commands
-		if (strlen(sText)>2 &&strlen(sText)<=5)
-		{
-			if (sText[0]=='!' && sText[1]=='s' && sText[2] == ' ')
-			{
-				g_bSayHook[client]=false;
-				return Plugin_Handled;	
-			}
-		}
-
-		if (strlen(sText)>6 &&strlen(sText)<=9)
-		{
-			if (sText[0]=='!' && sText[1]=='s' && sText[2]=='t' && sText[3]=='a' && sText[4]=='g' && sText[5]=='e' && sText[6]==' ')
-			{
-				g_bSayHook[client]=false;
-				return Plugin_Handled;	
-			}
-		}
+		if (StrContains(sText,"!s",false)==0 || StrContains(sText,"!stage",false)==0)	
+			return Plugin_Handled;	
 		
 		// !b and !bonus commands
-		if (strlen(sText)>2 &&strlen(sText)<=5)
-		{
-			if (sText[0]=='!' && sText[1]=='b' && sText[2] == ' ')
-			{
-				g_bSayHook[client]=false;
-				return Plugin_Handled;	
-			}
-		}
-
-		if (strlen(sText)>6 &&strlen(sText)<=9)
-		{
-			if (sText[0]=='!' && sText[1]=='b' && sText[2]=='o' && sText[3]=='n' && sText[4]=='u' && sText[5]=='s' && sText[6]==' ')
-			{
-				g_bSayHook[client]=false;
-				return Plugin_Handled;	
-			}
-		}
+		if (StrContains(sText,"!b",false)==0 || StrContains(sText,"!bonus",false)==0)	
+			return Plugin_Handled;	
 
 		//chat trigger?
 		if((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' && (GetUserFlagBits(client) & ADMFLAG_ROOT ||  GetUserFlagBits(client) & ADMFLAG_GENERIC)))
 		{
-			g_bSayHook[client]=false;
 			return Plugin_Continue;
 		}
 
@@ -345,6 +299,7 @@ public Action Say_Hook(client, const char[] command, argc)
 		ReplaceString(szName,64,"{darkblue}","",false);
 		ReplaceString(szName,64,"{pink}","",false);
 		ReplaceString(szName,64,"{lightred}","",false);
+
 		////////////////
 		//say stuff
 		//
@@ -398,10 +353,9 @@ public Action Say_Hook(client, const char[] command, argc)
 			}
 		}
 
-		if (team==1)
+		if (GetClientTeam(client) == 1)
 		{
 			PrintSpecMessageAll(client);
-			g_bSayHook[client]=false;
 			return Plugin_Handled;
 		}
 		else
@@ -411,53 +365,34 @@ public Action Say_Hook(client, const char[] command, argc)
 			
 			if (g_bCountry && (g_bPointSystem || (StrEqual(g_pr_rankname[client], "ADMIN", false) && g_bAdminClantag)))
 			{	
-				if (StrEqual(sText,""))
-				{
-					g_bSayHook[client]=false;
-					return Plugin_Handled;
-				}
 				if (IsPlayerAlive(client))
 					CPrintToChatAllEx(client,"{green}%s{default} %s {teamcolor}%s{default}: %s",g_szCountryCode[client],szChatRank,szName,sText);			
 				else
 					CPrintToChatAllEx(client,"{green}%s{default} %s {teamcolor}*DEAD* %s{default}: %s",g_szCountryCode[client],szChatRank,szName,sText);
-				g_bSayHook[client]=false;				
 				return Plugin_Handled;
 			}
 			else
 			{
 				if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
 				{
-					if (StrEqual(sText,""))
-					{
-						g_bSayHook[client]=false;
-						return Plugin_Handled;
-					}
 					if (IsPlayerAlive(client))
 						CPrintToChatAllEx(client,"%s {teamcolor}%s{default}: %s",szChatRank,szName,sText);	
 					else
 						CPrintToChatAllEx(client,"%s {teamcolor}*DEAD* %s{default}: %s",szChatRank,szName,sText);
-					g_bSayHook[client]=false;						
 					return Plugin_Handled;							
 				}
 				else
 					if (g_bCountry)
 					{
-						if (StrEqual(sText,""))
-						{
-							g_bSayHook[client]=false;
-							return Plugin_Handled;
-						}
 						if (IsPlayerAlive(client))
 							CPrintToChatAllEx(client,"[{green}%s{default}] {teamcolor}%s{default}: %s",g_szCountryCode[client],szName,sText);	
 						else
 							CPrintToChatAllEx(client,"[{green}%s{default}] {teamcolor}*DEAD* %s{default}: %s",g_szCountryCode[client],szName,sText);		
-						g_bSayHook[client]=false;
 						return Plugin_Handled;							
 					}								
 			}
 		}	
 	}
-	g_bSayHook[client]=false;
 	return Plugin_Continue;
 }
 
