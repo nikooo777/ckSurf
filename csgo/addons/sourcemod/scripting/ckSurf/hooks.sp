@@ -162,7 +162,9 @@ PlayerSpawn(client)
 						if (bSpawnToStartZone) 
 						{
 							int startZoneId = getZoneID(0, 1);
-							TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
+							
+							if (startZoneId > 0)
+								TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
 						}
 					}
 				}
