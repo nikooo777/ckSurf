@@ -1,6 +1,5 @@
 public void performTeleport(client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
 {
-
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	// If teleporting to the exact same zone or the client is not in a zone
 	if (destinationZoneId == g_iClientInZone[client][0])

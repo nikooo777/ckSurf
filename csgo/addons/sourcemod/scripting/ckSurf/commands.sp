@@ -233,10 +233,12 @@ public Action Command_Teleport(client, args)
 	{
 		if (g_iClientInZone[client][2] == 0)
 		{
+			g_iClientInZone[client][0] = getZoneID(0, 1);
 			Command_Restart(client, 1);
 		}
 		else
 		{
+			g_iClientInZone[client][0] = getZoneID(g_iClientInZone[client][2], 1);
 			Command_ToBonus(client, g_iClientInZone[client][2]);
 		}
 		return Plugin_Handled;
@@ -256,12 +258,18 @@ public Action Command_Teleport(client, args)
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
 
+				g_iClientInZone[client][0] = stageZoneId;
+				g_iClientInZone[client][2] = g_mapZones[stageZoneId][zoneGroup];
+
 				g_specToStage[client] = true;
 				g_bRespawnPosition[client] = false;
 				TeamChangeActual(client, 0);
 			}
 			else
 			{
+				g_iClientInZone[client][0] = stageZoneId;
+				g_iClientInZone[client][2] = g_mapZones[stageZoneId][zoneGroup];
+
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
 				TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
