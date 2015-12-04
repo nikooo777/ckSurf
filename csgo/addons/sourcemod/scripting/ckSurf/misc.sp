@@ -1,16 +1,19 @@
-public void performTeleport(client, float pos[3], float ang[3], float vel[3], int destination, int destinationZoneGroup)
+public void performTeleport(client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
 {
+
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-	if ((destination == g_iClientInZone[client][0] && g_iClientInZone[client][2] == destinationZoneGroup) || g_iClientInZone[client][0] == -1)
-	{
+	// If teleporting to the exact same zone or the client is not in a zone
+	if (destinationZoneId == g_iClientInZone[client][0])
+	{ 
 		Client_Stop(client, 1);
 	}
 	else
 	{
+		g_iClientInZone[client][0] = destinationZoneId;
+		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
 		Client_Stop(client, 1);
 		g_bIgnoreZone[client] = true;
 	}
-	//PrintToChatAll("Performing....");
 
 	TeleportEntity(client, pos, ang, vel);
 }
