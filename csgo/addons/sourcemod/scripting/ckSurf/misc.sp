@@ -1911,49 +1911,49 @@ public SetPlayerRank(client)
 				g_PlayerChatRank[client] = 0;
 			}
 			else
-			if (g_pr_rank_Percentage[1] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[2])
+			if (g_pr_rank_Percentage[1] <= g_pr_points[client] < g_pr_rank_Percentage[2])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[1]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",WHITE,g_szSkillGroups[1],WHITE);
 				g_PlayerChatRank[client] = 1;
 			}
 			else
-			if (g_pr_rank_Percentage[2] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[3])
+			if (g_pr_rank_Percentage[2] <= g_pr_points[client] < g_pr_rank_Percentage[3])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[2]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",GRAY,g_szSkillGroups[2],WHITE);
 				g_PlayerChatRank[client] = 2;		
 			}
 			else
-			if (g_pr_rank_Percentage[3] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[4])
+			if (g_pr_rank_Percentage[3] <= g_pr_points[client] < g_pr_rank_Percentage[4])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[3]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",LIGHTBLUE,g_szSkillGroups[3],WHITE);
 				g_PlayerChatRank[client] = 3;		
 			}
 			else
-			if (g_pr_rank_Percentage[4] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[5])
+			if (g_pr_rank_Percentage[4] <= g_pr_points[client] < g_pr_rank_Percentage[5])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[4]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",BLUE,g_szSkillGroups[4],WHITE);
 				g_PlayerChatRank[client] = 4;
 			}
 			else
-			if (g_pr_rank_Percentage[5] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[6])
+			if (g_pr_rank_Percentage[5] <= g_pr_points[client] < g_pr_rank_Percentage[6])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[5]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",DARKBLUE,g_szSkillGroups[5],WHITE);
 				g_PlayerChatRank[client] = 5;
 			}
 			else
-			if (g_pr_rank_Percentage[6] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[7])
+			if (g_pr_rank_Percentage[6] <= g_pr_points[client] < g_pr_rank_Percentage[7])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[6]);
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",PINK,g_szSkillGroups[6],WHITE);
 				g_PlayerChatRank[client] = 6;
 			}
 			else
-			if (g_pr_rank_Percentage[7] <= g_pr_points[client] && g_pr_points[client] < g_pr_rank_Percentage[8])
+			if (g_pr_rank_Percentage[7] <= g_pr_points[client] < g_pr_rank_Percentage[8])
 			{
 				Format(g_pr_rankname[client], 128, "[%s]",g_szSkillGroups[7]);	
 				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]",LIGHTRED,g_szSkillGroups[7],WHITE);
@@ -1975,6 +1975,35 @@ public SetPlayerRank(client)
 	}
 	else
 	{
+		if (g_bColoredNames)
+		{
+			if (g_pr_points[client] < g_pr_rank_Percentage[1])
+				g_PlayerChatRank[client] = 0;
+			else
+			if (g_pr_rank_Percentage[1] <= g_pr_points[client] < g_pr_rank_Percentage[2])
+				g_PlayerChatRank[client] = 1;
+			else
+			if (g_pr_rank_Percentage[2] <= g_pr_points[client] < g_pr_rank_Percentage[3])
+				g_PlayerChatRank[client] = 2;		
+			else
+			if (g_pr_rank_Percentage[3] <= g_pr_points[client] < g_pr_rank_Percentage[4])
+				g_PlayerChatRank[client] = 3;		
+			else
+			if (g_pr_rank_Percentage[4] <= g_pr_points[client] < g_pr_rank_Percentage[5])
+				g_PlayerChatRank[client] = 4;
+			else
+			if (g_pr_rank_Percentage[5] <= g_pr_points[client] < g_pr_rank_Percentage[6])
+				g_PlayerChatRank[client] = 5;
+			else
+			if (g_pr_rank_Percentage[6] <= g_pr_points[client] < g_pr_rank_Percentage[7])
+				g_PlayerChatRank[client] = 6;
+			else
+			if (g_pr_rank_Percentage[7] <= g_pr_points[client] < g_pr_rank_Percentage[8])
+				g_PlayerChatRank[client] = 7;
+			else
+				if (g_pr_points[client] >= g_pr_rank_Percentage[8])
+					g_PlayerChatRank[client] = 8;
+		}
 		Format(g_pr_rankname[client], 128, "[%s]",g_szflagTitle[g_iTitleInUse[client]]);	
 		Format(g_pr_chat_coloredrank[client], 128, "[%s%c]",g_szflagTitle_Colored[g_iTitleInUse[client]], WHITE);	
 	}

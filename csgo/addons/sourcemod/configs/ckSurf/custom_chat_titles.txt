@@ -1,12 +1,11 @@
 // Custom titles for ckSurf
-// Available colors: {WHITE}, {DARKRED}, {PURPLE}, {GREEN}, {MOSSGREEN}, {LIMEGREEN}, {RED}, {GRAY}, {YELLOW}, {DARKGREY}, {BLUE}, {DARKBLUE}, {LIGHTBLUE}, {PINK}, {LIGHTRED}
+// Available colors: {default}, {darkred}, {green}, {lightgreen}, {blue}, {olive}, {red}, {grey}, {yellow}, {lightblue}, {steelblue}, {darkblue}, {pink}, {lightred}
 // Example:
 //
 // "1"
 // {
-// 		"title_name"		"{PURPLE}PURPLE {WHITE}AND {GREEN}GREEN"
+// 		"title_name"		"{RED}RED {DEFAULT}AND {GREEN}GREEN"
 // }
-
 "Custom Titles"
 {
 	"1"
@@ -15,11 +14,11 @@
 	}
 	"2"
 	{
-		"title_name"		"COACH"
+		"title_name"		"TEACHER"
 	}	
 	"3"
 	{
-		"title_name"		"TEACHER"
+		"title_name"		"COACH"
 	}	
 	"4"
 	{
@@ -88,16 +87,16 @@
 	"20"
 	{
 		"title_name"		""
+	}
+	"20"
+	{
+		"title_name"		""
 	}	
-	"21"
+	"20"
 	{
 		"title_name"		""
-	}
-	"22"
-	{
-		"title_name"		""
-	}
-	"23"
+	}	
+	"20"
 	{
 		"title_name"		""
 	}	

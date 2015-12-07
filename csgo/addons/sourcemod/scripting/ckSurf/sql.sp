@@ -529,18 +529,18 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 		g_bAdminSelectedHasFlag[data] = true;
 		for (int i = 0; i < TITLE_COUNT; i++)
 		{
-			if (!StrEqual(g_szflagTitle_Colored[i], ""))
+			if (!StrEqual(g_szflagTitle[i], ""))
 			{
 				Format(id, 2, "%i", i);
 				if (SQL_FetchInt(hndl, i) > 0)
 				{
 					g_bAdminFlagTitlesTemp[data][i] = true;
-					Format(menuItem, 152, "[ON] %s", g_szflagTitle_Colored[i]);
+					Format(menuItem, 152, "[ON] %s", g_szflagTitle[i]);
 					AddMenuItem(titleMenu, id, menuItem);
 				}
 				else
 				{
-					Format(menuItem, 152, "[OFF] %s", g_szflagTitle_Colored[i]);
+					Format(menuItem, 152, "[OFF] %s", g_szflagTitle[i]);
 					AddMenuItem(titleMenu, id, menuItem);
 				}
 			}
@@ -551,10 +551,10 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 		g_bAdminSelectedHasFlag[data] = false;
 		for (int i = 0; i < TITLE_COUNT; i++)
 		{
-			if (!StrEqual(g_szflagTitle_Colored[i], ""))
+			if (!StrEqual(g_szflagTitle[i], ""))
 			{
 				Format(id, 2, "%i", i);
-				Format(menuItem, 152, "[OFF] %s", g_szflagTitle_Colored[i]);
+				Format(menuItem, 152, "[OFF] %s", g_szflagTitle[i]);
 				AddMenuItem(titleMenu, id, menuItem);
 			}
 		}
@@ -708,7 +708,12 @@ public db_checkChangesInTitle(client, char SteamID[32])
 {
 	char szQuery[728];
 	Format(szQuery, 728, sql_selectPlayerFlags, SteamID);
-	SQL_TQuery(g_hDb, db_checkChangesInTitleCallback, szQuery, client, DBPrio_Low);
+
+	Handle pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackString(pack, SteamID);
+
+	SQL_TQuery(g_hDb, db_checkChangesInTitleCallback, szQuery, pack, DBPrio_Low);
 }
 
 public db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] error, any:data)
@@ -719,60 +724,86 @@ public db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] er
 		return;
 	}
 
-	for (int i = 0; i < TITLE_COUNT; i++)
-		g_bflagTitles[data][i] = false;
 
-	g_bHasTitle[data] = false;
+	ResetPack(data);
+	int client = ReadPackCell(data);
+	char steamid[32];
+	ReadPackString(data, steamid, 32);
+	CloseHandle(data);
 
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	if (IsValidClient(client))
 	{
 		for (int i = 0; i < TITLE_COUNT; i++)
-			if (SQL_FetchInt(hndl, i) > 0)
-			{
-				g_bHasTitle[data] = true;
-				g_bflagTitles[data][i] = true;
-			}
+			g_bflagTitles[client][i] = false;
 
-		g_iTitleInUse[data] = SQL_FetchInt(hndl, 23);
+		g_bHasTitle[client] = false;
+
+		if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+		{
+			for (int i = 0; i < TITLE_COUNT; i++)
+				if (SQL_FetchInt(hndl, i) > 0)
+				{
+					g_bHasTitle[client] = true;
+					g_bflagTitles[client][i] = true;
+				}
+
+			//g_iTitleInUse[client] = SQL_FetchInt(hndl, 23);
+		}
+		else
+		{
+			g_bHasTitle[client] = false;
+		}
 	}
 	else
 	{
-		g_bHasTitle[data] = false;
-	}
-	
-	if (!IsValidClient(data))
+		db_updatePlayerTitleInUse(-1, steamid);
 		return;
+	}
 
 	for (int i = 0; i < TITLE_COUNT; i++)
 	{
-		if (g_bflagTitles[data][i] != g_bflagTitles_orig[data][i])
+		if (g_bflagTitles[client][i] != g_bflagTitles_orig[client][i])
 		{
-			if (g_bflagTitles[data][i])
-				ClientCommand(data, "play commander\\commander_comment_0%i", GetRandomInt(1, 9));
+			if (g_bflagTitles[client][i])
+				ClientCommand(client, "play commander\\commander_comment_0%i", GetRandomInt(1, 9));
 			else
-				ClientCommand(data, "play commander\\commander_comment_%i", GetRandomInt(20, 23));
-
+				ClientCommand(client, "play commander\\commander_comment_%i", GetRandomInt(20, 23));
 			switch (i) 
 			{
 				case 0: 
 				{
-					g_bflagTitles_orig[data][i] = g_bflagTitles[data][i];
-					if (g_bflagTitles[data][i])
-						PrintToChat(data, "[%cCK%c] Congratulations! You have gained the VIP privileges!", MOSSGREEN, WHITE);
+					g_bflagTitles_orig[client][i] = g_bflagTitles[client][i];
+					if (g_bflagTitles[client][i])
+						PrintToChat(client, "[%cCK%c] Congratulations! You have gained the VIP privileges!", MOSSGREEN, WHITE);
 					else
 					{
-						g_bTrailOn[data] = false;
-						PrintToChat(data, "[%cCK%c] You have lost your VIP privileges!", MOSSGREEN, WHITE);
+						if (g_iTitleInUse[client] == i)
+						{
+							g_iTitleInUse[client] = -1;
+							db_updatePlayerTitleInUse(-1, steamid);
+						}
+
+						g_bTrailOn[client] = false;
+						PrintToChat(client, "[%cCK%c] You have lost your VIP privileges!", MOSSGREEN, WHITE);
 					}
 					break;
 				}
 				default:
 				{
-					g_bflagTitles_orig[data][i] = g_bflagTitles[data][i];
-					if (g_bflagTitles[data][i])
-						PrintToChat(data, "[%cCK%c] Congratulations! You have gained the custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
+
+					g_bflagTitles_orig[client][i] = g_bflagTitles[client][i];
+					if (g_bflagTitles[client][i])
+						PrintToChat(client, "[%cCK%c] Congratulations! You have gained the custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
 					else
-						PrintToChat(data, "[%cCK%c] You have lost your custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
+					{
+						if (g_iTitleInUse[client] == i)
+						{
+							g_iTitleInUse[client] = -1;
+							db_updatePlayerTitleInUse(-1, steamid);
+						}
+
+						PrintToChat(client, "[%cCK%c] You have lost your custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
+					}
 					break;
 				}
 			}
@@ -823,11 +854,12 @@ public SQL_updatePlayerFlagsCallback(Handle owner, Handle hndl, const char[] err
 		db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
 }
 
-public db_updatePlayerTitleInUse(client, char szSteamId[32])
+public db_updatePlayerTitleInUse(int inUse, char szSteamId[32])
 {
 	char szQuery[512];
-	Format(szQuery, 512, sql_updatePlayerFlagsInUse, g_iTitleInUse[client], szSteamId);
-	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, client, DBPrio_Low);
+	Format(szQuery, 512, sql_updatePlayerFlagsInUse, inUse, szSteamId);
+	PrintToServer(szQuery);
+	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, -1, DBPrio_Low);
 }
 
 public db_deletePlayerTitles(client)
@@ -4878,7 +4910,7 @@ public checkZoneTypeIds()
 {
 	char szQuery[258];
 	Format(szQuery, 258, "SELECT `zonegroup` ,`zonetype`, `zonetypeid`  FROM `ck_zones` WHERE `mapname` = '%s';", g_szMapName);
-	SQL_TQuery(g_hDb, checkZoneTypeIdsCallback, szQuery, 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, checkZoneTypeIdsCallback, szQuery, 1, DBPrio_High);
 }
 
 public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, any:data)
@@ -4907,7 +4939,7 @@ public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, a
 						continue;
 					else
 					{
-						//PrintToServer("[ckSurf] Error on zonetype: %i, zonetypeid: %i", i, idChecker[i][k]);
+						PrintToServer("[ckSurf] Error on zonetype: %i, zonetypeid: %i", i, idChecker[i][k]);
 						Format(szQuery, 258, "UPDATE `ck_zones` SET zonetypeid = zonetypeid-1 WHERE mapname = '%s' AND zonetype = %i AND zonetypeid > %i AND zonegroup = %i;", g_szMapName, j, k, i);
 						SQL_LockDatabase(g_hDb);
 						SQL_FastQuery(g_hDb, szQuery);
@@ -4919,7 +4951,7 @@ public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, a
 
 		char szQuery2[258];
 		Format(szQuery2, 258, "SELECT `zoneid` FROM `ck_zones` WHERE mapname = '%s' ORDER BY zoneid ASC;", g_szMapName);
-		SQL_TQuery(g_hDb, checkZoneIdsCallback, szQuery2, 1, DBPrio_Low);
+		SQL_TQuery(g_hDb, checkZoneIdsCallback, szQuery2, 1, DBPrio_High);
 	}
 }
 
@@ -4944,6 +4976,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 			}
 			else
 			{
+				PrintToServer("[ckSurf] Found an error in ZoneID's. Fixing...")
 				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = %i WHERE mapname = '%s' AND zoneid = %i", g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -4979,6 +5012,7 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 			else
 			{
 				i++;
+				PrintToServer("[ckSurf] Found an error in zoneGroupID's. Fixing...")
 				Format(szQuery, 258, "UPDATE `ck_zones` SET `zonegroup` = %i WHERE `mapname` = '%s' AND `zonegroup` = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -4993,7 +5027,7 @@ public db_selectMapZones()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_selectMapZones, g_szMapName);
-	SQL_TQuery(g_hDb, SQL_selectMapZonesCallback, szQuery, 1, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_selectMapZonesCallback, szQuery, 1, DBPrio_High);
 }
 
 public SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error, any:data)
@@ -5004,6 +5038,8 @@ public SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error,
 		return;
 	}
 	RemoveZones();
+
+	PrintToServer("Zones Selected");
 
 	if(SQL_HasResultSet(hndl))
 	{
@@ -5113,6 +5149,7 @@ public SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error,
 			g_mapZonesCount++;
 		}
 	}
+	RefreshZones();
 	db_selectZoneGroupCount();
 }
 
@@ -5143,7 +5180,6 @@ public sql_selectZoneGroupCountCallback(Handle owner, Handle hndl, const char[] 
 			if (g_mapZonesTypeCount[x][k] > 0)
 				g_mapZoneCountinGroup[x]++
 
-	RefreshZones();
 	db_selectMapTier();
 	db_CalcAvgRunTime();
 

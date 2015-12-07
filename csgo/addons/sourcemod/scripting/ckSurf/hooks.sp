@@ -144,9 +144,9 @@ PlayerSpawn(client)
 					{
 						if (bSpawnToStartZone)
 						{
-							int startZoneId = getZoneID(0, 1);
-							TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-							//Command_Restart(client, 1);
+							//int startZoneId = getZoneID(0, 1);
+							//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+							Command_Restart(client, 1);
 						}
 
 						CreateTimer(0.1, StartTimer, client,TIMER_FLAG_NO_MAPCHANGE);
@@ -161,10 +161,10 @@ PlayerSpawn(client)
 						// Spawn client to the start zone.
 						if (bSpawnToStartZone) 
 						{
-							int startZoneId = getZoneID(0, 1);
-							
-							if (startZoneId > 0)
-								TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
+							//int startZoneId = getZoneID(0, 1);
+							Command_Restart(client, 1);
+							//if (startZoneId > 0)
+							//	TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
 						}
 					}
 				}

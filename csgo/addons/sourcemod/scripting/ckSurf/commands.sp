@@ -112,7 +112,7 @@ public H_PlayersTitles(Handle tMenu, MenuAction action, client, item)
 			//GetClientAuthString(client, szSteamID, 32, true);
 			GetClientAuthId(client, AuthId_Steam2, szSteamID, MAX_NAME_LENGTH,true);				
 
-			db_updatePlayerTitleInUse(client, szSteamID);
+			db_updatePlayerTitleInUse(g_iTitleInUse[client], szSteamID);
 		}
 		case MenuAction_End:
 		{
@@ -380,10 +380,10 @@ public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
 			}
 			else
 			{
-				int zoneid = getZoneID(zoneGrp, 1);
+				//int zoneid = getZoneID(zoneGrp, 1);
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[zoneid], NULL_VECTOR, Float:{0.0,0.0,-100.0}, zoneid);
-				//TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				//performTeleport(client, g_fZonePositions[zoneid], NULL_VECTOR, Float:{0.0,0.0,-100.0}, zoneid);
+				TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 		}
 		case MenuAction_End:
@@ -446,8 +446,8 @@ public Action Command_ToBonus(client, args)
 		else 
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0}, getZoneID(zoneGrp, 1));
-			//TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
+			//performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0}, getZoneID(zoneGrp, 1));
+			TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
 	}
@@ -473,8 +473,8 @@ public Action Command_ToBonus(client, args)
 			else // In game
 			{
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, bonusZoneId);
-				//TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				//performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, bonusZoneId);
+				TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			//g_bBonusTimer[client] = false;
 		} else {
@@ -703,8 +703,8 @@ public Action Command_Restart(client, args)
 		else 
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0}, getZoneID(0, 1));
-			//TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
+			//performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0}, getZoneID(0, 1));
+			TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
 	}
@@ -726,8 +726,8 @@ public Action Command_Restart(client, args)
 			else
 			{
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, startZoneId);
-				//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				//performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, startZoneId);
+				TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			g_iClientInZone[client][2] = 0;
 			g_Stage[g_iClientInZone[client][2]][client] = 1;

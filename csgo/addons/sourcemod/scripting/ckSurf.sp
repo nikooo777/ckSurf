@@ -859,6 +859,8 @@ public OnMapStart()
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
 	PrecacheModel(g_sModel);
 
+	checkZoneTypeIds();
+
 	//workshop fix
 	char mapPieces[6][128];
 	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
@@ -914,7 +916,6 @@ public OnMapStart()
 		db_viewMapProRankCount();
 		db_ClearLatestRecords();
 		db_GetDynamicTimelimit();
-		checkZoneTypeIds();
 	}
 
 	//timers

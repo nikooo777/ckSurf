@@ -504,8 +504,17 @@ public ckAdminMenu(client)
 
 	int menuItemNumber = 2;
 
-	Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
-	AddMenuItem(adminmenu, szTmp, szTmp);
+	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
+	{
+		Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
+		AddMenuItem(adminmenu, szTmp, szTmp);
+	}
+	else
+	{
+		Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
+		AddMenuItem(adminmenu, szTmp, szTmp, ITEMDRAW_DISABLED);
+	}
+
 	menuItemNumber++;
 
 	if (g_bgodmode)
