@@ -2,16 +2,23 @@ public void performTeleport(client, float pos[3], float ang[3], float vel[3], in
 {
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	// If teleporting to the exact same zone or the client is not in a zone
-	if (destinationZoneId == g_iClientInZone[client][0])
+	if (destinationZoneId == g_iClientInZone[client][3])
 	{ 
 		Client_Stop(client, 1);
 	}
 	else
 	{
-		g_iClientInZone[client][0] = destinationZoneId;
-		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
-		Client_Stop(client, 1);
-		g_bIgnoreZone[client] = true;
+		if (g_mapZones[destinationZoneId][zoneGroup] == g_iClientInZone[client][2] && (g_mapZones[destinationZoneId][zoneType] == 1 || g_mapZones[destinationZoneId][zoneType] == 5))
+		{
+			Client_Stop(client, 1);
+		}
+		else
+		{	
+			g_iClientInZone[client][3] = destinationZoneId;
+			g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
+			Client_Stop(client, 1);
+			g_bIgnoreZone[client] = true;
+		}
 	}
 
 	TeleportEntity(client, pos, ang, vel);
@@ -1197,7 +1204,23 @@ public checkTrailStatus(client, float speed)
 }
 
 public SetClientDefaults(client)
-{	
+{
+	// Set client location 
+	if (bSpawnToStartZone)
+	{
+		g_iClientInZone[client][0] = 1;
+		g_iClientInZone[client][1] = 0;
+		g_iClientInZone[client][3] = getZoneID(0, 1);
+	}
+	else
+	{
+		g_iClientInZone[client][0] = -1;
+		g_iClientInZone[client][1] = -1;
+		g_iClientInZone[client][3] = -1;
+	}
+	g_iClientInZone[client][2] = 0;
+
+
 	g_bClientStopped[client] = false;
 	g_bRefreshTrail[client] = false;
 	g_fClientLastMovement[client] = GetEngineTime();

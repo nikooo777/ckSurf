@@ -446,8 +446,8 @@ public Action Command_ToBonus(client, args)
 		else 
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			//performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0}, getZoneID(zoneGrp, 1));
-			TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
+			performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0}, getZoneID(zoneGrp, 1));
+			//TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
 	}
@@ -473,8 +473,8 @@ public Action Command_ToBonus(client, args)
 			else // In game
 			{
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				//performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, bonusZoneId);
-				TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, bonusZoneId);
+				//TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			//g_bBonusTimer[client] = false;
 		} else {
@@ -703,8 +703,8 @@ public Action Command_Restart(client, args)
 		else 
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			//performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0}, getZoneID(0, 1));
-			TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
+			performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0}, getZoneID(0, 1));
+			//TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
 	}
@@ -726,8 +726,8 @@ public Action Command_Restart(client, args)
 			else
 			{
 				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				//performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, startZoneId);
-				TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, startZoneId);
+				//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			g_iClientInZone[client][2] = 0;
 			g_Stage[g_iClientInZone[client][2]][client] = 1;

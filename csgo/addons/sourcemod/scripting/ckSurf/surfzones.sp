@@ -107,10 +107,14 @@ public Action StartTouchTrigger(caller, activator)
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
 
-	StartTouch(activator, action);
-
 	// Set client location 
 	Array_Copy(action, g_iClientInZone[activator], 3);
+	g_iClientInZone[activator][0] = action[0];
+	g_iClientInZone[activator][1] = action[1];
+	g_iClientInZone[activator][2] = action[2];
+	g_iClientInZone[activator][3] = id;
+
+	StartTouch(activator, action);
 
 	return Plugin_Handled;
 }
@@ -157,6 +161,7 @@ public Action EndTouchTrigger(caller, activator)
 	g_iClientInZone[activator][0] = -1;
 	g_iClientInZone[activator][1] = -1;
 	g_iClientInZone[activator][2] = g_mapZones[id][zoneGroup];
+	g_iClientInZone[activator][3] = -1;
 
 //	PrintToChatAll("Called: 0: %i, 1: %i, 2: %i", action[0], action[1], action[2]);
 	return Plugin_Handled;

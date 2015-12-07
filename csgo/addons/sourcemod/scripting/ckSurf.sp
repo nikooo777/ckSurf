@@ -720,7 +720,7 @@ float g_fBonusPreSpeed;
 
 bool g_bIgnoreZone[MAXPLAYERS+1];
 
-int g_iClientInZone[MAXPLAYERS+1][3];
+int g_iClientInZone[MAXPLAYERS+1][4];
 
 Handle g_hSoundEnabled = null; 
 bool bSoundEnabled; 
