@@ -1209,7 +1209,7 @@ public OnClientDisconnect(int client)
 	//Database	
 	if (IsValidClient(client) && !g_bRenaming)
 	{
-		if (!g_bIgnoreZone[client])
+		if (!g_bIgnoreZone[client] && !g_bPracticeMode[client])
 			db_insertLastPosition(client, g_szMapName, g_Stage[g_iClientInZone[client][2]][client], g_iClientInZone[client][2]);
 		
 		db_updatePlayerOptions(client);
