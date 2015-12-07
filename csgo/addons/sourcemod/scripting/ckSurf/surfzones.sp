@@ -241,8 +241,15 @@ StartTouch(client, action[3])
 			}*/
 			case 3: // Stage Zone
 			{
-				if (g_Stage[g_iClientInZone[client][2]][client] == (action[1]+2) && g_bPracticeMode[client]) // If practice mode is on
-					Command_goToPlayerCheckpoint(client, 1);
+				if (g_bPracticeMode[client]) // If practice mode is on
+				{
+					if (action[1] > lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2] || lastCheckpoint[g_iClientInZone[client][2]][client] == 999)
+					{
+						Command_normalMode(client, 1);  // Temp fix. Need to track stages checkpoints were made in.
+					}
+					else
+						Command_goToPlayerCheckpoint(client, 1);
+				}
 				else
 				{	// Setting valid to false, in case of checkers
 					g_bValidRun[client] = false;	
@@ -369,11 +376,6 @@ EndTouch(client, action[3])
 					}
 				}
 			}*/
-			case 3:
-			{
-				if (g_bPracticeMode[client])
-					CreateTimer(0.7, afterStageCheckpoint, client);
-			} 
 			case 5: // Speed Start Zone
 			{
 				if (g_bPracticeMode[client] && !g_bTimeractivated[client])

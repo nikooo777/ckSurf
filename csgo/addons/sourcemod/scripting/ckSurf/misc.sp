@@ -363,7 +363,9 @@ public CreateSpawns()
 		while (count < 64)
 		{
 			pointT = CreateEntityByName("info_player_terrorist");
+			ActivateEntity(pointT);
 			pointCT = CreateEntityByName("info_player_counterterrorist");
+			ActivateEntity(pointCT);
 			if (IsValidEntity(pointT) && IsValidEntity(pointCT) && DispatchSpawn(pointT) && DispatchSpawn(pointCT))
 			{
 				TeleportEntity(pointT, f_spawnLocation, f_spawnAngle, NULL_VECTOR);
