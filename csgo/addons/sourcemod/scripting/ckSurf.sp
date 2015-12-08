@@ -211,8 +211,8 @@ int g_iBonusCount[MAXZONEGROUPS];			 							// Amount of players that have passe
 int g_totalBonusCount;													// How many total bonuses there are
 //int g_inZoneGroup[MAXPLAYERS+1];										// In which bonus the player is currently in. 0 = normal map
 bool g_bhasBonus;
-int g_clientFinishedBonuses[MAXPLAYERS+1];
-int g_ClientFinishedBonusesRowCount[MAXPLAYERS+1];
+int g_clientFinishedBonuses[MAX_PR_PLAYERS];
+int g_ClientFinishedBonusesRowCount[MAX_PR_PLAYERS];
 bool g_bBonusFirstRecord[MAXPLAYERS+1];
 bool g_bBonusPBRecord[MAXPLAYERS+1];
 bool g_bBonusSRVRecord[MAXPLAYERS+1];
