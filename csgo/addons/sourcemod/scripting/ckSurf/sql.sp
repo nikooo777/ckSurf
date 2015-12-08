@@ -4977,7 +4977,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 			else
 			{
 				PrintToServer("[ckSurf] Found an error in ZoneID's. Fixing...")
-				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = %i WHERE mapname = '%s' AND zoneid = %i", g_szMapName, SQL_FetchInt(hndl, 0));
+				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = %i WHERE mapname = '%s' AND zoneid = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
 				SQL_UnlockDatabase(g_hDb);
