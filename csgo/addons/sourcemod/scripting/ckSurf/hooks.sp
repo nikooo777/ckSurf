@@ -276,14 +276,16 @@ public Action Say_Hook(client, const char[] command, argc)
 		
 		// !b and !bonus commands
 		if (StrContains(sText,"!b",false)==0 || StrContains(sText,"!bonus",false)==0)	
-			return Plugin_Handled;	
+			return Plugin_Handled;
+
+	 	WriteChatLog(client, "say", sText);
 
 		//chat trigger?
 		if((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' && (GetUserFlagBits(client) & ADMFLAG_ROOT ||  GetUserFlagBits(client) & ADMFLAG_GENERIC)))
 		{
 			return Plugin_Continue;
 		}
-
+		
 		char szName[64];
 		GetClientName(client,szName,64);		
 		ReplaceString(szName,64,"{darkred}","",false);

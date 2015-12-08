@@ -1,3 +1,14 @@
+
+stock WriteChatLog(client, const char[] sayOrSayTeam, const char[] msg)
+{
+	char name[MAX_NAME_LENGTH], steamid[32], teamName[10];
+	
+	GetClientName(client, name, MAX_NAME_LENGTH);
+	GetTeamName(GetClientTeam(client), teamName, sizeof(teamName));
+	GetClientAuthId(client, AuthId_Steam2, steamid, 32, true);	
+	LogToGame("\"%s<%i><%s><%s>\" %s \"%s\"", name, GetClientUserId(client), steamid, teamName, sayOrSayTeam, msg);
+}
+
 public void performTeleport(client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
 {
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
