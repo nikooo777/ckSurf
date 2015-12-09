@@ -1462,7 +1462,7 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 			g_bNoBlock = true;
 			for(int client = 1; client <= MAXPLAYERS; client++)
 				if (IsValidEntity(client))
-					SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
+					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 					
 		}
 		else
@@ -1470,7 +1470,7 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 			g_bNoBlock = false;
 			for(int client = 1; client <= MAXPLAYERS; client++)
 				if (IsValidEntity(client))
-					SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
+					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
 	}	
 	else if(convar == g_hAttackSpamProtection)
@@ -2313,8 +2313,8 @@ public OnPluginStart()
 	AutoExecConfig(true, "ckSurf");
 	
 	//mic
-	g_ownerOffset = FindSendPropOffs("CBaseCombatWeapon", "m_hOwnerEntity");
-	g_ragdolls = FindSendPropOffs("CCSPlayer","m_hRagdoll");
+	g_ownerOffset = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity");
+	g_ragdolls = FindSendPropInfo("CCSPlayer","m_hRagdoll");
 		
 	//Credits: Measure by DaFox
 	//https://forums.alliedmods.net/showthread.php?t=88830

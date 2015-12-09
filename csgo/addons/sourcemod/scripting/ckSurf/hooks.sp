@@ -81,9 +81,9 @@ PlayerSpawn(client)
 		
 	//NoBlock
 	if(g_bNoBlock || IsFakeClient(client))
-		SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
+		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 	else
-		SetEntData(client, FindSendPropOffs("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
+		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 						
 	//botmimic2		
 	if(g_hBotMimicsRecord[client] != null && IsFakeClient(client))
@@ -577,9 +577,9 @@ public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroad
 		if (remainingHeatlh>0)
 		{
 			if ((remainingHeatlh+g_Autohealing_Hp) > 100)
-				SetEntData(client, FindSendPropOffs("CBasePlayer", "m_iHealth"), 100);
+				SetEntData(client, FindSendPropInfo("CBasePlayer", "m_iHealth"), 100);
 			else
-				SetEntData(client, FindSendPropOffs("CBasePlayer", "m_iHealth"), remainingHeatlh+g_Autohealing_Hp);
+				SetEntData(client, FindSendPropInfo("CBasePlayer", "m_iHealth"), remainingHeatlh+g_Autohealing_Hp);
 		}
 	}
 	return Plugin_Continue; 
