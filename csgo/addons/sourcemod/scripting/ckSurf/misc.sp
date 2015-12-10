@@ -772,6 +772,8 @@ public PrintConsoleInfo(client)
 	Format(finalOutput, 1024, "%d:%02d", mins, secs);
 	float fltickrate = 1.0 / GetTickInterval( );
 	
+	if (!IsValidClient(client) || IsFakeClient(client))
+		return;
 
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
 	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", VERSION, RoundToNearest(fltickrate));
@@ -983,7 +985,7 @@ public FixPlayerName(client)
 	{
 		SetClientInfo(client, "name", szName);
 		SetEntPropString(client, Prop_Data, "m_szNetname", szName);
-		CS_SetClientName(client, szName);
+		SetClientName(client, szName);
 	}
 }
 
