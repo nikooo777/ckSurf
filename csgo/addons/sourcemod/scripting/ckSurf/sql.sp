@@ -1033,6 +1033,7 @@ public db_updateStat(client)
 	char szQuery[512];
 	//"UPDATE ck_playerrank SET finishedmaps ='%i', finishedmapspro='%i', multiplier ='%i'  where steamid='%s'";
 	Format(szQuery, 512, sql_updatePlayerRank, g_pr_finishedmaps[client], g_pr_finishedmaps[client],g_pr_multiplier[client],g_szSteamID[client]);
+
 	SQL_TQuery(g_hDb, SQL_UpdateStatCallback, szQuery, client, DBPrio_Low);
 	
 }
@@ -1076,6 +1077,7 @@ public RecalcPlayerRank(client, char steamid[128])
 //
 public CalculatePlayerRank(client)
 {
+
 	char szQuery[255];      
 	char szSteamId[32];
 	// Take old points into memory, so at the end you can show how much the points changed
@@ -1114,6 +1116,7 @@ public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] er
 		return;
 	}
 
+
 	char szSteamId[32];
 
 	// Get SteamID of a player who is being recalculated
@@ -1127,7 +1130,6 @@ public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] er
 	{
 		if (IsValidClient(data))
 			GetClientAuthId(data, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-//			GetClientAuthString(data, szSteamId, 32);
 		else 
 			return;
 	}	// Found players information in database
@@ -1197,6 +1199,7 @@ public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] 
 		return;
 	}
 
+
 	char szQuery[512];   
 	char szSteamId[32];	
 	char szSteamIdChallenge[32];	
@@ -1213,7 +1216,6 @@ public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] 
 	{
 		if (IsValidClient(data))
 			GetClientAuthId(data, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-			//GetClientAuthString(data, szSteamId, 32);
 		else
 			return;
 	}
@@ -1261,7 +1263,7 @@ public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] er
 		return;
 	}
 
-	char szQuery[512], szSteamId[32];
+	char szQuery[1028], szSteamId[32];
 
 	// Get SteamID, first is for admin recounting points, 2nd is for gaining points normally
 	if (data>MAXPLAYERS)
@@ -1274,25 +1276,27 @@ public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] er
 	{
 		if (IsValidClient(data))
 			GetClientAuthId(data, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-//			GetClientAuthString(data, szSteamId, 32);
 		else
 			return;
 	}
 
-	// Count the amount of finished bonuses, and check that the map is in mapcycle
-	if(SQL_HasResultSet(hndl))
+	// Player has finished bonuses
+	if(SQL_HasResultSet(hndl) && SQL_GetRowCount(hndl) > 0)
 	{
+		// Get the total amount of bonuses 
 		g_clientFinishedBonuses[data] = SQL_GetRowCount(hndl);
 		g_ClientFinishedBonusesRowCount[data] = 0;
+
 		int zonegrp;
 		char mapName[128];
+
 		while (SQL_FetchRow(hndl))
 		{
 			SQL_FetchString(hndl, 0, mapName, 128);
 			zonegrp = SQL_FetchInt(hndl, 1);
 
 			// Get rank in each bonus
-			Format(szQuery, 512, "SELECT name, mapname, zonegroup FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > -1.0 AND zonegroup = %i) AND mapname = '%s' AND runtime > -1.0 AND zonegroup = '%i' ORDER BY runtime;", szSteamId, mapName, zonegrp, mapName, zonegrp);
+			Format(szQuery, 1028, "SELECT name, mapname, zonegroup FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > -1.0 AND zonegroup = %i) AND mapname = '%s' AND runtime > -1.0 AND zonegroup = '%i' ORDER BY runtime;", szSteamId, mapName, zonegrp, mapName, zonegrp);
 			SQL_TQuery(g_hDb, sql_selectBonusRankCallback, szQuery, data, DBPrio_Low);
 		}
 	}
@@ -1300,7 +1304,7 @@ public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] er
 	{
 		// Next up: Points from maps
 		//"SELECT mapname FROM ck_playertimes where steamid='%s' AND runtimepro > -1.0";
-		Format(szQuery, 512, sql_CountFinishedMaps, szSteamId);  
+		Format(szQuery, 1028, sql_CountFinishedMaps, szSteamId);  
 		SQL_TQuery(g_hDb, sql_CountFinishedMapsCallback, szQuery, data, DBPrio_Low);
 	}
 }
@@ -1333,6 +1337,7 @@ public sql_selectBonusRankCallback(Handle owner, Handle hndl, const char[] error
 		WritePackString(pack, szMapName);
 		
 		Format(szQuery, 255, "SELECT name FROM ck_bonus WHERE mapname = '%s' AND runtime > -1.0 AND zonegroup = %i;", szMapName, zonegrp);
+
 		SQL_TQuery(g_hDb, sql_selectBonusPercentileCallback, szQuery, pack, DBPrio_Low);
 	}
 }
@@ -1368,7 +1373,6 @@ public sql_selectBonusPercentileCallback(Handle owner, Handle hndl, const char[]
 	{
 		if (IsValidClient(client))
 			GetClientAuthId(client, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-//			GetClientAuthString(client, szSteamId, 32);
 		else
 			return;
 	}
@@ -1453,7 +1457,6 @@ public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 	{
 		if (IsValidClient(data))
 			GetClientAuthId(data, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-			//GetClientAuthString(data, szSteamId, 32);
 		else
 			return;
 	}
@@ -1476,7 +1479,6 @@ public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 				}
 			}			
 		}
-
 		// Finished maps amount is stored in memory
 		g_pr_finishedmaps[data]=finished_Pro;
 		// Percentage of maps finished
@@ -1489,7 +1491,7 @@ public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 		Format(szQuery, 1024, sql_selectPersonalAllRecords, szSteamId, szSteamId);  
 		if ((StrContains(szSteamId, "STEAM_") != -1)) // Bugged ID's are ignored
 			SQL_TQuery(g_hDb, sql_selectPersonalAllRecordsCallback, szQuery, data, DBPrio_Low);			
-	}	
+	}
 }
 
 //
@@ -1518,7 +1520,6 @@ public sql_selectPersonalAllRecordsCallback(Handle owner, Handle hndl, const cha
 	{
 		if (IsValidClient(data))
 			GetClientAuthId(data, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);
-			//GetClientAuthString(data, szSteamId, 32);
 		else
 			return;
 	}

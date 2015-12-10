@@ -1617,6 +1617,7 @@ public MapFinishedMsgs(client, rankThisRun)
 		//noclip MsgMsg
 		if (IsValidClient(client) && g_bMapFinished[client] == false && !StrEqual(g_pr_rankname[client],g_szSkillGroups[8]) && !(GetUserFlagBits(client) & ADMFLAG_RESERVATION) && !(GetUserFlagBits(client) & ADMFLAG_ROOT) && !(GetUserFlagBits(client) & ADMFLAG_GENERIC) && g_bNoClipS)
 			PrintToChat(client, "%t", "NoClipUnlocked",MOSSGREEN,WHITE,YELLOW);
+			
 		g_bMapFinished[client] = true;
 		CreateTimer(0.0, UpdatePlayerProfile, client,TIMER_FLAG_NO_MAPCHANGE);
 		g_fStartTime[client] = -1.0;	
