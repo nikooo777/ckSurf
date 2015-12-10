@@ -2857,7 +2857,7 @@ public SetInfoBotName(ent)
 		Format(szBuffer, sizeof(szBuffer), "%s (in %s)",sNextMap, szTime);
 	else
 		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");
-	CS_SetClientName(g_InfoBot, szBuffer);
+	SetClientName(g_InfoBot, szBuffer);
 	Client_SetScore(g_InfoBot,9999);
 	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
 }
