@@ -20,11 +20,14 @@ public void performTeleport(client, float pos[3], float ang[3], float vel[3], in
 	else
 	{
 		Client_Stop(client, 1);
-
+		// If teleporting to another zone group or a zone that is not a start zone, ignore the next end touch trigger
 		if (g_mapZones[destinationZoneId][zoneGroup] != g_iClientInZone[client][2] || (g_mapZones[destinationZoneId][zoneType] != 1 || g_mapZones[destinationZoneId][zoneType] != 5))
-		{	
 			g_bIgnoreZone[client] = true;
-		}
+
+		// Make sure a player can start their timer, if teleporting to a start zone.
+		if (g_mapZones[destinationZoneId][zoneType] == 1 || g_mapZones[destinationZoneId][zoneType] == 5)
+			g_bIgnoreZone[client] = false;
+
 		g_iClientInZone[client][3] = destinationZoneId;
 		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
 	}
