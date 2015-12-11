@@ -80,22 +80,14 @@ CreateZoneEntity(zoneIndex)
 		}
 	}
 }
+		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 
 public Action StartTouchTrigger(caller, activator)
 {
 	// Ignore dead players
 	if(!IsValidClient(activator))
 		return Plugin_Handled;
-
-	// Ignore if teleporting to the zone
-
-/*	if (g_bIgnoreZone[activator])
-	{
-		PrintToChatAll("Teleporting! Start");
-		//g_bIgnoreZone[activator] = false;
-		return Plugin_Handled;
-	}
-*/		
+		
 	char sTargetName[256];
 	int action[3];
 	GetEntPropString(caller, Prop_Data, "m_iName", sTargetName, sizeof(sTargetName));
@@ -107,14 +99,27 @@ public Action StartTouchTrigger(caller, activator)
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
 
-	// Set client location 
-	Array_Copy(action, g_iClientInZone[activator], 3);
-	g_iClientInZone[activator][0] = action[0];
-	g_iClientInZone[activator][1] = action[1];
-	g_iClientInZone[activator][2] = action[2];
-	g_iClientInZone[activator][3] = id;
-
-	StartTouch(activator, action);
+	if (action[2] == g_iClientInZone[activator][2]) // Is touching zone in right zonegroup
+	{
+		// Set client location 
+		g_iClientInZone[activator][0] = action[0];
+		g_iClientInZone[activator][1] = action[1];
+		g_iClientInZone[activator][2] = action[2];
+		g_iClientInZone[activator][3] = id;
+		StartTouch(activator, action);
+	}
+	else
+	{
+		if (action[0] == 1 || action[0] == 5) // Ignore other than start zones in other zonegroups
+		{
+			// Set client location 
+			g_iClientInZone[activator][0] = action[0];
+			g_iClientInZone[activator][1] = action[1];
+			g_iClientInZone[activator][2] = action[2];
+			g_iClientInZone[activator][3] = id;
+			StartTouch(activator, action);
+		}
+	}
 
 	return Plugin_Handled;
 }
@@ -128,7 +133,6 @@ public Action EndTouchTrigger(caller, activator)
 	// Ignore if teleporting out of the zone
 	if (g_bIgnoreZone[activator])
 	{
-		//PrintToChatAll("Teleporting! End");
 		g_bIgnoreZone[activator] = false;
 		return Plugin_Handled;
 	}
@@ -143,6 +147,9 @@ public Action EndTouchTrigger(caller, activator)
 	action[0] = g_mapZones[id][zoneType];
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
+
+	if (action[2] != g_iClientInZone[activator][2]) // Ignore end touches in other zonegroups
+		return Plugin_Handled;
 
 	EndTouch(activator, action);
 	if (!IsFakeClient(activator))

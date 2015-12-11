@@ -19,19 +19,15 @@ public void performTeleport(client, float pos[3], float ang[3], float vel[3], in
 	}
 	else
 	{
-		if (g_mapZones[destinationZoneId][zoneGroup] == g_iClientInZone[client][2] && (g_mapZones[destinationZoneId][zoneType] == 1 || g_mapZones[destinationZoneId][zoneType] == 5))
-		{
-			Client_Stop(client, 1);
-		}
-		else
+		Client_Stop(client, 1);
+
+		if (g_mapZones[destinationZoneId][zoneGroup] != g_iClientInZone[client][2] || (g_mapZones[destinationZoneId][zoneType] != 1 || g_mapZones[destinationZoneId][zoneType] != 5))
 		{	
-			g_iClientInZone[client][3] = destinationZoneId;
-			g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
-			Client_Stop(client, 1);
 			g_bIgnoreZone[client] = true;
 		}
+		g_iClientInZone[client][3] = destinationZoneId;
+		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
 	}
-
 	TeleportEntity(client, pos, ang, vel);
 }
 

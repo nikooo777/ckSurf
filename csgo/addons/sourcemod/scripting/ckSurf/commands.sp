@@ -607,7 +607,6 @@ public Action Command_ToStage(client, args)
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
 				g_specToStage[client] = true;
-				TeamChangeActual(client, 0);
 
 				Array_Copy(g_fZonePositions[stageZoneId], g_fTeleLocation[client], 3);
 
@@ -616,6 +615,8 @@ public Action Command_ToStage(client, args)
 				g_fCurVelVec[client][2] = 0.0;
 
 				g_bRespawnPosition[client] = false;
+				TeamChangeActual(client, 0);
+
 			}
 			else
 			{

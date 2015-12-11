@@ -4386,6 +4386,7 @@ public SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, const c
 			}
 			else
 			{
+				Format(g_szPersonalRecordBonus[zgroup][data], 64, "N/A");
 				g_fPersonalRecordBonus[zgroup][data] = 0.0;
 			}
 		}
