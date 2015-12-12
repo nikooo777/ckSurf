@@ -373,7 +373,7 @@ public SQLTxn_Success(Handle db, any:data, numQueries, Handle[] results, any:que
 		}
 		case 5:{
 			PrintToServer("[ckSurf] Spawnpoints added succesfully! Next up: making changes to zones, to make them match the new database (6 / 6)");
-			txn_changesToZones()
+			txn_changesToZones();
 		}
 		case 6: {
 			g_bInTransactionChain = false;
