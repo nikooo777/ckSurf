@@ -278,13 +278,14 @@ public Action Say_Hook(client, const char[] command, argc)
 		if (StrContains(sText,"!b",false)==0 || StrContains(sText,"!bonus",false)==0)	
 			return Plugin_Handled;
 
-	 	WriteChatLog(client, "say", sText);
-
 		//chat trigger?
 		if((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' && (GetUserFlagBits(client) & ADMFLAG_ROOT ||  GetUserFlagBits(client) & ADMFLAG_GENERIC)))
 		{
 			return Plugin_Continue;
 		}
+		
+		//log the chat of the player to the server so that tools such as HLSW/HLSTATX see it and also it remains logged in the log file
+		WriteChatLog(client, "say", sText);
 		
 		char szName[64];
 		GetClientName(client,szName,64);		
