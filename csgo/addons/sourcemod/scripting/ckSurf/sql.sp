@@ -23,24 +23,24 @@ char sql_createChallenges[] 				= "CREATE TABLE IF NOT EXISTS ck_challenges (ste
 char sql_insertChallenges[] 				= "INSERT INTO ck_challenges (steamid, steamid2, bet, map) VALUES('%s','%s','%i','%s');";
 char sql_selectChallenges2[] 				= "SELECT steamid, steamid2, bet, map, date FROM ck_challenges where steamid = '%s' OR steamid2 ='%s' ORDER BY date DESC";
 char sql_selectChallenges[] 				= "SELECT steamid, steamid2, bet, map FROM ck_challenges where steamid = '%s' OR steamid2 ='%s'";
-char sql_selectChallengesCompare[] 		= "SELECT steamid, steamid2, bet FROM ck_challenges where (steamid = '%s' AND steamid2 ='%s') OR (steamid = '%s' AND steamid2 ='%s')";
+char sql_selectChallengesCompare[] 		    = "SELECT steamid, steamid2, bet FROM ck_challenges where (steamid = '%s' AND steamid2 ='%s') OR (steamid = '%s' AND steamid2 ='%s')";
 char sql_deleteChallenges[] 				= "DELETE from ck_challenges where steamid = '%s'";
 
 //TABLE ZONES
-char sql_createZones[]					= "CREATE TABLE IF NOT EXISTS ck_zones (mapname VARCHAR(54) NOT NULL, zoneid INT(12) DEFAULT '-1', zonetype INT(12) DEFAULT '-1', zonetypeid INT(12) DEFAULT '-1', pointa_x FLOAT DEFAULT '-1.0', pointa_y FLOAT DEFAULT '-1.0', pointa_z FLOAT DEFAULT '-1.0', pointb_x FLOAT DEFAULT '-1.0', pointb_y FLOAT DEFAULT '-1.0', pointb_z FLOAT DEFAULT '-1.0', vis INT(12) DEFAULT '0', team INT(12) DEFAULT '0', zonegroup INT(12) DEFAULT 0, zonename VARCHAR(128), PRIMARY KEY(mapname, zoneid));";
-char sql_insertZones[]					= "INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i', '%i','%s')";
+char sql_createZones[]					    = "CREATE TABLE IF NOT EXISTS ck_zones (mapname VARCHAR(54) NOT NULL, zoneid INT(12) DEFAULT '-1', zonetype INT(12) DEFAULT '-1', zonetypeid INT(12) DEFAULT '-1', pointa_x FLOAT DEFAULT '-1.0', pointa_y FLOAT DEFAULT '-1.0', pointa_z FLOAT DEFAULT '-1.0', pointb_x FLOAT DEFAULT '-1.0', pointb_y FLOAT DEFAULT '-1.0', pointb_z FLOAT DEFAULT '-1.0', vis INT(12) DEFAULT '0', team INT(12) DEFAULT '0', zonegroup INT(12) DEFAULT 0, zonename VARCHAR(128), PRIMARY KEY(mapname, zoneid));";
+char sql_insertZones[]					    = "INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i', '%i','%s')";
 char sql_updateZone[]						= "UPDATE ck_zones SET zonetype = '%i', zonetypeid = '%i', pointa_x = '%f', pointa_y ='%f', pointa_z = '%f', pointb_x = '%f', pointb_y = '%f', pointb_z = '%f', vis = '%i', team = '%i', zonegroup = '%i' WHERE zoneid = '%i' AND mapname = '%s'";
 char sql_selectzoneTypeIds[]				= "SELECT zonetypeid FROM ck_zones WHERE mapname='%s' AND zonetype='%i' AND zonegroup = '%i';";
-char sql_selectZoneGroupCount[]			= "SELECT zonegroup FROM ck_zones WHERE mapname='%s' GROUP BY zonegroup;";
+char sql_selectZoneGroupCount[]			    = "SELECT zonegroup FROM ck_zones WHERE mapname='%s' GROUP BY zonegroup;";
 char sql_selectMapZones[]					= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zonetypeid ASC";
 char sql_selectTotalBonusCount[]			= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE zonetype = 3 GROUP BY mapname, zonegroup;";
 char sql_selectZoneIds[]					= "SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
-char sql_selectBonusesInMap[]				= "SELECT mapname, zonegroup, zonename FROM `ck_zones` WHERE mapname LIKE '%c%s%c' AND zonegroup > 0 GROUP BY zonegroup;"
+char sql_selectBonusesInMap[]               = "SELECT mapname, zonegroup, zonename FROM `ck_zones` WHERE mapname LIKE '%c%s%c' AND zonegroup > 0 GROUP BY zonegroup;";
 char sql_deleteMapZones[]					= "DELETE FROM ck_zones WHERE mapname = '%s'";
 char sql_deleteZone[]						= "DELETE FROM ck_zones WHERE mapname = '%s' AND zoneid = '%i'";
 char sql_deleteAllZones[]					= "DELETE FROM ck_zones";
 char sql_deleteZonesInGroup[]				= "DELETE FROM ck_zones WHERE mapname = '%s' AND zonegroup = '%i'";
-char sql_setZoneNames[]					= "UPDATE ck_zones SET zonename = '%s' WHERE mapname = '%s' AND zonegroup = '%i';";
+char sql_setZoneNames[]					    = "UPDATE ck_zones SET zonename = '%s' WHERE mapname = '%s' AND zonegroup = '%i';";
 
 //TABLE MAPTIER
 char sql_createMapTier[]					= "CREATE TABLE IF NOT EXISTS ck_maptier (mapname VARCHAR(54) NOT NULL, tier INT(12), btier1 INT(12), btier2 INT(12), btier3 INT(12), btier4 INT(12), btier5 INT(12), btier6 INT(12), btier7 INT(12), btier8 INT(12), btier9 INT(12), btier10 INT(12), PRIMARY KEY(mapname));";
@@ -49,20 +49,20 @@ char sql_deleteAllMapTiers[]				= "DELETE FROM ck_maptier";
 char sql_insertmaptier[]					= "INSERT INTO ck_maptier (mapname, tier) VALUES ('%s', '%i');";
 char sql_updatemaptier[]					= "UPDATE ck_maptier SET tier = %i WHERE mapname ='%s'";
 char sql_updateBonusTier[]					= "UPDATE ck_maptier SET btier%i = %i WHERE mapname ='%s'";
-char sql_insertBonusTier[]					= "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');"
+char sql_insertBonusTier[]                  = "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');";
 
 //TABLE BONUS
-char sql_createBonus[]					= "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
-char sql_insertBonus[]					= "INSERT INTO ck_bonus (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";	
-char sql_updateBonus[]					= "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
-char sql_selectBonusCount[]				= "SELECT count(*) FROM ck_bonus WHERE mapname = '%s' AND zonegroup = %i;";
-char sql_checkIfBonusInMap[]				= "SELECT mapname FROM `ck_zones` WHERE `zonetype` = 3 and `mapname` = '%s' GROUP BY mapname;"
-char sql_selectPersonalBonusRecords[] 	= "SELECT runtime, zonegroup FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
+char sql_createBonus[]					    = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
+char sql_insertBonus[]					    = "INSERT INTO ck_bonus (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";	
+char sql_updateBonus[]					    = "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
+char sql_selectBonusCount[]				    = "SELECT count(*) FROM ck_bonus WHERE mapname = '%s' AND zonegroup = %i;";
+char sql_checkIfBonusInMap[]                = "SELECT mapname FROM `ck_zones` WHERE `zonetype` = 3 and `mapname` = '%s' GROUP BY mapname;";
+char sql_selectPersonalBonusRecords[] 	    = "SELECT runtime, zonegroup FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
 char sql_selectPlayerRankBonus[] 			= "SELECT name FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0 AND zonegroup = %i) AND mapname = '%s' AND zonegroup = %i;";
 char sql_selectFastestBonus[]				= "SELECT db2.runtime, db1.name, db1.steamid, db2.steamid FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db1.steamid = db2.steamid WHERE db2.mapname = '%s' AND db2.runtime  > -1.0 AND db2.zonegroup = %i ORDER BY db2.runtime ASC LIMIT 1;";
-char sql_selectPersonalBonusCompleted[]	= "SELECT mapname, zonegroup FROM ck_bonus WHERE steamid = '%s' AND runtime > 0.0";
-char sql_deleteBonus[]					= "DELETE FROM ck_bonus WHERE mapname = '%s'";
-char sql_selectAllBonusTimesinMap[]		= "SELECT runtime from ck_bonus WHERE mapname = '%s';";
+char sql_selectPersonalBonusCompleted[]	    = "SELECT mapname, zonegroup FROM ck_bonus WHERE steamid = '%s' AND runtime > 0.0";
+char sql_deleteBonus[]					    = "DELETE FROM ck_bonus WHERE mapname = '%s'";
+char sql_selectAllBonusTimesinMap[]		    = "SELECT runtime from ck_bonus WHERE mapname = '%s';";
 char sql_selectTopBonusSurfers[] 			= "SELECT db2.steamid, db1.name, db2.runtime as overall, db1.steamid, db2.mapname FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtime > -1.0 AND zonegroup = %i ORDER BY overall ASC LIMIT 100;";
 
 //TABLE CHECKPOINTS
@@ -4067,7 +4067,7 @@ public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 	{
 		while (SQL_FetchRow(hndl))
 		{
-			k = 2
+			k = 2;
 			zonegrp = SQL_FetchInt(hndl, 37);
 			g_bCheckpointsFound[zonegrp][client] = true;
 			for (int i = 0; i < CPLIMIT; i++)
@@ -4543,7 +4543,7 @@ public SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[] erro
 	if(SQL_HasResultSet(hndl))
 	{
 		char mapName[128];
-		char mapName2[128]
+		char mapName2[128];
 		g_totalBonusCount = 0;
 		while (SQL_FetchRow(hndl))
 		{
@@ -4660,7 +4660,7 @@ public db_checkAndFixZoneIdsCallback(Handle owner, Handle hndl, const char[] err
 			y2[checker] = SQL_FetchFloat(hndl, 8);
 			z2[checker] = SQL_FetchFloat(hndl, 9);
 			vis[checker] = SQL_FetchInt(hndl, 10);
-			team[checker] = SQL_FetchInt(hndl, 11)
+			team[checker] = SQL_FetchInt(hndl, 11);
 			zoneGrp[checker] = SQL_FetchInt(hndl, 12);
 			SQL_FetchString(hndl, 13, zName[checker], 128);
 
@@ -4978,7 +4978,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 			}
 			else
 			{
-				PrintToServer("[ckSurf] Found an error in ZoneID's. Fixing...")
+				PrintToServer("[ckSurf] Found an error in ZoneID's. Fixing...");
 				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = %i WHERE mapname = '%s' AND zoneid = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -5014,7 +5014,7 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 			else
 			{
 				i++;
-				PrintToServer("[ckSurf] Found an error in zoneGroupID's. Fixing...")
+				PrintToServer("[ckSurf] Found an error in zoneGroupID's. Fixing...");
 				Format(szQuery, 258, "UPDATE `ck_zones` SET `zonegroup` = %i WHERE `mapname` = '%s' AND `zonegroup` = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -5180,7 +5180,7 @@ public sql_selectZoneGroupCountCallback(Handle owner, Handle hndl, const char[] 
 	for (int x = 0; x < MAXZONEGROUPS; x++)
 		for(int k = 0; k < ZONEAMOUNT; k++)
 			if (g_mapZonesTypeCount[x][k] > 0)
-				g_mapZoneCountinGroup[x]++
+				g_mapZoneCountinGroup[x]++;
 
 	db_selectMapTier();
 	db_CalcAvgRunTime();

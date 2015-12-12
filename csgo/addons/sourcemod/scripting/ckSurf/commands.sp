@@ -286,7 +286,7 @@ public Action Command_Teleport(client, args)
 
 public Action Command_HowTo(client, args)
 {
-	ShowMOTDPanel(client, "ckSurf - How To Surf", "http://koti.kapsi.fi/~mukavajoni/how", MOTDPANEL_TYPE_URL)
+	ShowMOTDPanel(client, "ckSurf - How To Surf", "http://koti.kapsi.fi/~mukavajoni/how", MOTDPANEL_TYPE_URL);
 	return Plugin_Handled;
 }
 
@@ -656,7 +656,7 @@ public Action Command_ToEnd(client, args)
 
 	if (endZoneId > -1)
 	{
-		Client_Stop(client, 0)
+		Client_Stop(client, 0);
 
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 		{
@@ -1317,8 +1317,7 @@ public Action Client_MapTop(client, args)
 
 	if (args==0)
 	{
-		Format(szArg, 128, "%s", g_szMapName)
-		return Plugin_Handled;
+		Format(szArg, 128, "%s", g_szMapName);
 	}
 	else
 	{
@@ -1612,7 +1611,7 @@ public SpecMenuHandler(Handle menu, MenuAction action, param1,param2)
 					if (i == g_RecordBot)
 						Format(szPlayerName, MAX_NAME_LENGTH, "MAP RECORD REPLAY"); 
 					if (i == g_BonusBot)
-						Format(szPlayerName, MAX_NAME_LENGTH, "BONUS RECORD REPLAY")			
+						Format(szPlayerName, MAX_NAME_LENGTH, "BONUS RECORD REPLAY");
 					if(StrEqual(info,szPlayerName))
 					{
 						ChangeClientTeam(param1, 1);

@@ -17,6 +17,7 @@
 #include <mapchooser>
 #include <ckSurf>
 
+#pragma semicolon 1
 #define VERSION "1.18"
 #define PLUGIN_VERSION 118
 #define MYSQL 0
@@ -58,7 +59,7 @@
 #define RGB_ORANGE {238, 154, 0, 255}
 #define RGB_GREY {145, 145, 145, 255}
 #define RGB_DARKGREY {69, 69, 69, 255}
-int RGB_COLORS[][] = {RGB_GREEN, RGB_RED, RGB_DARKRED, RGB_BLUE, RGB_LIGHTBLUE, RGB_DARKBLUE, RBG_YELLOW, RGB_GREENYELLOW, RGB_PURPLE, RGB_MAGENTA, RGB_PINK, RGB_WHITE, RGB_CYAN, RGB_SPRINGGREEN, RGB_OLIVE, RGB_ORANGE, RGB_GREY, RGB_DARKGREY}
+int RGB_COLORS[][] =  { RGB_GREEN, RGB_RED, RGB_DARKRED, RGB_BLUE, RGB_LIGHTBLUE, RGB_DARKBLUE, RBG_YELLOW, RGB_GREENYELLOW, RGB_PURPLE, RGB_MAGENTA, RGB_PINK, RGB_WHITE, RGB_CYAN, RGB_SPRINGGREEN, RGB_OLIVE, RGB_ORANGE, RGB_GREY, RGB_DARKGREY };
 char RGB_COLOR_NAMES[][] = {"Green", "Red", "Darkred", "Blue", "Lightblue", "Darkblue", "Yellow", "Greenyellow", "Purple", "Magenta", "Pink", "White", "Cyan", "Springgreen", "Olive", "Orange", "Grey", "Darkgrey"};
 
 #define QUOTE 0x22
@@ -1087,7 +1088,7 @@ public OnClientPutInServer(int client)
 		DHookEntity(g_hTeleport, false, client);	
 			
 	//get client data
-	GetClientAuthId(client, AuthId_Steam2, g_szSteamID[client], MAX_NAME_LENGTH, true)
+	GetClientAuthId(client, AuthId_Steam2, g_szSteamID[client], MAX_NAME_LENGTH, true);
 	//GetClientAuthString(client, g_szSteamID[client], 32);
 
 	// ' char fix
@@ -1197,7 +1198,7 @@ public OnClientDisconnect(int client)
 	}
 	if (client == g_BonusBot)
 	{
-		StopPlayerMimic(client)
+		StopPlayerMimic(client);
 		g_BonusBot = -1;
 		return;
 	}
@@ -2274,8 +2275,8 @@ public OnPluginStart()
 	RegConsoleCmd("sm_cp", Command_createPlayerCheckpoint, "[ckSurf] Creates a checkpoint, where the player can teleport back to");
 	RegConsoleCmd("sm_checkpoint", Command_createPlayerCheckpoint, "[ckSurf] Creates a eckpoint, where the player can teleport back to");
 	RegConsoleCmd("sm_undo", Command_undoPlayerCheckpoint, "[ckSurf] Undoes the players lchast checkpoint.");
-	RegConsoleCmd("sm_normal", Command_normalMode, "[ckSurf] Switches player back to normal mode.")
-	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode.")
+	RegConsoleCmd("sm_normal", Command_normalMode, "[ckSurf] Switches player back to normal mode.");
+	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode.");
 
 	RegAdminCmd("sm_ckadmin", Admin_ckPanel, ADMFLAG_UNBAN, "[ckSurf] Displays the ckSurf menu panel");
 	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, ADMFLAG_UNBAN, "[ckSurf] Recalculates player profile for given steam id");

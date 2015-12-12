@@ -888,7 +888,7 @@ public Handler_bonusGroupListing(Handle tMenu, MenuAction:action, client, item)
 			char aID[64];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_CurrentZoneGroup[client] = StringToInt(aID);
-			ListBonusSettings(client)
+			ListBonusSettings(client);
 		}
 		case MenuAction_Cancel:
 		{
@@ -1736,7 +1736,7 @@ public resetSelection(client)
 	g_CurrentZoneTypeId[client]=-1;
 	g_CurrentZoneType[client]=-1;
 
-	float resetArray[] = {-1.0, -1.0, -1.0}
+	float resetArray[] =  { -1.0, -1.0, -1.0 };
 	Array_Copy(resetArray, g_Positions[client][0], 3);
 	Array_Copy(resetArray, g_Positions[client][1], 3);
 	Array_Copy(resetArray, g_fBonusEndPos[client][0], 3);

@@ -47,7 +47,7 @@ public Action Admin_giveTitle(client, args)
 			{
 				if (IsValidClient(i) && !IsFakeClient(i))
 				{
-					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					if (StrEqual(g_szAdminSelectedSteamID[client], arg, false))
 					{
@@ -67,7 +67,7 @@ public Action Admin_giveTitle(client, args)
 					GetClientName(i, sResult, MAX_NAME_LENGTH);
 					if (StrEqual(sResult, arg, false))
 					{
-						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						g_iAdminSelectedClient[client] = i;
 						break;
 					}
@@ -187,7 +187,7 @@ public Action:Admin_deleteTitles(client, args)
 			{
 				if (IsValidClient(i) && !IsFakeClient(i))
 				{
-					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					if (StrEqual(g_szAdminSelectedSteamID[client], arg, false))
 					{
@@ -207,7 +207,7 @@ public Action:Admin_deleteTitles(client, args)
 					GetClientName(i, sResult, MAX_NAME_LENGTH);
 					if (StrEqual(sResult, arg, false))
 					{		
-						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						g_iAdminSelectedClient[client] = i;
 						break;
@@ -270,7 +270,7 @@ public Action:Admin_deleteTitle(client, args)
 			{
 				if (IsValidClient(i) && !IsFakeClient(i))
 				{
-					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					if (StrEqual(g_szAdminSelectedSteamID[client], arg, false))
 					{
@@ -290,7 +290,7 @@ public Action:Admin_deleteTitle(client, args)
 					GetClientName(i, sResult, MAX_NAME_LENGTH);
 					if (StrEqual(sResult, arg, false))
 					{
-						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true)
+						GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 						g_iAdminSelectedClient[client] = i;
 						break;

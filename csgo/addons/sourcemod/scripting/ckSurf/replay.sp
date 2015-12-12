@@ -180,7 +180,7 @@ public LoadReplays()
 	g_bMapReplay=false;
 	g_bMapBonusReplay=false;
 	g_RecordBot = -1;
-	g_BonusBot = -1
+	g_BonusBot = -1;
 	
 	// Record Bot
 	if(hFilex != null)

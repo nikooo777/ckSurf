@@ -54,7 +54,7 @@ void DoPush(int entity, int other, float m_vecPushDir[3])
 		
 		// Rotate vector according to world
 		float sr, sp, sy, cr, cp, cy;
-		float matrix[3][4]
+		float matrix[3][4];
 		
 		SinCos(DegToRad(angRotation[1]), sy, cy );
 		SinCos(DegToRad(angRotation[0]), sp, cp );
@@ -793,7 +793,7 @@ public PrintConsoleInfo(client)
 	PrintToConsole(client, "");
 	PrintToConsole(client, "Live scoreboard:");
 	PrintToConsole(client, "Kills: Time in seconds");
-	PrintToConsole(client, "Assists: Number of % finished on current map")
+	PrintToConsole(client, "Assists: Number of % finished on current map");
 	PrintToConsole(client, "Score: How many players are lower ranked than the player. Higher number means higher rank");
 	PrintToConsole(client, "MVP Stars: Number of finished map runs on the current map");
 	PrintToConsole(client, " ");
@@ -1638,7 +1638,7 @@ public MapFinishedMsgs(client, rankThisRun)
 		Call_PushCell(count);
 
 		/* Finish the call, get the result */
-		Call_Finish()
+		Call_Finish();
 
 	}
 	//recalc avg
@@ -1697,7 +1697,7 @@ public PrintChatBonus(client, zGroup)
 	Call_PushCell(zGroup);
 
 	/* Finish the call, get the result */
-	Call_Finish()
+	Call_Finish();
 
 	CheckBonusRanks(client, zGroup);
 	db_CalcAvgRunTimeBonus(zGroup);
