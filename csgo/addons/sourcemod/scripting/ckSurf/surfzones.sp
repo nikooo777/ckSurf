@@ -148,7 +148,7 @@ public Action EndTouchTrigger(caller, activator)
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
 
-	if (action[2] != g_iClientInZone[activator][2] || action[0] == 6) // Ignore end touches in other zonegroups & tele to start
+	if (action[2] != g_iClientInZone[activator][2] || action[0] == 6 || action[0] == 8) // Ignore end touches in other zonegroups & tele to start
 		return Plugin_Handled;
 
 	EndTouch(activator, action);
