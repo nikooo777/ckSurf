@@ -251,6 +251,10 @@ void txn_addExtraCheckpoints()
 
 		SQL_ExecuteTransaction(g_hDb, h_checkpoint, SQLTxn_Success, SQLTxn_TXNFailed, 1);
 	}
+	else
+	{
+		PrintToServer("[ckSurf] No database update needed!");
+	}
 }
 
 void txn_addZoneGroups()
@@ -267,6 +271,11 @@ void txn_addZoneGroups()
 
 		SQL_ExecuteTransaction(g_hDb, h_bonus, SQLTxn_Success, SQLTxn_TXNFailed, 2);
 	}
+	else
+	{
+		PrintToServer("[ckSurf] Zonegroup changes were already done! Skipping to recreating playertemp!");
+		txn_recreatePlayerTemp();
+	}
 }
 
 void txn_recreatePlayerTemp()
@@ -279,6 +288,11 @@ void txn_recreatePlayerTemp()
 		SQL_AddQuery(h_playertemp, "DROP TABLE IF EXISTS ck_playertemp");
 		SQL_AddQuery(h_playertemp, sql_createPlayertmp);
 		SQL_ExecuteTransaction(g_hDb, h_playertemp, SQLTxn_Success, SQLTxn_TXNFailed, 3);
+	}
+	else
+	{
+		PrintToServer("[ckSurf] Playertemp was already recreated! Skipping to bonus tiers");
+		txn_addBonusTiers();
 	}
 }
 
@@ -296,6 +310,11 @@ void txn_addBonusTiers()
 		}
 		SQL_ExecuteTransaction(g_hDb, h_maptiers, SQLTxn_Success, SQLTxn_TXNFailed, 4);  
 	}
+	else
+	{
+		PrintToServer("[ckSurf] Bonus tiers were already added. Skipping to spawn points");
+		txn_addSpawnPoints();
+	}
 }
 void txn_addSpawnPoints()
 {
@@ -307,6 +326,11 @@ void txn_addSpawnPoints()
 		SQL_AddQuery(h_spawnPoints, "INSERT INTO ck_spawnlocations (mapname, pos_x, pos_y, pos_z, ang_x, ang_y, ang_z) SELECT mapname, pos_x, pos_y, pos_z, ang_x, ang_y, ang_z FROM ck_spawnlocations_temp;");
 		SQL_AddQuery(h_spawnPoints, "DROP TABLE ck_spawnlocations_temp");
 		SQL_ExecuteTransaction(g_hDb, h_spawnPoints, SQLTxn_Success, SQLTxn_TXNFailed, 5);
+	}
+	else
+	{
+		PrintToServer("[ckSurf] Spawnpoints were already added! Skipping to changes in zones");
+		txn_changesToZones();
 	}
 }
 
