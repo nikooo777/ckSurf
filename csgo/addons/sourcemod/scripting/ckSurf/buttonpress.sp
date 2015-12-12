@@ -338,7 +338,7 @@ public CL_OnEndTimerPress(client)
 				g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
 				g_fBonusFastest[zGroup] = g_fFinalTime[client];
 				Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
-				FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 54);
+				FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 64);
 
 				// Update Checkpoints
 				if (g_bCheckpointsEnabled[client] && !g_bPositionRestored[client])
@@ -369,7 +369,7 @@ public CL_OnEndTimerPress(client)
 			g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
 			g_fBonusFastest[zGroup] = g_fFinalTime[client];
 			Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
-			FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 54);
+			FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 64);
 			
 			// Update Checkpoints
 			if (g_bCheckpointsEnabled[client] && !g_bPositionRestored[client])

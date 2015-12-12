@@ -198,7 +198,7 @@ float g_fReplayRestarted[MAXPLAYERS+1];
 ///////////////////
 //bool g_bBonusTimer[MAXPLAYERS+1];									// True if client is using the bonus timer
 char g_szBonusFastest[MAXZONEGROUPS][MAX_NAME_LENGTH];				// Name of the #1 in the current maps bonus
-char g_szBonusFastestTime[MAXZONEGROUPS][54];						// Fastest bonus time in 00:00:00:00 format
+char g_szBonusFastestTime[MAXZONEGROUPS][64];						// Fastest bonus time in 00:00:00:00 format
 float g_fPersonalRecordBonus[MAXZONEGROUPS][MAXPLAYERS+1]; 			// Clients personal bonus record in the current map
 char g_szPersonalRecordBonus[MAXZONEGROUPS][MAXPLAYERS+1][64];
 float g_fBonusFastest[MAXZONEGROUPS];								// Fastest bonus time in the current map
