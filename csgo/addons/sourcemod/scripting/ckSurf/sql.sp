@@ -247,7 +247,7 @@ void txn_addExtraCheckpoints()
 		SQL_AddQuery(h_checkpoint, "ALTER TABLE ck_checkpoints RENAME TO ck_checkpoints_temp;");
 		SQL_AddQuery(h_checkpoint, sql_createCheckpoints);
 		SQL_AddQuery(h_checkpoint, "INSERT INTO ck_checkpoints(steamid, mapname, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20) SELECT steamid, mapname, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20 FROM ck_checkpoints_temp;");
-		SQL_AddQuery(h_checkpoint, "DROP TABLE ck_checkpoints_temp");
+		SQL_AddQuery(h_checkpoint, "DROP TABLE ck_checkpoints_temp;");
 
 		SQL_ExecuteTransaction(g_hDb, h_checkpoint, SQLTxn_Success, SQLTxn_TXNFailed, 1);
 	}

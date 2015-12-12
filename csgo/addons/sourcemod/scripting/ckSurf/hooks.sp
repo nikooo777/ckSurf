@@ -670,14 +670,7 @@ public Action OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 		HookCheck(client);
 
 		// If in start zone, cap speed
-		if (g_iClientInZone[client][0] == 1 && g_iClientInZone[client][2] > 0)
-			LimitSpeed(client, 2);	// Bonus
-		else
-			if (g_iClientInZone[client][0] == 1)
-				LimitSpeed(client, 0); // Normal Start
-			else
-				if (g_iClientInZone[client][0] == 5)
-					LimitSpeed(client, 1); // Speed Start
+		LimitSpeed(client);
 
 		if (g_bOnGround[client])
 		{

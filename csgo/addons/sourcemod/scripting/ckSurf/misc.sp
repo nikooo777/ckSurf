@@ -984,19 +984,20 @@ public void FixPlayerName(int client)
 	}
 }
 
-public void LimitSpeed(int client, int type)
+public void LimitSpeed(int client)
 {
 	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client))
 		return;
-	float speedCap, CurVelVec[3];
+	float speedCap = 0.0, CurVelVec[3];
 	
-	// Types: 0 = StartZone, 1 = SpeedZone, 2 = BonusStart
-	switch (type)
-	{
-		case 0: speedCap = g_fStartPreSpeed;
-		case 1: speedCap = g_fSpeedPreSpeed;
-		case 2: speedCap = g_fBonusPreSpeed;
-	}
+	if (g_iClientInZone[client][0] == 1 && g_iClientInZone[client][2] > 0)
+		speedCap = g_fBonusPreSpeed;
+	else
+		if (g_iClientInZone[client][0] == 1)
+			speedCap = g_fStartPreSpeed;
+		else
+			if (g_iClientInZone[client][0] == 5)
+				speedCap = g_fSpeedPreSpeed;
 
 	if (speedCap == 0.0)
 		return;
