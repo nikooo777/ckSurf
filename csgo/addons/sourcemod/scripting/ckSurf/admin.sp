@@ -1,4 +1,4 @@
-public Action Admin_giveTitle(client, args)
+public Action Admin_giveTitle(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -18,7 +18,7 @@ public Action Admin_giveTitle(client, args)
 
 	if(args == 0)
 	{
-		Handle playerMenu = CreateMenu(Handler_selectPlayer);
+		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select Player to give title to:");
 
 		char szName[MAX_NAME_LENGTH], id[6];
@@ -86,7 +86,7 @@ public Action Admin_giveTitle(client, args)
 	return Plugin_Handled;
 }
 
-public Handler_selectPlayer(Handle:tMenu, MenuAction:action, client, item)
+public int Handler_selectPlayer(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -111,7 +111,7 @@ public Handler_selectPlayer(Handle:tMenu, MenuAction:action, client, item)
 	}
 }
 
-public Handler_TitleMenu(Handle:tMenu, MenuAction:action, client, item)
+public int Handler_TitleMenu(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -143,7 +143,7 @@ public Handler_TitleMenu(Handle:tMenu, MenuAction:action, client, item)
 	}
 }
 
-public Action:Admin_deleteTitles(client, args)
+public Action Admin_deleteTitles(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -158,7 +158,7 @@ public Action:Admin_deleteTitles(client, args)
 
 	if(args == 0)
 	{
-		Handle playerMenu = CreateMenu(Handler_selectPlayer);
+		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select player to delete titles from:");
 
 		char szName[MAX_NAME_LENGTH], id[2];
@@ -227,7 +227,7 @@ public Action:Admin_deleteTitles(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_deleteTitle(client, args)
+public Action Admin_deleteTitle(int client, int args)
 {
 	g_iAdminSelectedClient[client] = -1;
 	g_iAdminEditingType[client] = 3;
@@ -241,7 +241,7 @@ public Action:Admin_deleteTitle(client, args)
 
 	if(args == 0)
 	{
-		Handle playerMenu = CreateMenu(Handler_selectPlayer);
+		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select player to remove title from:");
 
 		char szName[MAX_NAME_LENGTH], id[2];
@@ -311,15 +311,15 @@ public Action:Admin_deleteTitle(client, args)
 }
 
 
-public Admin_renameZone(client, char name[1024])
+public void Admin_renameZone(int client, const char[] name)
 {
 	if (!IsValidClient(client))
 	{
 		g_ClientRenamingZone[client] = false;
 		return;
 	}
-	
-	if(StrEqual(name, " ") || StrEqual(name, ""))
+	//avoid unnecessary calls by checking the first cell first. If it's 0 -> \0 then negating it will make the if check pass -> return
+	if(!name[0] || StrEqual(name, " ") || StrEqual(name, ""))
 	{
 		PrintToChat(client, "[%CK%c] Please give the zone a valid name.", MOSSGREEN, WHITE);
 		return;
@@ -329,7 +329,7 @@ public Admin_renameZone(client, char name[1024])
 		PrintToChat(client, "[%cCK%c] Zone name too long. Maximum is 128 characters.", MOSSGREEN, WHITE);
 		return;
 	}
-	if (StrEqual(name, "!cancel"))
+	if (StrEqual(name, "!cancel",false)) //false -> non sensitive
 	{
 		PrintToChat(client, "[%cCK%c] Cancelled bonus renaming.", MOSSGREEN, WHITE);
 		g_ClientRenamingZone[client] = false;
@@ -343,7 +343,7 @@ public Admin_renameZone(client, char name[1024])
 	g_ClientRenamingZone[client] = false;
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public void OnAdminMenuReady(Handle topmenu)
 {
 	if (topmenu == g_hAdminMenu)
 		return;
@@ -353,7 +353,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	AddToTopMenu(g_hAdminMenu, "sm_ckadmin", TopMenuObject_Item, TopMenuHandler2, serverCmds, "sm_ckadmin", ADMFLAG_RCON);
 }
 
-public TopMenuHandler2(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+public int TopMenuHandler2(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "ckSurf");
@@ -363,7 +363,7 @@ public TopMenuHandler2(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 			Admin_ckPanel(param, 0);
 }
 
-public Action:Admin_insertMapTier(client, args)
+public Action Admin_insertMapTier(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -395,7 +395,7 @@ public Action:Admin_insertMapTier(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_insertSpawnLocation(client, args)
+public Action Admin_insertSpawnLocation(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -422,7 +422,7 @@ public Action:Admin_insertSpawnLocation(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_deleteSpawnLocation(client, args)
+public Action Admin_deleteSpawnLocation(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -437,7 +437,7 @@ public Action:Admin_deleteSpawnLocation(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ClearAssists(client, args)
+public Action Admin_ClearAssists(int client, int args)
 {
 	for(int i = 1; i<= MAXPLAYERS; i++)
 		if(IsValidClient(i))
@@ -450,7 +450,7 @@ public Action:Admin_ClearAssists(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ckPanel(client, args)
+public Action Admin_ckPanel(int client, int args)
 {
 	ckAdminMenu(client);	
 	if ((GetUserFlagBits(client) & ADMFLAG_ROOT))
@@ -470,7 +470,7 @@ public Action:Admin_ckPanel(client, args)
 	return Plugin_Handled;
 }
 	
-public ckAdminMenu(client)
+public void ckAdminMenu(int client)
 {
 	if(!IsValidClient(client))
 		return;
@@ -703,7 +703,7 @@ public ckAdminMenu(client)
 }
 
 
-public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
+public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -941,25 +941,25 @@ public AdminPanelHandler(Handle:menu, MenuAction:action, param1, param2)
 }
 
 //Drop Map from DB
-public Action:Admin_DropAllMapRecords(client, args)
+public Action Admin_DropAllMapRecords(int client, int args)
 {
 	db_dropPlayer(client);
 	return Plugin_Handled;
 }
 
-public Action:Admin_DropChallenges(client, args)
+public Action Admin_DropChallenges(int client, int args)
 {
 	db_dropChallenges(client);
 	return Plugin_Handled;
 }
 
-public Action:Admin_DropPlayerRanks(client, args)
+public Action Admin_DropPlayerRanks(int client, int args)
 {
 	db_dropPlayerRanks(client);
 	return Plugin_Handled;
 }
 
-public MapTierHandler(Handle:tMenu, MenuAction:action, client, item)
+public int MapTierHandler(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -977,7 +977,7 @@ public MapTierHandler(Handle:tMenu, MenuAction:action, client, item)
 	}
 }
 
-public Action:Admin_InsertMapTiers(client, args)
+public Action Admin_InsertMapTiers(int client, int args)
 {
 	if (g_insertingInformation)
 	{
@@ -998,7 +998,7 @@ public Action:Admin_InsertMapTiers(client, args)
 	return Plugin_Handled;
 }
 
-public Admin_InsertMapTierstoDatabase(client)
+public void Admin_InsertMapTierstoDatabase(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1026,7 +1026,7 @@ public Admin_InsertMapTierstoDatabase(client)
 	SQL_ExecuteTransaction(g_hDb, h_addTiers, SQLTxn_TierInsertSuccess, SQLTxn_TierInsertFailed, client);
 }
 
-public SQLTxn_TierInsertFailed(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[])
+public void SQLTxn_TierInsertFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Inserting map tiers %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
@@ -1035,7 +1035,7 @@ public SQLTxn_TierInsertFailed(Handle:db, any:data, numQueries, const String:err
 	LogError("[ckSurf] SQL Tier insertion failed! Index: %i Error: %s", failIndex, error);
 }
 
-public SQLTxn_TierInsertSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[])
+public void SQLTxn_TierInsertSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Successfully inserted map tiers!", MOSSGREEN, WHITE);
@@ -1044,7 +1044,7 @@ public SQLTxn_TierInsertSuccess(Handle:db, any:data, numQueries, Handle:results[
 	g_insertingInformation = false;
 }
 
-public Admin_InsertZonestoDatabase(client)
+public void Admin_InsertZonestoDatabase(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1176,7 +1176,7 @@ public Admin_InsertZonestoDatabase(client)
 	SQL_ExecuteTransaction(g_hDb, h_addZones, SQLTxn_ZoneInsertSuccess, SQLTxn_ZoneInsertFailed, client);
 }
 
-public SQLTxn_ZoneInsertFailed(Handle:db, any:data, numQueries, const String:error[], failIndex, any:queryData[])
+public void SQLTxn_ZoneInsertFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Inserting zones %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
@@ -1185,7 +1185,7 @@ public SQLTxn_ZoneInsertFailed(Handle:db, any:data, numQueries, const String:err
 	LogError("[ckSurf] SQL Zone insertion failed! Index: %i Error: %s", failIndex, error);
 }
 
-public SQLTxn_ZoneInsertSuccess(Handle:db, any:data, numQueries, Handle:results[], any:queryData[])
+public void SQLTxn_ZoneInsertSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Successfully inserted map zones!", MOSSGREEN, WHITE);
@@ -1194,7 +1194,7 @@ public SQLTxn_ZoneInsertSuccess(Handle:db, any:data, numQueries, Handle:results[
 	g_insertingInformation = false;
 }
 
-public Action:Admin_InsertMapZones(client, args)
+public Action Admin_InsertMapZones(int client, int args)
 {
 	if (g_insertingInformation)
 	{
@@ -1215,7 +1215,7 @@ public Action:Admin_InsertMapZones(client, args)
 	return Plugin_Handled;
 }
 
-public MapZoneHandler(Handle:tMenu, MenuAction:action, int client, int item)
+public int MapZoneHandler(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1233,7 +1233,7 @@ public MapZoneHandler(Handle:tMenu, MenuAction:action, int client, int item)
 	}
 }
 
-public Action:Admin_ResetRecords(int client, int args)
+public Action Admin_ResetRecords(int client, int args)
 {
 	if(args < 1)
 	{
@@ -1265,7 +1265,7 @@ public Action:Admin_ResetRecords(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_RefreshProfile(client, args)
+public Action Admin_RefreshProfile(int client, int args)
 {
 	if(args == 0)
 	{
@@ -1288,7 +1288,7 @@ public Action:Admin_RefreshProfile(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ResetMapRecord(client, args)
+public Action Admin_ResetMapRecord(int client, int args)
 {
 	if(args != 6)
 	{
@@ -1316,7 +1316,7 @@ public Action:Admin_ResetMapRecord(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ResetChallenges(client, args)
+public Action Admin_ResetChallenges(int client, int args)
 {
 	if(args == 0)
 	{
@@ -1339,7 +1339,7 @@ public Action:Admin_ResetChallenges(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ResetMapRecords(client, args)
+public Action Admin_ResetMapRecords(int client, int args)
 {
 	if(args != 1)
 	{
@@ -1355,7 +1355,7 @@ public Action:Admin_ResetMapRecords(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_DeleteMapReplay(client, args)
+public Action Admin_DeleteMapReplay(int client, int args)
 {
 	if(args == 0)
 	{
@@ -1378,19 +1378,19 @@ public Action:Admin_DeleteMapReplay(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Admin_ResetExtraPoints(client, args)
+public Action Admin_ResetExtraPoints(int client, int args)
 {
 	SQL_TQuery(g_hDb, sql_selectMutliplierCallback, "UPDATE playerrank SET multiplier ='0'", client);	
 	return Plugin_Handled;
 }
 
-public sql_selectMutliplierCallback(Handle:owner, Handle:hndl, const String:error[], any:data)
+public void sql_selectMutliplierCallback(Handle owner, Handle hndl, const char[] error, any data)
 { 
 	int client = data;
 	PrintToConsole(client, "Extra points for all players reseted.");
 }
 
-public Action:Admin_DeleteCheckpoints(client, args)
+public Action Admin_DeleteCheckpoints(int client, int args)
 {
 	for(int i = 0; i < MAXPLAYERS+1; i++)
 		for(int x = 0; x < MAXZONEGROUPS; x++)

@@ -558,7 +558,7 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 		return;
 	}
 
-	Handle titleMenu = CreateMenu(Handler_TitleMenu);
+	Menu titleMenu = CreateMenu(Handler_TitleMenu);
 	char id[2], menuItem[152];
 
 	if (IsValidClient(g_iAdminSelectedClient[data]))
@@ -622,7 +622,7 @@ public SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[] err
 		return;
 	}
 
-	Handle titleMenu = CreateMenu(Handler_TitleMenu);
+	Menu titleMenu = CreateMenu(Handler_TitleMenu);
 	char id[2], menuItem[152];
 
 	if (IsValidClient(g_iAdminSelectedClient[data]))
