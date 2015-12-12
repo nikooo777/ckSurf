@@ -1,6 +1,8 @@
 
 ckSurf 1.18 BETA
 <h1>Remember to backup your database before updating to a beta version</h1>
+<strong>Updating instructions from 1.17 -> 1.18: https://forums.alliedmods.net/showpost.php?p=2371063&postcount=841</strong>
+
 Based on KZTimer (https://forums.alliedmods.net/showthread.php?t=223274)
 
 Installation
