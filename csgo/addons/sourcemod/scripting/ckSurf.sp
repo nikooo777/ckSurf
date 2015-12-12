@@ -17,6 +17,7 @@
 #include <mapchooser>
 #include <ckSurf>
 
+//#pragma newdecls required
 #pragma semicolon 1
 #define VERSION "1.18"
 #define PLUGIN_VERSION 118

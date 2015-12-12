@@ -1,5 +1,4 @@
-
-stock WriteChatLog(client, const char[] sayOrSayTeam, const char[] msg)
+stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
 {
 	char name[MAX_NAME_LENGTH], steamid[32], teamName[10];
 	
@@ -9,7 +8,7 @@ stock WriteChatLog(client, const char[] sayOrSayTeam, const char[] msg)
 	LogToGame("\"%s<%i><%s><%s>\" %s \"%s\"", name, GetClientUserId(client), steamid, teamName, sayOrSayTeam, msg);
 }
 
-public void performTeleport(client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
+public void performTeleport(int client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
 {
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	// If teleporting to the exact same zone or the client is not in a zone
@@ -174,7 +173,7 @@ public int getZoneID(int zoneGrp, int stage)
 	return -1;
 }
 
-public loadHiddenChatCommands()
+public bool loadHiddenChatCommands()
 {
 	char sPath[PLATFORM_MAX_PATH];
 	char line[64];
@@ -202,7 +201,7 @@ public loadHiddenChatCommands()
 }
 
 
-public loadCustomTitles()
+public bool loadCustomTitles()
 {
 	char sPath[PLATFORM_MAX_PATH];
 	g_iCustomTitleCount = 0;
@@ -281,7 +280,7 @@ public loadCustomTitles()
 	return true;
 }
 
-public checkChangesInTitle(client)
+public void checkChangesInTitle(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -338,7 +337,7 @@ public checkChangesInTitle(client)
 	}
 }
 
-public CreateSpawns() 
+public void CreateSpawns() 
 {
 	int tEnt, ctEnt;
 	float f_spawnLocation[3], f_spawnAngle[3];
@@ -482,13 +481,13 @@ public Action CheckifEntities(Handle timer, any:data)
 	return Plugin_Handled;
 }
 */
-public Action:CallAdmin_OnDrawOwnReason(client)
+public Action CallAdmin_OnDrawOwnReason(int client)
 {
 	g_bClientOwnReason[client] = true;
 	return Plugin_Continue;
 }
 
-public bool checkSpam(client)
+public bool checkSpam(int client)
 {
 	float time = GetGameTime();
 	if (g_fChatSpamFilter == 0.0)
@@ -521,7 +520,7 @@ public bool checkSpam(client)
 	return result;
 }
 
-stock bool IsValidClient(client)
+stock bool IsValidClient(int client)
 {
     if(client >= 1 && client <= MaxClients && IsValidEntity(client) && IsClientConnected(client) && IsClientInGame(client))
         return true;  
@@ -530,7 +529,7 @@ stock bool IsValidClient(client)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-FormatLanguage(char[] language)
+void FormatLanguage(char[] language)
 {
 	// Format the input language.
 	int length = strlen(language);
@@ -550,7 +549,7 @@ FormatLanguage(char[] language)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-LoadCookies(client)
+void LoadCookies(int client)
 {
 	char sCookie[4];
 	sCookie[0] = '\0';
@@ -565,7 +564,7 @@ LoadCookies(client)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-SetClientLanguageByCode(client, const char[] code)
+void SetClientLanguageByCode(int client, const char[] code)
 {
 	/* Set a client's language based on the language code. */
 	int iLangID = GetLanguageByCode(code);	
@@ -575,7 +574,7 @@ SetClientLanguageByCode(client, const char[] code)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-SetClientLanguage2(client, language)
+void SetClientLanguage2(int client, int language)
 {
 	// Set language.
 	SetClientLanguage(client, language);
@@ -588,7 +587,7 @@ SetClientLanguage2(client, language)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-public LanguageMenu_Handler(Handle menu, MenuAction:action, client, item)
+public int LanguageMenu_Handler(Handle menu, MenuAction action, int client, int item)
 {
 	/* Handle the language selection menu. */
 	switch (action)
@@ -631,7 +630,7 @@ public LanguageMenu_Handler(Handle menu, MenuAction:action, client, item)
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-Init_GeoLang()
+void Init_GeoLang()
 {
 	// Create and cache language selection menu.
 	Handle hLangArray = CreateArray(32);
@@ -679,7 +678,7 @@ Init_GeoLang()
 
 // https://forums.alliedmods.net/showthread.php?p=1436866
 // GeoIP Language Selection by GoD-Tony
-public CookieMenu_GeoLanguage(client, CookieMenuAction:action, any:info, char[] buffer, maxlen)
+public void CookieMenu_GeoLanguage(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)
 {
 	/* Menu when accessed through !settings. */
 	switch (action)
@@ -695,7 +694,7 @@ public CookieMenu_GeoLanguage(client, CookieMenuAction:action, any:info, char[] 
 	}
 }
 
-public SetSkillGroups()
+public void SetSkillGroups()
 {
 	//Map Points	
 	int mapcount;
@@ -736,7 +735,7 @@ public SetSkillGroups()
 		SetFailState("<ckSurf> addons/sourcemod/configs/ckSurf/skillgroups.cfg not found.");
 }
 
-public SetServerTags()
+public void SetServerTags()
 {
 	Handle CvarHandle;	
 	CvarHandle = FindConVar("sv_tags");
@@ -756,7 +755,7 @@ public SetServerTags()
 		CloseHandle(CvarHandle);
 }
 
-public PrintConsoleInfo(client)
+public void PrintConsoleInfo(int client)
 {
 	int timeleft;
 	GetMapTimeLeft(timeleft);
@@ -809,12 +808,12 @@ public PrintConsoleInfo(client)
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");		
 	PrintToConsole(client," ");
 }
-stock FakePrecacheSound(const char[] szPath)
+stock void FakePrecacheSound(const char[] szPath)
 {
 	AddToStringTable( FindStringTable( "soundprecache" ), szPath );
 }
 
-public Action:BlockRadio(client, const char[] command, args) 
+public Action BlockRadio(int client, const char[] command, int args) 
 {
 	if(!g_bRadioCommands && IsValidClient(client))
 	{
@@ -824,7 +823,7 @@ public Action:BlockRadio(client, const char[] command, args)
 	return Plugin_Continue;
 }
 
-public StringToUpper(char[] input) 
+public void StringToUpper(char[] input) 
 {
 	for(int i = 0; ; i++) 
 	{
@@ -834,7 +833,7 @@ public StringToUpper(char[] input)
 	}
 }
 
-public GetServerInfo()
+public void GetServerInfo()
 {
 	int pieces[4];
 	char code2[3];
@@ -872,7 +871,7 @@ public GetServerInfo()
 	GetConVarString(FindConVar("hostname"),g_szServerName,sizeof(g_szServerName));
 }
 
-public GetCountry(client)
+public void GetCountry(int client)
 {
 	if(client != 0)
 	{
@@ -911,7 +910,7 @@ public GetCountry(client)
 	}
 }
 
-stock StripAllWeapons(client)
+stock void StripAllWeapons(int client)
 {
 	int iEnt;
 	for (int i = 0; i <= 5; i++)
@@ -927,18 +926,17 @@ stock StripAllWeapons(client)
 		GivePlayerItem(client, "weapon_knife");
 }
 
-public MovementCheck(client)
+public void MovementCheck(int client)
 {
 	MoveType mt;
 	mt = GetEntityMoveType(client); 
 	if (mt == MOVETYPE_FLYGRAVITY)
 	{
-		
 		Client_Stop(client, 1);
 	}
 }
 
-public PlayButtonSound(client)
+public void PlayButtonSound(int client)
 {
 	if (!bSoundEnabled) 
  		return; 
@@ -969,7 +967,7 @@ public PlayButtonSound(client)
 	}	
 }
 
-public FixPlayerName(client)
+public void FixPlayerName(int client)
 {
 	char szName[64];
 	char szOldName[64];
@@ -984,7 +982,7 @@ public FixPlayerName(client)
 	}
 }
 
-public LimitSpeed(client, type)
+public void LimitSpeed(int client, int type)
 {
 	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client))
 		return;
@@ -1020,7 +1018,7 @@ public LimitSpeed(client, type)
 	}
 }
 
-public changeTrailColor(client)
+public void changeTrailColor(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1032,7 +1030,7 @@ public changeTrailColor(client)
 	return;
 }
 
-public refreshTrail(client)
+public void refreshTrail(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1115,7 +1113,7 @@ public refreshTrail(client)
 	}
 }
 
-public toggleTrail(client)
+public void toggleTrail(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1139,12 +1137,12 @@ public toggleTrail(client)
 	}
 }
 
-stock bool:ClientCanSeeClient(client, target, Float:distance = 0.0, Float:height = 50.0)
+stock bool ClientCanSeeClient(int client, int target, float distance = 0.0, float height = 50.0)
 {
 	if (!IsValidClient(client) || !IsValidClient(target))
 	return false;
 
-	new Float:vMonsterPosition[3], Float:vTargetPosition[3];
+	float vMonsterPosition[3], vTargetPosition[3];
 
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", vMonsterPosition);
 	vMonsterPosition[2] += height;
@@ -1153,7 +1151,7 @@ stock bool:ClientCanSeeClient(client, target, Float:distance = 0.0, Float:height
 
 	if (distance == 0.0 || GetVectorDistance(vMonsterPosition, vTargetPosition, false) < distance)
 	{
-		new Handle:trace = TR_TraceRayFilterEx(vMonsterPosition, vTargetPosition, MASK_SOLID_BRUSHONLY, RayType_EndPoint, Base_TraceFilter);
+		Handle trace = TR_TraceRayFilterEx(vMonsterPosition, vTargetPosition, MASK_SOLID_BRUSHONLY, RayType_EndPoint, Base_TraceFilter);
 
 		if(TR_DidHit(trace))
 		{
@@ -1169,7 +1167,7 @@ stock bool:ClientCanSeeClient(client, target, Float:distance = 0.0, Float:height
 }
 
 
-public bool:Base_TraceFilter(entity, contentsMask, any:data)
+public bool Base_TraceFilter(int entity, int contentsMask, any data)
 {
     if(entity != data)
         return (false);
@@ -1179,7 +1177,7 @@ public bool:Base_TraceFilter(entity, contentsMask, any:data)
 
 
 
-public checkTrailStatus(client, float speed)
+public void checkTrailStatus(int client, float speed)
 {
 	// Check if trail is on
 	if (g_bTrailOn[client])
@@ -1211,7 +1209,7 @@ public checkTrailStatus(client, float speed)
 	}
 }
 
-public SetClientDefaults(client)
+public void SetClientDefaults(int client)
 {
 	// Set client location 
 	if (bSpawnToStartZone)
@@ -1283,7 +1281,7 @@ public SetClientDefaults(client)
 	g_SpecTarget[client] = -1;
 	g_pr_points[client] = 0;
 	g_fCurrentRunTime[client] = -1.0;
-	g_fPlayerCordsLastPosition[client] = Float:{0.0,0.0,0.0};
+	g_fPlayerCordsLastPosition[client] = view_as<float>({0.0,0.0,0.0});
 	g_fLastChatMessage[client] = GetGameTime();
 	g_fPlayerConnectedTime[client] = GetGameTime();			
 	g_fLastTimeButtonSound[client] = GetGameTime();
@@ -1355,7 +1353,7 @@ public SetClientDefaults(client)
 	g_bEnableQuakeSounds[client] = true;
 }
 
-public clearPlayerCheckPoints(client)
+public void clearPlayerCheckPoints(int client)
 {
 	for(int x = 0; x < 3; x++)
 	{
@@ -1372,7 +1370,7 @@ public clearPlayerCheckPoints(client)
 }
 
 // - Get Runtime -
-public GetcurrentRunTime(client)
+public void GetcurrentRunTime(int client)
 {
 	g_fCurrentRunTime[client] = GetGameTime() - g_fStartTime[client] - g_fPauseTime[client];	
 	/*if (g_bPause[client])
@@ -1393,7 +1391,7 @@ public GetcurrentRunTime(client)
 	}*/
 }
 
-public float GetSpeed(client)
+public float GetSpeed(int client)
 {
 	float fVelocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
@@ -1401,7 +1399,7 @@ public float GetSpeed(client)
 	return speed;
 }
 
-public SetCashState()
+public void SetCashState()
 {
 	ServerCommand("mp_startmoney 0; mp_playercashawards 0; mp_teamcashawards 0");
 	for (int i = 1; i <= MaxClients; i++)
@@ -1411,7 +1409,7 @@ public SetCashState()
 	}
 }
 
-public PlayRecordSound(iRecordtype)
+public void PlayRecordSound(int iRecordtype)
 {
 	char buffer[255];
 	if (iRecordtype==1)
@@ -1439,7 +1437,7 @@ public PlayRecordSound(iRecordtype)
 		}
 }
 
-public PlayUnstoppableSound(client)
+public void PlayUnstoppableSound(int client)
 {
 	char buffer[255];
 	Format(buffer, sizeof(buffer), "play %s", UNSTOPPABLE_RELATIVE_SOUND_PATH); 
@@ -1462,7 +1460,7 @@ public PlayUnstoppableSound(client)
 }
 
 
-public InitPrecache()
+public void InitPrecache()
 {
 	AddFileToDownloadsTable( UNSTOPPABLE_SOUND_PATH );
 	FakePrecacheSound( UNSTOPPABLE_RELATIVE_SOUND_PATH );	
@@ -1495,7 +1493,7 @@ public InitPrecache()
 
 
 // thx to V952 https://forums.alliedmods.net/showthread.php?t=212886
-stock TraceClientViewEntity(client)
+stock int TraceClientViewEntity(int client)
 {
 	float m_vecOrigin[3];
 	float m_angRotation[3];
@@ -1514,14 +1512,14 @@ stock TraceClientViewEntity(client)
 }
 
 // thx to V952 https://forums.alliedmods.net/showthread.php?t=212886
-public bool TRDontHitSelf(entity, mask, any:data)
+public bool TRDontHitSelf(int entity, int mask, any data)
 {
 	if (entity == data)
 		return false;
 	return true;
 }
 
-public PrintMapRecords(client)
+public void PrintMapRecords(int client)
 {
 	if (g_fRecordMapTime != 9999999.0)
 	{
@@ -1536,7 +1534,7 @@ public PrintMapRecords(client)
 	}
 }
 
-public MapFinishedMsgs(client, rankThisRun)
+public void MapFinishedMsgs(int client, int rankThisRun)
 {	
 	if (IsValidClient(client))
 	{
@@ -1647,7 +1645,7 @@ public MapFinishedMsgs(client, rankThisRun)
 	return;
 }
 
-public PrintChatBonus(client, zGroup)
+public void PrintChatBonus(int client, int zGroup)
 {
 	float RecordDiff;
 	char szRecordDiff[54], szName[MAX_NAME_LENGTH];
@@ -1708,7 +1706,7 @@ public PrintChatBonus(client, zGroup)
 	return;
 }
 
-public CheckMapRanks(client)
+public void CheckMapRanks(int client)
 {
 	// if client has risen in rank,
 	if (g_OldMapRank[client] > g_MapRank[client])
@@ -1724,7 +1722,7 @@ public CheckMapRanks(client)
 	}
 }
 
-public CheckBonusRanks(client, zGroup)
+public void CheckBonusRanks(int client, int zGroup)
 {
 	// if client has risen in rank,
 	if (g_OldMapRankBonus[zGroup][client] > g_MapRankBonus[zGroup][client])
@@ -1740,7 +1738,7 @@ public CheckBonusRanks(client, zGroup)
 	}
 }
 
-public ReplaceChar(char[] sSplitChar, char[] sReplace, char sString[64])
+public void ReplaceChar(char[] sSplitChar, char[] sReplace, char sString[64])
 {
 	StrCat(sString, sizeof(sString), " ");
 	char sBuffer[16][256];
@@ -1763,7 +1761,7 @@ public ReplaceChar(char[] sSplitChar, char[] sReplace, char sString[64])
 	}
 }
 
-public FormatTimeFloat(client, float time, type, char[] string, length)
+public void FormatTimeFloat(int client, float time, int type, char[] string, int length)
 {
 	char szMilli[16];
 	char szSeconds[16];
@@ -1929,7 +1927,7 @@ public FormatTimeFloat(client, float time, type, char[] string, length)
 	}
 }
 
-public SetPlayerRank(client)
+public void SetPlayerRank(int client)
 {
 	if (IsFakeClient(client))
 		return;
@@ -2053,7 +2051,7 @@ public SetPlayerRank(client)
 	}			
 }
 
-stock Action:PrintSpecMessageAll(client)
+stock Action PrintSpecMessageAll(int client)
 {
 	char szName[64];
 	GetClientName(client, szName, sizeof(szName));
@@ -2207,7 +2205,7 @@ public bool CheatFlag(const char[] voice_inputfromfile, bool isCommand, bool rem
 	}
 }
 
-public StringRGBtoInt(char color[24], intColor[4])
+public void StringRGBtoInt(char color[24], intColor[4])
 {
 	char sPart[4][24];
 	ExplodeString(color, " ", sPart, sizeof(sPart), sizeof(sPart[]));
@@ -2217,7 +2215,7 @@ public StringRGBtoInt(char color[24], intColor[4])
 	intColor[3] = 255;
 }
 
-public GetRGBColor(bot, char color[256])
+public void GetRGBColor(int bot, char color[256])
 {
 	char sPart[4][24];
 	ExplodeString(color, " ", sPart, sizeof(sPart), sizeof(sPart[]));
@@ -2244,7 +2242,7 @@ public GetRGBColor(bot, char color[256])
 
 }
 
-public SpecList(client)
+public void SpecList(int client)
 {
 	if (!IsValidClient(client) || IsFakeClient(client) || GetClientMenu(client) != MenuSource_None)
 		return;
@@ -2258,32 +2256,21 @@ public SpecList(client)
 	}
 }
 
-public PanelHandler(Handle menu, MenuAction:action, param1, param2)
+public int PanelHandler(Handle menu, MenuAction action, int param1, int param2)
 {
 }
 
-public bool TraceRayDontHitSelf(entity, mask, any:data) 
+public bool TraceRayDontHitSelf(int entity, int mask, any data) 
 {
 	return entity != data && !(0 < entity <= MaxClients);
 }
 
-/*stock bool IntoBool(status)
+stock int BooltoInt(bool status)
 {
-	if(status > 0)
-		return true;
-	else
-		return false;
-}*/
-
-stock BooltoInt(bool status)
-{
-	if(status)
-		return 1;
-	else
-		return 0;
+	return (status)?1:0;
 }
 
-public PlayQuakeSound_Spec(client, char buffer[255])
+public void PlayQuakeSound_Spec(int client, char[] buffer)
 {
 	int SpecMode;
 	for(int x = 1; x <= MaxClients; x++) 
@@ -2303,19 +2290,18 @@ public PlayQuakeSound_Spec(client, char buffer[255])
 }
 
 
-public HookCheck(client)
+public void HookCheck(int client)
 {
 	if (g_bHookMod)
 	{
 		if (HGR_IsHooking(client) || HGR_IsGrabbing(client) || HGR_IsBeingGrabbed(client) || HGR_IsRoping(client) || HGR_IsPushing(client))
 		{
-			
 			Client_Stop(client, 1);
 		}
 	}
 }
 
-public AttackProtection(client, &buttons)
+public void AttackProtection(int client, int &buttons)
 {
 	if (g_bAttackSpamProtection)
 	{
@@ -2334,7 +2320,7 @@ public AttackProtection(client, &buttons)
 	}	
 }
 
-public CheckRun(client)
+public void CheckRun(int client)
 {
 	if (!IsValidClient(client) || IsFakeClient(client))
 		return;
@@ -2363,7 +2349,7 @@ public CheckRun(client)
 	}
 }
 
-public NoClipCheck(client)
+public void NoClipCheck(int client)
 {
 	MoveType mt;
 	mt = GetEntityMoveType(client); 
@@ -2374,14 +2360,12 @@ public NoClipCheck(client)
 	}
 	if(mt == MOVETYPE_NOCLIP && (g_bTimeractivated[client]))
 	{
-
-
 		Client_Stop(client, 1);
 	}
 }
 
 
-public AutoBhopFunction(client,&buttons)
+public void AutoBhopFunction(int client,int &buttons)
 {
 	if (!IsValidClient(client))
 		return;
@@ -2396,7 +2380,7 @@ public AutoBhopFunction(client,&buttons)
 	}
 }
 
-public SpecListMenuDead(client) // What Spectators see
+public void SpecListMenuDead(int client) // What Spectators see
 {
 	char szTick[32];
 	Format(szTick, 32, "%i", g_Server_Tickrate);			
@@ -2560,7 +2544,7 @@ public SpecListMenuDead(client) // What Spectators see
 		g_SpecTarget[client] = -1;
 }
 
-public SpecListMenuAlive(client) // What player sees
+public void SpecListMenuAlive(int client) // What player sees
 {
 
 	if (IsFakeClient(client) || !g_bShowSpecs[client] ||  GetClientMenu(client) != MenuSource_None)
@@ -2607,7 +2591,7 @@ public SpecListMenuAlive(client) // What player sees
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-GetPos(client,arg) 
+void GetPos(int client, int arg) 
 {
 	float origin[3], angles[3];
 	GetClientEyePosition(client, origin);
@@ -2651,21 +2635,21 @@ GetPos(client,arg)
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action:Timer_P2PRed(Handle timer,any:client) 
+public Action Timer_P2PRed(Handle timer,any client) 
 {
 	P2PXBeam(client,0);
 }
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action:Timer_P2PGreen(Handle timer,any:client) 
+public Action Timer_P2PGreen(Handle timer,any client) 
 {
 	P2PXBeam(client,1);
 }
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-P2PXBeam(client,arg) 
+void P2PXBeam(int client, int arg) 
 {
 	float Origin0[3], Origin1[3], Origin2[3], Origin3[3];
 	Origin0[0] = (g_fvMeasurePos[client][arg][0] + 8.0);
@@ -2694,7 +2678,7 @@ P2PXBeam(client,arg)
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-Beam(client,float vecStart[3], float vecEnd[3], float life, float width, int r, int g, int b) 
+void Beam(int client,float vecStart[3], float vecEnd[3], float life, float width, int r, int g, int b) 
 {
 	TE_Start("BeamPoints");
 	TE_WriteNum("m_nModelIndex",g_Beam[2]);
@@ -2719,7 +2703,7 @@ Beam(client,float vecStart[3], float vecEnd[3], float life, float width, int r, 
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-ResetPos(client) 
+void ResetPos(int client) 
 {
 	if(g_hP2PRed[client] != null) 
 	{
@@ -2744,12 +2728,12 @@ ResetPos(client)
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public bool TraceFilterPlayers(entity,contentsMask) 
+public bool TraceFilterPlayers(int entity, int contentsMask) 
 {
 	return (entity > MaxClients) ? true : false;
 } //Thanks petsku
 
-public LoadInfoBot()
+public void LoadInfoBot()
 {
 	if (!g_bInfoBot)
 		return;
@@ -2790,7 +2774,7 @@ public LoadInfoBot()
 	}
 }
 
-public CreateNavFiles()
+public void CreateNavFiles()
 {
 	char DestFile[256];
 	char SourceFile[256];
@@ -2818,13 +2802,13 @@ public CreateNavFiles()
 	}	
 }
 
-public Action:RefreshInfoBot(Handle timer)
+public Action RefreshInfoBot(Handle timer)
 {
 	LoadInfoBot();
 }
 	
 	
-public SetInfoBotName(ent)
+public void SetInfoBotName(int ent)
 {
 	char szBuffer[64];
 	char sNextMap[128];	
@@ -2858,7 +2842,7 @@ public SetInfoBotName(ent)
 	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
 }
 
-public CenterHudDead(client)
+public void CenterHudDead(int client)
 {
 	char szTick[32];
 	char obsAika[128];
@@ -2922,7 +2906,7 @@ public CenterHudDead(client)
 		g_SpecTarget[client] = -1;
 }
 
-public CenterHudAlive(client)
+public void CenterHudAlive(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -3040,7 +3024,7 @@ public CenterHudAlive(client)
 	}
 }
 
-public Checkpoint(client, zone, zonegroup)
+public void Checkpoint(int client, int zone, int zonegroup)
 {
 	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client) || !g_bCheckpointsEnabled[client])
 		return;
@@ -3249,7 +3233,7 @@ public Checkpoint(client, zone, zonegroup)
 		}
 }
 
-public CheckpointToSpec(client, char buffer[512])
+public void CheckpointToSpec(int client, char[] buffer)
 {
 	int SpecMode;
 	for(int x = 1; x <= MaxClients; x++) 
