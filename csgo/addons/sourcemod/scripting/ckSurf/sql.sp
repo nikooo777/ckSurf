@@ -4395,7 +4395,10 @@ public SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, const c
 	int zgroup;
 
 	for (int i = 0; i<MAXZONEGROUPS; i++)
+	{
 		g_fPersonalRecordBonus[i][data] = 0.0;
+		Format(g_szPersonalRecordBonus[i][data], 64, "N/A");
+	}
 	
 	if(SQL_HasResultSet(hndl))
 	{
@@ -4437,10 +4440,11 @@ public SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char[] er
 	{
 		SQL_FetchString(hndl, 1, g_szBonusFastest[data], MAX_NAME_LENGTH);
 		g_fBonusFastest[data] = SQL_FetchFloat(hndl, 0);
-		FormatTimeFloat(1, g_fBonusFastest[data], 3, g_szBonusFastestTime[data], 54);
+		FormatTimeFloat(1, g_fBonusFastest[data], 3, g_szBonusFastestTime[data], 64);
 	} 
 	else 
 	{
+		Format(g_szBonusFastestTime[data], 64, "N/A");
 		g_fBonusFastest[data] = 9999999.0;
 	}
 	

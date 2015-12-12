@@ -20,11 +20,13 @@ public void performTeleport(int client, float pos[3], float ang[3], float vel[3]
 	{
 		Client_Stop(client, 1);
 		// If teleporting to another zone group or a zone that is not a start zone, ignore the next end touch trigger
-		if (g_mapZones[destinationZoneId][zoneGroup] != g_iClientInZone[client][2] || (g_mapZones[destinationZoneId][zoneType] != 1 && g_mapZones[destinationZoneId][zoneType] != 5))
+		if (g_iClientInZone[client][0] != -1)
 			g_bIgnoreZone[client] = true;
 
-		g_iClientInZone[client][3] = destinationZoneId;
+		g_iClientInZone[client][0] = g_mapZones[destinationZoneId][zoneType];
+		g_iClientInZone[client][1] = g_mapZones[destinationZoneId][zoneTypeId];
 		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
+		g_iClientInZone[client][3] = destinationZoneId;
 	}
 	TeleportEntity(client, pos, ang, vel);
 }
@@ -1318,6 +1320,7 @@ public void SetClientDefaults(int client)
 
 	for (int x = 0; x < MAXZONEGROUPS; x++)
 	{
+		Format(g_szPersonalRecordBonus[x][client], 64, "N/A");
 		g_bCheckpointsFound[x][client] = false;
 		g_MapRankBonus[x][client] = 9999999;
 		g_Stage[x][client] = 0;
