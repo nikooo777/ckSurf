@@ -373,8 +373,7 @@ Handle g_PracticeFinishForward;
 char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12];
 
 
-int g_successfulTransactions;
-int g_failedTransactions[5];
+int g_failedTransactions[7];
 
 bool g_bInTransactionChain = false;
 float g_flastClientUsp[MAXPLAYERS+1];

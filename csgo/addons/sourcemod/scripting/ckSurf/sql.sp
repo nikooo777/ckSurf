@@ -211,7 +211,7 @@ public db_setupDatabase()
 
 
 	////////////////////////////
-	// 1.2 A bunch of changes //
+	// 1.18 A bunch of changes //
 	// - Zone Groups          //
 	// - Zone Names           //
 	// - Bonus Tiers          //
@@ -225,18 +225,22 @@ public db_setupDatabase()
 	SQL_FastQuery(g_hDb, sql_createPlayerFlags);
 
 	SQL_UnlockDatabase(g_hDb);
-	g_successfulTransactions = 0;
+
 	for (int i = 0; i < sizeof(g_failedTransactions); i++)
 		g_failedTransactions[i] = 0;
 
-	addExtraCheckpoints();
+	txn_addExtraCheckpoints();
 }
 
-void addExtraCheckpoints()
+void txn_addExtraCheckpoints()
 {
 	// Add extra checkpoints to Checkpoints and add new primary key:
 	if (!SQL_FastQuery(g_hDb, "SELECT cp35 FROM ck_checkpoints;"))
 	{
+		PrintToServer("---------------------------------------------------------------------------");
+		PrintToServer("[ckSurf] Started to make changes to database. Updating from 1.17 -> 1.18.");
+		PrintToServer("[ckSurf] WARNING: DO NOT CONNECT TO THE SERVER, OR CHANGE MAP!");
+		PrintToServer("[ckSurf] Adding extra checkpoints... (1 / 6)");
 		g_bInTransactionChain = true;
 		Transaction h_checkpoint = SQL_CreateTransaction();
 		
@@ -249,7 +253,7 @@ void addExtraCheckpoints()
 	}
 }
 
-void addZoneGroups()
+void txn_addZoneGroups()
 {
 	// Add zonegroups to ck_bonus and make it a primary key
 	if (!SQL_FastQuery(g_hDb, "SELECT zonegroup FROM ck_bonus;"))
@@ -265,7 +269,7 @@ void addZoneGroups()
 	}
 }
 
-void recreatePlayerTemp()
+void txn_recreatePlayerTemp()
 {
 	// Recreate playertemp without BonusTimer
 	if (SQL_FastQuery(g_hDb, "SELECT BonusTimer FROM ck_playertemp;"))
@@ -278,7 +282,7 @@ void recreatePlayerTemp()
 	}
 }
 
-void addBonusTiers()
+void txn_addBonusTiers()
 {
 	// Add bonus tiers
 	if (SQL_FastQuery(g_hDb, "ALTER TABLE ck_maptier ADD btier1 INT;"))
@@ -293,7 +297,7 @@ void addBonusTiers()
 		SQL_ExecuteTransaction(g_hDb, h_maptiers, SQLTxn_Success, SQLTxn_TXNFailed, 4);  
 	}
 }
-void addSpawnPoints()
+void txn_addSpawnPoints()
 {
 	if (!SQL_FastQuery(g_hDb, "SELECT zonegroup FROM ck_spawnlocations;"))
 	{
@@ -306,45 +310,52 @@ void addSpawnPoints()
 	}
 }
 
+void txn_changesToZones()
+{
+	Transaction h_changesToZones = SQL_CreateTransaction();
+	// Set right zonegroups
+	SQL_AddQuery(h_changesToZones, "UPDATE ck_zones SET zonegroup = 1 WHERE zonetype = 3 OR zonetype = 4;");
+	SQL_AddQuery(h_changesToZones, "UPDATE ck_zones SET zonetypeid = 0 WHERE zonetype = 3 OR zonetype = 4;");
+
+	// Remove ZoneTypes 3 & 4
+	SQL_AddQuery(h_changesToZones, "UPDATE ck_zones SET zonetype = 1 WHERE zonetype = 3;");
+	SQL_AddQuery(h_changesToZones, "UPDATE ck_zones SET zonetype = 2 WHERE zonetype = 4;");
+
+	// Adjust bigger zonetype numbers to match the changes
+	SQL_AddQuery(h_changesToZones, "UPDATE ck_zones SET zonetype = zonetype-2 WHERE zonetype > 4;");
+	SQL_ExecuteTransaction(g_hDb, h_changesToZones, SQLTxn_Success, SQLTxn_TXNFailed, 6);
+}
+
 
 public SQLTxn_Success(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
 {
 	switch (data)
 	{
 		case 1:{
-			addZoneGroups();
+			PrintToServer("[ckSurf] Checkpoints added succesfully! Next up: adding zonegroups to ck_bonus (2 / 6)");
+			txn_addZoneGroups();
 		}
 		case 2:{
-			recreatePlayerTemp();
+			PrintToServer("[ckSurf] Bonus zonegroups succesfully added! Next up: recreating playertemp (3 / 6)");
+			txn_recreatePlayerTemp();
 		}
 		case 3:{
-			addBonusTiers();
+			PrintToServer("[ckSurf] Playertemp succesfully recreated! Next up: adding bonus tiers (4 / 6)");
+			txn_addBonusTiers();
 		}
 		case 4:{
-			addSpawnPoints();
+			PrintToServer("[ckSurf] Bonus tiers added succesfully! Next up: adding spawn points (5 / 6)");
+			txn_addSpawnPoints();
 		}
-	}
-
-	g_successfulTransactions++;
-
-	if (g_successfulTransactions == 5)
-	{
-		g_bInTransactionChain = false;
-
-		SQL_LockDatabase(g_hDb);
-
-		// Set Bonuses to zonegroup 1
-		SQL_FastQuery(g_hDb, "UPDATE ck_zones SET zonegroup = 1 WHERE zonetype = 3 OR zonetype = 4;");
-		SQL_FastQuery(g_hDb, "UPDATE ck_zones SET zonetypeid = 0 WHERE zonetype = 3 OR zonetype = 4;");
-
-		// Remove ZoneTypes 3 & 4
-		SQL_FastQuery(g_hDb, "UPDATE ck_zones SET zonetype = 1 WHERE zonetype = 3;");
-		SQL_FastQuery(g_hDb, "UPDATE ck_zones SET zonetype = 2 WHERE zonetype = 4;");
-		SQL_FastQuery(g_hDb, "UPDATE ck_zones SET zonetype = zonetype-2 WHERE zonetype > 4;");
-
-		SQL_UnlockDatabase(g_hDb);
-
-		ForceChangeLevel(g_szMapName, "Database Changes v1.2 Done. Restarting Map.");
+		case 5:{
+			PrintToServer("[ckSurf] Spawnpoints added succesfully! Next up: making changes to zones, to make them match the new database (6 / 6)");
+			txn_changesToZones()
+		}
+		case 6: {
+			g_bInTransactionChain = false;
+			PrintToServer("[ckSurf] All changes succesfully done! Changing map!");
+			ForceChangeLevel(g_szMapName, "[ckSurf] Changing level after changes to the database have been done");
+		}
 	}
 }
 
@@ -355,22 +366,36 @@ public SQLTxn_TXNFailed(Handle db, any:data, numQueries, const char[] error, fai
 		switch (data)
 		{
 			case 1:{
-				addExtraCheckpoints();
+				PrintToServer("[ckSurf] Error in adding extra checkpoints! Retrying.. (%s)", error);
+				txn_addExtraCheckpoints();
 			}
 			case 2:{
-				addZoneGroups();
+				PrintToServer("[ckSurf] Error in addin zonegroups! Retrying... (%s)", error);
+				txn_addZoneGroups();
 			}
 			case 3:{
-				recreatePlayerTemp();
+				PrintToServer("[ckSurf] Error in recreating playertemp! Retrying... (%s)", error);
+				txn_recreatePlayerTemp();
 			}
 			case 4:{
-				addBonusTiers();
+				PrintToServer("[ckSurf] Error in adding bonus tiers! Retrying... (%s)", error);
+				txn_addBonusTiers();
+			}
+			case 5:{
+				PrintToServer("[ckSurf] Error in adding spawn points! Retrying... (%s)", error);
+				txn_addSpawnPoints();
+			}
+			case 6:{
+				PrintToServer("[ckSurf] Error in making changes to zones! Retrying... (%s)", error);
+				txn_changesToZones();
 			}
 		}
 	}
 	else
 	{
 		g_bInTransactionChain = false;
+		PrintToServer("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
+		PrintToServer("[ckSurf]: Revert back to database backup.");
 		LogError("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
 	}
 	g_failedTransactions[data]++;
