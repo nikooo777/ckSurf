@@ -1,4 +1,4 @@
-public Action Command_Vip(client, args)
+public Action Command_Vip(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;
@@ -9,7 +9,7 @@ public Action Command_Vip(client, args)
 		return Plugin_Handled;
 	}
 
-	Handle vipEffects = CreateMenu(h_vipEffects);
+	Menu vipEffects = CreateMenu(h_vipEffects);
 	char szMenuItem[128];
 	
 	SetMenuTitle(vipEffects, "Exclusive VIP effects: ");
@@ -30,7 +30,7 @@ public Action Command_Vip(client, args)
 	return Plugin_Handled;
 }
 
-public h_vipEffects(Handle tMenu, MenuAction action, client, item)
+public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -56,7 +56,7 @@ public h_vipEffects(Handle tMenu, MenuAction action, client, item)
 	}
 }
 
-public Action Command_SetTitle(client, args)
+public Action Command_SetTitle(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;
@@ -66,7 +66,7 @@ public Action Command_SetTitle(client, args)
 		PrintToChat(client, "[%cCK%c] You don't have access to any custom titles.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-	Handle playersTitles = CreateMenu(H_PlayersTitles);
+	Menu playersTitles = CreateMenu(H_PlayersTitles);
 	SetMenuTitle(playersTitles, "Your available titles: ");
 
 	char id[2], szMenuItem[54];
@@ -89,7 +89,7 @@ public Action Command_SetTitle(client, args)
 	DisplayMenu(playersTitles, client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
-public H_PlayersTitles(Handle tMenu, MenuAction action, client, item)
+public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -122,7 +122,7 @@ public H_PlayersTitles(Handle tMenu, MenuAction action, client, item)
 }
 
 
-public Action Command_normalMode(client, args)
+public Action Command_normalMode(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;
@@ -135,7 +135,7 @@ public Action Command_normalMode(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_createPlayerCheckpoint(client, args)
+public Action Command_createPlayerCheckpoint(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -168,7 +168,7 @@ public Action Command_createPlayerCheckpoint(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_goToPlayerCheckpoint(client, args)
+public Action Command_goToPlayerCheckpoint(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;
@@ -182,7 +182,7 @@ public Action Command_goToPlayerCheckpoint(client, args)
 			g_bPracticeMode[client] = true;
 		}
 
-		SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,0.0});	
+		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,0.0}));	
 		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], g_fCheckpointVelocity[client]);
 
 		//PrintToChat(client, "[%cCK%c] %cTeleported to last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
@@ -193,7 +193,7 @@ public Action Command_goToPlayerCheckpoint(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_undoPlayerCheckpoint(client, args)
+public Action Command_undoPlayerCheckpoint(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -225,7 +225,7 @@ public Action Command_undoPlayerCheckpoint(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_Teleport(client, args)
+public Action Command_Teleport(int client, int args)
 {
 	int stageZoneId = -1;
 
@@ -270,8 +270,8 @@ public Action Command_Teleport(client, args)
 				g_iClientInZone[client][3] = stageZoneId;
 				g_iClientInZone[client][2] = g_mapZones[stageZoneId][zoneGroup];
 
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+				TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 			}
 		} else {
 			PrintToChat(client, "%t", "StageNotFound",MOSSGREEN,WHITE,g_Stage[g_iClientInZone[client][2]][client]);
@@ -284,13 +284,13 @@ public Action Command_Teleport(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_HowTo(client, args)
+public Action Command_HowTo(int client, int args)
 {
 	ShowMOTDPanel(client, "ckSurf - How To Surf", "http://koti.kapsi.fi/~mukavajoni/how", MOTDPANEL_TYPE_URL);
 	return Plugin_Handled;
 }
 
-public Action Command_Zones(client, args)
+public Action Command_Zones(int client, int args)
 {
 	if (IsValidClient(client))
 	{
@@ -300,7 +300,7 @@ public Action Command_Zones(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_ListBonuses(client, args)
+public Action Command_ListBonuses(int client, int args)
 {
 	if (IsValidClient(client))
 	{
@@ -309,7 +309,7 @@ public Action Command_ListBonuses(client, args)
 	return Plugin_Handled;
 }
 
-public ListBonuses(client, int type)
+public void ListBonuses(int client, int type)
 {
 	// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
 	char buffer[3];
@@ -343,7 +343,7 @@ public ListBonuses(client, int type)
 	listBonusesMenu.Display(client, 60);
 }
 
-public MenuHandler_SelectBonusTop(Handle sMenu, MenuAction action, client, item)
+public int MenuHandler_SelectBonusTop(Menu sMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -362,7 +362,7 @@ public MenuHandler_SelectBonusTop(Handle sMenu, MenuAction action, client, item)
 }
 
 
-public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
+public int MenuHandler_SelectBonus(Menu sMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -381,9 +381,9 @@ public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
 			else
 			{
 				//int zoneid = getZoneID(zoneGrp, 1);
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
 				//performTeleport(client, g_fZonePositions[zoneid], NULL_VECTOR, Float:{0.0,0.0,-100.0}, zoneid);
-				TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 			}
 		}
 		case MenuAction_End:
@@ -393,7 +393,7 @@ public MenuHandler_SelectBonus(Handle sMenu, MenuAction action, client, item)
 	}
 }
 
-public Action Command_ToBonus(client, args)
+public Action Command_ToBonus(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -445,8 +445,8 @@ public Action Command_ToBonus(client, args)
 		}
 		else 
 		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0}, getZoneID(zoneGrp, 1));
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+			performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], view_as<float>({0.0,0.0,-100.0}), getZoneID(zoneGrp, 1));
 			//TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
@@ -472,8 +472,8 @@ public Action Command_ToBonus(client, args)
 			}
 			else // In game
 			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, bonusZoneId);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+				performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), bonusZoneId);
 				//TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			//g_bBonusTimer[client] = false;
@@ -488,7 +488,7 @@ public Action Command_ToBonus(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_SelectStage(client, args)
+public Action Command_SelectStage(int client, int args)
 {
 	if (IsValidClient(client))
 		ListStages(client);
@@ -496,10 +496,10 @@ public Action Command_SelectStage(client, args)
 }
 
 
-public ListStages(client)
+public void ListStages(int client)
 {
 		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
-	Handle sMenu = CreateMenu(MenuHandler_SelectStage);
+	Menu sMenu = CreateMenu(MenuHandler_SelectStage);
 	SetMenuTitle(sMenu, "Stage selector");
 	int amount = 0;
 	char StageName[64], ZoneInfo[6];
@@ -544,7 +544,7 @@ public ListStages(client)
 	DisplayMenu(sMenu, client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_SelectStage(Handle tMenu, MenuAction action, client, item)
+public int MenuHandler_SelectStage(Menu tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -563,8 +563,8 @@ public MenuHandler_SelectStage(Handle tMenu, MenuAction action, client, item)
 			}
 			else
 			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0}, id);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+				performTeleport(client, g_fZonePositions[id], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), id);
 				//TeleportEntity(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 		}
@@ -575,7 +575,7 @@ public MenuHandler_SelectStage(Handle tMenu, MenuAction action, client, item)
 	}
 }
 
-public Action Command_ToStage(client, args)
+public Action Command_ToStage(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -620,8 +620,8 @@ public Action Command_ToStage(client, args)
 			}
 			else
 			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[stageZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, stageZoneId);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+				performTeleport(client, g_fZonePositions[stageZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), stageZoneId);
 				//TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			g_Stage[g_iClientInZone[client][2]][client] = StageId;
@@ -635,7 +635,7 @@ public Action Command_ToStage(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_ToEnd(client, args)
+public Action Command_ToEnd(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -673,15 +673,15 @@ public Action Command_ToEnd(client, args)
 		}
 		else
 		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, endZoneId);
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), endZoneId);
 		}
 	}
 
 	return Plugin_Handled;
 }
 
-public Action Command_Restart(client, args)
+public Action Command_Restart(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -703,8 +703,8 @@ public Action Command_Restart(client, args)
 		}
 		else 
 		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-			performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0}, getZoneID(0, 1));
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+			performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], view_as<float>({0.0,0.0,-100.0}), getZoneID(0, 1));
 			//TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
 			return Plugin_Handled;
 		}
@@ -726,8 +726,8 @@ public Action Command_Restart(client, args)
 			}
 			else
 			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-				performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0}, startZoneId);
+				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+				performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), startZoneId);
 				//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
 			}
 			g_iClientInZone[client][2] = 0;
@@ -739,7 +739,7 @@ public Action Command_Restart(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_HideChat(client, args)
+public Action Client_HideChat(int client, int args)
 {
 	HideChat(client);
 	if (g_bHideChat[client])
@@ -749,21 +749,17 @@ public Action Client_HideChat(client, args)
 	return Plugin_Handled;
 }
 
-public HideChat(client)
+public void HideChat(int client)
 {
 	if (!g_bHideChat[client])
-	{
-		g_bHideChat[client]=true;
 		SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD")|HIDE_RADAR|HIDE_CHAT);
-	}
 	else
-	{
-		g_bHideChat[client]=false;
 		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
-	}
+	
+	g_bHideChat[client] = !g_bHideChat[client];
 }
 
-public Action ToggleCheckpoints(client, args)
+public Action ToggleCheckpoints(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -791,7 +787,7 @@ public Action ToggleCheckpoints(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_HideWeapon(client, args)
+public Action Client_HideWeapon(int client, int args)
 {
 	HideViewModel(client);
 	if (g_bViewModel[client])
@@ -801,20 +797,12 @@ public Action Client_HideWeapon(client, args)
 	return Plugin_Handled;
 }
 
-public HideViewModel(client)
+public void HideViewModel(int client)
 {
-	if (!g_bViewModel[client])
-	{
-		g_bViewModel[client]=true;
-		Client_SetDrawViewModel(client,true);
-	}
-	else
-	{
-		g_bViewModel[client]=false;
-		Client_SetDrawViewModel(client,false);
-	}
+	Client_SetDrawViewModel(client,!g_bViewModel[client]);
+	g_bViewModel[client] = !g_bViewModel[client];
 }
-public Action Client_Wr(client, args)
+public Action Client_Wr(int client, int args)
 {
 	if (IsValidClient(client))
 	{
@@ -826,18 +814,13 @@ public Action Client_Wr(client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_Tier(client, args)
+public Action Command_Tier(int client, int args)
 {
-	if (IsValidClient(client)) 
-	{
-		if(g_bTierFound[0]) 
-		{
-			PrintToChat(client, g_sTierString[0]);
-		}
-	}
+	if (IsValidClient(client) && g_bTierFound[0]) //the second condition is only checked if the first passes
+		PrintToChat(client, g_sTierString[0]);
 }
 
-public Action Command_bTier(client, args)
+public Action Command_bTier(int client, int args)
 {
 	if (IsValidClient(client)) 
 	{
@@ -864,7 +847,7 @@ public Action Command_bTier(client, args)
 	}
 }
 
-public Action Client_Avg(client, args)
+public Action Client_Avg(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;	
@@ -894,14 +877,14 @@ public Action Client_Avg(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_Flashlight(client, args)
+public Action Client_Flashlight(int client, int args)
 {
 	if (IsValidClient(client) && IsPlayerAlive(client)) 
 		SetEntProp(client, Prop_Send, "m_fEffects", GetEntProp(client, Prop_Send, "m_fEffects") ^ 4);
 	return Plugin_Handled;
 }
 
-public Action Client_Challenge(client, args)
+public Action Client_Challenge(int client, int args)
 {
 	if (!g_bChallenge[client] && !g_bChallenge_Request[client])
 	{
@@ -909,7 +892,7 @@ public Action Client_Challenge(client, args)
 		{
 			if (g_bNoBlock)
 			{
-				Handle menu2 = CreateMenu(ChallengeMenuHandler2);
+				Menu menu2 = CreateMenu(ChallengeMenuHandler2);
 				char tmp[64];
 				if (g_bPointSystem)
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nYour Points: %i", g_pr_points[client]);
@@ -947,7 +930,7 @@ public Action Client_Challenge(client, args)
 }
 
 
-public ChallengeMenuHandler2(Handle menu, MenuAction action, param1,param2)
+public int ChallengeMenuHandler2(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -968,7 +951,7 @@ public ChallengeMenuHandler2(Handle menu, MenuAction action, param1,param2)
 					else
 						g_Challenge_Bet[param1] = 0;		
 		char szPlayerName[MAX_NAME_LENGTH];	
-		Handle menu2 = CreateMenu(ChallengeMenuHandler3);
+		Menu menu2 = CreateMenu(ChallengeMenuHandler3);
 		SetMenuTitle(menu2, "ckSurf - Challenge: Select your Opponent");
 		int playerCount=0;
 		for (int i = 1; i <= MaxClients; i++)
@@ -999,7 +982,7 @@ public ChallengeMenuHandler2(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public ChallengeMenuHandler3(Handle menu, MenuAction action, param1,param2)
+public int ChallengeMenuHandler3(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1049,14 +1032,13 @@ public ChallengeMenuHandler3(Handle menu, MenuAction action, param1,param2)
 			}
 		}
 	}
-	else
-	if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{	
 		CloseHandle(menu);
 	}
 }
 
-public Action Client_Language(client, args)
+public Action Client_Language(int client, int args)
 {
 	if (!IsValidClient(client))
 			return Plugin_Handled;
@@ -1066,7 +1048,7 @@ public Action Client_Language(client, args)
 }
 
 
-public Action Client_Abort(client, args)
+public Action Client_Abort(int client, int args)
 {
 	if (g_bChallenge[client])
 	{
@@ -1084,7 +1066,7 @@ public Action Client_Abort(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_Accept(client, args)
+public Action Client_Accept(int client, int args)
 {
 	char szSteamId[32];
 	char szCP[32];
@@ -1106,8 +1088,8 @@ public Action Client_Accept(client, args)
 				g_bChallenge_Abort[i]=false;
 				g_Challenge_Bet[client] = g_Challenge_Bet[i];
 				g_bChallenge_Checkpoints[client] = g_bChallenge_Checkpoints[i];
-				TeleportEntity(client, g_fSpawnPosition[i],NULL_VECTOR, Float:{0.0,0.0,-100.0});
-				TeleportEntity(i, g_fSpawnPosition[i],NULL_VECTOR, Float:{0.0,0.0,-100.0});
+				TeleportEntity(client, g_fSpawnPosition[i],NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
+				TeleportEntity(i, g_fSpawnPosition[i],NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 				SetEntityMoveType(i, MOVETYPE_NONE);
 				SetEntityMoveType(client, MOVETYPE_NONE);
 				g_CountdownTime[i] = 10;
@@ -1145,7 +1127,7 @@ public Action Client_Accept(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_Usp(client, args)
+public Action Client_Usp(int client, int args)
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client))
 		return Plugin_Handled;
@@ -1166,7 +1148,7 @@ public Action Client_Usp(client, args)
 	return Plugin_Handled;
 }
 
-InstantSwitch(client, weapon, timer = 0) 
+void InstantSwitch(int client, int weapon, int timer = 0) 
 {
 	if (weapon==-1)
 		return;
@@ -1184,7 +1166,7 @@ InstantSwitch(client, weapon, timer = 0)
 	SetEntProp(ViewModel, Prop_Send, "m_nSequence", 0);
 }
 
-public Action Client_Surrender (client, args)
+public Action Client_Surrender (int client, int args)
 {
 	char szSteamIdOpponent[32];
 	char szNameOpponent[MAX_NAME_LENGTH];	
@@ -1240,13 +1222,13 @@ public Action Client_Surrender (client, args)
 	return Plugin_Handled;
 }
 
-public Action Command_ext_Menu(client, const char[] command, argc) 
+public Action Command_ext_Menu(int client, const char[] command, int argc) 
 {
 	return Plugin_Handled;
 }
 
 //https://forums.alliedmods.net/showthread.php?t=206308
-public Action Command_JoinTeam(client, const char[] command, argc)
+public Action Command_JoinTeam(int client, const char[] command, int argc)
 { 
 	if(!IsValidClient(client) || argc < 1)
 		return Plugin_Handled;		
@@ -1259,7 +1241,7 @@ public Action Command_JoinTeam(client, const char[] command, argc)
 }
 
 //https://forums.alliedmods.net/showthread.php?t=206308
-TeamChangeActual(client, toteam)
+void TeamChangeActual(int client, int toteam)
 {
 	if (g_bForceCT) {
 		if (toteam == 0 || toteam == 2) {
@@ -1282,13 +1264,13 @@ TeamChangeActual(client, toteam)
 }
 
 
-public Action Client_OptionMenu(client, args)
+public Action Client_OptionMenu(int client, int args)
 {
 	OptionMenu(client);
 	return Plugin_Handled;
 }
 
-public Action NoClip(client, args)
+public Action NoClip(int client, int args)
 {
 	if (!IsValidClient(client))					
 		return Plugin_Handled;	
@@ -1298,20 +1280,20 @@ public Action NoClip(client, args)
 	return Plugin_Handled;
 }
 
-public Action UnNoClip(client, args)
+public Action UnNoClip(int client, int args)
 {
 	if (g_bNoClip[client] == true)
 		Action_UnNoClip(client);
 	return Plugin_Handled;
 }
 
-public Action Client_Top(client, args)
+public Action Client_Top(int client, int args)
 {	
 	ckTopMenu(client);
 	return Plugin_Handled;
 }
 
-public Action Client_MapTop(client, args)
+public Action Client_MapTop(int client, int args)
 {	
 	char szArg[128];   
 
@@ -1327,7 +1309,7 @@ public Action Client_MapTop(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_BonusTop(client, args)
+public Action Client_BonusTop(int client, int args)
 {
 	char szArg[128], zGrp; 
 
@@ -1405,7 +1387,7 @@ public Action Client_BonusTop(client, args)
 }
 
 
-public Action Client_Spec(client, args)
+public Action Client_Spec(int client, int args)
 {	
 	SpecPlayer(client, args);
 	return Plugin_Handled;
@@ -1413,13 +1395,13 @@ public Action Client_Spec(client, args)
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action Command_Menu(client,args) 
+public Action Command_Menu(int client, int args) 
 {
 	DisplayMenu(g_hMainMenu,client,MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 
-public Handler_MainMenu(Handle menu,MenuAction action,param1,param2) 
+public int Handler_MainMenu(Menu menu,MenuAction action, int param1, int param2) 
 {
 	if(action == MenuAction_Select) 
 	{
@@ -1455,7 +1437,7 @@ public Handler_MainMenu(Handle menu,MenuAction action,param1,param2)
 }
 
 
-public SpecPlayer(client,args)
+public void SpecPlayer(int client, int args)
 {
 	char szPlayerName[MAX_NAME_LENGTH];
 	char szPlayerName2[256];
@@ -1467,7 +1449,7 @@ public SpecPlayer(client,args)
 	
 	if (args==0)
 	{		
-		Handle menu = CreateMenu(SpecMenuHandler);
+		Menu menu = CreateMenu(SpecMenuHandler);
 		
 		if(g_bSpectate[client])
 			SetMenuTitle(menu, "ckSurf - Spec menu (press 'm' to rejoin a team!)");	
@@ -1567,7 +1549,7 @@ public SpecPlayer(client,args)
 	}
 }
 
-public SpecMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1629,14 +1611,14 @@ public SpecMenuHandler(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public CompareMenu(client,args)
+public void CompareMenu(int client, int args)
 {
 	char szArg[MAX_NAME_LENGTH];
 	char szPlayerName[MAX_NAME_LENGTH];	
 	if (args == 0)
 	{
 		Format(szPlayerName, MAX_NAME_LENGTH, "");
-		Handle menu = CreateMenu(CompareSelectMenuHandler);
+		Menu menu = CreateMenu(CompareSelectMenuHandler);
 		SetMenuTitle(menu, "ckSurf - Compare menu");		
 		int playerCount=0;
 		for (int i = 1; i <= MaxClients; i++)
@@ -1698,7 +1680,7 @@ public CompareMenu(client,args)
 	}
 }
 
-public CompareSelectMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int CompareSelectMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1728,7 +1710,7 @@ public CompareSelectMenuHandler(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public ProfileMenu(client,args)
+public void ProfileMenu(int client, int args)
 {
 	//spam protection
 	float diff = GetGameTime() - g_fProfileMenuLastQuery[client];
@@ -1744,7 +1726,7 @@ public ProfileMenu(client,args)
 	if (args == 0)
 	{
 		char szPlayerName[MAX_NAME_LENGTH];	
-		Handle menu = CreateMenu(ProfileSelectMenuHandler);
+		Menu menu = CreateMenu(ProfileSelectMenuHandler);
 		SetMenuTitle(menu, "ckSurf - Profile menu");		
 		GetClientName(client, szPlayerName, MAX_NAME_LENGTH);	
 		AddMenuItem(menu, szPlayerName, szPlayerName);	
@@ -1813,7 +1795,7 @@ public ProfileMenu(client,args)
 	}
 }
 
-public ProfileSelectMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int ProfileSelectMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1846,7 +1828,7 @@ public ProfileSelectMenuHandler(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public Action Client_AutoBhop(client, args) 
+public Action Client_AutoBhop(int client, int args) 
 { 	
 	AutoBhop(client);
 	if (g_bAutoBhop)
@@ -1859,17 +1841,15 @@ public Action Client_AutoBhop(client, args)
 	return Plugin_Handled;
 } 
 
-public AutoBhop(client)
+public void AutoBhop(int client)
 {
 	if (!g_bAutoBhop)
 		PrintToChat(client, "%t", "AutoBhop3",MOSSGREEN,WHITE);
-	if (!g_bAutoBhopClient[client])
-		g_bAutoBhopClient[client] = true; 
-	else
-		g_bAutoBhopClient[client] = false; 
+
+	g_bAutoBhopClient[client] = !g_bAutoBhopClient[client]; 
 }
 
-public Action Client_Hide(client, args) 
+public Action Client_Hide(int client, int args) 
 { 	
 	HideMethod(client);
 	if (!g_bHide[client])
@@ -1879,33 +1859,30 @@ public Action Client_Hide(client, args)
 	return Plugin_Handled;
 } 
 
-public HideMethod(client)
+public void HideMethod(int client)
 {
-	if (!g_bHide[client])
-		g_bHide[client] = true; 
-	else
-		g_bHide[client] = false; 
+	g_bHide[client] = !g_bHide[client];
 }
 
-public Action Client_Latest(client, args)
+public Action Client_Latest(int client, int args)
 {
 	db_ViewLatestRecords(client);
 	return Plugin_Handled;
 }
 
-public Action Client_Showsettings(client, args)
+public Action Client_Showsettings(int client, int args)
 {
 	ShowSrvSettings(client);
 	return Plugin_Handled;
 }
 
-public Action Client_Help(client, args)
+public Action Client_Help(int client, int args)
 {
 	HelpPanel(client);
 	return Plugin_Handled;
 }
 
-public Action Client_Ranks(client, args)
+public Action Client_Ranks(int client, int args)
 {
 	if (IsValidClient(client))
 		PrintToChat(client, "[%cCK%c] %c%s (0p)  %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)",
@@ -1915,26 +1892,26 @@ public Action Client_Ranks(client, args)
 	return Plugin_Handled;
 }
 
-public Action Client_Profile(client, args)
+public Action Client_Profile(int client, int args)
 {
 	ProfileMenu(client,args);
 	return Plugin_Handled;
 }
 
-public Action Client_Compare(client, args)
+public Action Client_Compare(int client, int args)
 {
 	CompareMenu(client,args);
 	return Plugin_Handled;
 }
 
-public Action Client_RankingSystem(client, args)
+public Action Client_RankingSystem(int client, int args)
 {
 	PrintToChat(client,"[%cCK%c]%c Loading html page.. (requires cl_disablehtmlmotd 0)", MOSSGREEN,WHITE,LIMEGREEN);
 	ShowMOTDPanel(client, "ckSurf - Ranking System" ,"http://koti.kapsi.fi/~mukavajoni/ranking/index.html", MOTDPANEL_TYPE_URL);
 	return Plugin_Handled;
 }
 
-public Action Client_Pause(client, args) 
+public Action Client_Pause(int client, int args) 
 {
 	if (GetClientTeam(client) == 1) return Plugin_Handled;
 	PauseMethod(client);	
@@ -1945,7 +1922,7 @@ public Action Client_Pause(client, args)
 	return Plugin_Handled;
 }
 
-public PauseMethod(client)
+public void PauseMethod(int client)
 {
 	if (GetClientTeam(client) == 1) return;
 	if (g_bPause[client]==false && IsValidEntity(client))
@@ -1988,11 +1965,11 @@ public PauseMethod(client)
 		else
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 5, true);
 
-		TeleportEntity(client, NULL_VECTOR,NULL_VECTOR, Float:{0.0,0.0,-100.0});
+		TeleportEntity(client, NULL_VECTOR,NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 	}
 }
 
-public Action Client_HideSpecs(client, args) 
+public Action Client_HideSpecs(int client, int args) 
 {
 	HideSpecs(client);
 	if (g_bShowSpecs[client] == true)
@@ -2002,15 +1979,12 @@ public Action Client_HideSpecs(client, args)
 	return Plugin_Handled;
 }
 
-public HideSpecs(client)
+public void HideSpecs(int client)
 {
-	if (g_bShowSpecs[client] == true)
-		g_bShowSpecs[client] = false;
-	else
-		g_bShowSpecs[client] = true;
+	g_bShowSpecs[client] = !g_bShowSpecs[client];
 }
 
-public Action Client_Showtime(client, args) 
+public Action Client_Showtime(int client, int args) 
 {
 	ShowTime(client);
 	if (g_bShowTime[client])
@@ -2020,15 +1994,12 @@ public Action Client_Showtime(client, args)
 	return Plugin_Handled;
 }
 
-public ShowTime(client)
+public void ShowTime(int client)
 {
-	if (g_bShowTime[client])
-		g_bShowTime[client] = false;
-	else
-		g_bShowTime[client] = true;
+	g_bShowTime[client] = !g_bShowTime[client];
 }
 	
-public GoToMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int GoToMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -2062,26 +2033,26 @@ public GoToMenuHandler(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public GotoMethod(client, i)
+public void GotoMethod(int client, int target)
 {	
 	if (!IsValidClient(client) || IsFakeClient(client))
 		return;
 	char szTargetName[MAX_NAME_LENGTH];
-	GetClientName(i, szTargetName, MAX_NAME_LENGTH);	
-	if (GetEntityFlags(i) & FL_ONGROUND)
+	GetClientName(target, szTargetName, MAX_NAME_LENGTH);	
+	if (GetEntityFlags(target) & FL_ONGROUND)
 	{
 		Client_Stop(client, 0);
 
-		int ducked = GetEntProp(i, Prop_Send, "m_bDucked");
-		int ducking = GetEntProp(i, Prop_Send, "m_bDucking");
+		int ducked = GetEntProp(target, Prop_Send, "m_bDucked");
+		int ducking = GetEntProp(target, Prop_Send, "m_bDucking");
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)
 		{
 			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 			{
 				float position[3];
 				float angles[3];
-				GetClientAbsOrigin(i,position);
-				GetClientEyeAngles(i,angles);
+				GetClientAbsOrigin(target,position);
+				GetClientEyeAngles(target,angles);
 
 				AddVectors(position, angles, g_fTeleLocation[client]);
 				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
@@ -2101,13 +2072,13 @@ public GotoMethod(client, i)
 			{
 				float position[3];
 				float angles[3];
-				GetClientAbsOrigin(i,position);
-				GetClientEyeAngles(i,angles);
-				performTeleport(client, position, angles, Float:{0.0,0.0,-100.0}, g_iClientInZone[i][0]);
+				GetClientAbsOrigin(target,position);
+				GetClientEyeAngles(target,angles);
+				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][0]);
 				//TeleportEntity(client, position, angles, Float:{0.0,0.0,-100.0});
 				char szClientName[MAX_NAME_LENGTH];
 				GetClientName(client, szClientName, MAX_NAME_LENGTH);	
-				PrintToChat(i, "%t", "Goto5", MOSSGREEN,WHITE, szClientName);
+				PrintToChat(target, "%t", "Goto5", MOSSGREEN,WHITE, szClientName);
 			}
 		}
 		else
@@ -2125,7 +2096,7 @@ public GotoMethod(client, i)
 
 
 
-public Action Client_GoTo(client, args) 
+public Action Client_GoTo(int client, int args) 
 {
 	if (!g_bGoToServer)
 		PrintToChat(client, "%t", "Goto1",MOSSGREEN,WHITE,RED,WHITE);
@@ -2143,7 +2114,7 @@ public Action Client_GoTo(client, args)
 		char szArg[MAX_NAME_LENGTH];
 		if (args==0)
 		{
-			Handle menu = CreateMenu(GoToMenuHandler);
+			Menu menu = CreateMenu(GoToMenuHandler);
 			SetMenuTitle(menu, "ckSurf - Goto menu");
 			int playerCount=0;
 			for (int i = 1; i <= MaxClients; i++)
@@ -2200,7 +2171,7 @@ public Action Client_GoTo(client, args)
 	return Plugin_Handled;
 }
 		
-public Action Client_QuakeSounds(client, args) 
+public Action Client_QuakeSounds(int client, int args) 
 {
 	QuakeSounds(client);
 	if (g_bEnableQuakeSounds[client])
@@ -2210,27 +2181,24 @@ public Action Client_QuakeSounds(client, args)
 	return Plugin_Handled;
 }
 
-public QuakeSounds(client)
+public void QuakeSounds(int client)
 {
-	if (g_bEnableQuakeSounds[client])
-		g_bEnableQuakeSounds[client] = false;
-	else
-		g_bEnableQuakeSounds[client] = true;
+	g_bEnableQuakeSounds[client] = !g_bEnableQuakeSounds[client];
 }
 
-public Action Client_Stop(client, args)
+public Action Client_Stop(int client, int args)
 {
 	if (g_bTimeractivated[client])
 	{
 		//PlayerPanel(client);
 		g_bTimeractivated[client] = false;	
 		g_fStartTime[client] = -1.0;
-		g_fCurrentRunTime[client] = -1.0;		
+		g_fCurrentRunTime[client] = -1.0;
 	}
 	return Plugin_Handled;
 }
 
-public Action_NoClip(client)
+public void Action_NoClip(int client)
 {    
 	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
@@ -2259,7 +2227,7 @@ public Action_NoClip(client)
 	return;
 }  
 
-public Action_UnNoClip(client)
+public void Action_UnNoClip(int client)
 {    
 	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
@@ -2284,10 +2252,10 @@ public Action_UnNoClip(client)
 	return;
 }  
 
-public ckTopMenu(int client)
+public void ckTopMenu(int client)
 {
 	g_MenuLevel[client]=-1;
-	Handle cktopmenu = CreateMenu(TopMenuHandler);
+	Menu cktopmenu = CreateMenu(TopMenuHandler);
 	SetMenuTitle(cktopmenu, "ckSurf - Top Menu");
 	if (g_bPointSystem)
 		AddMenuItem(cktopmenu, "Top 100 Players", "Top 100 Players");
@@ -2300,7 +2268,7 @@ public ckTopMenu(int client)
 	DisplayMenu(cktopmenu, client, MENU_TIME_FOREVER);
 }
 
-public TopMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int TopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
@@ -2330,7 +2298,7 @@ public TopMenuHandler(Handle menu, MenuAction action, param1,param2)
 			CloseHandle(menu);
 }
 
-public BonusTopMenu(client)
+public void BonusTopMenu(int client)
 {
 	if (g_mapZoneGroupCount > 2)
 	{
@@ -2360,7 +2328,7 @@ public BonusTopMenu(client)
 	}
 }
 
-public BonusTopMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int BonusTopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -2368,7 +2336,7 @@ public BonusTopMenuHandler(Handle menu, MenuAction action, param1,param2)
 	}
 }
 
-public HelpPanel(client)
+public void HelpPanel(int client)
 {
 	PrintConsoleInfo(client);
 	Handle panel = CreatePanel();
@@ -2390,7 +2358,7 @@ public HelpPanel(client)
 	CloseHandle(panel);
 }
 
-public HelpPanelHandler(Handle menu, MenuAction action, param1, param2)
+public int HelpPanelHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -2399,7 +2367,7 @@ public HelpPanelHandler(Handle menu, MenuAction action, param1, param2)
 	}
 }
 
-public HelpPanel2(client)
+public int HelpPanel2(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
@@ -2423,7 +2391,7 @@ public HelpPanel2(client)
 	CloseHandle(panel);
 }
 
-public HelpPanel2Handler(Handle menu, MenuAction action, param1, param2)
+public int HelpPanel2Handler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -2435,7 +2403,7 @@ public HelpPanel2Handler(Handle menu, MenuAction action, param1, param2)
 	}
 }
 
-public HelpPanel3(client)
+public void HelpPanel3(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
@@ -2457,7 +2425,7 @@ public HelpPanel3(client)
 	SendPanelToClient(panel, client, HelpPanel3Handler, 10000);
 	CloseHandle(panel);
 }
-public HelpPanel3Handler(Handle menu, MenuAction action, param1, param2)
+public int HelpPanel3Handler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -2469,7 +2437,7 @@ public HelpPanel3Handler(Handle menu, MenuAction action, param1, param2)
 	}
 }
 
-public HelpPanel4(client)
+public void HelpPanel4(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
@@ -2486,7 +2454,7 @@ public HelpPanel4(client)
 	CloseHandle(panel);
 }
 
-public HelpPanel4Handler(Handle menu, MenuAction action, param1, param2)
+public int HelpPanel4Handler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -2495,7 +2463,7 @@ public HelpPanel4Handler(Handle menu, MenuAction action, param1, param2)
 	}
 }
 
-public ShowSrvSettings(client)
+public void ShowSrvSettings(int client)
 {
 	PrintToConsole(client, " ");
 	PrintToConsole(client, "-----------------");
@@ -2566,9 +2534,9 @@ public ShowSrvSettings(client)
 	PrintToChat(client, "[%cCK%c] See console for output!", MOSSGREEN,WHITE);	
 }
 
-public OptionMenu(client)
+public void OptionMenu(int client)
 {
-	Handle optionmenu = CreateMenu(OptionMenuHandler);
+	Menu optionmenu = CreateMenu(OptionMenuHandler);
 	SetMenuTitle(optionmenu, "ckSurf - Options Menu");			
 	if (g_bHide[client])
 		AddMenuItem(optionmenu, "Hide Players  -  Enabled", "Hide other players  -  Enabled");
@@ -2632,15 +2600,12 @@ public OptionMenu(client)
 }
 
 
-public SwitchStartWeapon(client)
+public void SwitchStartWeapon(int client)
 {
-	if (g_bStartWithUsp[client])
-		g_bStartWithUsp[client] = false;
-	else
-		g_bStartWithUsp[client] = true;
+	g_bStartWithUsp[client] = !g_bStartWithUsp[client];
 }
 
-public Action Client_DisableGoTo(client, args)  
+public Action Client_DisableGoTo(int client, int args)  
 {
 	DisableGoTo(client);
 	if (g_bGoToClient[client])
@@ -2651,15 +2616,12 @@ public Action Client_DisableGoTo(client, args)
 }
 
 
-public DisableGoTo(client)
+public void DisableGoTo(int client)
 {
-	if (g_bGoToClient[client])
-		g_bGoToClient[client]=false;
-	else
-		g_bGoToClient[client]=true;
+	g_bGoToClient[client] = !g_bGoToClient[client];
 }
 
-public Action Client_InfoPanel(client, args) 
+public Action Client_InfoPanel(int client, int args) 
 {
 	InfoPanel(client);
 	if (g_bInfoPanel[client] == true)
@@ -2669,16 +2631,13 @@ public Action Client_InfoPanel(client, args)
 	return Plugin_Handled;
 }
 
-public InfoPanel(client)
+public void InfoPanel(int client)
 {
-	if (g_bInfoPanel[client])
-		g_bInfoPanel[client] = false;
-	else
-		g_bInfoPanel[client] = true;	
+	g_bInfoPanel[client] = !g_bInfoPanel[client];
 }
 
 
-public OptionMenuHandler(Handle menu, MenuAction action, param1,param2)
+public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if(action == MenuAction_Select)
 	{
