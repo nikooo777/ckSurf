@@ -1,3 +1,103 @@
+public void getSteamIDFromClient(int client, char[] buffer, int length)
+{
+	// Get steamid - Points are being recalculated by an admin (pretty much going through top 20k players)
+	if (client>MAXPLAYERS)
+	{
+		if (!g_pr_RankingRecalc_InProgress && !g_bProfileRecalc[client])
+			return;
+		Format(buffer, length, "%s", g_pr_szSteamID[client]); 
+	}
+	else // Get steamid - Normal point increase
+	{
+		if (!g_bPointSystem || !IsValidClient(client)) 
+			return;
+		GetClientAuthId(client, AuthId_Steam2, buffer, length, true);
+	}
+	return;
+}
+
+/*
+Handles teleporting of players
+Zonegroup: 0 = normal map, >0 bonuses.
+Zone types: 1 = Start zone,  >1 Stage zones.
+*/
+public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
+{
+	if (!IsValidClient(client))
+		return;
+
+	if (g_bPracticeMode[client])
+		Command_normalMode(client ,1);
+
+	// Check for spawn locations
+	if (zone == 1 && g_bGotSpawnLocation[zonegroup])
+	{
+		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
+		{
+			Array_Copy(g_fSpawnLocation[zonegroup], g_fTeleLocation[client], 3);
+
+			g_specToStage[client] = true;
+			g_bRespawnPosition[client] = false;
+
+			TeamChangeActual(client, 0);
+			return;
+		}
+		else 
+		{
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+			if (stopTime)
+				performTeleport(client, g_fSpawnLocation[zonegroup], g_fSpawnAngle[zonegroup], view_as<float>({0.0,0.0,-100.0}), getZoneID(zonegroup, 1));
+			else
+				TeleportEntity(client, g_fSpawnLocation[zonegroup], g_fSpawnAngle[zonegroup], view_as<float>({0.0,0.0,-100.0}));
+
+			return;
+		}
+	}
+	else
+	{
+		// Check if the map has zones
+		if (g_mapZonesCount > 0) 
+		{
+			// Search for the zoneid we're teleporting to:
+			int destinationZoneId = getZoneID(zonegroup, zone);
+
+			// Check if zone was found
+			if (destinationZoneId>-1)
+			{
+				// Check if client is spectating, or not chosen a team yet
+				if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
+				{
+					// Set spawn location to the destination zone:
+					Array_Copy(g_fZonePositions[destinationZoneId], g_fTeleLocation[client], 3);
+
+					// Set specToStage flag
+					g_bRespawnPosition[client] = false;
+					g_specToStage[client] = true;
+
+					// Spawn player
+					TeamChangeActual(client, 0);
+				}
+				else // Teleport normally
+				{
+					// Set client speed to 0
+					SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+
+					// Teleport
+					if (stopTime)
+						performTeleport(client, g_fZonePositions[destinationZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), destinationZoneId);
+					else
+						TeleportEntity(client, g_fZonePositions[destinationZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
+				}
+			}
+			else
+				PrintToChat(client, "[%cCK%c] Destination zone not found!", MOSSGREEN, WHITE);
+		}
+		else
+			PrintToChat(client, "[%cCK%c] No zones found in the map.", MOSSGREEN, WHITE);
+	}
+	return;
+}
+
 stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
 {
 	char name[MAX_NAME_LENGTH], steamid[32], teamName[10];
@@ -167,6 +267,16 @@ public int getZoneID(int zoneGrp, int stage)
 		for (int i = 0; i < g_mapZonesCount; i++)
 		{
 			if (g_mapZones[i][zoneGroup] == zoneGrp && g_mapZones[i][zoneType] == 3 && g_mapZones[i][zoneTypeId] == (stage-2))
+			{
+				return i;
+			}
+		}
+	}
+	else if (stage < 0) // Search for the end zone
+	{
+		for (int i = 0; i < g_mapZonesCount; i++)
+		{
+			if (g_mapZones[i][zoneType] == 2 && g_mapZones[i][zoneGroup] == zoneGrp)
 			{
 				return i;
 			}
@@ -1484,8 +1594,6 @@ public void InitPrecache()
 	AddFileToDownloadsTable(g_sPlayerModel);
 	AddFileToDownloadsTable(g_sReplayBotArmModel);
 	AddFileToDownloadsTable(g_sReplayBotPlayerModel);
-	AddFileToDownloadsTable(g_sReplayBotArmModel2);
-	AddFileToDownloadsTable(g_sReplayBotPlayerModel2);
 	g_Beam[0] = PrecacheModel("materials/sprites/laser.vmt", true);
 	g_Beam[1] = PrecacheModel("materials/sprites/halo01.vmt", true);
 	g_Beam[2] = PrecacheModel("materials/sprites/bluelaser1.vmt", true);
@@ -1609,11 +1717,6 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 
 		if (rank==99999 && IsValidClient(client))
 			PrintToChat(client, "[%cCK%c] %cFailed to save your data correctly! Please contact an admin.",MOSSGREEN,WHITE,DARKRED,RED,DARKRED); 	
-		
-		
-		//noclip MsgMsg
-		if (IsValidClient(client) && g_bMapFinished[client] == false && !StrEqual(g_pr_rankname[client],g_szSkillGroups[8]) && !(GetUserFlagBits(client) & ADMFLAG_RESERVATION) && !(GetUserFlagBits(client) & ADMFLAG_ROOT) && !(GetUserFlagBits(client) & ADMFLAG_GENERIC) && g_bNoClipS)
-			PrintToChat(client, "%t", "NoClipUnlocked",MOSSGREEN,WHITE,YELLOW);
 			
 		g_bMapFinished[client] = true;
 		CreateTimer(0.0, UpdatePlayerProfile, client,TIMER_FLAG_NO_MAPCHANGE);

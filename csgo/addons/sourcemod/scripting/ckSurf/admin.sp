@@ -21,12 +21,12 @@ public Action Admin_giveTitle(int client, int args)
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select Player to give title to:");
 
-		char szName[MAX_NAME_LENGTH], id[6];
+		char szName[MAX_NAME_LENGTH], id[8];
 		for (int i = 1; i < MAXPLAYERS; i++)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i))
 			{
-				IntToString(i, id, 6);
+				IntToString(i, id, 8);
 				GetClientName(i, szName, MAX_NAME_LENGTH);
 				AddMenuItem(playerMenu, id, szName);
 			}
@@ -48,7 +48,6 @@ public Action Admin_giveTitle(int client, int args)
 				if (IsValidClient(i) && !IsFakeClient(i))
 				{
 					GetClientAuthId(i, AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
-					//GetClientAuthString(i, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 					if (StrEqual(g_szAdminSelectedSteamID[client], arg, false))
 					{
 						g_iAdminSelectedClient[client] = i;
@@ -92,7 +91,7 @@ public int Handler_selectPlayer(Handle tMenu, MenuAction action, int client, int
 	{
 		case MenuAction_Select:
 		{
-			char aID[2];
+			char aID[8];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_iAdminSelectedClient[client] = StringToInt(aID);
 			GetClientAuthId(g_iAdminSelectedClient[client], AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
@@ -334,11 +333,11 @@ public void Admin_renameZone(int client, const char[] name)
 		PrintToChat(client, "[%cCK%c] Cancelled bonus renaming.", MOSSGREEN, WHITE);
 		g_ClientRenamingZone[client] = false;
 		ListBonusSettings(client);
+		return;
 	}
 	char szZoneName[128];
 
 	Format(szZoneName, 128, "%s", name);
-	ReplaceString(szZoneName, 128, "\"", "", false);
 	db_setZoneNames(client, szZoneName);
 	g_ClientRenamingZone[client] = false;
 }

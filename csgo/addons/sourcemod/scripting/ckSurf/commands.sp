@@ -184,8 +184,6 @@ public Action Command_goToPlayerCheckpoint(int client, int args)
 
 		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,0.0}));	
 		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], g_fCheckpointVelocity[client]);
-
-		//PrintToChat(client, "[%cCK%c] %cTeleported to last Player Checkpoint.", MOSSGREEN, WHITE, LIMEGREEN);
 	}
 	else
 		PrintToChat(client, "%t", "PracticeStartError", MOSSGREEN, WHITE, MOSSGREEN);
@@ -227,60 +225,20 @@ public Action Command_undoPlayerCheckpoint(int client, int args)
 
 public Action Command_Teleport(int client, int args)
 {
-	int stageZoneId = -1;
-
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
 		if (g_iClientInZone[client][2] == 0)
 		{
-			g_iClientInZone[client][3] = getZoneID(0, 1);
 			Command_Restart(client, 1);
 		}
 		else
 		{
-			g_iClientInZone[client][3] = getZoneID(g_iClientInZone[client][2], 1);
 			Command_ToBonus(client, g_iClientInZone[client][2]);
 		}
 		return Plugin_Handled;
 	}
 
-	if (g_mapZonesCount > 0)
-	{
-		stageZoneId = getZoneID(g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client]);
-		
-		if (stageZoneId>=0) 
-		{
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // Spectating
-			{
-				Array_Copy(g_fZonePositions[stageZoneId], g_fTeleLocation[client], 3);
-
-				g_fCurVelVec[client][0] = 0.0;
-				g_fCurVelVec[client][1] = 0.0;
-				g_fCurVelVec[client][2] = 0.0;
-
-				g_iClientInZone[client][3] = stageZoneId;
-				g_iClientInZone[client][2] = g_mapZones[stageZoneId][zoneGroup];
-
-				g_specToStage[client] = true;
-				g_bRespawnPosition[client] = false;
-				TeamChangeActual(client, 0);
-			}
-			else
-			{
-				g_iClientInZone[client][3] = stageZoneId;
-				g_iClientInZone[client][2] = g_mapZones[stageZoneId][zoneGroup];
-
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
-			}
-		} else {
-			PrintToChat(client, "%t", "StageNotFound",MOSSGREEN,WHITE,g_Stage[g_iClientInZone[client][2]][client]);
-		}
-	}
-	else
-	{
-		PrintToChat(client, "[%cCK%c] There are no zones in this map.",MOSSGREEN,WHITE,g_Stage[g_iClientInZone[client][2]][client]);
-	}
+	teleportClient(client, g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client], false);
 	return Plugin_Handled;
 }
 
@@ -311,7 +269,7 @@ public Action Command_ListBonuses(int client, int args)
 
 public void ListBonuses(int client, int type)
 {
-	// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	char buffer[3];
 	Menu listBonusesMenu;
 	if (type == 1)
@@ -371,20 +329,8 @@ public int MenuHandler_SelectBonus(Menu sMenu, MenuAction action, int client, in
 			char aID[3];
 			GetMenuItem(sMenu, item, aID, sizeof(aID));
 			int zoneGrp = StringToInt(aID);
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
-			{
-				g_specToStage[client] = true;
-				g_bRespawnPosition[client] = false;
-				Array_Copy(g_fZonePositions[getZoneID(zoneGrp, 1)], g_fTeleLocation[client], 3);
-				TeamChangeActual(client, 0);
-			}
-			else
-			{
-				//int zoneid = getZoneID(zoneGrp, 1);
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				//performTeleport(client, g_fZonePositions[zoneid], NULL_VECTOR, Float:{0.0,0.0,-100.0}, zoneid);
-				TeleportEntity(client, g_fZonePositions[getZoneID(zoneGrp, 1)], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
-			}
+
+			teleportClient(client, zoneGrp, 1, true);
 		}
 		case MenuAction_End:
 		{
@@ -433,72 +379,21 @@ public Action Command_ToBonus(int client, int args)
 	else
 		zoneGrp = 1;
 
-	if (g_bGotSpawnLocation[zoneGrp])
-	{
-		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
-		{
-			g_specToStage[client] = true;
-			g_bRespawnPosition[client] = false;
-			Array_Copy(g_fSpawnLocation[zoneGrp], g_fTeleLocation[client], 3);
-			TeamChangeActual(client, 0);
-			return Plugin_Handled;
-		}
-		else 
-		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-			performTeleport(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], view_as<float>({0.0,0.0,-100.0}), getZoneID(zoneGrp, 1));
-			//TeleportEntity(client, g_fSpawnLocation[zoneGrp], g_fSpawnAngle[zoneGrp], Float:{0.0,0.0,-100.0});
-			return Plugin_Handled;
-		}
-	}
-
-	if (g_mapZoneGroupCount > 1) // The map has bonus
-	{	
-		int bonusZoneId = getZoneID(zoneGrp, 1);
-		if (bonusZoneId >= 0) 
-		{
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // If spectating, or not in a team
-			{
-				TeamChangeActual(client, 0);
-
-				Array_Copy(g_fZonePositions[bonusZoneId], g_fTeleLocation[client], 3);
-
-				g_fCurVelVec[client][0] = 0.0;
-				g_fCurVelVec[client][1] = 0.0;
-				g_fCurVelVec[client][2] = 0.0;
-
-				g_specToStage[client] = true;
-				g_bRespawnPosition[client] = false;
-			}
-			else // In game
-			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				performTeleport(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), bonusZoneId);
-				//TeleportEntity(client, g_fZonePositions[bonusZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-			}
-			//g_bBonusTimer[client] = false;
-		} else {
-			PrintToChat(client, "%t", "BonusNotFound",MOSSGREEN,WHITE);
-		}
-	}
-	else
-	{
-		PrintToChat(client, "[%cCK%c] There is no bonus in this map.", MOSSGREEN, WHITE);
-	}
+	teleportClient(client, zoneGrp, 1, true);
 	return Plugin_Handled;
 }
 
 public Action Command_SelectStage(int client, int args)
 {
 	if (IsValidClient(client))
-		ListStages(client);
+		ListStages(client, g_iClientInZone[client][2]);
 	return Plugin_Handled;
 }
 
 
-public void ListStages(int client)
+public void ListStages(int client, int zonegroup)
 {
-		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	Menu sMenu = CreateMenu(MenuHandler_SelectStage);
 	SetMenuTitle(sMenu, "Stage selector");
 	int amount = 0;
@@ -510,7 +405,7 @@ public void ListStages(int client)
 	{
 		for(int i = 0; i<=g_mapZonesCount;i++)
 		{
-			if (g_mapZones[i][zoneType] == 3 && g_mapZones[i][zoneGroup] == 0)
+			if (g_mapZones[i][zoneType] == 3 && g_mapZones[i][zoneGroup] == zonegroup)
 			{
 				StageIds[amount] = i;
 				amount++;
@@ -529,7 +424,7 @@ public void ListStages(int client)
 				{
 					amount++;
 					Format(StageName, sizeof(StageName), "Stage %i", (amount+1));
-					IntToString(StageIds[t], ZoneInfo, 6);
+					IntToString(amount+1, ZoneInfo, 6);
 					AddMenuItem(sMenu, ZoneInfo, StageName);
 				}
 			}
@@ -550,23 +445,10 @@ public int MenuHandler_SelectStage(Menu tMenu, MenuAction action, int client, in
 	{
 		case MenuAction_Select:
 		{
-			Client_Stop(client, 0);
 			char aID[64];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int id = StringToInt(aID);
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
-			{
-				g_specToStage[client] = true;
-				g_bRespawnPosition[client] = false;
-				Array_Copy(g_fZonePositions[id], g_fTeleLocation[client], 3);
-				TeamChangeActual(client, 0);
-			}
-			else
-			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				performTeleport(client, g_fZonePositions[id], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), id);
-				//TeleportEntity(client, g_fZonePositions[id], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-			}
+			teleportClient(client, g_iClientInZone[client][2], id, true);
 		}
 		case MenuAction_End:
 		{
@@ -589,153 +471,20 @@ public Action Command_ToStage(int client, int args)
 	GetCmdArg(1, arg1, sizeof(arg1));
 	int StageId = StringToInt(arg1);
 
-	if (StageId == 1) {
-		Command_Restart(client, 1);
-		return Plugin_Handled;
-	}
+	teleportClient(client, g_iClientInZone[client][2], StageId, true);
 
-	if (g_mapZonesCount > 0)
-	{
-
-		Client_Stop(client, 0);
-
-		int stageZoneId = getZoneID(g_iClientInZone[client][2], StageId);
-
-		if (stageZoneId>=0)
-		{
-
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
-			{
-				g_specToStage[client] = true;
-
-				Array_Copy(g_fZonePositions[stageZoneId], g_fTeleLocation[client], 3);
-
-				g_fCurVelVec[client][0] = 0.0;
-				g_fCurVelVec[client][1] = 0.0;
-				g_fCurVelVec[client][2] = 0.0;
-
-				g_bRespawnPosition[client] = false;
-				TeamChangeActual(client, 0);
-
-			}
-			else
-			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				performTeleport(client, g_fZonePositions[stageZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), stageZoneId);
-				//TeleportEntity(client, g_fZonePositions[stageZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-			}
-			g_Stage[g_iClientInZone[client][2]][client] = StageId;
-		} else {
-			PrintToChat(client, "%t", "StageNotFound",MOSSGREEN,WHITE,StageId);
-		}
-	}
-	else
-		Command_Restart(client, 1);
-		
 	return Plugin_Handled;
 }
 
 public Action Command_ToEnd(int client, int args)
 {
-	if (!IsValidClient(client))
-		return Plugin_Handled;
-
-	int endZoneId = -1;
-
-	if (g_mapZonesCount <= 0)
-		return Plugin_Handled;
-
-	for (int i = 0; i < g_mapZonesCount; i++)
-	{
-		if (g_mapZones[i][zoneType] == 2 && g_mapZones[i][zoneGroup] == g_iClientInZone[client][2])
-		{
-			endZoneId = i;
-			break;
-		}
-	}
-
-	if (endZoneId > -1)
-	{
-		Client_Stop(client, 0);
-
-		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
-		{
-			g_specToStage[client] = true;
-			Array_Copy(g_fZonePositions[endZoneId], g_fTeleLocation[client], 3);
-
-			TeamChangeActual(client, 0);
-
-			g_fCurVelVec[client][0] = 0.0;
-			g_fCurVelVec[client][1] = 0.0;
-			g_fCurVelVec[client][2] = 0.0;
-
-			g_bRespawnPosition[client] = false;
-		}
-		else
-		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-			performTeleport(client, g_fZonePositions[endZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), endZoneId);
-		}
-	}
-
+	teleportClient(client, g_iClientInZone[client][2], -1, true);
 	return Plugin_Handled;
 }
 
 public Action Command_Restart(int client, int args)
 {
-	if (!IsValidClient(client))
-		return Plugin_Handled;
-
-	if (g_bPracticeMode[client])
-		Command_normalMode(client ,1);
-
-	if (g_bGotSpawnLocation[0])
-	{
-		Client_Stop(client, 0);
-
-		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0) // spectating
-		{
-			g_specToStage[client] = true;
-			g_bRespawnPosition[client] = false;
-			Array_Copy(g_fSpawnLocation[0], g_fTeleLocation[client], 3);
-			TeamChangeActual(client, 0);
-			return Plugin_Handled;
-		}
-		else 
-		{
-			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-			performTeleport(client, g_fSpawnLocation[0], g_fSpawnAngle[0], view_as<float>({0.0,0.0,-100.0}), getZoneID(0, 1));
-			//TeleportEntity(client, g_fSpawnLocation[0], g_fSpawnAngle[0], Float:{0.0,0.0,-100.0});
-			return Plugin_Handled;
-		}
-	}
-
-	if (g_mapZonesCount > 0) 
-	{
-		int startZoneId = getZoneID(0, 1);
-		
-		if (startZoneId>-1) 
-		{
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
-			{
-				Array_Copy(g_fZonePositions[startZoneId], g_fTeleLocation[client], 3);
-
-				g_bRespawnPosition[client] = false;
-				g_specToStage[client] = true;
-				TeamChangeActual(client, 0);
-			}
-			else
-			{
-				SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
-				performTeleport(client, g_fZonePositions[startZoneId], NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}), startZoneId);
-				//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-			}
-			g_iClientInZone[client][2] = 0;
-			g_Stage[g_iClientInZone[client][2]][client] = 1;
-		} else {
-			PrintToChat(client, "%t", "StartNotFound",MOSSGREEN,WHITE);
-		}
-	}
+	teleportClient(client, 0, 1, true);
 	return Plugin_Handled;
 }
 
@@ -1745,7 +1494,6 @@ public void ProfileMenu(int client, int args)
 		DisplayMenu(menu, client, MENU_TIME_FOREVER);		
 		return;
 	}
-	//get name
 	else 
 	{
 		if (args != -1)
@@ -2074,7 +1822,7 @@ public void GotoMethod(int client, int target)
 				float angles[3];
 				GetClientAbsOrigin(target,position);
 				GetClientEyeAngles(target,angles);
-				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][0]);
+				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][3]);
 				//TeleportEntity(client, position, angles, Float:{0.0,0.0,-100.0});
 				char szClientName[MAX_NAME_LENGTH];
 				GetClientName(client, szClientName, MAX_NAME_LENGTH);	
@@ -2200,7 +1948,7 @@ public Action Client_Stop(int client, int args)
 
 public void Action_NoClip(int client)
 {    
-	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_bNoClipS)
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		int team = GetClientTeam(client);
@@ -2211,8 +1959,6 @@ public void Action_NoClip(int client)
 			{
 				if (g_bTimeractivated[client])
 				{
-					
-
 					Client_Stop(client, 1);
 					g_fStartTime[client] = -1.0;
 					g_fCurrentRunTime[client] = -1.0;

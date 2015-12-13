@@ -205,7 +205,10 @@ public Action Say_Hook(client, const char[] command, argc)
 
 	char sText[1024];
 	GetCmdArgString(sText, sizeof(sText));
-	
+
+	StripQuotes(sText);
+	TrimString(sText);
+
 	if (IsValidClient(client) && g_ClientRenamingZone[client])
 	{
 		Admin_renameZone(client, sText);
@@ -223,9 +226,6 @@ public Action Say_Hook(client, const char[] command, argc)
 
 		if (checkSpam(client))
 			return Plugin_Handled;
-		
-		StripQuotes(sText);
-		TrimString(sText);
 
 		ReplaceString(sText,1024,"{darkred}","",false);
 		ReplaceString(sText,1024,"{green}","",false);

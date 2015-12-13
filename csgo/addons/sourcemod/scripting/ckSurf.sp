@@ -138,7 +138,7 @@ enum EJoinTeamReason
 enum MapZone
 {
     zoneId,			// ID within the map
-    zoneType,		// Types: Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), Stop(0)
+    zoneType,		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
     zoneTypeId,		// ID of the same type eg. Start-1, Start-2, Start-3...
 	Float:PointA[3],
     Float:PointB[3],
@@ -262,7 +262,6 @@ int g_zonesToDisplay;
 Handle g_hChecker;
 float g_fChecker;
 
-
 Handle g_hZoneTimer = INVALID_HANDLE;
 bool g_bEditZoneType[MAXPLAYERS+1];
 char g_CurrentZoneName[MAXPLAYERS+1][64];
@@ -328,7 +327,7 @@ Handle g_hzoneStopColor = null;
 char g_szzoneStopColor[24];
 char g_szZoneDefaultNames[ZONEAMOUNT][128] = {"Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker"};
 
-int g_CurrentZoneGroup[MAXPLAYERS+1];
+int g_CurrentSelectedZoneGroup[MAXPLAYERS+1];
 int g_CurrentZoneTeam[MAXPLAYERS+1];
 int g_CurrentZoneVis[MAXPLAYERS+1];
 int g_CurrentZoneType[MAXPLAYERS+1];
@@ -410,8 +409,6 @@ Handle g_hReplayBotPlayerModel = null;
 char g_sReplayBotPlayerModel[256];  
 Handle g_hReplayBotArmModel = null;
 char g_sReplayBotArmModel[256];  
-char g_sReplayBotPlayerModel2[256];  
-char g_sReplayBotArmModel2[256];  
 Handle g_hPlayerModel = null;
 char g_sPlayerModel[256];  
 Handle g_hArmModel = null;
@@ -517,8 +514,6 @@ float g_fStartCommandUsed_LastTime[MAXPLAYERS+1];
 float g_fProfileMenuLastQuery[MAXPLAYERS+1];
 float g_favg_maptime;
 float g_fAvg_BonusTime[MAXZONEGROUPS];
-float g_fSpawnpointOrigin[3];
-float g_fSpawnpointAngle[3];
 float g_fLastSpeed[MAXPLAYERS+1];
 float g_fInitialPosition[MAXPLAYERS+1][3];
 float g_fInitialAngles[MAXPLAYERS+1][3];
@@ -860,6 +855,7 @@ public OnMapStart()
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
 	PrecacheModel(g_sModel);
 
+	// Load map zones
 	checkZoneTypeIds();
 
 	//workshop fix
@@ -870,45 +866,6 @@ public OnMapStart()
 	//get map tag
 	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
 
-	//sv_pure 1 could lead to problems with the ckSurf models
-	ServerCommand("sv_pure 0");
-			
-	//reload language files
-	LoadTranslations("ckSurf.phrases");	
-
-	loadHiddenChatCommands();
-	
-	loadCustomTitles();
-
-	// TODO: Load config that disables push fix on certain maps.
-
-	g_insertingInformation = false;
-	g_bTierEntryFound = false;
-	g_fMapStartTime = GetGameTime();
-	g_fRecordMapTime=9999999.0;
-	g_fSpawnpointOrigin = Float:{-999999.9,-999999.9,-999999.9};
-	g_fSpawnpointAngle = Float:{-999999.9,-999999.9,-999999.9};
-	g_MapTimesCount = 0;
-	g_RecordBot = -1;
-	g_BonusBot = -1;
-	g_InfoBot = -1;
-	g_bAutoBhop = false;
-	g_bRoundEnd = false;
-	CheatFlag("bot_zombie", false, true);
-	for (int i = 0; i<MAXZONEGROUPS; i++)
-	{
-		g_bTierFound[i] = false;
-		g_fBonusFastest[i]=9999999.0;
-		g_bCheckpointRecordFound[i] = false;
-	}
-
-	InitZoneVariables();
-	OnConfigsExecuted();
-
-	//precache
-	InitPrecache();	
-	SetCashState();
-
 	//sql queries
 	if (!g_bRenaming && !g_bInTransactionChain)
 	{
@@ -918,6 +875,28 @@ public OnMapStart()
 		db_ClearLatestRecords();
 		db_GetDynamicTimelimit();
 	}
+
+	//sv_pure 1 could lead to problems with the ckSurf models
+	ServerCommand("sv_pure 0");
+			
+	//reload language files
+	LoadTranslations("ckSurf.phrases");	
+
+	// load configs
+	loadHiddenChatCommands();
+	loadCustomTitles();
+
+	CheatFlag("bot_zombie", false, true);
+	for (int i = 0; i<MAXZONEGROUPS; i++)
+	{
+		g_bTierFound[i] = false;
+		g_fBonusFastest[i]=9999999.0;
+		g_bCheckpointRecordFound[i] = false;
+	}
+
+	//precache
+	InitPrecache();	
+	SetCashState();
 
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -935,13 +914,14 @@ public OnMapStart()
 
 	//AutoBhop?
 	if (g_bAutoBhopConVar)
-		g_bAutoBhop=true;		
+		g_bAutoBhop=true;	
+	else
+		g_bAutoBhop = false;
+	
 
 	//main cfg
 	CreateTimer(1.0, DelayedStuff, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 
-	//server infos
-	GetServerInfo();
 	
 	if (g_bLateLoaded)
 	{
@@ -968,6 +948,17 @@ public OnMapStart()
 	{
 		SDKHook(iEnt, SDKHook_Touch, OnTouchPushTrigger);
 	}
+
+	OnConfigsExecuted();
+
+	//server infos
+	GetServerInfo();
+
+	// Set default values
+	g_insertingInformation = false;
+	g_fMapStartTime = GetGameTime();
+	g_bRoundEnd = false;
+
 }
 
 public OnMapEnd()
@@ -1087,9 +1078,8 @@ public OnClientPutInServer(int client)
 	if(LibraryExists("dhooks"))
 		DHookEntity(g_hTeleport, false, client);	
 			
-	//get client data
+	//get client steamID
 	GetClientAuthId(client, AuthId_Steam2, g_szSteamID[client], MAX_NAME_LENGTH, true);
-	//GetClientAuthString(client, g_szSteamID[client], 32);
 
 	// ' char fix
 	FixPlayerName(client);
@@ -1929,7 +1919,7 @@ public OnPluginStart()
 	g_bInfoBot     = GetConVarBool(g_hInfoBot);
 	HookConVarChange(g_hInfoBot, OnSettingChanged);		
 	
-	g_hNoClipS = CreateConVar("ck_noclip", "1", "on/off - Allows players to use noclip when they have finished the map", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hNoClipS = CreateConVar("ck_noclip", "1", "on/off - Allows players to use noclip", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bNoClipS     = GetConVarBool(g_hNoClipS);
 	HookConVarChange(g_hNoClipS, OnSettingChanged);	
 
