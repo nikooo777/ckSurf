@@ -749,6 +749,13 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 	{
 		g_bHasTitle[data] = false;
 	}
+	if (GetUserFlagBits(data) & ADMFLAG_ROOT || GetUserFlagBits(data) & ADMFLAG_RESERVATION)
+	{	
+		g_bHasTitle[data] = true;
+		g_bflagTitles[data][0] = true;
+	}
+
+
 	Array_Copy(g_bflagTitles[data], g_bflagTitles_orig[data], TITLE_COUNT);
 }
 
@@ -915,7 +922,6 @@ public db_deletePlayerTitles(client)
 	if (IsValidClient(g_iAdminSelectedClient[client]))
 	{
 		GetClientAuthId(g_iAdminSelectedClient[client], AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH,true);	
-		//GetClientAuthString(g_iAdminSelectedClient[client], g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
 	}
 	else if (StrEqual(g_szAdminSelectedSteamID[client], ""))
 		return;
