@@ -34,6 +34,10 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 	{
 		if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 		{
+
+			if (stopTime)
+				Client_Stop(client, 0);
+
 			Array_Copy(g_fSpawnLocation[zonegroup], g_fTeleLocation[client], 3);
 
 			g_specToStage[client] = true;
@@ -67,6 +71,11 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 				// Check if client is spectating, or not chosen a team yet
 				if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
 				{
+
+					if (stopTime)
+						Client_Stop(client, 0);
+
+
 					// Set spawn location to the destination zone:
 					Array_Copy(g_fZonePositions[destinationZoneId], g_fTeleLocation[client], 3);
 
