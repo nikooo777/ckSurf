@@ -213,8 +213,8 @@ int g_iBonusCount[MAXZONEGROUPS];			 							// Amount of players that have passe
 int g_totalBonusCount;													// How many total bonuses there are
 //int g_inZoneGroup[MAXPLAYERS+1];										// In which bonus the player is currently in. 0 = normal map
 bool g_bhasBonus;
-int g_clientFinishedBonuses[MAX_PR_PLAYERS];
-int g_ClientFinishedBonusesRowCount[MAX_PR_PLAYERS];
+int g_clientFinishedBonuses[MAX_PR_PLAYERS+1];
+int g_ClientFinishedBonusesRowCount[MAX_PR_PLAYERS+1];
 bool g_bBonusFirstRecord[MAXPLAYERS+1];
 bool g_bBonusPBRecord[MAXPLAYERS+1];
 bool g_bBonusSRVRecord[MAXPLAYERS+1];
@@ -523,7 +523,7 @@ float g_fLastPosition[MAXPLAYERS+1][3];
 float g_fLastAngles[MAXPLAYERS+1][3];
 float g_fRecordMapTime;
 char g_szRecordMapTime[64];
-float g_pr_finishedmaps_perc[MAX_PR_PLAYERS]; 
+float g_pr_finishedmaps_perc[MAX_PR_PLAYERS+1]; 
 bool g_bRenaming = false;
 bool g_bLateLoaded = false;
 bool g_bRoundEnd;
@@ -553,7 +553,7 @@ bool g_bRestorePositionMsg[MAXPLAYERS+1];
 bool g_bNoClip[MAXPLAYERS+1];
 bool g_bMapFinished[MAXPLAYERS+1]; 
 bool g_bRespawnPosition[MAXPLAYERS+1]; 
-bool g_bProfileRecalc[MAX_PR_PLAYERS];
+bool g_bProfileRecalc[MAX_PR_PLAYERS+1];
 bool g_bProfileSelected[MAXPLAYERS+1]; 
 bool g_bManualRecalc; 
 bool g_bSelectProfile[MAXPLAYERS+1]; 
@@ -627,12 +627,10 @@ int g_pr_MapCount;
 int g_pr_rank_Percentage[9];
 int g_pr_PointUnit;
 int g_pr_TableRowCount;
-int g_pr_points[MAX_PR_PLAYERS];
-int g_pr_maprecords_row_counter[MAX_PR_PLAYERS];
-int g_pr_maprecords_row_count[MAX_PR_PLAYERS];
-int g_pr_oldpoints[MAX_PR_PLAYERS];  
-int g_pr_multiplier[MAX_PR_PLAYERS]; 
-int g_pr_finishedmaps[MAX_PR_PLAYERS];
+int g_pr_points[MAX_PR_PLAYERS+1];
+int g_pr_oldpoints[MAX_PR_PLAYERS+1];  
+int g_pr_multiplier[MAX_PR_PLAYERS+1]; 
+int g_pr_finishedmaps[MAX_PR_PLAYERS+1];
 int g_PlayerRank[MAXPLAYERS+1];
 int g_SelectedTeam[MAXPLAYERS+1];
 int g_BotMimicRecordTickCount[MAXPLAYERS+1] = {0,...};
@@ -651,9 +649,9 @@ int g_Time_Type[MAXPLAYERS+1];
 int g_Sound_Type[MAXPLAYERS+1];
 int g_MapRecordCount[MAXPLAYERS+1];
 bool g_bnewRecord[MAXPLAYERS+1];
-int g_Challenge_WinRatio[MAX_PR_PLAYERS];
+int g_Challenge_WinRatio[MAX_PR_PLAYERS+1];
 int g_CountdownTime[MAXPLAYERS+1];
-int g_Challenge_PointsRatio[MAX_PR_PLAYERS];
+int g_Challenge_PointsRatio[MAX_PR_PLAYERS+1];
 int g_SpecTarget[MAXPLAYERS+1];
 int g_LastButton[MAXPLAYERS + 1];
 int g_CurrentButton[MAXPLAYERS+1];
@@ -664,8 +662,8 @@ int g_PlayerChatRank[MAXPLAYERS+1];
 char g_pr_chat_coloredrank[MAXPLAYERS+1][128];
 char g_pr_rankname[MAXPLAYERS+1][128];  
 char g_pr_szrank[MAXPLAYERS+1][512];  
-char g_pr_szName[MAX_PR_PLAYERS][64];  
-char g_pr_szSteamID[MAX_PR_PLAYERS][32]; 
+char g_pr_szName[MAX_PR_PLAYERS+1][64];  
+char g_pr_szSteamID[MAX_PR_PLAYERS+1][32]; 
 char g_szMapPrefix[2][32]; 
 char g_szReplayName[128];  
 char g_szReplayTime[128]; 
@@ -1043,7 +1041,10 @@ public OnClientPutInServer(int client)
 {
 	if (!IsValidClient(client))
 		return;
-		
+					
+	//defaults
+	SetClientDefaults(client);
+
 	//SDKHooks/Dhooks
 	SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 	SDKHook(client, SDKHook_PostThinkPost, Hook_PostThinkPost); 
@@ -1062,10 +1063,7 @@ public OnClientPutInServer(int client)
 	}	
 	else
 		g_MVPStars[client] = 0;	
-			
-	//defaults
-	SetClientDefaults(client);
-	
+
 	//client country
 	GetCountry(client);		
 
@@ -1102,10 +1100,7 @@ public OnClientPutInServer(int client)
 		db_viewPlayerPoints(client);
 		db_viewPlayerOptions(client, g_szSteamID[client]);	
 		db_viewPersonalFlags(client, g_szSteamID[client]);
-
-		for (int i = 0; i < g_mapZoneGroupCount; i++) 
-			db_viewCheckpoints(client, g_szSteamID[client], g_szMapName, i);
-
+		db_viewCheckpoints(client, g_szSteamID[client], g_szMapName);
 	 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
 		db_viewPersonalBonusRecords(client, g_szSteamID[client]);
 	}

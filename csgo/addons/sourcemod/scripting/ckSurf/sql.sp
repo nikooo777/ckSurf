@@ -52,7 +52,7 @@ char sql_updateBonusTier[]					= "UPDATE ck_maptier SET btier%i = %i WHERE mapna
 char sql_insertBonusTier[]                  = "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');";
 
 //TABLE BONUS
-char sql_createBonus[]					    = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
+char sql_createBonus[]					    = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup)); CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup);";
 char sql_insertBonus[]					    = "INSERT INTO ck_bonus (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";	
 char sql_updateBonus[]					    = "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
 char sql_selectBonusCount[]				    = "SELECT count(*) FROM ck_bonus WHERE mapname = '%s' AND zonegroup = %i;";
@@ -60,7 +60,6 @@ char sql_checkIfBonusInMap[]                = "SELECT mapname FROM `ck_zones` WH
 char sql_selectPersonalBonusRecords[] 	    = "SELECT runtime, zonegroup FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
 char sql_selectPlayerRankBonus[] 			= "SELECT name FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0 AND zonegroup = %i) AND mapname = '%s' AND zonegroup = %i;";
 char sql_selectFastestBonus[]				= "SELECT db2.runtime, db1.name, db1.steamid, db2.steamid FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db1.steamid = db2.steamid WHERE db2.mapname = '%s' AND db2.runtime  > -1.0 AND db2.zonegroup = %i ORDER BY db2.runtime ASC LIMIT 1;";
-char sql_selectPersonalBonusCompleted[]	    = "SELECT mapname, zonegroup FROM ck_bonus WHERE steamid = '%s' AND runtime > 0.0";
 char sql_deleteBonus[]					    = "DELETE FROM ck_bonus WHERE mapname = '%s'";
 char sql_selectAllBonusTimesinMap[]		    = "SELECT runtime from ck_bonus WHERE mapname = '%s';";
 char sql_selectTopBonusSurfers[] 			= "SELECT db2.steamid, db1.name, db2.runtime as overall, db1.steamid, db2.mapname FROM ck_bonus as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtime > -1.0 AND zonegroup = %i ORDER BY overall ASC LIMIT 100;";
@@ -69,7 +68,8 @@ char sql_selectTopBonusSurfers[] 			= "SELECT db2.steamid, db1.name, db2.runtime
 char sql_createCheckpoints[] 				= "CREATE TABLE IF NOT EXISTS ck_checkpoints (steamid VARCHAR(32), mapname VARCHAR(32), cp1 FLOAT DEFAULT '0.0', cp2 FLOAT DEFAULT '0.0', cp3 FLOAT DEFAULT '0.0', cp4 FLOAT DEFAULT '0.0', cp5 FLOAT DEFAULT '0.0', cp6 FLOAT DEFAULT '0.0', cp7 FLOAT DEFAULT '0.0', cp8 FLOAT DEFAULT '0.0', cp9 FLOAT DEFAULT '0.0', cp10 FLOAT DEFAULT '0.0', cp11 FLOAT DEFAULT '0.0', cp12 FLOAT DEFAULT '0.0', cp13 FLOAT DEFAULT '0.0', cp14 FLOAT DEFAULT '0.0', cp15 FLOAT DEFAULT '0.0', cp16 FLOAT DEFAULT '0.0', cp17  FLOAT DEFAULT '0.0', cp18 FLOAT DEFAULT '0.0', cp19 FLOAT DEFAULT '0.0', cp20  FLOAT DEFAULT '0.0', cp21 FLOAT DEFAULT '0.0', cp22 FLOAT DEFAULT '0.0', cp23 FLOAT DEFAULT '0.0', cp24 FLOAT DEFAULT '0.0', cp25 FLOAT DEFAULT '0.0', cp26 FLOAT DEFAULT '0.0', cp27 FLOAT DEFAULT '0.0', cp28 FLOAT DEFAULT '0.0', cp29 FLOAT DEFAULT '0.0', cp30 FLOAT DEFAULT '0.0', cp31 FLOAT DEFAULT '0.0', cp32  FLOAT DEFAULT '0.0', cp33 FLOAT DEFAULT '0.0', cp34 FLOAT DEFAULT '0.0', cp35 FLOAT DEFAULT '0.0', zonegroup INT(12) NOT NULL DEFAULT 0, PRIMARY KEY(steamid, mapname, zonegroup));";
 char sql_updateCheckpoints[] 				= "UPDATE ck_checkpoints SET cp1='%f', cp2='%f', cp3='%f', cp4='%f', cp5='%f', cp6='%f', cp7='%f', cp8='%f', cp9='%f', cp10='%f', cp11='%f', cp12='%f', cp13='%f', cp14='%f', cp15='%f', cp16='%f', cp17='%f', cp18='%f', cp19='%f', cp20='%f', cp21='%f', cp22='%f', cp23='%f', cp24='%f', cp25='%f', cp26='%f', cp27='%f', cp28='%f', cp29='%f', cp30='%f', cp31='%f', cp32='%f', cp33='%f', cp34='%f', cp35='%f' WHERE steamid='%s' AND mapname='%s' AND zonegroup='%i'";
 char sql_insertCheckpoints[] 				= "INSERT INTO ck_checkpoints VALUES ('%s', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%i')";
-char sql_selectCheckpoints[] 				= "SELECT * FROM ck_checkpoints WHERE steamid='%s' AND mapname='%s' AND zonegroup = %i;";
+char sql_selectCheckpoints[] 				= "SELECT zonegroup, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s';";
+char sql_selectCheckpointsinZoneGroup[] 	= "SELECT cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s' AND zonegroup = %i;";
 char sql_selectRecordCheckpoints[]		= "SELECT * FROM ck_checkpoints WHERE steamid = (SELECT steamid FROM ck_playertimes WHERE mapname = '%s' ORDER BY runtimepro ASC LIMIT 1) AND mapname = '%s' AND zonegroup = '%i';";
 char sql_deleteCheckpoints[]				= "DELETE FROM ck_checkpoints WHERE mapname = '%s'";
 
@@ -104,7 +104,7 @@ char sql_CountRankedPlayers[] 			= "SELECT COUNT(steamid) FROM ck_playerrank";
 char sql_CountRankedPlayers2[] 			= "SELECT COUNT(steamid) FROM ck_playerrank where points > 0";
 
 //TABLE PLAYERTIMES
-char sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
+char sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname)); CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro);";
 char sql_insertPlayer[] 					= "INSERT INTO ck_playertimes (steamid, mapname, name) VALUES('%s', '%s', '%s');";
 char sql_insertPlayerTime[] 				= "INSERT INTO ck_playertimes (steamid, mapname, name,runtimepro) VALUES('%s', '%s', '%s', '%f');";
 char sql_updateRecordPro[]				= "UPDATE ck_playertimes SET name = '%s', runtimepro = '%f' WHERE steamid = '%s' AND mapname = '%s';"; 
@@ -117,7 +117,6 @@ char sql_selectProSurfers[] 				= "SELECT db1.name, db2.runtimepro, db2.steamid,
 char sql_selectTopSurfers2[] 				= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
 char sql_selectTopSurfers[] 				= "SELECT db2.steamid, db1.name, db2.runtimepro as overall, db1.steamid, db2.mapname FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname = '%s' AND db2.runtimepro > -1.0 ORDER BY overall ASC LIMIT 100;";
 char sql_selectPlayerProCount[] 			= "SELECT name FROM ck_playertimes WHERE mapname = '%s' AND runtimepro  > -1.0;";
-char sql_CountFinishedMaps[] 				= "SELECT mapname FROM ck_playertimes where steamid='%s' AND runtimepro > -1.0;";
 char sql_selectPlayerRankProTime[] 		= "SELECT name,mapname FROM ck_playertimes WHERE runtimepro <= (SELECT runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0) AND mapname = '%s' AND runtimepro > -1.0 ORDER BY runtimepro;";
 char sql_selectMapRecordHolders[] 		= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM ck_playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM ck_playertimes where runtimepro > -1.0 GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid LIMIT 5;";
 char sql_selectMapRecordCount[] 			= "SELECT y.steamid, COUNT(*) AS rekorde FROM (SELECT s.steamid FROM ck_playertimes s INNER JOIN (SELECT mapname, MIN(runtimepro) AS runtimepro FROM ck_playertimes where runtimepro > -1.0  GROUP BY mapname) x ON s.mapname = x.mapname AND s.runtimepro = x.runtimepro) y where y.steamid = '%s' GROUP BY y.steamid ORDER BY rekorde DESC , y.steamid;";
@@ -224,12 +223,16 @@ public db_setupDatabase()
 	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playertemp ADD zonegroup INT NOT NULL DEFAULT 0;");
 	SQL_FastQuery(g_hDb, sql_createPlayerFlags);
 
+	SQL_FastQuery(g_hDb, "CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro)");
+	SQL_FastQuery(g_hDb, "CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup)");
+
 	SQL_UnlockDatabase(g_hDb);
 
 	for (int i = 0; i < sizeof(g_failedTransactions); i++)
 		g_failedTransactions[i] = 0;
 
 	txn_addExtraCheckpoints();
+	return;
 }
 
 void txn_addExtraCheckpoints()
@@ -254,6 +257,7 @@ void txn_addExtraCheckpoints()
 	else
 	{
 		PrintToServer("[ckSurf] No database update needed!");
+		return;
 	}
 }
 
@@ -1144,15 +1148,16 @@ public CalculatePlayerRank(client)
 
 	getSteamIDFromClient(client, szSteamId, 32);
 
-	//"SELECT steamid, name, points, finishedmapspro, multiplier, country, lastseen from ck_playerrank where steamid='%s'";
-	Format(szQuery, 255, sql_selectRankedPlayer, szSteamId);  
-	SQL_TQuery(g_hDb, sql_selectRankedPlayerCallback, szQuery,client, DBPrio_Low);	
+	Format(szQuery, 255, "SELECT multiplier FROM ck_playerrank WHERE steamid = '%s'", szSteamId);  
+	SQL_TQuery(g_hDb, sql_selectRankedPlayerCallback, szQuery, client, DBPrio_Low);	
 }
 
 //
 // 2. Count points from improvements, or insert new player into the database
+// Fetched values:
+// multiplier
 //
-public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] error, any:client)
 {
 	if(hndl == null)
 	{
@@ -1163,41 +1168,39 @@ public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] er
 
 	char szSteamId[32];
 
-	getSteamIDFromClient(data, szSteamId, 32);
+	getSteamIDFromClient(client, szSteamId, 32);
 
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		//"SELECT steamid, name, points, finishedmapspro, multiplier, country, lastseen from playerrank where steamid='%s'";
-
-		if (data <= MAXPLAYERS && IsValidClient(data))
+		if (client <= MAXPLAYERS && IsValidClient(client))
 		{
 			float  diff = GetGameTime() - g_fMapStartTime;
-			if (GetClientTime(data) < diff)
-				db_UpdateLastSeen(data); // Update last seen on server
+			if (GetClientTime(client) < diff)
+				db_UpdateLastSeen(client); // Update last seen on server
 		}
 		// Multiplier = The amount of times a player has improved on his time
-		g_pr_multiplier[data] = SQL_FetchInt(hndl, 4);
-		if (g_pr_multiplier[data] < 0)
-			g_pr_multiplier[data] = g_pr_multiplier[data] * -1;
+		g_pr_multiplier[client] = SQL_FetchInt(hndl, 0);
+		if (g_pr_multiplier[client] < 0)
+			g_pr_multiplier[client] = g_pr_multiplier[client] * -1;
 
 		// Multiplier increases players points by the set amount in ck_ranking_extra_points_improvements
-		g_pr_points[data] +=  g_ExtraPoints * g_pr_multiplier[data];		
+		g_pr_points[client] +=  g_ExtraPoints * g_pr_multiplier[client];		
 
-		if (IsValidClient(data))
-			g_pr_Calculating[data] = true;
+		if (IsValidClient(client))
+			g_pr_Calculating[client] = true;
 
 		// Next up, challenge points
 		char szQuery[512];
-		//"SELECT steamid, steamid2, bet, map FROM ck_challenges where steamid = '%s' OR steamid2 ='%s'";
-		Format(szQuery, 512, sql_selectChallenges, szSteamId,szSteamId);
-		SQL_TQuery(g_hDb, sql_selectChallengesCallbackCalc, szQuery, data,DBPrio_Low);	
+
+		Format(szQuery, 512, "SELECT steamid, bet FROM ck_challenges WHERE steamid = '%s' OR steamid2 ='%s'", szSteamId,szSteamId);
+		SQL_TQuery(g_hDb, sql_selectChallengesCallbackCalc, szQuery, client, DBPrio_Low);	
 	}
 	else
 	{
 		// Players first time on server
-		if (data <= MaxClients)
+		if (client <= MaxClients)
 		{
-			g_pr_Calculating[data] = false;
+			g_pr_Calculating[client] = false;
 			g_pr_AllPlayers++;
 
 			// Insert player to database
@@ -1205,25 +1208,26 @@ public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] er
 			char szUName[MAX_NAME_LENGTH];
 			char szName[MAX_NAME_LENGTH*2+1];      
 
-			GetClientName(data, szUName, MAX_NAME_LENGTH);
+			GetClientName(client, szUName, MAX_NAME_LENGTH);
 			SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH*2+1);
 
 			//"INSERT INTO ck_playerrank (steamid, name, country) VALUES('%s', '%s', '%s');";
 			// No need to continue calculating, as the doesn't have any records.
-			Format(szQuery, 255, sql_insertPlayerRank, szSteamId, szName,g_szCountry[data]);
-			SQL_TQuery(g_hDb, SQL_InsertPlayerCallBack, szQuery, data, DBPrio_Low);
+			Format(szQuery, 255, sql_insertPlayerRank, szSteamId, szName,g_szCountry[client]);
+			SQL_TQuery(g_hDb, SQL_InsertPlayerCallBack, szQuery, client, DBPrio_Low);
 
-			g_pr_multiplier[data] = 0;
-			g_pr_finishedmaps[data] = 0;
-			g_pr_finishedmaps_perc[data] = 0.0;
+			g_pr_multiplier[client] = 0;
+			g_pr_finishedmaps[client] = 0;
+			g_pr_finishedmaps_perc[client] = 0.0;
 		}
 	}
 }
 
 //
 // 3. Counting points gained from challenges
-//
-public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] error, any:data)
+// Fetched values:
+// steamid, bet
+public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] error, any:client)
 {
 	if(hndl == null)
 	{
@@ -1237,44 +1241,44 @@ public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] 
 	char szSteamIdChallenge[32];	
 	
 
-	getSteamIDFromClient(data, szSteamId, 32);
+	getSteamIDFromClient(client, szSteamId, 32);
 
 	int bet;
 
 	if(SQL_HasResultSet(hndl))
 	{	
-		//"SELECT steamid, steamid2, bet, map FROM challenges where steamid = '%s' OR steamid2 ='%s'";
-		g_Challenge_WinRatio[data] = 0;
-		g_Challenge_PointsRatio[data] = 0;
+		g_Challenge_WinRatio[client] = 0;
+		g_Challenge_PointsRatio[client] = 0;
 		while (SQL_FetchRow(hndl))
 		{
 			SQL_FetchString(hndl, 0, szSteamIdChallenge, 32);
-			bet = SQL_FetchInt(hndl, 2);
+			bet = SQL_FetchInt(hndl, 1);
 			if (StrEqual(szSteamIdChallenge,szSteamId)) // Won the challenge
 			{
-				g_Challenge_WinRatio[data]++;
-				g_Challenge_PointsRatio[data]+= bet;
+				g_Challenge_WinRatio[client]++;
+				g_Challenge_PointsRatio[client]+= bet;
 			}
 			else 										// Lost the challenge
 			{
-				g_Challenge_WinRatio[data]--;
-				g_Challenge_PointsRatio[data]-= bet;
+				g_Challenge_WinRatio[client]--;
+				g_Challenge_PointsRatio[client]-= bet;
 			}
 		}
 	}
 	if (g_bChallengePoints) // If challenge points are enabled: add them to players points
-		g_pr_points[data]+= g_Challenge_PointsRatio[data];
+		g_pr_points[client]+= g_Challenge_PointsRatio[client];
 
 	// Next up, calculate bonus points:
-	//SELECT mapname, zonegroup FROM ck_bonus WHERE steamid = '%s' AND runtime > 0.0
-	Format(szQuery, 512, sql_selectPersonalBonusCompleted, szSteamId); 
-	SQL_TQuery(g_hDb, sql_CountFinishedBonusCallback, szQuery, data, DBPrio_Low);
+	Format(szQuery, 512, "SELECT mapname, (select count(1)+1 from ck_bonus b where a.mapname=b.mapname and a.runtime > b.runtime) AS rank, (SELECT count(1) FROM ck_bonus b WHERE a.mapname = b.mapname AND a.zonegroup = b.zonegroup) as total FROM ck_bonus a WHERE steamid = '%s';", szSteamId); 
+	SQL_TQuery(g_hDb, sql_CountFinishedBonusCallback, szQuery, client, DBPrio_Low);
 }
 
 //
-// 4. Get players rank in bonuses
+// 4. Calculate points gained from bonuses
+// Fetched values
+// mapname, rank, total
 //
-public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] error, any:client)
 {
 	if(hndl == null)
 	{
@@ -1282,152 +1286,68 @@ public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] er
 		return;
 	}
 
-	char szQuery[1028], szSteamId[32];
 
-	getSteamIDFromClient(data, szSteamId, 32);
+	char szMap[128], szSteamId[32], szMapName2[128];
+	int totalplayers, rank;
 
+	getSteamIDFromClient(client, szSteamId, 32);	
 
-	// Player has finished bonuses
-	if(SQL_HasResultSet(hndl) && SQL_GetRowCount(hndl) > 0)
+	if(SQL_HasResultSet(hndl))
 	{
-		// Get the total amount of bonuses 
-		g_clientFinishedBonuses[data] = SQL_GetRowCount(hndl);
-		g_ClientFinishedBonusesRowCount[data] = 0;
-
-		int zonegrp;
-		char mapName[128];
-
 		while (SQL_FetchRow(hndl))
 		{
-			SQL_FetchString(hndl, 0, mapName, 128);
-			zonegrp = SQL_FetchInt(hndl, 1);
-
-			// Get rank in each bonus
-			Format(szQuery, 1028, "SELECT name, mapname, zonegroup FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > -1.0 AND zonegroup = %i) AND mapname = '%s' AND runtime > -1.0 AND zonegroup = '%i' ORDER BY runtime;", szSteamId, mapName, zonegrp, mapName, zonegrp);
-			SQL_TQuery(g_hDb, sql_selectBonusRankCallback, szQuery, data, DBPrio_Low);
-		}
-	}
-	else // Player hasn't finished any bonuses, move to map points
-	{
-		// Next up: Points from maps
-		//"SELECT mapname FROM ck_playertimes where steamid='%s' AND runtimepro > -1.0";
-		Format(szQuery, 1028, sql_CountFinishedMaps, szSteamId);  
-		SQL_TQuery(g_hDb, sql_CountFinishedMapsCallback, szQuery, data, DBPrio_Low);
-	}
-}
-
-
-//
-// 5. Get percentile rank of rank in bonuses
-//
-public sql_selectBonusRankCallback(Handle owner, Handle hndl, const char[] error, any:data)
-{
-	if(hndl == null)
-	{
-		LogError("[ckSurf] SQL Error (sql_selectBonusRankCallback): %s", error);
-		return;
-	}
-
-	char szMapName[128];
-	char szQuery[255]; 
-
-	//"SELECT name, mapname, zonegroup FROM ck_bonus WHERE runtime <= (SELECT runtime FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > -1.0 AND zonegroup = %i) AND mapname = '%s' AND runtime > -1.0 AND zonegroup = '%i' ORDER BY runtime;", szSteamId, mapName, zonegroup, mapName, zonegrp);
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		SQL_FetchString(hndl, 1, szMapName, 128);	
-		int rank = SQL_GetRowCount(hndl);
-		int zonegrp = SQL_FetchInt(hndl, 2);
-
-		Handle pack = CreateDataPack();
-		WritePackCell(pack, data);
-		WritePackCell(pack, rank);
-		WritePackString(pack, szMapName);
-		
-		Format(szQuery, 255, "SELECT name FROM ck_bonus WHERE mapname = '%s' AND runtime > -1.0 AND zonegroup = %i;", szMapName, zonegrp);
-
-		SQL_TQuery(g_hDb, sql_selectBonusPercentileCallback, szQuery, pack, DBPrio_Low);
-	}
-}
-
-
-//
-// 6. Give points based on bonus rank + percentile
-//
-public sql_selectBonusPercentileCallback(Handle owner, Handle hndl, const char[] error, any:data)
-{
-	if(hndl == null)
-	{
-		LogError("[ckSurf] SQL Error (sql_selectBonusPercentileCallback): %s", error);
-		return;
-	}
-
-	char szMap[128], szSteamId[32];
-
-	ResetPack(data);
-	int client = ReadPackCell(data);
-	int rank = ReadPackCell(data);
-	ReadPackString(data, szMap, 128);	
-	CloseHandle(data);
-
-	getSteamIDFromClient(client, szSteamId, 32);
-
-
-	char szMapName2[128];
-
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		// Total amount of players who have finished the bonus
-		int count = SQL_GetRowCount(hndl);
-		for (int i = 0; i < GetArraySize(g_MapList); i++) // Check that the map is in the mapcycle
-		{
-			GetArrayString(g_MapList, i, szMapName2, sizeof(szMapName2));	
-			if (StrEqual(szMapName2, szMap, false))
+			// Total amount of players who have finished the bonus
+			totalplayers = SQL_FetchInt(hndl, 2);
+			rank = SQL_FetchInt(hndl, 1);
+			SQL_FetchString(hndl, 0, szMap, 128);
+			for (int i = 0; i < GetArraySize(g_MapList); i++) // Check that the map is in the mapcycle
 			{
-				float percentage = 1.0 + ((1.0/float(count)) - (float(rank)/float(count)));
-				g_pr_points[client]+= RoundToCeil(200.0 * percentage);					
-				switch(rank) 
+				GetArrayString(g_MapList, i, szMapName2, sizeof(szMapName2));	
+				if (StrEqual(szMapName2, szMap, false))
 				{
-					case 1: g_pr_points[client]+= 200;
-					case 2: g_pr_points[client]+= 190;
-					case 3: g_pr_points[client]+= 180;
-					case 4: g_pr_points[client]+= 170;
-					case 5: g_pr_points[client]+= 150;
-					case 6: g_pr_points[client]+= 140;
-					case 7: g_pr_points[client]+= 135;
-					case 8: g_pr_points[client]+= 120;
-					case 9: g_pr_points[client]+= 115;
-					case 10: g_pr_points[client]+= 105;
-					case 11: g_pr_points[client]+= 100;
-					case 12: g_pr_points[client]+= 90;
-					case 13: g_pr_points[client]+= 80;
-					case 14: g_pr_points[client]+= 75;
-					case 15: g_pr_points[client]+= 60;
-					case 16: g_pr_points[client]+= 50;
-					case 17: g_pr_points[client]+= 40;
-					case 18: g_pr_points[client]+= 30;
-					case 19: g_pr_points[client]+= 20;
-					case 20: g_pr_points[client]+= 10;
-				}	
-				break;
-			}				
+					float percentage = 1.0 + ((1.0/float(totalplayers)) - (float(rank)/float(totalplayers)));
+					g_pr_points[client]+= RoundToCeil(200.0 * percentage);					
+					switch(rank) 
+					{
+						case 1: g_pr_points[client]+= 200;
+						case 2: g_pr_points[client]+= 190;
+						case 3: g_pr_points[client]+= 180;
+						case 4: g_pr_points[client]+= 170;
+						case 5: g_pr_points[client]+= 150;
+						case 6: g_pr_points[client]+= 140;
+						case 7: g_pr_points[client]+= 135;
+						case 8: g_pr_points[client]+= 120;
+						case 9: g_pr_points[client]+= 115;
+						case 10: g_pr_points[client]+= 105;
+						case 11: g_pr_points[client]+= 100;
+						case 12: g_pr_points[client]+= 90;
+						case 13: g_pr_points[client]+= 80;
+						case 14: g_pr_points[client]+= 75;
+						case 15: g_pr_points[client]+= 60;
+						case 16: g_pr_points[client]+= 50;
+						case 17: g_pr_points[client]+= 40;
+						case 18: g_pr_points[client]+= 30;
+						case 19: g_pr_points[client]+= 20;
+						case 20: g_pr_points[client]+= 10;
+					}	
+					break;
+				}				
+			}
 		}
 	}
-	g_ClientFinishedBonusesRowCount[client]++;
-	if (g_ClientFinishedBonusesRowCount[client] == g_clientFinishedBonuses[client])
-	{
-		// Next up: Points from maps
-		//"SELECT mapname FROM ck_playertimes where steamid='%s' AND runtimepro > -1.0";
-		char szQuery[512];
-		Format(szQuery, 512, sql_CountFinishedMaps, szSteamId);  
-		SQL_TQuery(g_hDb, sql_CountFinishedMapsCallback, szQuery, client, DBPrio_Low);
-	}
+
+	// Next up: Points from maps
+	char szQuery[512];
+	Format(szQuery, 512, "SELECT mapname, (select count(1)+1 from ck_playertimes b where a.mapname=b.mapname and a.runtimepro > b.runtimepro) AS rank, (SELECT count(1) FROM ck_playertimes b WHERE a.mapname = b.mapname) as total FROM ck_playertimes a where steamid = '%s';", szSteamId);  
+	SQL_TQuery(g_hDb, sql_CountFinishedMapsCallback, szQuery, client, DBPrio_Low);
 }
 
-
 //
-// 7. Count the amount of maps finished and gain points from ck_ranking_extra_points_firsttime
+// 5. Count the points gained from regular maps
+// Fetching:
+// mapname, rank, total
 //
-public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] error, any:client)
 {
 	if(hndl == null)
 	{
@@ -1435,186 +1355,70 @@ public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 		return;
 	}
 
-	char szQuery[1024];   
-	char szSteamId[32];
-	char MapName[128];
-	char MapName2[128];
-	int finished_Pro=0;
-	
-	getSteamIDFromClient(data, szSteamId, 32);
+	char szMap[128], szMapName2[128];
+	int finishedMaps=0, totalplayers, rank;
 
-	// Count the amount of maps finished and check that they are in the mapcycle
 	if(SQL_HasResultSet(hndl))
 	{
-		while (SQL_FetchRow(hndl))
+		while(SQL_FetchRow(hndl))
 		{
-			//"SELECT mapname FROM playertimes where steamid='%s' AND runtimepro > -1.0";
+			// Total amount of players who have finished the map
+			totalplayers = SQL_FetchInt(hndl, 2);
+			// Rank in that map
+			rank = SQL_FetchInt(hndl, 1);
+			// Map name
+			SQL_FetchString(hndl, 0, szMap, 128);	
 
-			SQL_FetchString(hndl, 0, MapName, 128);	
-			for (int i = 0; i < GetArraySize(g_MapList); i++)
+			for (int i = 0; i < GetArraySize(g_MapList); i++) // Check that the map is in the mapcycle
 			{
-				GetArrayString(g_MapList, i, MapName2, sizeof(MapName2));
-				if (StrEqual(MapName2, MapName, false))
+				GetArrayString(g_MapList, i, szMapName2, sizeof(szMapName2));	
+				if (StrEqual(szMapName2, szMap, false))
 				{
-					finished_Pro++;
-					continue;
-				}
-			}			
+					finishedMaps++;
+					float  percentage = 1.0 + ((1.0/float(totalplayers)) - (float(rank) / float(totalplayers)));
+					g_pr_points[client]+= RoundToCeil(200.0 * percentage);					
+					switch(rank) 
+					{
+						case 1: g_pr_points[client]+= 500;
+						case 2: g_pr_points[client]+= 400;
+						case 3: g_pr_points[client]+= 375;
+						case 4: g_pr_points[client]+= 350;
+						case 5: g_pr_points[client]+= 325;
+						case 6: g_pr_points[client]+= 300;
+						case 7: g_pr_points[client]+= 275;
+						case 8: g_pr_points[client]+= 250;
+						case 9: g_pr_points[client]+= 225;
+						case 10: g_pr_points[client]+= 200;
+						case 11: g_pr_points[client]+= 175;
+						case 12: g_pr_points[client]+= 150;
+						case 13: g_pr_points[client]+= 125;
+						case 14: g_pr_points[client]+= 100;
+						case 15: g_pr_points[client]+= 90;
+						case 16: g_pr_points[client]+= 80;
+						case 17: g_pr_points[client]+= 70;
+						case 18: g_pr_points[client]+= 60;
+						case 19: g_pr_points[client]+= 50;
+						case 20: g_pr_points[client]+= 40;
+					}	
+					break;
+				}				
+			}
 		}
-		// Finished maps amount is stored in memory
-		g_pr_finishedmaps[data]=finished_Pro;
-		// Percentage of maps finished
-		g_pr_finishedmaps_perc[data]= (float(finished_Pro) / float(g_pr_MapCount)) * 100.0;
-		// Points gained from 
-		g_pr_points[data]+= (finished_Pro * g_ExtraPoints2);
-
-		//Next up: Get runtimes from database
-		//"SELECT db1.name, db2.steamid, db2.mapname, db2.runtimepro as overall, db1.steamid FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.steamid = '%s' AND db2.runtimepro > -1.0 ORDER BY mapname ASC;";
-		Format(szQuery, 1024, sql_selectPersonalAllRecords, szSteamId, szSteamId);  
-		if ((StrContains(szSteamId, "STEAM_") != -1)) // Bugged ID's are ignored
-			SQL_TQuery(g_hDb, sql_selectPersonalAllRecordsCallback, szQuery, data, DBPrio_Low);			
 	}
-}
-
-//
-// 8. Use maptimes to check ranks in maps
-//
-public sql_selectPersonalAllRecordsCallback(Handle owner, Handle hndl, const char[] error, any:data)
-{
-	if(hndl == null)
-	{
-		LogError("[ckSurf] SQL Error(sql_selectPersonalAllRecordsCallback): %s", error);
-		return;
-	}
-
-	char szQuery[1024];  
-	char szMapName[128];
-	char szSteamId[32];
-
-	getSteamIDFromClient(data, szSteamId, 32);
-
-	// Maptimes were found in the database
-	//"SELECT db1.name, db2.steamid, db2.mapname, db2.runtimepro as overall, db1.steamid FROM ck_playertimes as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.steamid = '%s' AND db2.runtimepro > -1.0 ORDER BY mapname ASC;";
-	if(SQL_HasResultSet(hndl))
-	{
-		g_pr_maprecords_row_counter[data]=0;
-		g_pr_maprecords_row_count[data] = SQL_GetRowCount(hndl);
-		while (SQL_FetchRow(hndl))
-		{		
-			SQL_FetchString(hndl, 2, szMapName, 128);
-			//Return the names of players, who were faster than the steamID in the map
-			//"SELECT name,mapname FROM ck_playertimes WHERE runtimepro <= (SELECT runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0) AND mapname = '%s' AND runtimepro > -1.0 ORDER BY runtimepro;";
-			Format(szQuery, 1024, sql_selectPlayerRankProTime, szSteamId, szMapName, szMapName);
-			SQL_TQuery(g_hDb, sql_selectPlayerRankCallback, szQuery, data, DBPrio_Low);								
-		}	
-	}
-	if (g_pr_maprecords_row_count[data]==0)
-	{
-		db_updatePoints(data);		
-	}	
-}
-
-//
-// 9. Select the total amount of players, who have finished the map
-//
-public 	sql_selectPlayerRankCallback(Handle owner, Handle hndl, const char[] error, any:data)
-{
-	if(hndl == null)
-	{
-		LogError("[ckSurf] SQL Error (sql_selectPlayerRankCallback): %s", error);
-		return;
-	}
-
-	char szMapName[128];
-	char szQuery[255];  
-	//"SELECT name,mapname FROM playertimes WHERE runtimepro <= (SELECT runtimepro FROM playertimes WHERE steamid = '%s' AND mapname = '%s' AND runtimepro > -1.0) AND mapname = '%s' AND runtimepro > -1.0 ORDER BY runtimepro;";
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		SQL_FetchString(hndl, 1, szMapName, 128);	
-		int rank = SQL_GetRowCount(hndl);
-
-		Handle pack = CreateDataPack();
-		WritePackCell(pack, data);
-		WritePackCell(pack, rank);
-		WritePackString(pack, szMapName);
+	// Finished maps amount is stored in memory
+	g_pr_finishedmaps[client] = finishedMaps;
+	// Percentage of maps finished
+	g_pr_finishedmaps_perc[client] = (float(finishedMaps) / float(g_pr_MapCount)) * 100.0;
+	// Points gained from finishing maps for the first time
+	g_pr_points[client]+=(finishedMaps * g_ExtraPoints2);
 		
-		//"SELECT name FROM ck_playertimes WHERE mapname = '%s' AND runtimepro  > -1.0;";
-		Format(szQuery, 255, sql_selectPlayerProCount, szMapName);
-		SQL_TQuery(g_hDb, sql_selectPlayerRankCallback2, szQuery, pack, DBPrio_Low);
-	}
+	// Done checking, update points
+	db_updatePoints(client);	
+
 }
 
 //
-// 10. Give players points based on rank + the percentile rank they are at
-//
-public sql_selectPlayerRankCallback2(Handle owner, Handle hndl, const char[] error, any:data)
-{
-	if(hndl == null)
-	{
-		LogError("[ckSurf] SQL Error (sql_selectPlayerRankCallback2): %s", error);
-		return;
-	}
-
-	ResetPack(data);
-	int client = ReadPackCell(data);
-	int rank = ReadPackCell(data);
-	char szMap[64];
-	ReadPackString(data, szMap, 64);	
-	CloseHandle(data);
-
-	char szMapName2[128];
-
-	if (hndl == null)
-		return;
-
-	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		// Total amount of players who have finished the map
-		int count = SQL_GetRowCount(hndl);
-		for (int i = 0; i < GetArraySize(g_MapList); i++) // Check that the map is in the mapcycle
-		{
-			GetArrayString(g_MapList, i, szMapName2, sizeof(szMapName2));	
-			if (StrEqual(szMapName2, szMap, false))
-			{
-				float  percentage = 1.0 + ((1.0/float(count)) - (float(rank) / float(count)));
-				g_pr_points[client]+= RoundToCeil(200.0 * percentage);					
-				switch(rank) 
-				{
-					case 1: g_pr_points[client]+= 500;
-					case 2: g_pr_points[client]+= 400;
-					case 3: g_pr_points[client]+= 375;
-					case 4: g_pr_points[client]+= 350;
-					case 5: g_pr_points[client]+= 325;
-					case 6: g_pr_points[client]+= 300;
-					case 7: g_pr_points[client]+= 275;
-					case 8: g_pr_points[client]+= 250;
-					case 9: g_pr_points[client]+= 225;
-					case 10: g_pr_points[client]+= 200;
-					case 11: g_pr_points[client]+= 175;
-					case 12: g_pr_points[client]+= 150;
-					case 13: g_pr_points[client]+= 125;
-					case 14: g_pr_points[client]+= 100;
-					case 15: g_pr_points[client]+= 90;
-					case 16: g_pr_points[client]+= 80;
-					case 17: g_pr_points[client]+= 70;
-					case 18: g_pr_points[client]+= 60;
-					case 19: g_pr_points[client]+= 50;
-					case 20: g_pr_points[client]+= 40;
-				}	
-				break;
-			}				
-		}
-	}
-	g_pr_maprecords_row_counter[client]++;
-	if (g_pr_maprecords_row_counter[client]==g_pr_maprecords_row_count[client])
-	{
-		// Done checking, update points
-		db_updatePoints(client);		
-	}
-}
-
-//
-// 11. Updating points to database
+// 6. Updating points to database
 //
 public db_updatePoints(client)
 {
@@ -1641,7 +1445,7 @@ public db_updatePoints(client)
 }
 
 //
-// 12. Calculations done, if calculating all, move forward, if not announce changes.
+// 7. Calculations done, if calculating all, move forward, if not announce changes.
 //
 public sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
 {
@@ -3995,10 +3799,8 @@ public sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const char
 	{
 		g_bCheckpointRecordFound[data] = true;
 		int k = 2;
-		//PrintToServer("----------- CP RECORDS -----------");
 		for (int i = 0; i < CPLIMIT; i++) {
 			g_fCheckpointServerRecord[data][i] = SQL_FetchFloat(hndl, k);
-			//PrintToServer("%i: %f", i, g_fCheckpointServerRecord[data][i]);
 			k++;
 		}
 	}
@@ -4006,17 +3808,15 @@ public sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const char
 		g_bCheckpointRecordFound[data] = false;
 }
 
-public db_viewCheckpoints(client, char szSteamID[32], char szMapName[128], zoneGrp)
+public db_viewCheckpoints(client, char szSteamID[32], char szMapName[128])
 {
 	char szQuery[1024];
-	Format(szQuery, 1024, sql_selectCheckpoints, szSteamID, szMapName, zoneGrp);
-	Handle pack = CreateDataPack();
-	WritePackCell(pack, client);
-	WritePackCell(pack, zoneGrp);
-	SQL_TQuery(g_hDb, SQL_selectCheckpointsCallback, szQuery, pack, DBPrio_Low);
+ 	//"SELECT zonegroup, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s';";
+	Format(szQuery, 1024, sql_selectCheckpoints, szMapName, szSteamID);
+	SQL_TQuery(g_hDb, SQL_selectCheckpointsCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:client)
 {
 	if(hndl == null)
 	{
@@ -4024,12 +3824,7 @@ public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 		return;
 	}
 
-	ResetPack(data);
-	int client = ReadPackCell(data);
-	int zonegrp = ReadPackCell(data);
-	CloseHandle(data);
-
-	int k = 2;
+	int zoneGrp;
 
 	if (!IsValidClient(client))
 		return;
@@ -4038,20 +3833,59 @@ public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 	{
 		while (SQL_FetchRow(hndl))
 		{
-			k = 2;
-			zonegrp = SQL_FetchInt(hndl, 37);
-			g_bCheckpointsFound[zonegrp][client] = true;
+			zoneGrp = SQL_FetchInt(hndl, 0);
+			g_bCheckpointsFound[zoneGrp][client] = true;
 			for (int i = 0; i < CPLIMIT; i++)
 			{
-				g_fCheckpointTimesRecord[zonegrp][client][i] = SQL_FetchFloat(hndl, k);
-				k++;
+				g_fCheckpointTimesRecord[zoneGrp][client][i] = SQL_FetchFloat(hndl, (i+1));
 			}
 		}
 	}
-	else
-		g_bCheckpointsFound[zonegrp][client] = false;
-
 }
+
+public db_viewCheckpointsinZoneGroup(client, char szSteamID[32], char szMapName[128], int zonegroup)
+{
+	char szQuery[1024];
+	//"SELECT cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s' AND zonegroup = %i;";
+	Handle pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackCell(pack, zonegroup);
+
+	Format(szQuery, 1024, sql_selectCheckpointsinZoneGroup, szMapName, szSteamID, zonegroup);
+	SQL_TQuery(g_hDb, db_viewCheckpointsinZoneGroupCallback, szQuery, pack, DBPrio_Low);
+}
+
+public db_viewCheckpointsinZoneGroupCallback(Handle owner, Handle hndl, const char[] error, any:pack)
+{
+	if(hndl == null)
+	{
+		LogError("[ckSurf] SQL Error (SQL_selectCheckpointsCallback): %s", error);
+		return;
+	}
+
+	ResetPack(pack);
+	int client = ReadPackCell(pack);
+	int zonegrp = ReadPackCell(pack);
+	CloseHandle(pack);
+
+	if (!IsValidClient(client))
+		return;
+
+	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		g_bCheckpointsFound[zonegrp][client] = true;
+		for (int i = 0; i < CPLIMIT; i++)
+		{
+			g_fCheckpointTimesRecord[zonegrp][client][i] = SQL_FetchFloat(hndl, i);
+		}
+	}
+	else
+	{
+		g_bCheckpointsFound[zonegrp][client] = false;
+	}
+}
+
+
 
 public db_UpdateCheckpoints(client, char szSteamID[32], zGroup)
 {
@@ -4084,7 +3918,7 @@ public SQL_updateCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 	int zonegrp = ReadPackCell(data);
 	CloseHandle(data);
 
-	db_viewCheckpoints(client, g_szSteamID[client], g_szMapName, zonegrp);
+	db_viewCheckpointsinZoneGroup(client, g_szSteamID[client], g_szMapName, zonegrp);
 }
 
 public db_deleteCheckpoints()
@@ -5893,6 +5727,9 @@ public sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const char[] e
 			x = 66 + data;
 		else
 			x = 66 + g_pr_TableRowCount;
+
+		if (g_pr_TableRowCount > MAX_PR_PLAYERS)
+			g_pr_TableRowCount = MAX_PR_PLAYERS;
 
 		if (x > MAX_PR_PLAYERS)
 			x = MAX_PR_PLAYERS-1;
