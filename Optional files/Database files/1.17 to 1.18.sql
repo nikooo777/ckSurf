@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 ALTER TABLE ck_zones ADD zonegroup INT NOT NULL DEFAULT 0;
 ALTER TABLE ck_zones ADD zonename VARCHAR(128);
 ALTER TABLE ck_playertemp ADD zonegroup INT NOT NULL DEFAULT 0;
@@ -8,7 +6,7 @@ CREATE TABLE IF NOT EXISTS ck_playertitles (steamid VARCHAR(32), vip INT(12) DEF
 
 ALTER TABLE ck_checkpoints RENAME TO ck_checkpoints_temp;
 CREATE TABLE IF NOT EXISTS ck_checkpoints (steamid VARCHAR(32), mapname VARCHAR(32), cp1 FLOAT DEFAULT '0.0', cp2 FLOAT DEFAULT '0.0', cp3 FLOAT DEFAULT '0.0', cp4 FLOAT DEFAULT '0.0', cp5 FLOAT DEFAULT '0.0', cp6 FLOAT DEFAULT '0.0', cp7 FLOAT DEFAULT '0.0', cp8 FLOAT DEFAULT '0.0', cp9 FLOAT DEFAULT '0.0', cp10 FLOAT DEFAULT '0.0', cp11 FLOAT DEFAULT '0.0', cp12 FLOAT DEFAULT '0.0', cp13 FLOAT DEFAULT '0.0', cp14 FLOAT DEFAULT '0.0', cp15 FLOAT DEFAULT '0.0', cp16 FLOAT DEFAULT '0.0', cp17  FLOAT DEFAULT '0.0', cp18 FLOAT DEFAULT '0.0', cp19 FLOAT DEFAULT '0.0', cp20  FLOAT DEFAULT '0.0', cp21 FLOAT DEFAULT '0.0', cp22 FLOAT DEFAULT '0.0', cp23 FLOAT DEFAULT '0.0', cp24 FLOAT DEFAULT '0.0', cp25 FLOAT DEFAULT '0.0', cp26 FLOAT DEFAULT '0.0', cp27 FLOAT DEFAULT '0.0', cp28 FLOAT DEFAULT '0.0', cp29 FLOAT DEFAULT '0.0', cp30 FLOAT DEFAULT '0.0', cp31 FLOAT DEFAULT '0.0', cp32  FLOAT DEFAULT '0.0', cp33 FLOAT DEFAULT '0.0', cp34 FLOAT DEFAULT '0.0', cp35 FLOAT DEFAULT '0.0', zonegroup INT(12) NOT NULL DEFAULT 0, PRIMARY KEY(steamid, mapname, zonegroup));
-INSERT INTO ck_checkpoints(steamid, mapname, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20) SELECT steamid, mapname, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20 FROM ck_checkpoints_temp;
+INSERT INTO ck_checkpoints(steamid, mapname, zonegroup, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20) SELECT steamid, mapname, 0, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20 FROM ck_checkpoints_temp GROUP BY mapname, steamid;
 DROP TABLE ck_checkpoints_temp;
 
 ALTER TABLE ck_bonus RENAME TO ck_bonus_temp;
@@ -19,6 +17,7 @@ DROP TABLE ck_bonus_temp;
 DROP TABLE IF EXISTS ck_playertemp;
 CREATE TABLE IF NOT EXISTS ck_playertemp (steamid VARCHAR(32), mapname VARCHAR(32), cords1 FLOAT NOT NULL DEFAULT '-1.0', cords2 FLOAT NOT NULL DEFAULT '-1.0', cords3 FLOAT NOT NULL DEFAULT '-1.0', angle1 FLOAT NOT NULL DEFAULT '-1.0',angle2 FLOAT NOT NULL DEFAULT '-1.0',angle3 FLOAT NOT NULL DEFAULT '-1.0', EncTickrate INT(12) DEFAULT '-1.0', runtimeTmp FLOAT NOT NULL DEFAULT '-1.0', Stage INT, zonegroup INT NOT NULL DEFAULT 0, PRIMARY KEY(steamid,mapname));
 
+ALTER TABLE ck_maptier ADD btier1 INT;
 ALTER TABLE ck_maptier ADD btier2 INT;
 ALTER TABLE ck_maptier ADD btier3 INT;
 ALTER TABLE ck_maptier ADD btier4 INT;
@@ -39,5 +38,3 @@ UPDATE ck_zones SET zonetypeid = 0 WHERE zonetype = 3 OR zonetype = 4;
 UPDATE ck_zones SET zonetype = 1 WHERE zonetype = 3;
 UPDATE ck_zones SET zonetype = 2 WHERE zonetype = 4;
 UPDATE ck_zones SET zonetype = zonetype-2 WHERE zonetype > 4;
-
-COMMIT;
