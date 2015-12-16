@@ -562,7 +562,7 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 	}
 
 	Menu titleMenu = CreateMenu(Handler_TitleMenu);
-	char id[2], menuItem[152];
+	char id[8], menuItem[152];
 
 	if (IsValidClient(g_iAdminSelectedClient[data]))
 	{
@@ -583,7 +583,7 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 		{
 			if (!StrEqual(g_szflagTitle[i], ""))
 			{
-				Format(id, 2, "%i", i);
+				Format(id, 8, "%i", i);
 				if (SQL_FetchInt(hndl, i) > 0)
 				{
 					g_bAdminFlagTitlesTemp[data][i] = true;
@@ -605,7 +605,7 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 		{
 			if (!StrEqual(g_szflagTitle[i], ""))
 			{
-				Format(id, 2, "%i", i);
+				Format(id, 8, "%i", i);
 				Format(menuItem, 152, "[OFF] %s", g_szflagTitle[i]);
 				AddMenuItem(titleMenu, id, menuItem);
 			}

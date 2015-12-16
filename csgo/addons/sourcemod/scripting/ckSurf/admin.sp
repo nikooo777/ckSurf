@@ -116,7 +116,7 @@ public int Handler_TitleMenu(Handle tMenu, MenuAction action, int client, int it
 	{
 		case MenuAction_Select:
 		{
-			char aID[2];
+			char aID[8];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int titleID = StringToInt(aID);
 

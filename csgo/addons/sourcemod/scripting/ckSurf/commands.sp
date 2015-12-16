@@ -69,13 +69,13 @@ public Action Command_SetTitle(int client, int args)
 	Menu playersTitles = CreateMenu(H_PlayersTitles);
 	SetMenuTitle(playersTitles, "Your available titles: ");
 
-	char id[2], szMenuItem[54];
+	char id[8], szMenuItem[54];
 	for (int i = 0; i < TITLE_COUNT; i++)
 	{
 		if (g_bflagTitles[client][i] && !StrEqual(g_szflagTitle[i], ""))
 		{
 			
-			IntToString(i, id, 2);
+			IntToString(i, id, 8);
 			if (g_iTitleInUse[client] == i)
 				Format(szMenuItem, 54, "[ON] %s", g_szflagTitle[i]);
 			else	
