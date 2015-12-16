@@ -97,7 +97,7 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 		{
 			if (!IsValidClient(client))
 				return;
-			char aID[2], szSteamID[32];
+			char aID[8], szSteamID[32];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int titleID = StringToInt(aID);
 
