@@ -237,6 +237,8 @@ public CL_OnEndTimerPress(client)
 			g_bnewRecord[client] = true;
 			g_fRecordMapTime = g_fFinalTime[client]; 
 			Format(g_szRecordPlayer, MAX_NAME_LENGTH, "%s", szName);
+			FormatTimeFloat(client, g_fFinalTime[client], 3, g_szRecordMapTime, 64);
+
 			if (g_Sound_Type[client] != 1)
 				g_Sound_Type[client] = 2;
 				

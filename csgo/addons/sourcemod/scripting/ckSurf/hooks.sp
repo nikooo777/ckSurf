@@ -1,16 +1,24 @@
-//button hook
-public Action NormalSHook_callback(clients[64], &numClients, char sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
+public Action:SayText2(UserMsg:msg_id, Handle:bf, players[], playersNum, bool:reliable, bool:init)
 {
-    if(entity > MaxClients)
-    {
-        char clsname[20]; GetEntityClassname(entity, clsname, sizeof(clsname));
-        if(StrEqual(clsname, "func_button", false))
-        {
-            return Plugin_Handled;
-        }
-    }
-    return Plugin_Continue;
-}  
+	if(!reliable) return Plugin_Continue;
+	new String:buffer[25];
+	if(GetUserMessageType() == UM_Protobuf)
+	{
+		PbReadString(bf, "msg_name", buffer, sizeof(buffer));
+		if(StrEqual(buffer, "#Cstrike_Name_Change"))
+			return Plugin_Handled;
+	}
+	else
+	{
+		BfReadChar(bf);
+		BfReadChar(bf);
+		BfReadString(bf, buffer, sizeof(buffer));
+
+		if(StrEqual(buffer, "#Cstrike_Name_Change"))
+			return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
 
 //attack spam protection
 public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)

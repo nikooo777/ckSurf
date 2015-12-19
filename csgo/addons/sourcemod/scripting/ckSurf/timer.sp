@@ -421,12 +421,16 @@ public Action SetClanTag(Handle timer, any:client)
 	if (!IsValidClient(client) || IsFakeClient(client) || g_pr_Calculating[client])
 		return Plugin_Handled;
 
+	/*char buffer[MAX_NAME_LENGTH];
+	if (CS_GetClientClanTag(client, buffer,MAX_NAME_LENGTH) > 0)
+		return Plugin_Handled;
+	*/
 	if (!g_bCountry && !g_bPointSystem && !g_bAdminClantag)
 	{
 		CS_SetClientClanTag(client, ""); 	
 		return Plugin_Handled;
 	}
-	
+
 	char old_pr_rankname[128];  
 	char tag[154];  
 	bool oldrank;

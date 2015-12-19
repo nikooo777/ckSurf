@@ -1,3 +1,13 @@
+public void loadAllClientSettings()
+{
+	for (int i = 1; i < MAXPLAYERS+1; i++)
+		if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i])
+		 	db_viewPersonalRecords(i, g_szSteamID[i], g_szMapName);	
+
+	g_bServerDataLoaded = true;
+
+
+}
 public void getSteamIDFromClient(int client, char[] buffer, int length)
 {
 	// Get steamid - Points are being recalculated by an admin (pretty much going through top 20k players)
@@ -266,9 +276,12 @@ public int getZoneID(int zoneGrp, int stage)
 		for (int i = 0; i < g_mapZonesCount; i++)
 		{
 			if (g_mapZones[i][zoneGroup] == zoneGrp && (g_mapZones[i][zoneType] == 1 || g_mapZones[i][zoneType] == 5) && g_mapZones[i][zoneTypeId] == 0)
-			{
 				return i;
-			}
+		}
+		for (int i = 0; i < g_mapZonesCount; i++) // If no start zone with typeId 0 found, return any start zone
+		{
+			if (g_mapZones[i][zoneGroup] == zoneGrp && (g_mapZones[i][zoneType] == 1 || g_mapZones[i][zoneType] == 5))
+				return i;
 		}
 	}
 	else if (stage > 1) // Search for a stage
@@ -1105,7 +1118,8 @@ public void FixPlayerName(int client)
 
 public void LimitSpeed(int client)
 {
-	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client))
+	// Dont limits speed if in practice mode, or if there is no end zone in current zonegroup
+	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client) || g_bPracticeMode[client] || g_mapZonesTypeCount[g_iClientInZone[client][2]][2] == 0)
 		return;
 	float speedCap = 0.0, CurVelVec[3];
 	
@@ -1333,6 +1347,7 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	g_bSettingsLoaded[client] = false;
 	// Set client location 
 	if (bSpawnToStartZone)
 	{
@@ -1814,7 +1829,7 @@ public void PrintChatBonus(int client, int zGroup)
 	Call_Finish();
 
 	CheckBonusRanks(client, zGroup);
-	db_CalcAvgRunTimeBonus(zGroup);
+	db_CalcAvgRunTimeBonus();
 
 	if (g_MapRankBonus[zGroup][client] == 9999999 && IsValidClient(client))
 		PrintToChat(client, "[%cCK%c] %cFailed to save your data correctly! Please contact an admin.",MOSSGREEN,WHITE,DARKRED,RED,DARKRED); 	
@@ -3142,13 +3157,8 @@ public void CenterHudAlive(int client)
 
 public void Checkpoint(int client, int zone, int zonegroup)
 {
-	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client) || !g_bCheckpointsEnabled[client])
+	if (!IsValidClient(client) || g_bPositionRestored[client] ||IsFakeClient(client) ||zone > CPLIMIT)
 		return;
-
-	if (zone > CPLIMIT)
-	{
-		return;
-	}
 	
 	float time = g_fCurrentRunTime[client];
 	float percent = -1.0;
@@ -3276,7 +3286,8 @@ public void Checkpoint(int client, int zone, int zonegroup)
 		{
 				//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}, {9:s}"
 				//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your best run. ({6}{7}{8}).{9}"
-				PrintToChat(client, "%t", "Checkpoint1", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+				if (g_bCheckpointsEnabled[client])
+					PrintToChat(client, "%t", "Checkpoint1", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint1-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szName,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 				CheckpointToSpec(client, szSpecMessage);
 		}
@@ -3311,7 +3322,8 @@ public void Checkpoint(int client, int zone, int zonegroup)
 
 			//"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:s}"
 			//"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your PB. {6} {7}({8}{9}{10}).{11}"
-			PrintToChat(client, "%t", "Checkpoint2",MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
+			if (g_bCheckpointsEnabled[client])
+				PrintToChat(client, "%t", "Checkpoint2",MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint2-spec", MOSSGREEN,WHITE,YELLOW,szDiff,YELLOW,WHITE,szName,YELLOW,szCatchUp,YELLOW,WHITE,szPercnt,YELLOW,sz_srDiff);
 			CheckpointToSpec(client, szSpecMessage);
 		}
@@ -3334,7 +3346,8 @@ public void Checkpoint(int client, int zone, int zonegroup)
 			// "en"		 "[{1}CK{2}]{3} CP: Completed{4} {5} {6}of the map in {7}{8}.{9}"
 			if (percent > -1.0)
 			{
-				PrintToChat(client, "%t", "Checkpoint3", MOSSGREEN, WHITE, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
+				if (g_bCheckpointsEnabled[client])
+					PrintToChat(client, "%t", "Checkpoint3", MOSSGREEN, WHITE, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
 				Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint3-spec", MOSSGREEN, WHITE, YELLOW, WHITE, szName, YELLOW, WHITE, szPercnt, YELLOW, WHITE, szTime, sz_srDiff);
 				CheckpointToSpec(client, szSpecMessage);
 			}
@@ -3343,7 +3356,8 @@ public void Checkpoint(int client, int zone, int zonegroup)
 			// "en"		 "[{1}CK{2}]{3} CP: Reached checkpoint{4} {5}"
 		else
 		{
-			PrintToChat(client, "%t", "Checkpoint4", MOSSGREEN,WHITE,YELLOW,WHITE,(1+zone));
+			if (g_bCheckpointsEnabled[client])
+				PrintToChat(client, "%t", "Checkpoint4", MOSSGREEN,WHITE,YELLOW,WHITE,(1+zone));
 			Format(szSpecMessage, sizeof(szSpecMessage), "%t", "Checkpoint4-spec", MOSSGREEN,WHITE,YELLOW,WHITE,szName,YELLOW,WHITE,(1+zone));
 			CheckpointToSpec(client, szSpecMessage);
 		}

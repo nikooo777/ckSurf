@@ -375,6 +375,8 @@ char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szL
 
 
 int g_failedTransactions[7];
+bool g_bSettingsLoaded[MAXPLAYERS+1];
+bool g_bServerDataLoaded;
 
 bool g_bInTransactionChain = false;
 float g_flastClientUsp[MAXPLAYERS+1];
@@ -523,6 +525,7 @@ float g_fLastPosition[MAXPLAYERS+1][3];
 float g_fLastAngles[MAXPLAYERS+1][3];
 float g_fRecordMapTime;
 char g_szRecordMapTime[64];
+char g_szRecordMapSteamID[MAX_NAME_LENGTH];
 float g_pr_finishedmaps_perc[MAX_PR_PLAYERS+1]; 
 bool g_bRenaming = false;
 bool g_bLateLoaded = false;
@@ -853,8 +856,25 @@ public OnMapStart()
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
 	PrecacheModel(g_sModel);
 
-	// Load map zones
-	checkZoneTypeIds();
+	/** Start Loading Server Settings:
+	* 1. Load zones (db_selectMapZones)
+	* 2. Get map record time (db_GetMapRecord_Pro)
+	* 3. Get the amount of players that have finished the map (db_viewMapProRankCount)
+	* 4. Get the fastest bonus times (db_viewFastestBonus)
+	* 5. Get the total amount of players that have finsihed the bonus (db_viewBonusTotalCount)
+	* 6. Get map tier (db_selectMapTier)
+	* 7. Get record checkpoints (db_viewRecordCheckpointInMap)
+	* 8. Calculate average run time (db_CalcAvgRunTime)
+	* 9. Calculate averate bonus time (db_CalcAvgRunTimeBonus)
+	* 10. Calculate player count (db_CalculatePlayerCount)
+	* 11. Calculate player count with points (db_CalculatePlayersCountGreater0) 
+	* 12. Get spawn locations (db_selectSpawnLocations)
+	* 13. Clear latest records (db_ClearLatestRecords)
+	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
+	* -> loadAllClientSettings
+	*/
+	if (!g_bRenaming && !g_bInTransactionChain)
+		db_selectMapZones();
 
 	//workshop fix
 	char mapPieces[6][128];
@@ -863,16 +883,6 @@ public OnMapStart()
 	
 	//get map tag
 	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
-
-	//sql queries
-	if (!g_bRenaming && !g_bInTransactionChain)
-	{
-		db_GetMapRecord_Pro();
-		db_CalculatePlayerCount();
-		db_viewMapProRankCount();
-		db_ClearLatestRecords();
-		db_GetDynamicTimelimit();
-	}
 
 	//sv_pure 1 could lead to problems with the ckSurf models
 	ServerCommand("sv_pure 0");
@@ -961,6 +971,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
+	g_bServerDataLoaded = false;
 	for (int i = 0; i < MAXZONEGROUPS; i++)
 		Format(g_sTierString[i], 512,  "");
 
@@ -985,7 +996,7 @@ public OnConfigsExecuted()
 	{
 		if (mapListSerial == -1)
 		{
-			SetFailState("<ckSurf> Mapcycle.txt is empty or does not exists.");
+			SetFailState("[ckSurf] mapcycle.txt is empty or does not exists.");
 		}
 	}
 	for (int i = 0; i < GetArraySize(g_MapList); i++)
@@ -1083,7 +1094,7 @@ public OnClientPutInServer(int client)
 	FixPlayerName(client);
 	
 	//position restoring
-	if(g_bRestore && !g_bRenaming)
+	if(g_bRestore && !g_bRenaming && !g_bInTransactionChain)
 		db_selectLastRun(client);		
 			
 	//console info
@@ -1095,14 +1106,20 @@ public OnClientPutInServer(int client)
 	if (g_bTierFound[0])
 		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
 
-	if (!g_bRenaming)
+	if (!g_bRenaming && !g_bInTransactionChain && g_bServerDataLoaded && !g_bSettingsLoaded[client])
 	{
-		db_viewPlayerPoints(client);
-		db_viewPlayerOptions(client, g_szSteamID[client]);	
-		db_viewPersonalFlags(client, g_szSteamID[client]);
-		db_viewCheckpoints(client, g_szSteamID[client], g_szMapName);
-	 	db_viewPersonalRecords(client,g_szSteamID[client],g_szMapName);	
-		db_viewPersonalBonusRecords(client, g_szSteamID[client]);
+		/**
+			Start loading client settings
+			1. Load client map record (db_viewPersonalRecords)
+			2. Load client rank in map (db_viewMapRankPro)
+			3. Load client bonus record (db_viewPersonalBonusRecords)
+			4. Load client points (db_viewPlayerPoints)
+			5. Load player rank in server (db_GetPlayerRank)
+			6. Load client options (db_viewPlayerOptions)
+			7. Load client titles (db_viewPersonalFlags)
+			8. Load client checkpoints (db_viewCheckpoints)
+		*/
+	 	db_viewPersonalRecords(client, g_szSteamID[client], g_szMapName);	
 	}
 }
 
@@ -1857,6 +1874,8 @@ public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public OnPluginStart()
 {
+	g_bServerDataLoaded = false;
+
 	//Get Server Tickate
 	float fltickrate = 1.0 / GetTickInterval( );
 	if (fltickrate > 65)
@@ -2293,6 +2312,7 @@ public OnPluginStart()
 
 	//chat command listener
 	AddCommandListener(Say_Hook, "say");
+	HookUserMessage(GetUserMessageId("SayText2"), SayText2, true);
 	AddCommandListener(Say_Hook, "say_team");
 
 	//exec ckSurf.cfg
