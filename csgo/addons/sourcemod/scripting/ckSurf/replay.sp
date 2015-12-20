@@ -204,6 +204,10 @@ public LoadReplays()
 
 public PlayRecord(client, type)
 {
+
+	if (!IsValidClient(client))
+		return;
+		
 	char buffer[256];
 	char sPath[256]; 
 	if (type==0)

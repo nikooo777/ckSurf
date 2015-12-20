@@ -4,7 +4,6 @@
 #include <adminmenu>
 #include <cstrike>
 #include <entity>
-#include <setname>
 #include <smlib>
 #include <geoip>
 #include <basecomm>
@@ -852,10 +851,6 @@ public OnMapStart()
 
 	CreateSpawns();
 
-	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
-	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
-	PrecacheModel(g_sModel);
-
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
 	* 2. Get map record time (db_GetMapRecord_Pro)
@@ -880,13 +875,11 @@ public OnMapStart()
 	char mapPieces[6][128];
 	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
 	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece-1]); 
-	
 	//get map tag
 	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
-
 	//sv_pure 1 could lead to problems with the ckSurf models
 	ServerCommand("sv_pure 0");
-			
+
 	//reload language files
 	LoadTranslations("ckSurf.phrases");	
 

@@ -52,7 +52,8 @@ char sql_updateBonusTier[]					= "UPDATE ck_maptier SET btier%i = %i WHERE mapna
 char sql_insertBonusTier[]                  = "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');";
 
 //TABLE BONUS
-char sql_createBonus[]					    = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup)); CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup);";
+char sql_createBonus[]					    = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
+char sql_createBonusIndex[]					= "CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup);";
 char sql_insertBonus[]					    = "INSERT INTO ck_bonus (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";	
 char sql_updateBonus[]					    = "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
 char sql_selectBonusCount[]				    = "SELECT zonegroup, count(1) FROM ck_bonus WHERE mapname = '%s' GROUP BY zonegroup";
@@ -104,7 +105,8 @@ char sql_CountRankedPlayers[] 			= "SELECT COUNT(steamid) FROM ck_playerrank";
 char sql_CountRankedPlayers2[] 			= "SELECT COUNT(steamid) FROM ck_playerrank where points > 0";
 
 //TABLE PLAYERTIMES
-char sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname)); CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro);";
+char sql_createPlayertimes[] 				= "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
+char sql_createPlayertimesIndex[]			= "CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro);";
 char sql_insertPlayer[] 					= "INSERT INTO ck_playertimes (steamid, mapname, name) VALUES('%s', '%s', '%s');";
 char sql_insertPlayerTime[] 				= "INSERT INTO ck_playertimes (steamid, mapname, name,runtimepro) VALUES('%s', '%s', '%s', '%f');";
 char sql_updateRecordPro[]				= "UPDATE ck_playertimes SET name = '%s', runtimepro = '%f' WHERE steamid = '%s' AND mapname = '%s';"; 
@@ -175,7 +177,9 @@ public db_setupDatabase()
 			LogError("[ckSurf] Invalid Database-Type");
 			return;
 		}
-		
+
+	// If updating from a previous version
+	SQL_LockDatabase(g_hDb);
 	SQL_FastQuery(g_hDb,"SET NAMES  'utf8'");
 
 
@@ -186,24 +190,20 @@ public db_setupDatabase()
 	g_bRenaming = false;
 
 	// If coming from KZTimer or a really old version, rename and edit tables to new format
-	if (SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
+	if (SQL_FastQuery(g_hDb, "SELECT steamid FROM playerrank LIMIT 1") && !SQL_FastQuery(g_hDb, "SELECT steamid FROM ck_playerrank LIMIT 1"))
 	{
 		db_renameTables();
+		SQL_UnlockDatabase(g_hDb);
 		return;
 	}
 	else // If startring for the first time and tables haven't been created yet.
-		if (!SQL_FastQuery(g_hDb, "SELECT * FROM playerrank;") && !SQL_FastQuery(g_hDb, "SELECT * FROM ck_playerrank;"))
+		if (!SQL_FastQuery(g_hDb, "SELECT steamid FROM playerrank LIMIT 1") && !SQL_FastQuery(g_hDb, "SELECT steamid FROM ck_playerrank LIMIT 1"))
 		{
 			db_createTables();
+			SQL_UnlockDatabase(g_hDb);
 			return;
 		}
 
-	// If updating from a previous version
-	SQL_LockDatabase(g_hDb);
-
-	// Drop useless tables from KZTimer
-	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS ck_mapbuttons");
-	SQL_FastQuery(g_hDb, "DROP TABLE IF EXISTS playerjumpstats3");
 
 	// 1.17 Command to disable checkpoint messages
 	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playeroptions ADD checkpoints INT DEFAULT 1;");
@@ -270,6 +270,7 @@ void txn_addZoneGroups()
 
 		SQL_AddQuery(h_bonus, "ALTER TABLE ck_bonus RENAME TO ck_bonus_temp;");
 		SQL_AddQuery(h_bonus, sql_createBonus);
+		SQL_AddQuery(h_bonus, sql_createBonusIndex);
 		SQL_AddQuery(h_bonus, "INSERT INTO ck_bonus(steamid, name, mapname, runtime) SELECT steamid, name, mapname, runtime FROM ck_bonus_temp;");
 		SQL_AddQuery(h_bonus, "DROP TABLE ck_bonus_temp;");
 
@@ -425,6 +426,7 @@ public SQLTxn_TXNFailed(Handle db, any:data, numQueries, const char[] error, fai
 		PrintToServer("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
 		PrintToServer("[ckSurf]: Revert back to database backup.");
 		LogError("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
+		return;
 	}
 	g_failedTransactions[data]++;
 }
@@ -432,23 +434,36 @@ public SQLTxn_TXNFailed(Handle db, any:data, numQueries, const char[] error, fai
 
 public db_createTables()
 {
-	SQL_LockDatabase(g_hDb);
+	Transaction createTableTnx = SQL_CreateTransaction();
 
-	SQL_FastQuery(g_hDb, sql_createPlayertmp);
-	SQL_FastQuery(g_hDb, sql_createPlayertimes);
-	SQL_FastQuery(g_hDb, sql_createPlayerRank);
-	SQL_FastQuery(g_hDb, sql_createChallenges);
-	SQL_FastQuery(g_hDb, sql_createPlayerOptions);
-	SQL_FastQuery(g_hDb, sql_createLatestRecords);
-	SQL_FastQuery(g_hDb, sql_createBonus);
-	SQL_FastQuery(g_hDb, sql_createCheckpoints);
-	SQL_FastQuery(g_hDb, sql_createZones);
-	SQL_FastQuery(g_hDb, sql_createMapTier);
-	SQL_FastQuery(g_hDb, sql_createSpawnLocations);
-	SQL_FastQuery(g_hDb, sql_createPlayerFlags); 
+	SQL_AddQuery(createTableTnx, sql_createPlayertmp);
+	SQL_AddQuery(createTableTnx, sql_createPlayertimes);
+	SQL_AddQuery(createTableTnx, sql_createPlayertimesIndex);
+	SQL_AddQuery(createTableTnx, sql_createPlayerRank);
+	SQL_AddQuery(createTableTnx, sql_createChallenges);
+	SQL_AddQuery(createTableTnx, sql_createPlayerOptions);
+	SQL_AddQuery(createTableTnx, sql_createLatestRecords);
+	SQL_AddQuery(createTableTnx, sql_createBonus);
+	SQL_AddQuery(createTableTnx, sql_createBonusIndex);
+	SQL_AddQuery(createTableTnx, sql_createCheckpoints);
+	SQL_AddQuery(createTableTnx, sql_createZones);
+	SQL_AddQuery(createTableTnx, sql_createMapTier);
+	SQL_AddQuery(createTableTnx, sql_createSpawnLocations);
+	SQL_AddQuery(createTableTnx, sql_createPlayerFlags);
 
-	SQL_UnlockDatabase(g_hDb);
+	SQL_ExecuteTransaction(g_hDb, createTableTnx, SQLTxn_CreateDatabaseSuccess, SQLTxn_CreateDatabaseFailed);
+
 }
+
+public SQLTxn_CreateDatabaseSuccess(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+{
+	PrintToServer("[ckSurf] Database tables succesfully created!");
+}
+public SQLTxn_CreateDatabaseFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+{
+	SetFailState("[ckSurf] Database tables could not be created! Error: %s", error);
+}
+
 
 public db_renameTables()
 {
@@ -491,6 +506,7 @@ public db_renameTables()
 
 		// player times
 		SQL_AddQuery(hndl, sql_createPlayertimes);
+		SQL_AddQuery(hndl, sql_createPlayertimesIndex);
 		SQL_AddQuery(hndl, "INSERT INTO ck_playertimes(steamid, mapname, name, runtimepro) SELECT steamid, mapname, name, runtimepro FROM playertimes;");
 		SQL_AddQuery(hndl, "DROP TABLE IF EXISTS playertimes");
 
@@ -513,8 +529,11 @@ public db_renameTables()
 	SQL_AddQuery(hndl, sql_createPlayertmp);
 	SQL_AddQuery(hndl, sql_createLatestRecords);
 
+	// Drop useless tables from KZTimer
 	SQL_AddQuery(hndl, "DROP TABLE IF EXISTS playertmp");
 	SQL_AddQuery(hndl, "DROP TABLE IF EXISTS LatestRecords");
+	SQL_AddQuery(hndl, "DROP TABLE IF EXISTS ck_mapbuttons");
+	SQL_AddQuery(hndl, "DROP TABLE IF EXISTS playerjumpstats3");
 
 	SQL_ExecuteTransaction(g_hDb, hndl, SQLTxn_RenameSuccess, SQLTxn_RenameFailed);
 }
@@ -748,9 +767,11 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 		g_bflagTitles[client][i] = false;
 	
 	g_bHasTitle[client] = false;
+	bool hasTitleRow;
 	
 	if(SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
+		hasTitleRow = true;
 		for (int i = 0; i < TITLE_COUNT; i++)
 		{
 			if (SQL_FetchInt(hndl, i) > 0)
@@ -764,10 +785,10 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 
 	if (IsValidClient(client) && (GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_RESERVATION))
 		if (!g_bHasTitle[client])
-			db_updateAdminVIP(client, szSteamID, true);
+			db_updateAdminVIP(client, szSteamID, hasTitleRow);
 		else
 			if (!g_bflagTitles[client][0])
-				db_updateAdminVIP(client, szSteamID, false);
+				db_updateAdminVIP(client, szSteamID, hasTitleRow);
 
 	Array_Copy(g_bflagTitles[client], g_bflagTitles_orig[client], TITLE_COUNT);
 
@@ -776,14 +797,14 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 
 }
 
-public db_updateAdminVIP(client, char SteamID[32], bool insert)
+public db_updateAdminVIP(client, char SteamID[32], bool hasTitleRow)
 {
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackString(pack, SteamID);
 
 	char szQuery[420];
-	if (insert)
+	if (!hasTitleRow)
 		Format(szQuery, 420, "INSERT INTO `ck_playertitles`(`steamid`, `vip`, `mapper`, `teacher`, `custom1`, `custom2`, `custom3`, `custom4`, `custom5`, `custom6`, `custom7`, `custom8`, `custom9`, `custom10`, `custom11`, `custom12`, `custom13`, `custom14`, `custom15`, `custom16`, `custom17`, `custom18`, `custom19`, `custom20`, `inuse`) VALUES ('%s',1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);",SteamID);
 	else
 		Format(szQuery, 420, "UPDATE `ck_playertitles` SET `vip`= 1, `inuse`= 0 WHERE `steamid` = '%s'",SteamID);
@@ -1736,6 +1757,7 @@ public db_dropPlayer(client)
 	else
 		SQL_FastQuery(g_hDb, sqlite_dropPlayer);
 	SQL_FastQuery(g_hDb, sql_createPlayertimes);
+	SQL_FastQuery(g_hDb, sql_createPlayertimesIndex);
 	SQL_UnlockDatabase(g_hDb);
 	PrintToConsole(client, "playertimes table dropped. Please restart your server!");
 }

@@ -1625,6 +1625,10 @@ public void InitPrecache()
 	PrecacheModel(g_sReplayBotPlayerModel,true);
 	PrecacheModel(g_sArmModel,true);
 	PrecacheModel(g_sPlayerModel,true);
+
+	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
+	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
+	PrecacheModel(g_sModel);
 }
 
 
