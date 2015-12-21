@@ -192,15 +192,15 @@ public void db_setupDatabase()
 	// If coming from KZTimer or a really old version, rename and edit tables to new format
 	if (SQL_FastQuery(g_hDb, "SELECT steamid FROM playerrank LIMIT 1") && !SQL_FastQuery(g_hDb, "SELECT steamid FROM ck_playerrank LIMIT 1"))
 	{
-		db_renameTables();
 		SQL_UnlockDatabase(g_hDb);
+		db_renameTables();
 		return;
 	}
 	else // If startring for the first time and tables haven't been created yet.
 		if (!SQL_FastQuery(g_hDb, "SELECT steamid FROM playerrank LIMIT 1") && !SQL_FastQuery(g_hDb, "SELECT steamid FROM ck_playerrank LIMIT 1"))
 		{
-			db_createTables();
 			SQL_UnlockDatabase(g_hDb);
+			db_createTables();
 			return;
 		}
 
