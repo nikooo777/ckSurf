@@ -1,3 +1,13 @@
+/*=============================================
+=            ckSurf - CS:GO surf Timer 		   *
+*					By Elzi 			       =
+=============================================*/
+
+
+/*=============================================
+=            Section comment block            =
+=============================================*/
+
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
@@ -16,13 +26,25 @@
 #include <mapchooser>
 #include <ckSurf>
 
-//#pragma newdecls required
+
+/*============================================
+=           	 Definitions 		         =
+=============================================*/
+
+// Require new syntax and semicolons
+#pragma newdecls required
 #pragma semicolon 1
+
+// Plugin info
 #define VERSION "1.18"
 #define PLUGIN_VERSION 118
+
+// Database definitions
 #define MYSQL 0
 #define SQLITE 1
+#define PERCENT 0x25
 
+// Chat colors
 #define WHITE 0x01
 #define DARKRED 0x02
 #define PURPLE 0x03
@@ -39,8 +61,10 @@
 #define PINK 0x0E
 #define LIGHTRED 0x0F
 
+// Trail definitions
 #define BEAMLIFE 2.0
-
+#define BONUS_BOT_TRAIL_COLOR {255, 255, 0, 255}
+#define RECORD_BOT_TRAIl_COLOR {0, 0, 255, 255}
 #define RGB_GREEN {0, 255, 0, 255}
 #define RGB_RED {255, 0, 0, 255}
 #define RGB_DARKRED {139, 0, 0, 255}
@@ -62,35 +86,41 @@
 int RGB_COLORS[][] =  { RGB_GREEN, RGB_RED, RGB_DARKRED, RGB_BLUE, RGB_LIGHTBLUE, RGB_DARKBLUE, RBG_YELLOW, RGB_GREENYELLOW, RGB_PURPLE, RGB_MAGENTA, RGB_PINK, RGB_WHITE, RGB_CYAN, RGB_SPRINGGREEN, RGB_OLIVE, RGB_ORANGE, RGB_GREY, RGB_DARKGREY };
 char RGB_COLOR_NAMES[][] = {"Green", "Red", "Darkred", "Blue", "Lightblue", "Darkblue", "Yellow", "Greenyellow", "Purple", "Magenta", "Pink", "White", "Cyan", "Springgreen", "Olive", "Orange", "Grey", "Darkgrey"};
 
-#define QUOTE 0x22
-#define PERCENT 0x25
+// Checkpoint definitions
+#define CPLIMIT 35					// Maximum amount of checkpoints in a map
 
-#define CPLIMIT 35
-#define ZONEAMOUNT 9
-#define MAXZONEGROUPS 11
-#define MAXZONES 128
+#define ZONEAMOUNT 9				// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+#define MAXZONEGROUPS 11			// Maximum amount of zonegroups in a map
+#define MAXZONES 128				// Maximum amount of zones in a map
+
+// Ranking definitions
 #define MAX_PR_PLAYERS 1066
 
+// UI definitions
 #define HIDE_RADAR (1 << 12)
 #define HIDE_CHAT ( 1<<7 )
-#define CK_BUTTON_DONTMOVE (1<<0)		
-#define CK_BUTTON_TOUCH_ACTIVATES (1<<8)	
-#define CK_DOOR_PTOUCH (1<<10)
 
+// Replay definitions
 #define BM_MAGIC 0xBAADF00D
 #define BINARY_FORMAT_VERSION 0x01
 #define ADDITIONAL_FIELD_TELEPORTED_ORIGIN (1<<0)
 #define ADDITIONAL_FIELD_TELEPORTED_ANGLES (1<<1)
 #define ADDITIONAL_FIELD_TELEPORTED_VELOCITY (1<<2)
 #define FRAME_INFO_SIZE 15
-#define FRAME_INFO_SIZE_V1 14
 #define AT_SIZE 10
 #define ORIGIN_SNAPSHOT_INTERVAL 150
 #define FILE_HEADER_LENGTH 74
-#define TITLE_COUNT 23
 
-#define BONUS_BOT_TRAIL_COLOR {255, 255, 0, 255}
-#define RECORD_BOT_TRAIl_COLOR {0, 0, 255, 255}
+// Title definitions
+#define TITLE_COUNT 23				// The amount of custom titles that can be configured in custom_chat_titles.txt
+
+
+
+
+
+/*====================================
+=            Enumerations            =
+====================================*/
 
 enum FrameInfo 
 {
@@ -146,6 +176,26 @@ enum MapZone
 	Vis,
 	Team,
 }
+
+/**
+*	Plugin Info
+*
+**/
+
+
+public Plugin myinfo =
+{
+	name = "ckSurf",
+	author = "Elzi",
+	description = "#clan.kikkeli's Surf Plugin",
+	version = VERSION,
+	url = ""
+};
+
+
+/*=================================
+=            Variables            =
+=================================*/
 
 ///////////////////
 //Stage Variables//
@@ -403,7 +453,7 @@ Handle g_hBotMimicsRecord[MAXPLAYERS+1] = {null,...};
 Handle g_hP2PRed[MAXPLAYERS+1] = { null,... };
 Handle g_hP2PGreen[MAXPLAYERS+1] = { null,... };
 Handle g_hRecordingAdditionalTeleport[MAXPLAYERS+1];
-Handle g_hTopJumpersMenu[MAXPLAYERS+1] = null;
+Menu g_menuTopSurfersMenu[MAXPLAYERS+1] = null;
 Handle g_hWelcomeMsg = null;
 char g_sWelcomeMsg[512];  
 Handle g_hReplayBotPlayerModel = null;
@@ -612,8 +662,6 @@ bool g_bPracticeMode[MAXPLAYERS+1];
 int g_unfinishedMaps[MAXPLAYERS+1];
 int g_unfinishedBonuses[MAXPLAYERS+1];
 int g_Beam[3];
-int g_TSpawns=-1;
-int g_CTSpawns=-1;
 int g_ownerOffset;
 int g_ragdolls = -1;
 int g_Server_Tickrate;
@@ -759,7 +807,7 @@ bool g_benableChatProcessing;
 #include "ckSurf/replay.sp"
 #include "ckSurf/surfzones.sp"
 
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual("hookgrabrope", name))
 		g_bHookMod = true;
@@ -798,13 +846,13 @@ public OnLibraryAdded(const String:name[])
 	}
 }
 
-public OnClientPostAdminCheck(int client)
+public void OnClientPostAdminCheck(int client)
 {
 	g_ClientSelectedZone[client]=-1;
 	g_Editing[client]=0;
 }
 
-public OnPluginEnd()
+public void OnPluginEnd()
 {
 	//remove clan tags
 	for (int x = 1; x <= MaxClients; x++)
@@ -828,7 +876,7 @@ public OnPluginEnd()
 	ServerCommand("mp_startmoney 800; mp_playercashawards 1; mp_teamcashawards 1");
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
 	if (StrEqual(name, "adminmenu"))
 		g_hAdminMenu = null;
@@ -838,13 +886,13 @@ public OnLibraryRemoved(const String:name[])
 		g_bHookMod = false;
 }
 
-public OnAllPluginsLoaded()
+public void OnAllPluginsLoaded()
 {
 	if (LibraryExists("hookgrabrope"))
 		g_bHookMod = true;
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
 	//get mapname
 	GetCurrentMap(g_szMapName, 128);
@@ -962,7 +1010,7 @@ public OnMapStart()
 
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
 	g_bServerDataLoaded = false;
 	for (int i = 0; i < MAXZONEGROUPS; i++)
@@ -975,7 +1023,7 @@ public OnMapEnd()
 	Format(g_szMapName, sizeof(g_szMapName), "");
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	char map[128];
 	char map2[128];
@@ -1013,22 +1061,22 @@ public OnConfigsExecuted()
 }
 
 
-public OnAutoConfigsBuffered() 
+public void OnAutoConfigsBuffered() 
 {
 	//just to be sure that it's not empty
-	decl String:szMap[128];  
-	decl String:szPrefix[2][32];  
+	char szMap[128];  
+	char szPrefix[2][32];  
 	GetCurrentMap(szMap, 128);
-	decl String:mapPieces[6][128];
+	char mapPieces[6][128];
 	int lastPiece = ExplodeString(szMap, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
 	Format(szMap, sizeof(szMap), "%s", mapPieces[lastPiece-1]); 
  	ExplodeString(szMap, "_", szPrefix, 2, 32);
 
 	
 	//map config
-	decl String:szPath[256];
+	char szPath[256];
 	Format(szPath, sizeof(szPath), "sourcemod/ckSurf/map_types/%s_.cfg",szPrefix[0]);
-	decl String:szPath2[256];
+	char szPath2[256];
 	Format(szPath2, sizeof(szPath2), "cfg/%s",szPath);
 	if (FileExists(szPath2))
 		ServerCommand("exec %s", szPath);
@@ -1038,10 +1086,12 @@ public OnAutoConfigsBuffered()
 	SetServerTags();
 }
 
-public OnClientConnected(int client)
+public void OnClientConnected(int client)
+{
 	g_SelectedTeam[client]=0;
+}
 
-public OnClientPutInServer(int client)
+public void OnClientPutInServer(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1061,7 +1111,7 @@ public OnClientPutInServer(int client)
 
 	if (IsFakeClient(client))
 	{
-		g_hRecordingAdditionalTeleport[client] = CreateArray(_:AdditionalTeleport);
+		g_hRecordingAdditionalTeleport[client] = CreateArray(view_as<int>(AdditionalTeleport));
 		CS_SetMVPCount(client,1);	
 		return;
 	}	
@@ -1116,13 +1166,11 @@ public OnClientPutInServer(int client)
 	}
 }
 
-public OnClientAuthorized(client)
+public void OnClientAuthorized(int client)
 {
 	if (g_bConnectMsg && !IsFakeClient(client))
 	{
-		decl String:s_Country[32];
-		decl String:s_clientName[32];
-		decl String:s_address[32];		
+		char s_Country[32], s_clientName[32], s_address[32];		
 		GetClientIP(client, s_address, 32);
 		GetClientName(client, s_clientName, 32);
 		Format(s_Country, 100, "Unknown");
@@ -1159,7 +1207,7 @@ public OnClientAuthorized(client)
 	}
 }
 
-public OnClientDisconnect(int client)
+public void OnClientDisconnect(int client)
 {
 	if (IsFakeClient(client) && g_hRecordingAdditionalTeleport[client] != null)
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
@@ -1219,7 +1267,7 @@ public OnClientDisconnect(int client)
 	g_bLoaded[client] = false;
 }
 
-public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
+public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
 {	
 	if(convar == g_hGoToServer)
 	{
@@ -1484,7 +1532,7 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 	{
 		if(newValue[0] == '1')
 		{
-			decl String:szclass[32];
+			char szclass[32];
 			g_bCleanWeapons = true;
 			for (int i = 1; i <= MaxClients; i++)
 			{
@@ -1588,7 +1636,7 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 					int count = 0;
 					g_InfoBot = -1;
 					KickClient(i);		
-					decl String:szBuffer[64];
+					char szBuffer[64];
 					if(g_bMapReplay)
 						count++;
 					if(g_bMapBonusReplay)
@@ -1642,25 +1690,25 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 
 	else if(convar == g_hReplayBotColor)
 	{
-		decl String:color[256];
+		char color[256];
 		Format(color,256,"%s", newValue[0]);
 		GetRGBColor(0,color);
 	}
 	else if (convar == g_hBonusBotColor)
 	{
-		decl String:color[256];
+		char color[256];
 		Format(color, 256, "%s", newValue[0]);
 		GetRGBColor(1, color);
 	}
 	else if (convar == g_hReplayBotTrailColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 24, "%s", newValue);
 		StringRGBtoInt(color, g_ReplayBotTrailColor);
 	}
 	else if (convar == g_hBonusBotTrailColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 24, "%s", newValue);
 		StringRGBtoInt(color, g_BonusBotTrailColor);
 	}
@@ -1691,67 +1739,67 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 	}
 	else if(convar == g_hzoneStartColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneStartColor);
 	}
 	else if(convar == g_hzoneEndColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneEndColor);
 	}
 	else if(convar == g_hzoneCheckerColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneCheckerColor);
 	}
 	else if(convar == g_hzoneBonusStartColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneBonusStartColor);
 	}
 	else if(convar == g_hzoneBonusEndColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneBonusEndColor);
 	}
 	else if(convar == g_hzoneStageColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneStageColor);
 	}
 	else if(convar == g_hzoneCheckpointColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneCheckpointColor);
 	}
 	else if(convar == g_hzoneSpeedColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneSpeedColor);
 	}
 	else if(convar == g_hzoneTeleToStartColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneTeleToStartColor);
 	}
 	else if(convar == g_hzoneValidatorColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneValidatorColor);
 	}
 	else if(convar == g_hzoneStopColor)
 	{
-		decl String:color[24];
+		char color[24];
 		Format(color, 28, "%s", newValue[0]);
 		StringRGBtoInt(color, g_zoneStopColor);
 	}
@@ -1785,25 +1833,25 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 		g_AnnounceRank = StringToInt(newValue[0]);
 	}
 	else if (convar == g_hForceCT) {
-		g_bForceCT = bool:StringToInt(newValue[0]);
+		g_bForceCT = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hChatSpamFilter) {
 		g_fChatSpamFilter = StringToFloat(newValue[0]);
 	}
 	else if (convar == g_henableChatProcessing) {
-		g_benableChatProcessing = bool:StringToInt(newValue[0]);
+		g_benableChatProcessing = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hRecordBotTrail) {
-		g_bRecordBotTrailEnabled = bool:StringToInt(newValue[0]);			
+		g_bRecordBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));			
 	}
 	else if (convar == g_hBonusBotTrail) {
-		g_bBonusBotTrailEnabled = bool:StringToInt(newValue[0]);
+		g_bBonusBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hTriggerPushFixEnable){
-		g_bTriggerPushFixEnable = bool:StringToInt(newValue);
+		g_bTriggerPushFixEnable = view_as<bool>(StringToInt(newValue));
 	}
 	else if (convar ==  g_hSlopeFixEnable) {
-		g_bSlopeFixEnable = bool:StringToInt(newValue);
+		g_bSlopeFixEnable = view_as<bool>(StringToInt(newValue));
 	}
 	
 
@@ -1818,35 +1866,32 @@ public OnSettingChanged(Handle convar, const char[] oldValue, const char[] newVa
 
 }
 
-public Native_GetTimerStatus(Handle plugin, numParams)
+public int Native_GetTimerStatus(Handle plugin, int numParams)
+{
 	return g_bTimeractivated[GetNativeCell(1)];
+}
 
-public Native_StopTimer(Handle plugin, numParams)
+public int Native_StopTimer(Handle plugin, int numParams)
+{
 	Client_Stop(GetNativeCell(1),0);
+}
 
-public Native_GetCurrentTime(Handle plugin, numParams)
-	return _:g_fCurrentRunTime[GetNativeCell(1)];
+public int Native_GetCurrentTime(Handle plugin, int numParams)
+{
+	return view_as<int>(g_fCurrentRunTime[GetNativeCell(1)]);
+}
 	
-public Native_EmulateStartButtonPress(Handle plugin, numParams)
+public int Native_EmulateStartButtonPress(Handle plugin, int numParams)
 {
 	CL_OnStartTimerPress(GetNativeCell(1));
 }
 	
-public Native_EmulateStopButtonPress(Handle plugin, numParams)
+public int Native_EmulateStopButtonPress(Handle plugin, int numParams)
 {
 	CL_OnEndTimerPress(GetNativeCell(1));
 }		
 
-public Plugin:myinfo =
-{
-	name = "ckSurf",
-	author = "Elzi",
-	description = "#clan.kikkeli's Surf Plugin",
-	version = VERSION,
-	url = ""
-};
-
-public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	RegPluginLibrary("ckSurf");
 	CreateNative("ckSurf_GetTimerStatus", Native_GetTimerStatus);
@@ -1865,7 +1910,7 @@ public APLRes:AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	g_bServerDataLoaded = false;
 
@@ -2033,7 +2078,7 @@ public OnPluginStart()
 
 	g_hReplayBotColor   = CreateConVar("ck_replay_bot_color", "52 91 248","The default replay bot color - Format: \"red green blue\" from 0 - 255.", FCVAR_NOTIFY);
 	HookConVarChange(g_hReplayBotColor, OnSettingChanged);	
-	decl String:szRBotColor[256];
+	char szRBotColor[256];
 	GetConVarString(g_hReplayBotColor,szRBotColor,256);
 	GetRGBColor(0,szRBotColor);
 
@@ -2045,7 +2090,7 @@ public OnPluginStart()
 
 	g_hReplayBotTrailColor   = CreateConVar("ck_replay_bot_trail_color", "52 91 248","The trail color for the replay bot - Format: \"red green blue\" from 0 - 255.", FCVAR_NOTIFY);
 	HookConVarChange(g_hReplayBotTrailColor, OnSettingChanged);	
-	decl String:szTrailColor[24];
+	char szTrailColor[24];
 	GetConVarString(g_hReplayBotTrailColor,szTrailColor,24);
 	StringRGBtoInt(szTrailColor,g_ReplayBotTrailColor);
 
@@ -2338,7 +2383,7 @@ public OnPluginStart()
 	HookEvent("player_jump", Event_OnJump, EventHookMode_Pre);
 	HookEvent("weapon_fire",  Event_OnFire, EventHookMode_Pre);
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Post);
-	HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
+	//HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre); 
 
 	//mapcycle array

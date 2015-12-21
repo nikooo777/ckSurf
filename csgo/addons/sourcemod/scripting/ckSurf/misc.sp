@@ -891,12 +891,12 @@ public void SetServerTags()
 
 public void PrintConsoleInfo(int client)
 {
-	int timeleft;
-	GetMapTimeLeft(timeleft);
+	int iConsoleTimeleft;
+	GetMapTimeLeft(iConsoleTimeleft);
 	int mins, secs;	
 	char finalOutput[1024];
-	mins = timeleft / 60;
-	secs = timeleft % 60;
+	mins = iConsoleTimeleft / 60;
+	secs = iConsoleTimeleft % 60;
 	Format(finalOutput, 1024, "%d:%02d", mins, secs);
 	float fltickrate = 1.0 / GetTickInterval( );
 	
@@ -905,8 +905,8 @@ public void PrintConsoleInfo(int client)
 
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
 	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", VERSION, RoundToNearest(fltickrate));
-	if (timeleft > 0)
-		PrintToConsole(client, "Timeleft on %s: %s",g_szMapName, finalOutput);
+	if (iConsoleTimeleft > 0)
+		PrintToConsole(client, "iConsoleTimeleft on %s: %s",g_szMapName, finalOutput);
 	PrintToConsole(client, "Menu formatting is optimized for 1920x1080!");
 	PrintToConsole(client, " ");
 	PrintToConsole(client, "client commands:");
@@ -2958,9 +2958,9 @@ public void SetInfoBotName(int ent)
 		int lastPiece = ExplodeString(sNextMap, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[])); 
 		Format(sNextMap, sizeof(sNextMap), "%s", mapPieces[lastPiece-1]); 			
 	}			
-	int timeleft;
-	GetMapTimeLeft(timeleft);
-	float ftime = float(timeleft);
+	int iInfoBotTimeleft;
+	GetMapTimeLeft(iInfoBotTimeleft);
+	float ftime = float(iInfoBotTimeleft);
 	char szTime[32];
 	FormatTimeFloat(g_InfoBot,ftime,4,szTime,sizeof(szTime));
 	Handle hTmp;	

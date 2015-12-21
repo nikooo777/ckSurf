@@ -1,4 +1,4 @@
-CreateZoneEntity(zoneIndex)
+public void CreateZoneEntity(int zoneIndex)
 {
 	float fMiddle[3], fMins[3], fMaxs[3];
 	char sZoneName[64];
@@ -82,7 +82,7 @@ CreateZoneEntity(zoneIndex)
 }
 		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 
-public Action StartTouchTrigger(caller, activator)
+public Action StartTouchTrigger(int caller, int activator)
 {
 	// Ignore dead players
 	if(!IsValidClient(activator))
@@ -124,7 +124,7 @@ public Action StartTouchTrigger(caller, activator)
 	return Plugin_Handled;
 }
 
-public Action EndTouchTrigger(caller, activator)
+public Action EndTouchTrigger(int caller, int activator)
 {	
 	// Ignore dead players
 	if(!IsValidClient(activator))
@@ -173,7 +173,7 @@ public Action EndTouchTrigger(caller, activator)
 	return Plugin_Handled;
 }
 
-StartTouch(client, action[3])
+public void StartTouch(int client, int action[3])
 {
 	// real client
 	if (1 <= client <= MaxClients)
@@ -280,7 +280,7 @@ StartTouch(client, action[3])
 	}
 }
 
-EndTouch(client, action[3])
+public void EndTouch(int client, int action[3])
 {
 	// real client
 	if (1 <= client <= MaxClients)
@@ -348,7 +348,7 @@ EndTouch(client, action[3])
 	}
 }
 
-public InitZoneVariables() 
+public void InitZoneVariables() 
 {
 	g_mapZonesCount = 0;
 	for (int i = 0; i < MAXZONES; i++) {
@@ -365,7 +365,7 @@ public InitZoneVariables()
 	}
 }
 
-public getZoneTeamColor(team, color[4])
+public void getZoneTeamColor(int team, int color[4])
 {
 	switch(team)
 	{
@@ -388,7 +388,7 @@ public getZoneTeamColor(team, color[4])
 	}
 }
 
-public DrawBeamBox(client)
+public void DrawBeamBox(int client)
 {
 	int zColor[4];
 	getZoneTeamColor(g_CurrentZoneTeam[client], zColor);
@@ -396,7 +396,7 @@ public DrawBeamBox(client)
 	CreateTimer(1.0, BeamBox, client, TIMER_REPEAT);
 }
 
-public Action:BeamBox(Handle timer, any:client)
+public Action BeamBox(Handle timer, any client)
 {
 	if(IsClientInGame(client))
 	{
@@ -411,7 +411,7 @@ public Action:BeamBox(Handle timer, any:client)
 	return Plugin_Stop;
 }
 
-public Action:BeamBoxAll(Handle timer, any:data)
+public Action BeamBoxAll(Handle timer, any data)
 {
 	float posA[3], posB[3];
 	int zColor[4], tzColor[4], beamTeam, beamVis, zType, zGrp;
@@ -491,7 +491,7 @@ public Action:BeamBoxAll(Handle timer, any:data)
 	return Plugin_Continue;
 }
 
-public getZoneDisplayColor(type, zColor[4], zGrp)
+public void getZoneDisplayColor(int type, int zColor[4], int zGrp)
 {
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	switch (type)
@@ -534,7 +534,7 @@ public getZoneDisplayColor(type, zColor[4], zGrp)
 	}
 }
 
-public BeamBox_OnPlayerRunCmd(client)
+public void BeamBox_OnPlayerRunCmd(int client)
 {	
 	if(g_Editing[client]==1 || g_Editing[client]==3 ||g_Editing[client]==10|| g_Editing[client]==11)
 	{
@@ -570,7 +570,7 @@ public BeamBox_OnPlayerRunCmd(client)
 	}
 }
 
-stock TE_SendBeamBoxToClient(client, Float:uppercorner[3], const Float:bottomcorner[3], ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, Float:Width, Float:EndWidth, FadeLength, Float:Amplitude, const Color[4], Speed, type)
+stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type)
 {
 	//0 = Do not display zones, 1 = Display the lower edges of zones, 2 = Display whole zone
 	if (!IsValidClient(client) || g_zoneDisplayType < 1)
@@ -675,24 +675,24 @@ stock TE_SendBeamBoxToClient(client, Float:uppercorner[3], const Float:bottomcor
 //
 // !zones menu starts here
 //
-public ZoneMenu(client)
+public void ZoneMenu(int client)
 {
 	resetSelection(client);
-	Menu ckZoneMenu = CreateMenu(Handle_ZoneMenu);
-	SetMenuTitle(ckZoneMenu, "Zones");
-	AddMenuItem(ckZoneMenu, "", "Create a Zone");
-	AddMenuItem(ckZoneMenu, "", "Edit Zones");
-	AddMenuItem(ckZoneMenu, "", "Save Zones");
-	AddMenuItem(ckZoneMenu, "", "Edit Zone Settings");
-	AddMenuItem(ckZoneMenu, "", "Reload Zones");
-	AddMenuItem(ckZoneMenu, "", "Delete Zones");
-	SetMenuExitBackButton(ckZoneMenu, true);
-	DisplayMenu(ckZoneMenu, client, MENU_TIME_FOREVER);
+	Menu ckZoneMenu = new Menu(Handle_ZoneMenu);
+	ckZoneMenu.SetTitle("Zones");
+	ckZoneMenu.AddItem("", "Create a Zone");
+	ckZoneMenu.AddItem("", "Edit Zones");
+	ckZoneMenu.AddItem("", "Save Zones");
+	ckZoneMenu.AddItem("", "Edit Zone Settings");
+	ckZoneMenu.AddItem("", "Reload Zones");
+	ckZoneMenu.AddItem("", "Delete Zones");
+	ckZoneMenu.ExitButton = true;
+	ckZoneMenu.Display(client, MENU_TIME_FOREVER);
 }
 
 
 
-public Handle_ZoneMenu(Handle tMenu, MenuAction:action, int client, int item)
+public int Handle_ZoneMenu(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -739,23 +739,22 @@ public Handle_ZoneMenu(Handle tMenu, MenuAction:action, int client, int item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
-public EditZoneGroup(client) 
+public void EditZoneGroup(int client) 
 {
-	Menu editZoneGroupMenu = CreateMenu(h_editZoneGroupMenu);
-	SetMenuTitle(editZoneGroupMenu, "Which zones do you want to edit?");
-	AddMenuItem(editZoneGroupMenu, "1", "Normal map zones");
-	AddMenuItem(editZoneGroupMenu, "2", "Bonus zones");
-	AddMenuItem(editZoneGroupMenu, "3", "Misc zones");
-
-	SetMenuExitBackButton(editZoneGroupMenu, true);
-	DisplayMenu(editZoneGroupMenu, client, MENU_TIME_FOREVER);
+	Menu editZoneGroupMenu = new Menu(h_editZoneGroupMenu);
+	editZoneGroupMenu.SetTitle("Which zones do you want to edit?");
+	editZoneGroupMenu.AddItem("1", "Normal map zones");
+	editZoneGroupMenu.AddItem("2", "Bonus zones");
+	editZoneGroupMenu.AddItem("3", "Misc zones");
+	editZoneGroupMenu.ExitButton = true;
+	editZoneGroupMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public h_editZoneGroupMenu(Handle tMenu, MenuAction:action, client, item)
+public int h_editZoneGroupMenu(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -786,16 +785,15 @@ public h_editZoneGroupMenu(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
-
 }
 
-public ListBonusGroups(client)
+public void ListBonusGroups(int client)
 {
-	Menu h_bonusGroupListing = CreateMenu(Handler_bonusGroupListing);
-	SetMenuTitle(h_bonusGroupListing, "Available Bonuses");
+	Menu h_bonusGroupListing = new Menu(Handler_bonusGroupListing);
+	h_bonusGroupListing.SetTitle("Available Bonuses");
 	
 	char listGroupName[256], ZoneId[64], Id[64];
 	if (g_mapZoneGroupCount > 1)
@@ -805,18 +803,18 @@ public ListBonusGroups(client)
 			Format(ZoneId, sizeof(ZoneId), "%s", g_szZoneGroupName[i]);
 			IntToString(i, Id, sizeof(Id));
 			Format(listGroupName, sizeof(listGroupName), ZoneId);
-			AddMenuItem(h_bonusGroupListing, Id, ZoneId);
+			h_bonusGroupListing.AddItem(Id, ZoneId);
 		}
 	}
 	else
 	{
-		AddMenuItem(h_bonusGroupListing, "", "No Bonuses are available", ITEMDRAW_DISABLED);
+		h_bonusGroupListing.AddItem("", "No Bonuses are available", ITEMDRAW_DISABLED);
 	}
-	SetMenuExitBackButton(h_bonusGroupListing, true);
-	DisplayMenu(h_bonusGroupListing, client, MENU_TIME_FOREVER);
+	h_bonusGroupListing.ExitButton = true;
+	h_bonusGroupListing.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handler_bonusGroupListing(Handle tMenu, MenuAction:action, client, item)
+public int Handler_bonusGroupListing(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -834,26 +832,26 @@ public Handler_bonusGroupListing(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public ListBonusSettings(client)
+public void ListBonusSettings(int client)
 {
-	Menu h_ListBonusSettings = CreateMenu(Handler_ListBonusSettings);
-	SetMenuTitle(h_ListBonusSettings, "Settings for %s", g_szZoneGroupName[g_CurrentSelectedZoneGroup[client]]);
+	Menu h_ListBonusSettings = new Menu(Handler_ListBonusSettings);
+	h_ListBonusSettings.SetTitle("Settings for %s", g_szZoneGroupName[g_CurrentSelectedZoneGroup[client]]);
 	
-	AddMenuItem(h_ListBonusSettings, "1", "Create a new zone");
-	AddMenuItem(h_ListBonusSettings, "2", "List Zones in this group");
-	AddMenuItem(h_ListBonusSettings, "3", "Rename Bonus");
-	AddMenuItem(h_ListBonusSettings, "4", "Delete this group");
+	h_ListBonusSettings.AddItem("1", "Create a new zone");
+	h_ListBonusSettings.AddItem("2", "List Zones in this group");
+	h_ListBonusSettings.AddItem("3", "Rename Bonus");
+	h_ListBonusSettings.AddItem("4", "Delete this group");
 
-	SetMenuExitBackButton(h_ListBonusSettings, true);
-	DisplayMenu(h_ListBonusSettings, client, MENU_TIME_FOREVER);
+	h_ListBonusSettings.ExitButton = true;
+	h_ListBonusSettings.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handler_ListBonusSettings(Handle tMenu, MenuAction:action, client, item)
+public int Handler_ListBonusSettings(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -874,26 +872,27 @@ public Handler_ListBonusSettings(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public checkForMissclick(client)
+public void checkForMissclick(int client)
 {
-	Menu h_checkForMissclick = CreateMenu(Handle_checkForMissclick);
-	SetMenuTitle(h_checkForMissclick, "Delete all zones in %s?", g_szZoneGroupName[g_CurrentSelectedZoneGroup[client]]);
+	Menu h_checkForMissclick = new Menu(Handle_checkForMissclick);
+	h_checkForMissclick.SetTitle("Delete all zones in %s?", g_szZoneGroupName[g_CurrentSelectedZoneGroup[client]]);
 	
-	AddMenuItem(h_checkForMissclick, "1", "NO");
-	AddMenuItem(h_checkForMissclick, "2", "NO");
-	AddMenuItem(h_checkForMissclick, "3", "YES");
-	AddMenuItem(h_checkForMissclick, "4", "NO");
+	h_checkForMissclick.AddItem("1", "NO");
+	h_checkForMissclick.AddItem("2", "NO");
+	h_checkForMissclick.AddItem("3", "YES");
+	h_checkForMissclick.AddItem("4", "NO");
 
-	SetMenuExitBackButton(h_checkForMissclick, true);
-	DisplayMenu(h_checkForMissclick, client, MENU_TIME_FOREVER);
+
+	h_checkForMissclick.ExitButton = true;
+	h_checkForMissclick.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handle_checkForMissclick(Handle tMenu, MenuAction:action, client, item)
+public int Handle_checkForMissclick(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -913,14 +912,14 @@ public Handle_checkForMissclick(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public listZonesInGroup(client)
+public void listZonesInGroup(int client)
 {
-	Menu h_listBonusZones = CreateMenu(Handler_listBonusZones);
+	Menu h_listBonusZones = new Menu(Handler_listBonusZones);
 	if (g_mapZoneCountinGroup[g_CurrentSelectedZoneGroup[client]] > 0)
 	{// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 		char listZoneName[256], ZoneId[64], Id[64];
@@ -931,20 +930,19 @@ public listZonesInGroup(client)
 				Format(ZoneId, sizeof(ZoneId), "%s-%i", g_szZoneDefaultNames[g_mapZones[i][zoneType]], g_mapZones[i][zoneTypeId]);
 				IntToString(i, Id, sizeof(Id));
 				Format(listZoneName, sizeof(listZoneName), ZoneId);
-				AddMenuItem(h_listBonusZones, Id, ZoneId);
+				h_listBonusZones.AddItem(Id, ZoneId);
 			}
 		}
 	}
 	else
 	{
-		AddMenuItem(h_listBonusZones, "", "No zones are available", ITEMDRAW_DISABLED);
+		h_listBonusZones.AddItem("", "No zones are available", ITEMDRAW_DISABLED);
 	}
-
-	SetMenuExitBackButton(h_listBonusZones, true);
-	DisplayMenu(h_listBonusZones, client, MENU_TIME_FOREVER);
+	h_listBonusZones.ExitButton = true;
+	h_listBonusZones.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handler_listBonusZones(Handle tMenu, MenuAction:action, client, item)
+public int Handler_listBonusZones(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -967,13 +965,13 @@ public Handler_listBonusZones(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
 
-public renameBonusGroup(client)
+public void renameBonusGroup(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -982,19 +980,21 @@ public renameBonusGroup(client)
 	g_ClientRenamingZone[client] = true;
 }
 // Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-public SelectBonusZoneType(client)
+public void SelectBonusZoneType(int client)
 {
-	Menu h_selectBonusZoneType = CreateMenu(Handler_selectBonusZoneType);
-	SetMenuTitle(h_selectBonusZoneType, "Select Bonus Zone Type");
-	AddMenuItem(h_selectBonusZoneType, "1", "Start");
-	AddMenuItem(h_selectBonusZoneType, "2", "End");
-	AddMenuItem(h_selectBonusZoneType, "3", "Stage");
-	AddMenuItem(h_selectBonusZoneType, "4", "Checkpoint");
-	SetMenuExitBackButton(h_selectBonusZoneType, true);
-	DisplayMenu(h_selectBonusZoneType, client, MENU_TIME_FOREVER);
+	Menu h_selectBonusZoneType = new Menu(Handler_selectBonusZoneType);
+	h_selectBonusZoneType.SetTitle("Select Bonus Zone Type");
+
+	h_selectBonusZoneType.AddItem("1", "Start");
+	h_selectBonusZoneType.AddItem("2", "End");
+	h_selectBonusZoneType.AddItem("3", "Stage");
+	h_selectBonusZoneType.AddItem("4", "Checkpoint");
+
+	h_selectBonusZoneType.ExitButton = true;
+	h_selectBonusZoneType.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handler_selectBonusZoneType(Handle tMenu, MenuAction:action, client, item)
+public int Handler_selectBonusZoneType(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1016,25 +1016,26 @@ public Handler_selectBonusZoneType(Handle tMenu, MenuAction:action, client, item
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
 // Create zone 2nd
-public SelectZoneGroup(client)
+public void SelectZoneGroup(int client)
 {
-	Menu newZoneGroupMenu = CreateMenu(h_newZoneGroupMenu);
-	SetMenuTitle(newZoneGroupMenu, "Which zones do you want to create?");
-	AddMenuItem(newZoneGroupMenu, "1", "Normal map zones");
-	AddMenuItem(newZoneGroupMenu, "2", "Bonus zones");
-	AddMenuItem(newZoneGroupMenu, "3", "Misc zones");
+	Menu newZoneGroupMenu = new Menu(h_newZoneGroupMenu);
+	newZoneGroupMenu.SetTitle("Which zones do you want to create?");
 
-	SetMenuExitBackButton(newZoneGroupMenu, true);
-	DisplayMenu(newZoneGroupMenu, client, MENU_TIME_FOREVER);
+	newZoneGroupMenu.AddItem("1", "Normal map zones");
+	newZoneGroupMenu.AddItem("2", "Bonus zones");
+	newZoneGroupMenu.AddItem("3", "Misc zones");
+
+	newZoneGroupMenu.ExitButton = true;
+	newZoneGroupMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public h_newZoneGroupMenu(Handle tMenu, MenuAction:action, client, item)
+public int h_newZoneGroupMenu(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1066,27 +1067,28 @@ public h_newZoneGroupMenu(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public StartBonusZoneCreation(client)
+public void StartBonusZoneCreation(int client)
 {
-	Menu CreateBonusFirst = CreateMenu(H_CreateBonusFirst);
-	SetMenuTitle(CreateBonusFirst, "Create the Bonus Start Zone:");
+	Menu CreateBonusFirst = new Menu(H_CreateBonusFirst);
+	CreateBonusFirst.SetTitle("Create the Bonus Start Zone:");
 	if (g_Editing[client]==0)
-		AddMenuItem(CreateBonusFirst, "1", "Start Drawing");
+		CreateBonusFirst.AddItem("1", "Start Drawing");
 	else
 	{
-		AddMenuItem(CreateBonusFirst, "1", "Restart Drawing");
-		AddMenuItem(CreateBonusFirst, "2", "Save Bonus Start Zone");
+		CreateBonusFirst.AddItem("1", "Restart Drawing");
+		CreateBonusFirst.AddItem("2", "Save Bonus Start Zone");
+
 	}
-	SetMenuExitBackButton(CreateBonusFirst, true);
-	DisplayMenu(CreateBonusFirst, client, MENU_TIME_FOREVER);
+	CreateBonusFirst.ExitButton = true;
+	CreateBonusFirst.Display(client, MENU_TIME_FOREVER);
 }
 
-public H_CreateBonusFirst(Handle tMenu, MenuAction:action, client, item)
+public int H_CreateBonusFirst(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1123,28 +1125,27 @@ public H_CreateBonusFirst(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public EndBonusZoneCreation(client)
+public void EndBonusZoneCreation(int client)
 {
-	Menu CreateBonusSecond = CreateMenu(H_CreateBonusSecond);
-	SetMenuTitle(CreateBonusSecond, "Create the Bonus End Zone:");
+	Menu CreateBonusSecond = new Menu(H_CreateBonusSecond);
+	CreateBonusSecond.SetTitle("Create the Bonus End Zone:");
 	if (g_Editing[client]==2)
-		AddMenuItem(CreateBonusSecond, "1", "Start Drawing");
+		CreateBonusSecond.AddItem("1", "Start Drawing");
 	else
 	{
-		AddMenuItem(CreateBonusSecond, "1", "Restart Drawing");
-		AddMenuItem(CreateBonusSecond, "2", "Save Bonus End Zone");
+		CreateBonusSecond.AddItem("1", "Restart Drawing");
+		CreateBonusSecond.AddItem("2", "Save Bonus End Zone");
 	}
-	
-	SetMenuExitBackButton(CreateBonusSecond, true);
-	DisplayMenu(CreateBonusSecond, client, MENU_TIME_FOREVER);
+	CreateBonusSecond.ExitButton = true;
+	CreateBonusSecond.Display(client, MENU_TIME_FOREVER);
 }
 
-public H_CreateBonusSecond(Handle tMenu, MenuAction:action, client, item)
+public int H_CreateBonusSecond(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1178,12 +1179,12 @@ public H_CreateBonusSecond(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public SaveBonusZones(client)
+public void SaveBonusZones(int client)
 {
 	if ((g_fBonusEndPos[client][0][0] != -1.0 && g_fBonusEndPos[client][0][1] != -1.0 && g_fBonusEndPos[client][0][2] != -1.0) || (g_fBonusStartPos[client][1][0] != -1.0 && g_fBonusStartPos[client][1][1] != -1.0 && g_fBonusStartPos[client][1][2] != -1.0))
 	{
@@ -1200,32 +1201,31 @@ public SaveBonusZones(client)
 	db_selectMapZones();
 }
 
-public SelectNormalZoneType(client)
+public void SelectNormalZoneType(int client)
 {
-	Menu SelectNormalZoneMenu = CreateMenu(Handle_SelectNormalZoneType);
-	SetMenuTitle(SelectNormalZoneMenu, "Select Zone Type");
-	AddMenuItem(SelectNormalZoneMenu, "1", "Start");
-	AddMenuItem(SelectNormalZoneMenu, "2", "End");
+	Menu SelectNormalZoneMenu = new Menu(Handle_SelectNormalZoneType);
+	SelectNormalZoneMenu.SetTitle("Select Zone Type");
+	SelectNormalZoneMenu.AddItem("1", "Start");
+	SelectNormalZoneMenu.AddItem("2", "End");
 	if (g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][3] == 0 && g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][4] == 0)
 	{
-		AddMenuItem(SelectNormalZoneMenu, "3", "Stage");
-		AddMenuItem(SelectNormalZoneMenu, "4", "Checkpoint");
+		SelectNormalZoneMenu.AddItem("3", "Stage");
+		SelectNormalZoneMenu.AddItem("4", "Checkpoint");
 	}
 	else if (g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][3] > 0 && g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][4] == 0)
 	{
-		AddMenuItem(SelectNormalZoneMenu, "3", "Stage");
-		//AddMenuItem(SelectNormalZoneMenu, "3", "Stage Checkpoint");
+		SelectNormalZoneMenu.AddItem("3", "Stage");
 	}
 	else if (g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][3] == 0 && g_mapZonesTypeCount[g_CurrentSelectedZoneGroup[client]][4] > 0)
-		AddMenuItem(SelectNormalZoneMenu, "4", "Checkpoint");
+		SelectNormalZoneMenu.AddItem("4", "Checkpoint");
 
-	AddMenuItem(SelectNormalZoneMenu, "5", "Start Speed");
+	SelectNormalZoneMenu.AddItem("5", "Start Speed");
 
-	SetMenuExitBackButton(SelectNormalZoneMenu, true);
-	DisplayMenu(SelectNormalZoneMenu, client, MENU_TIME_FOREVER);
+	SelectNormalZoneMenu.ExitButton = true;
+	SelectNormalZoneMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handle_SelectNormalZoneType(Handle tMenu, MenuAction:action, client, item)
+public int Handle_SelectNormalZoneType(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1247,43 +1247,43 @@ public Handle_SelectNormalZoneType(Handle tMenu, MenuAction:action, client, item
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public ZoneSettings(client)
+public void ZoneSettings(int client)
 {
-	Menu ZoneSettingMenu = CreateMenu(Handle_ZoneSettingMenu);
-	SetMenuTitle(ZoneSettingMenu, "Global Zone Settings");
+	Menu ZoneSettingMenu = new Menu(Handle_ZoneSettingMenu);
+	ZoneSettingMenu.SetTitle("Global Zone Settings");
 	if (g_zoneDisplayType > 1)
 	{
-		AddMenuItem(ZoneSettingMenu, "1", "Visible: All sides");
+		ZoneSettingMenu.AddItem("1", "Visible: All sides");
 	}
 	else
 		if (g_zoneDisplayType == 1)
 		{
-			AddMenuItem(ZoneSettingMenu, "1", "Visible: Lower edges");
+			ZoneSettingMenu.AddItem("1", "Visible: Lower edges");
 		}
 		else
 			if (g_zoneDisplayType < 1)
 			{
-				AddMenuItem(ZoneSettingMenu, "1", "Visible: Nothing");
+				ZoneSettingMenu.AddItem("1", "Visible: Nothing");
 			}
 	switch(g_zonesToDisplay)
 	{
 		case 1:
-			AddMenuItem(ZoneSettingMenu, "2", "Draw Zones: Start & End");
+			ZoneSettingMenu.AddItem("2", "Draw Zones: Start & End");
 		case 2:
-			AddMenuItem(ZoneSettingMenu, "2", "Draw Zones: Start, End, Stage, Bonus");
+			ZoneSettingMenu.AddItem("2", "Draw Zones: Start, End, Stage, Bonus");
 		case 3:
-			AddMenuItem(ZoneSettingMenu, "2", "DrawZones: All zones");
+			ZoneSettingMenu.AddItem("2", "DrawZones: All zones");
 	}
-	SetMenuExitBackButton(ZoneSettingMenu, true);
-	DisplayMenu(ZoneSettingMenu, client, MENU_TIME_FOREVER);
+	ZoneSettingMenu.ExitButton = true;
+	ZoneSettingMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handle_ZoneSettingMenu(Handle tMenu, MenuAction:action, client, item)
+public int Handle_ZoneSettingMenu(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1316,25 +1316,26 @@ public Handle_ZoneSettingMenu(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			if (tMenu != null)
-				CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public SelectMiscZoneType(client)
+public void SelectMiscZoneType(int client)
 {
-	Menu SelectZoneMenu = CreateMenu(Handle_SelectMiscZoneType);
-	SetMenuTitle(SelectZoneMenu, "Select Misc Zone Type");
-	AddMenuItem(SelectZoneMenu, "6", "TeleToStart");
-	AddMenuItem(SelectZoneMenu, "7", "Validator");
-	AddMenuItem(SelectZoneMenu, "8", "Checker");
-	AddMenuItem(SelectZoneMenu, "0", "Stop");
-	SetMenuExitBackButton(SelectZoneMenu, true);
-	DisplayMenu(SelectZoneMenu, client, MENU_TIME_FOREVER);
+	Menu SelectZoneMenu = new Menu(Handle_SelectMiscZoneType);
+	SelectZoneMenu.SetTitle("Select Misc Zone Type");
+
+	SelectZoneMenu.AddItem("6", "TeleToStart");
+	SelectZoneMenu.AddItem("7", "Validator");
+	SelectZoneMenu.AddItem("8", "Checker");
+	SelectZoneMenu.AddItem("0", "Stop");
+
+	SelectZoneMenu.ExitButton = true;
+	SelectZoneMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public Handle_SelectMiscZoneType(Handle tMenu, MenuAction:action, client, item)
+public int Handle_SelectMiscZoneType(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1356,12 +1357,12 @@ public Handle_SelectMiscZoneType(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 // Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-public Handle_EditZoneTypeId(Handle tMenu, MenuAction:action, client, item)
+public int Handle_EditZoneTypeId(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1378,15 +1379,15 @@ public Handle_EditZoneTypeId(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public ListZones(client, bool mapzones)
+public void ListZones(int client, bool mapzones)
 {
-	Menu ZoneList = CreateMenu(MenuHandler_ZoneModify);
-	SetMenuTitle(ZoneList, "Available Zones");
+	Menu ZoneList = new Menu(MenuHandler_ZoneModify);
+	ZoneList.SetTitle("Available Zones");
 	
 	char listZoneName[256], ZoneId[64], Id[64];
 	if (g_mapZonesCount > 0)
@@ -1404,7 +1405,7 @@ public ListZones(client, bool mapzones)
 						Format(ZoneId, sizeof(ZoneId), "%s-%i", g_szZoneDefaultNames[g_mapZones[i][zoneType]], g_mapZones[i][zoneTypeId]);
 					IntToString(i, Id, sizeof(Id));
 					Format(listZoneName, sizeof(listZoneName), ZoneId);
-					AddMenuItem(ZoneList, Id, ZoneId);
+					ZoneList.AddItem(Id, ZoneId);
 				}
 			}
 		}
@@ -1417,20 +1418,20 @@ public ListZones(client, bool mapzones)
 					Format(ZoneId, sizeof(ZoneId), "%s-%i", g_szZoneDefaultNames[g_mapZones[i][zoneType]], g_mapZones[i][zoneTypeId]);
 					IntToString(i, Id, sizeof(Id));
 					Format(listZoneName, sizeof(listZoneName), ZoneId);
-					AddMenuItem(ZoneList, Id, ZoneId);
+					ZoneList.AddItem(Id, ZoneId);
 				}
 			}		
 		}
 	}
 	else
 	{
-		AddMenuItem(ZoneList, "", "No zones are available", ITEMDRAW_DISABLED);
+		ZoneList.AddItem("", "No zones are available", ITEMDRAW_DISABLED);
 	}
-	SetMenuExitBackButton(ZoneList, true);
-	DisplayMenu(ZoneList, client, MENU_TIME_FOREVER);
+	ZoneList.ExitButton = true;
+	ZoneList.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_ZoneModify(Handle tMenu, MenuAction:action, client, item)
+public int MenuHandler_ZoneModify(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1454,7 +1455,7 @@ public MenuHandler_ZoneModify(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
@@ -1469,7 +1470,7 @@ g_Editing:
 11: creating bonus end
 */
 
-public EditorMenu(client)
+public void EditorMenu(int client)
 {
 	// If scaling zone
 	if(g_Editing[client]==3) 
@@ -1478,81 +1479,80 @@ public EditorMenu(client)
 		g_Editing[client]=2;
 	}
 
-	Menu editMenu = CreateMenu(MenuHandler_Editor);
+	Menu editMenu = new Menu(MenuHandler_Editor);
 	// If a zone is selected
 	if(g_ClientSelectedZone[client] != -1)
-		SetMenuTitle(editMenu, "Editing Zone: %s", g_mapZones[g_ClientSelectedZone[client]][zoneName]);
+		editMenu.SetTitle("Editing Zone: %s", g_mapZones[g_ClientSelectedZone[client]][zoneName]);
 	else
-		SetMenuTitle(editMenu, "Creating a New %s Zone", g_szZoneDefaultNames[g_CurrentZoneType[client]]);
-		
+		editMenu.SetTitle("Creating a New %s Zone", g_szZoneDefaultNames[g_CurrentZoneType[client]]);
+
 	// If creating a completely new zone, or editing an existing one
 	if(g_Editing[client]==0)
-		AddMenuItem(editMenu, "", "Start Drawing the Zone");
+		editMenu.AddItem("", "Start Drawing the Zone");
 	else
-		AddMenuItem(editMenu, "", "Restart the Zone Drawing");
+		editMenu.AddItem("", "Restart the Zone Drawing");
 	
 	// If editing an existing zone
 	if(g_Editing[client]>0)
 	{
-		AddMenuItem(editMenu, "", "Set zone type");
+		editMenu.AddItem("", "Set zone type");
 
 		// If editing is paused
 		if(g_Editing[client]==2)
-			AddMenuItem(editMenu, "", "Continue Editing");
+			editMenu.AddItem("", "Continue Editing");
 		else
-			AddMenuItem(editMenu, "", "Pause Editing");
+			editMenu.AddItem("", "Pause Editing");
 
-
-		AddMenuItem(editMenu, "", "Delete Zone");
-		AddMenuItem(editMenu, "", "Save Zone");
+		editMenu.AddItem("", "Delete Zone");
+		editMenu.AddItem("", "Save Zone");
 
 		switch(g_CurrentZoneTeam[client])
 		{
 			case 0:
 			{
-				AddMenuItem(editMenu, "", "Set Zone Yellow");
+				editMenu.AddItem("", "Set Zone Yellow");
 			}
 			case 1:
 			{
-				AddMenuItem(editMenu, "", "Set Zone Green");
+				editMenu.AddItem("", "Set Zone Green");
 			}
 			case 2:
 			{
-				AddMenuItem(editMenu, "", "Set Zone Red");
+				editMenu.AddItem("", "Set Zone Red");
 			}
 			case 3:
 			{
-				AddMenuItem(editMenu, "", "Set Zone Blue");
+				editMenu.AddItem("", "Set Zone Blue");
 			}
 		}
+		editMenu.AddItem("", "Go to Zone");
+		editMenu.AddItem("", "Strech Zone");
 
-		AddMenuItem(editMenu, "", "Go to Zone");
-		AddMenuItem(editMenu, "", "Strech Zone");
 		switch(g_CurrentZoneVis[client])
 		{
 			case 0:
 			{
-				AddMenuItem(editMenu, "", "Visibility: No One");
+				editMenu.AddItem("", "Visibility: CT");
 			}
 			case 1:
 			{
-				AddMenuItem(editMenu, "", "Visibility: All");
+				editMenu.AddItem("", "Visibility: CT");
 			}
 			case 2:
 			{
-				AddMenuItem(editMenu, "", "Visibility: T");
+				editMenu.AddItem("", "Visibility: CT");
 			}
 			case 3:
 			{
-				AddMenuItem(editMenu, "", "Visibility: CT");
+				editMenu.AddItem("", "Visibility: CT");
 			}
 		}
 	}
-	SetMenuExitBackButton(editMenu, true);
-	DisplayMenu(editMenu, client, MENU_TIME_FOREVER);
+	editMenu.ExitButton = true;
+	editMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Editor(Handle tMenu, MenuAction:action, client, item)
+public int MenuHandler_Editor(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1682,12 +1682,12 @@ public MenuHandler_Editor(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public resetSelection(client)
+public void resetSelection(int client)
 {
 	g_CurrentSelectedZoneGroup[client]=-1;
 	g_CurrentZoneTeam[client]=0;
@@ -1708,29 +1708,33 @@ public resetSelection(client)
 	Array_Copy(resetArray, g_fBonusStartPos[client][1], 3);
 }
 
-public ScaleMenu(client)
+public void ScaleMenu(int client)
 {
 	g_Editing[client]=3;
-	Menu ckScaleMenu = CreateMenu(MenuHandler_Scale);
-	SetMenuTitle(ckScaleMenu, "Strech Zone");
+	Menu ckScaleMenu = new Menu(MenuHandler_Scale);
+	ckScaleMenu.SetTitle("Strech Zone");
+
 	if(g_ClientSelectedPoint[client]==1)
-		AddMenuItem(ckScaleMenu, "", "Point B");
+		ckScaleMenu.AddItem("", "Point B");
 	else
-		AddMenuItem(ckScaleMenu, "", "Point A");
-	AddMenuItem(ckScaleMenu, "", "+ Width");
-	AddMenuItem(ckScaleMenu, "", "- Width");
-	AddMenuItem(ckScaleMenu, "", "+ Length");
-	AddMenuItem(ckScaleMenu, "", "- Length");
-	AddMenuItem(ckScaleMenu, "", "+ Height");
-	AddMenuItem(ckScaleMenu, "", "- Height");
+		ckScaleMenu.AddItem("", "Point A");
+	
+	ckScaleMenu.AddItem("", "+ Width");
+	ckScaleMenu.AddItem("", "- Width");
+	ckScaleMenu.AddItem("", "+ Length");
+	ckScaleMenu.AddItem("", "- Length");
+	ckScaleMenu.AddItem("", "+ Height");
+	ckScaleMenu.AddItem("", "- Height");
+
 	char ScaleSize[128];
 	Format(ScaleSize, sizeof(ScaleSize), "Scale Size %f", g_AvaliableScales[g_ClientSelectedScale[client]]);
-	AddMenuItem(ckScaleMenu, "", ScaleSize);
-	SetMenuExitBackButton(ckScaleMenu, true);
-	DisplayMenu(ckScaleMenu, client, MENU_TIME_FOREVER);
+	ckScaleMenu.AddItem("", ScaleSize);
+
+	ckScaleMenu.ExitButton = true;
+	ckScaleMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Scale(Handle tMenu, MenuAction:action, client, item)
+public int MenuHandler_Scale(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1784,12 +1788,12 @@ public MenuHandler_Scale(Handle tMenu, MenuAction:action, client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
-public GetClientSelectedZone(int client, &team, &vis)
+public void GetClientSelectedZone(int client, int &team, int &vis)
 {
 	if(g_ClientSelectedZone[client] != -1)
 	{
@@ -1801,17 +1805,19 @@ public GetClientSelectedZone(int client, &team, &vis)
 	}
 }
 
-public ClearZonesMenu(int client)
+public void ClearZonesMenu(int client)
 {
-	Handle hClearZonesMenu = CreateMenu(MenuHandler_ClearZones);
-	SetMenuTitle(hClearZonesMenu, "Are you sure, you want to clear all zones on this map?");
-	AddMenuItem(hClearZonesMenu, "","NO GO BACK!");
-	AddMenuItem(hClearZonesMenu, "","NO GO BACK!");
-	AddMenuItem(hClearZonesMenu, "","YES! DO IT!");
-	DisplayMenu(hClearZonesMenu, client, 20);
+	Menu hClearZonesMenu = new Menu(MenuHandler_ClearZones);
+
+	hClearZonesMenu.SetTitle("Are you sure, you want to clear all zones on this map?");
+	hClearZonesMenu.AddItem("","NO GO BACK!");
+	hClearZonesMenu.AddItem("","NO GO BACK!");
+	hClearZonesMenu.AddItem("","YES! DO IT!");
+
+	hClearZonesMenu.Display(client, 20);
 }
 
-public MenuHandler_ClearZones(Handle tMenu, MenuAction:action, int client, item)
+public int MenuHandler_ClearZones(Handle tMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -1840,13 +1846,13 @@ public MenuHandler_ClearZones(Handle tMenu, MenuAction:action, int client, item)
 		}
 		case MenuAction_End:
 		{
-			CloseHandle(tMenu);
+			delete tMenu;
 		}
 	}
 }
 
 
-stock GetMiddleOfABox(const Float:vec1[3], const Float:vec2[3], Float:buffer[3])
+stock void GetMiddleOfABox(const float vec1[3], const float vec2[3], float buffer[3])
 {
 	float mid[3];
 	MakeVectorFromPoints(vec1, vec2, mid);
@@ -1856,7 +1862,7 @@ stock GetMiddleOfABox(const Float:vec1[3], const Float:vec2[3], Float:buffer[3])
 	AddVectors(vec1, mid, buffer);
 }
 
-stock RefreshZones()
+stock void RefreshZones()
 {
 	RemoveZones();
 	for(int i = 0; i< g_mapZonesCount; i++)
@@ -1865,7 +1871,7 @@ stock RefreshZones()
 	}
 }
 
-stock RemoveZones()
+stock void RemoveZones()
 {
 	// First remove any old zone triggers
 	int iEnts = GetMaxEntities();

@@ -1,7 +1,7 @@
-public Action:SayText2(UserMsg:msg_id, Handle:bf, players[], playersNum, bool:reliable, bool:init)
+public Action SayText2(UserMsg msg_id, Handle bf, int[] players, int playersNum, bool reliable, bool init)
 {
 	if(!reliable) return Plugin_Continue;
-	new String:buffer[25];
+	char buffer[25];
 	if(GetUserMessageType() == UM_Protobuf)
 	{
 		PbReadString(bf, "msg_name", buffer, sizeof(buffer));
@@ -55,7 +55,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 	return Plugin_Continue;
 }
 
-PlayerSpawn(client)
+public void PlayerSpawn(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -183,8 +183,8 @@ PlayerSpawn(client)
 	{
 		Array_Copy(g_fTeleLocation[client], g_fPlayerCordsRestore[client], 3);
 		Array_Copy(NULL_VECTOR, g_fPlayerAnglesRestore[client], 3);
-		SetEntPropVector(client, Prop_Data, "m_vecVelocity", Float:{0.0,0.0,-100.0});
-		TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,Float:{0.0,0.0,-100.0});
+		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,-100.0}));
+		TeleportEntity(client, g_fTeleLocation[client],NULL_VECTOR,view_as<float>({0.0,0.0,-100.0}));
 		g_specToStage[client] = false;
 	}
 	
@@ -202,7 +202,7 @@ PlayerSpawn(client)
 	GetClientAbsOrigin(client, g_fLastPosition[client]);	
 }
 
-public Action Say_Hook(client, const char[] command, argc)
+public Action Say_Hook(int client, const char[] command, int argc)
 {
 	//Call Admin - Own Reason
 	if (g_bClientOwnReason[client])
@@ -462,7 +462,7 @@ public Action Event_PlayerDisconnect(Handle event, const char[] name, bool dontB
 	}
 }
 
-public Action Hook_SetTransmit(entity, client) 
+public Action Hook_SetTransmit(int entity, int client) 
 { 
     if (client != entity && (0 < entity <= MaxClients) && IsValidClient(client)) 
 	{
@@ -504,7 +504,7 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
 	return Plugin_Continue;
 }
 					
-public Action CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
+public Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason)
 {
 	if (g_bRoundEnd)
 		return Plugin_Continue;
@@ -522,7 +522,7 @@ public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadca
 	return Plugin_Continue;
 }
 
-public OnPlayerThink(entity)
+public void OnPlayerThink(int entity)
 {
 	SetEntPropEnt(entity, Prop_Send, "m_bSpotted", 0); 
 }
@@ -595,7 +595,7 @@ public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroad
 }
 
 // PlayerDamage (if godmode 0)
-public Action Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
 	if (g_bgodmode)
 		return Plugin_Handled;
@@ -605,7 +605,7 @@ public Action Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 
 //thx to TnTSCS (player slap stops timer)
 //https://forums.alliedmods.net/showthread.php?t=233966
-public Action OnLogAction(Handle source, Identity:ident, client, target, const char[] message)
+public Action OnLogAction(Handle source, Identity ident, int client, int target, const char[] message)
 {	
     if ((1 > target > MaxClients))
         return Plugin_Continue;
@@ -623,7 +623,7 @@ public Action OnLogAction(Handle source, Identity:ident, client, target, const c
     return Plugin_Continue;
 }  
 
-public Action OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2])
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
 {
 	
 	if (g_bRoundEnd || !IsValidClient(client))
@@ -804,51 +804,11 @@ public Action Event_OnJump(Handle JumpEvent, const char[] Name, bool Broadcast)
 	float flDiff;
 	flDiff = flEngineTime - g_fLastTimeNoClipUsed[client];
 	if (flDiff < 4.0)
-		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, Float:{0.0,0.0,-100.0});
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 }
 		
 			
-public Hook_PostThinkPost(entity)
+public void Hook_PostThinkPost(int entity)
 {
 	SetEntProp(entity, Prop_Send, "m_bInBuyZone", 0);
 } 
-
-public Action Event_JoinTeamFailed(Handle event, const char[] name, bool dontBroadcast)
-{
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if(!client || !IsClientInGame(client))
-		return Plugin_Continue;
-	EJoinTeamReason m_eReason = EJoinTeamReason:GetEventInt(event, "reason");
-	int m_iTs = GetTeamClientCount(CS_TEAM_T);
-	int m_iCTs = GetTeamClientCount(CS_TEAM_CT);
-	switch(m_eReason)
-	{
-		case k_OneTeamChange:
-		{
-			return Plugin_Continue;
-		}
-
-		case k_TeamsFull:
-		{
-			if(m_iCTs == g_CTSpawns && m_iTs == g_TSpawns)
-				return Plugin_Continue;
-		}
-		case k_TTeamFull:
-		{
-			if(m_iTs == g_TSpawns)
-				return Plugin_Continue;
-		}
-		case k_CTTeamFull:
-		{
-			if(m_iCTs == g_CTSpawns)
-				return Plugin_Continue;
-		}
-		default:
-		{
-			return Plugin_Continue;
-		}
-	}
-	ChangeClientTeam(client, g_SelectedTeam[client]);
-
-	return Plugin_Handled;
-}

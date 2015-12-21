@@ -1,6 +1,6 @@
 
 // - Climb Button OnStartPress -
-public CL_OnStartTimerPress(client)
+public void CL_OnStartTimerPress(int client)
 {	
 	if (!IsFakeClient(client))
 	{	
@@ -84,7 +84,7 @@ public CL_OnStartTimerPress(client)
 }
 
 // - Climb Button OnEndPress -
-public CL_OnEndTimerPress(client)
+public void CL_OnEndTimerPress(int client)
 {
 	//Format Final Time
 	if (IsFakeClient(client) && g_bTimeractivated[client])

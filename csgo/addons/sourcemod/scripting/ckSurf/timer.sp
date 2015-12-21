@@ -1,38 +1,11 @@
-/*public Action TrailTimer(Handle timer, any:client)
-{
-	if (!IsValidClient(client))
-		return Plugin_Handled;
 
-	int ent = GetPlayerWeaponSlot(client, 2);
-	if (!IsValidEntity(ent))
-		return Plugin_Handled;
-	//PrintToServer("TRAILING: %i", client);
-
-	for (int i = 0; i < MAXPLAYERS; i++)
-	{
-		if (ClientCanSeeClient(i, client))
-		{
-			TE_SetupBeamFollow(ent, 
-								g_BeamSprite, 
-								0, 
-								BEAMLIFE, 
-								4.0, 
-								1.0, 
-								1, 
-								RGB_COLORS[g_iTrailColor[client]]);
-			TE_SendToClient(i);
-		}
-	}
-	return Plugin_Continue;
-}*/
-
-public Action afterStageCheckpoint(Handle timer, any:client)
+public Action afterStageCheckpoint(Handle timer, any client)
 {
 	Command_createPlayerCheckpoint(client, 1);
 	return Plugin_Handled;
 }
 
-public Action timerAfterNoclip(Handle timer, any:client)
+public Action timerAfterNoclip(Handle timer, any client)
 {
 	if (IsValidClient(client))
 	{
@@ -42,7 +15,7 @@ public Action timerAfterNoclip(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action AnnounceMap(Handle timer, any:client)
+public Action AnnounceMap(Handle timer, any client)
 {
 	if (IsValidClient(client)) 
 	{
@@ -53,7 +26,7 @@ public Action AnnounceMap(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action RefreshAdminMenu(Handle timer, any:client)
+public Action RefreshAdminMenu(Handle timer, any client)
 {
 	if (IsValidEntity(client) && !IsFakeClient(client))
 		ckAdminMenu(client);
@@ -61,7 +34,7 @@ public Action RefreshAdminMenu(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action RefreshVIPMenu(Handle timer, any:client)
+public Action RefreshVIPMenu(Handle timer, any client)
 {
 	if (IsValidEntity(client) && !IsFakeClient(client))
 		Command_Vip(client, 1);
@@ -69,7 +42,7 @@ public Action RefreshVIPMenu(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action RefreshZoneSettings(Handle timer, any:client)
+public Action RefreshZoneSettings(Handle timer, any client)
 {
 	if (IsValidEntity(client) && !IsFakeClient(client))
 		ZoneSettings(client);
@@ -77,7 +50,7 @@ public Action RefreshZoneSettings(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action SetPlayerWeapons(Handle timer, any:client)
+public Action SetPlayerWeapons(Handle timer, any client)
 {
 	if ((GetClientTeam(client) > 1) && IsValidClient(client))
 	{			
@@ -86,7 +59,7 @@ public Action SetPlayerWeapons(Handle timer, any:client)
 			GivePlayerItem(client, "weapon_usp_silencer");
 		if (!g_bStartWithUsp[client])
 		{
-			decl weapon;
+			int weapon;
 			weapon = GetPlayerWeaponSlot(client, 2);
 			if (weapon != -1 && !IsFakeClient(client))
 				 SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
@@ -110,7 +83,7 @@ public Action PlayerRanksTimer(Handle timer)
 //
 // Recounts players time
 //
-public Action UpdatePlayerProfile(Handle timer, any:client)
+public Action UpdatePlayerProfile(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))	
 		db_updateStat(client);
@@ -118,7 +91,7 @@ public Action UpdatePlayerProfile(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action StartTimer(Handle timer, any:client)
+public Action StartTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))	
 		CL_OnStartTimerPress(client);
@@ -148,7 +121,7 @@ public Action CKTimer1(Handle timer)
 {
 	if (g_bRoundEnd)
 		return Plugin_Continue;
-	decl client;
+	int client;
 	for (client = 1; client <= MaxClients; client++)
 	{		
 		if (IsValidClient(client))
@@ -197,13 +170,13 @@ public Action CKTimer2(Handle timer)
 	{
 		Handle hTmp;	
 		hTmp = FindConVar("mp_timelimit");
-		decl iTimeLimit;
+		int iTimeLimit;
 		iTimeLimit = GetConVarInt(hTmp);			
 		if (hTmp != null)
 			CloseHandle(hTmp);	
 		if (iTimeLimit > 0)
 		{
-			decl timeleft;
+			int timeleft;
 			GetMapTimeLeft(timeleft);		
 			switch(timeleft)
 			{
@@ -234,7 +207,7 @@ public Action CKTimer2(Handle timer)
 	//info bot name
 	SetInfoBotName(g_InfoBot);
 
-	decl i;
+	int i;
 	for (i = 1; i <= MaxClients; i++)
 	{
 		if (!IsValidClient(i) || i == g_InfoBot)
@@ -258,7 +231,7 @@ public Action CKTimer2(Handle timer)
 			fltime = GetGameTime() - g_fStartTime[i] - g_fPauseTime[i] + 1.0;
 			if (IsPlayerAlive(i) && g_bTimeractivated[i])
 			{
-				decl time; 
+				int time; 
 				time = RoundToZero(fltime);
 				Client_SetScore(i,time); 								
 			}
@@ -296,12 +269,12 @@ public Action CKTimer2(Handle timer)
 	}
 
 	//clean weapons on ground
-	decl maxEntities;
+	int maxEntities;
 	maxEntities = GetMaxEntities();
 	char classx[20];
 	if (g_bCleanWeapons)
 	{
-		decl j;
+		int j;
 		for (j = MaxClients + 1; j < maxEntities; j++)
 		{
 			if (IsValidEdict(j) && (GetEntDataEnt2(j, g_ownerOffset) == -1))
@@ -319,7 +292,7 @@ public Action CKTimer2(Handle timer)
 
 
 //challenge start countdown
-public Action Timer_Countdown(Handle timer, any:client)
+public Action Timer_Countdown(Handle timer, any client)
 {
 	if (IsValidClient(client) && g_bChallenge[client] && !IsFakeClient(client))
 	{
@@ -337,21 +310,21 @@ public Action Timer_Countdown(Handle timer, any:client)
 	return Plugin_Continue;
 }
 
-public Action ReplayTimer(Handle timer, any:client)
+public Action ReplayTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 		SaveRecording(client,0);
 
 	return Plugin_Handled;
 }
-public Action BonusReplayTimer(Handle timer, any:client)
+public Action BonusReplayTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 		SaveRecording(client, 1);
 
 	return Plugin_Handled;
 }
-public Action CheckChallenge(Handle timer, any:client)
+public Action CheckChallenge(Handle timer, any client)
 {
 	bool oppenent = false;
 	char szSteamId[128];
@@ -416,7 +389,7 @@ public Action LoadReplaysTimer(Handle timer)
 	return Plugin_Handled;
 }
 
-public Action SetClanTag(Handle timer, any:client)
+public Action SetClanTag(Handle timer, any client)
 {
 	if (!IsValidClient(client) || IsFakeClient(client) || g_pr_Calculating[client])
 		return Plugin_Handled;
@@ -467,7 +440,7 @@ public Action TerminateRoundTimer(Handle timer)
 	return Plugin_Handled;
 }
 
-public Action WelcomeMsgTimer(Handle timer, any:client)
+public Action WelcomeMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client) && !StrEqual(g_sWelcomeMsg,""))
 		CPrintToChat(client, "%s", g_sWelcomeMsg);
@@ -475,7 +448,7 @@ public Action WelcomeMsgTimer(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action HelpMsgTimer(Handle timer, any:client)
+public Action HelpMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 		PrintToChat(client, "%t", "HelpMsg", MOSSGREEN,WHITE,GREEN,WHITE);
@@ -512,7 +485,7 @@ public Action AdvertTimer(Handle timer)
 	return Plugin_Continue;
 }
 
-public Action StartMsgTimer(Handle timer, any:client)
+public Action StartMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
@@ -526,7 +499,7 @@ public Action StartMsgTimer(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action CenterMsgTimer(Handle timer, any:client)
+public Action CenterMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
@@ -542,11 +515,11 @@ public Action CenterMsgTimer(Handle timer, any:client)
 	return Plugin_Handled;
 }
 
-public Action RemoveRagdoll(Handle timer, any:victim)
+public Action RemoveRagdoll(Handle timer, any victim)
 {
     if (IsValidEntity(victim) && !IsPlayerAlive(victim))
     {
-	decl player_ragdoll;
+	int player_ragdoll;
 	player_ragdoll = GetEntDataEnt2(victim, g_ragdolls);
 	if (player_ragdoll != -1)
 		RemoveEdict(player_ragdoll);
@@ -554,7 +527,7 @@ public Action RemoveRagdoll(Handle timer, any:victim)
     return Plugin_Handled;
 }
 
-public Action HideRadar(Handle timer, any:client)
+public Action HideRadar(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
