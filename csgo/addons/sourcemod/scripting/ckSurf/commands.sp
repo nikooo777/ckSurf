@@ -1822,7 +1822,7 @@ public void GotoMethod(int client, int target)
 				float angles[3];
 				GetClientAbsOrigin(target,position);
 				GetClientEyeAngles(target,angles);
-				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][3]);
+				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][3], target);
 				//TeleportEntity(client, position, angles, Float:{0.0,0.0,-100.0});
 				char szClientName[MAX_NAME_LENGTH];
 				GetClientName(client, szClientName, MAX_NAME_LENGTH);	

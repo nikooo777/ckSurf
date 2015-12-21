@@ -127,7 +127,7 @@ stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
 	LogToGame("\"%s<%i><%s><%s>\" %s \"%s\"", name, GetClientUserId(client), steamid, teamName, sayOrSayTeam, msg);
 }
 
-public void performTeleport(int client, float pos[3], float ang[3], float vel[3], int destinationZoneId)
+void performTeleport(int client, float pos[3], float ang[3], float vel[3], int destinationZoneId, int targetClient = -1)
 {
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	// If teleporting to the exact same zone or the client is not in a zone
@@ -142,10 +142,21 @@ public void performTeleport(int client, float pos[3], float ang[3], float vel[3]
 		if (g_iClientInZone[client][0] != -1)
 			g_bIgnoreZone[client] = true;
 
-		g_iClientInZone[client][0] = g_mapZones[destinationZoneId][zoneType];
-		g_iClientInZone[client][1] = g_mapZones[destinationZoneId][zoneTypeId];
-		g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
-		g_iClientInZone[client][3] = destinationZoneId;
+		if (destinationZoneId > -1)
+		{
+			g_iClientInZone[client][0] = g_mapZones[destinationZoneId][zoneType];
+			g_iClientInZone[client][1] = g_mapZones[destinationZoneId][zoneTypeId];
+			g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
+			g_iClientInZone[client][3] = destinationZoneId;
+		}
+		else
+			if (targetClient > -1)
+			{
+				g_iClientInZone[client][0] = -1;
+				g_iClientInZone[client][1] = -1;
+				g_iClientInZone[client][2] = g_iClientInZone[targetClient][2];
+				g_iClientInZone[client][3] = -1;
+			}
 	}
 	TeleportEntity(client, pos, ang, vel);
 }
