@@ -507,41 +507,71 @@ public void checkChangesInTitle(int client)
 	}
 }
 
-public void CreateSpawns() 
+public void checkSpawnPoints()
 {
 	int tEnt, ctEnt;
 	float f_spawnLocation[3], f_spawnAngle[3];
-	//tEnt = FindEntityByClassname(t, "info_player_terrorist");
-	//ctEnt = FindEntityByClassname(ct, "info_player_counterterrorist");
 
-	if (FindEntityByClassname(ctEnt, "info_player_counterterrorist") == -1 || FindEntityByClassname(tEnt, "info_player_terrorist") == -1) // No proper zones were found
+	if (FindEntityByClassname(ctEnt, "info_player_counterterrorist") == -1 || FindEntityByClassname(tEnt, "info_player_terrorist") == -1) // No proper zones were found, try to recreate
 	{
-		PrintToServer("[CK] No valid spawns found in the map.");
-		int zoneEnt;
-		FindEntityByClassname(zoneEnt, "info_player_teamspawn"); // CSS/TF spawn found
-		
-		if (zoneEnt != -1)
+		// Check if spawn point has been added to the database with !addspawn
+		char szQuery[256];
+		Format(szQuery, 256, "SELECT pos_x, pos_y, pos_z, ang_x, ang_y, ang_z FROM ck_spawnlocations WHERE mapname = '%s' AND zonegroup = 0;", g_szMapName);
+		Handle query = SQL_Query(g_hDb, szQuery);
+		if (query == INVALID_HANDLE)
+		{
+			char szError[255];
+			SQL_GetError(g_hDb, szError, sizeof(szError));
+			PrintToServer("Failed to query map's spawn points (error: %s)", szError);
+		} 
+		else 
+		{
+			if (SQL_HasResultSet(query) && SQL_FetchRow(query))
+			{
+				f_spawnLocation[0] = SQL_FetchFloat(query, 0);
+				f_spawnLocation[1] = SQL_FetchFloat(query, 1);
+				f_spawnLocation[2] = SQL_FetchFloat(query, 2);
+				f_spawnAngle[0] = SQL_FetchFloat(query, 3);
+				f_spawnAngle[1] = SQL_FetchFloat(query, 4);
+				f_spawnAngle[2] = SQL_FetchFloat(query, 5);
+			}
+			CloseHandle(query);
+		}
+
+		if(f_spawnLocation[0] == 0.0 && f_spawnLocation[1] == 0.0 && f_spawnLocation[2] == 0.0)  // No spawnpoint added to map with !addspawn, try to find spawns from map
 		{
 			PrintToServer("[CK] No valid spawns found in the map.");
-			GetEntPropVector(zoneEnt, Prop_Data, "m_angRotation", f_spawnLocation);
-			GetEntPropVector(zoneEnt, Prop_Send, "m_vecOrigin", f_spawnAngle);	
-		}
-		else
-		{
-			zoneEnt = FindEntityByClassname(zoneEnt, "info_player_start"); // Random spawn
+			int zoneEnt = -1;
+			zoneEnt = FindEntityByClassname(zoneEnt, "info_player_teamspawn"); // CSS/TF spawn found
+			
 			if (zoneEnt != -1)
 			{
-				GetEntPropVector(zoneEnt, Prop_Data, "m_angRotation", f_spawnLocation);
-				GetEntPropVector(zoneEnt, Prop_Send, "m_vecOrigin", f_spawnAngle);	
+				GetEntPropVector(zoneEnt, Prop_Data, "m_angRotation", f_spawnAngle);
+				GetEntPropVector(zoneEnt, Prop_Send, "m_vecOrigin", f_spawnLocation);	
+
+				PrintToServer("[CK] Found info_player_teamspawn in location %f, %f, %f", f_spawnLocation[0], f_spawnLocation[1], f_spawnLocation[2]);
 			}
 			else
 			{
-				LogError("No valid spawn points found in the map! Record bots will not work.");
-				return;
+				zoneEnt = FindEntityByClassname(zoneEnt, "info_player_start"); // Random spawn
+				if (zoneEnt != -1)
+				{
+					GetEntPropVector(zoneEnt, Prop_Data, "m_angRotation", f_spawnAngle);
+					GetEntPropVector(zoneEnt, Prop_Send, "m_vecOrigin", f_spawnLocation);	
+
+					PrintToServer("[CK] Found info_player_start in location %f, %f, %f", f_spawnLocation[0], f_spawnLocation[1], f_spawnLocation[2]);
+				}
+				else
+				{
+					LogError("No valid spawn points found in the map! Record bots will not work. Try adding a spawn point with !addspawn");
+					return;
+				}
 			}
 		}
-		int pointT, pointCT, count = 0;
+
 		// Start creating new spawnpoints
+		int pointT, pointCT, count = 0;
+		PrintToServer("Creating spawn points in location: %f, %f, %f", f_spawnLocation[0], f_spawnLocation[1], f_spawnLocation[2]);
 		while (count < 64)
 		{
 			pointT = CreateEntityByName("info_player_terrorist");
@@ -569,63 +599,55 @@ public void CreateSpawns()
 			}
 		}
 	}
-}
-/*
-public CheckSpawnPoints() 
-{
-	if(StrEqual(g_szMapPrefix[0],"surf"))
+	else // Valid spawns were found, check that there is enough of them
 	{
-		if (!g_bNoBlock)
-			return;
-		int ent, ct, t, spawnpoint;
-		ct = 0;
-		t= 0;	
+		int ent, spawnpoint;	
 		ent = -1;	
 		while ((ent = FindEntityByClassname(ent, "info_player_terrorist")) != -1)
 		{		
-			if (t==0)
+			if (tEnt==0)
 			{
-				GetEntPropVector(ent, Prop_Data, "m_angRotation", g_fSpawnpointAngle);
-				GetEntPropVector(ent, Prop_Send, "m_vecOrigin", g_fSpawnpointOrigin);				
+				GetEntPropVector(ent, Prop_Data, "m_angRotation", f_spawnAngle);
+				GetEntPropVector(ent, Prop_Send, "m_vecOrigin", f_spawnLocation);				
 			}
-			t++;
+			tEnt++;
 		}	
 		while ((ent = FindEntityByClassname(ent, "info_player_counterterrorist")) != -1)
 		{	
-			if (ct==0 && t==0)
+			if (ctEnt==0 && tEnt==0)
 			{
-				GetEntPropVector(ent, Prop_Data, "m_angRotation", g_fSpawnpointAngle); 
-				GetEntPropVector(ent, Prop_Send, "m_vecOrigin", g_fSpawnpointOrigin);				
+				GetEntPropVector(ent, Prop_Data, "m_angRotation", f_spawnAngle); 
+				GetEntPropVector(ent, Prop_Send, "m_vecOrigin", f_spawnLocation);				
 			}
-			ct++;
+			ctEnt++;
 		}	
 		
-		if (t > 0 || ct > 0)
+		if (tEnt > 0 || ctEnt > 0)
 		{
-			if (t < 64)
+			if (tEnt < 64)
 			{
-				while (t < 64)
+				while (tEnt < 64)
 				{
 					spawnpoint = CreateEntityByName("info_player_terrorist");
 					if (IsValidEntity(spawnpoint) && DispatchSpawn(spawnpoint))
 					{
 						ActivateEntity(spawnpoint);
-						TeleportEntity(spawnpoint, g_fSpawnpointOrigin, g_fSpawnpointAngle, NULL_VECTOR);
-						t++;
+						TeleportEntity(spawnpoint, f_spawnLocation, f_spawnAngle, NULL_VECTOR);
+						tEnt++;
 					}
 				}		
 			}
 
-			if (ct < 64)
+			if (ctEnt < 64)
 			{
-				while (ct < 64)
+				while (ctEnt < 64)
 				{
 					spawnpoint = CreateEntityByName("info_player_counterterrorist");
 					if (IsValidEntity(spawnpoint) && DispatchSpawn(spawnpoint))
 					{
 						ActivateEntity(spawnpoint);
-						TeleportEntity(spawnpoint, g_fSpawnpointOrigin, g_fSpawnpointAngle, NULL_VECTOR);
-						ct++;
+						TeleportEntity(spawnpoint, f_spawnLocation, f_spawnAngle, NULL_VECTOR);
+						ctEnt++;
 					}
 				}			
 			}
@@ -633,24 +655,6 @@ public CheckSpawnPoints()
 	}
 }
 
-
-public Action CheckifEntities(Handle timer, any:data)
-{
-	int ent;
-	float Pos[3];
-	while ((ent = FindEntityByClassname(ent, "info_player_counterterrorist")) != -1)
-	{	
-		GetEntPropVector(ent, Prop_Data, "m_vecOrigin", Pos);
-		////PrintToServer("info_player_counterterrorist found after creation! Position: %f, %f, %f", Pos[0], Pos[1], Pos[2]);
-	}
-	while ((ent = FindEntityByClassname(ent, "info_player_terrorist")) != -1)
-	{	
-		GetEntPropVector(ent, Prop_Data, "m_vecOrigin", Pos);
-		////PrintToServer("info_player_terrorist found after creation! Position: %f, %f, %f", Pos[0], Pos[1], Pos[2]);
-	}
-	return Plugin_Handled;
-}
-*/
 public Action CallAdmin_OnDrawOwnReason(int client)
 {
 	g_bClientOwnReason[client] = true;

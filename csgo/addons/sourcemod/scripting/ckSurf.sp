@@ -899,8 +899,10 @@ public void OnMapStart()
 	//get mapname
 	GetCurrentMap(g_szMapName, 128);
 
-	CreateSpawns();
-
+	if (!g_bRenaming && !g_bInTransactionChain)
+	{
+		checkSpawnPoints();
+	}
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
 	* 2. Get map record time (db_GetMapRecord_Pro)
