@@ -148,7 +148,7 @@ char sql_resetMapRecords[] 				= "DELETE FROM ck_playertimes WHERE mapname = '%s
 //// DATABASE SETUP/////
 ////////////////////////
 
-public db_setupDatabase()
+public void db_setupDatabase()
 {
 	////////////////////////////////
 	// INIT CONNECTION TO DATABASE//
@@ -356,7 +356,7 @@ void txn_changesToZones()
 }
 
 
-public SQLTxn_Success(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+public void SQLTxn_Success(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	switch (data)
 	{
@@ -388,7 +388,7 @@ public SQLTxn_Success(Handle db, any:data, numQueries, Handle[] results, any:que
 	}
 }
 
-public SQLTxn_TXNFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+public void SQLTxn_TXNFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (g_failedTransactions[data] == 0)
 	{
@@ -432,7 +432,7 @@ public SQLTxn_TXNFailed(Handle db, any:data, numQueries, const char[] error, fai
 }
 
 
-public db_createTables()
+public void db_createTables()
 {
 	Transaction createTableTnx = SQL_CreateTransaction();
 
@@ -455,17 +455,17 @@ public db_createTables()
 
 }
 
-public SQLTxn_CreateDatabaseSuccess(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+public void SQLTxn_CreateDatabaseSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	PrintToServer("[ckSurf] Database tables succesfully created!");
 }
-public SQLTxn_CreateDatabaseFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+public void SQLTxn_CreateDatabaseFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	SetFailState("[ckSurf] Database tables could not be created! Error: %s", error);
 }
 
 
-public db_renameTables()
+public void db_renameTables()
 {
 	g_bRenaming = true;
 	Transaction hndl = SQL_CreateTransaction();
@@ -538,7 +538,7 @@ public db_renameTables()
 	SQL_ExecuteTransaction(g_hDb, hndl, SQLTxn_RenameSuccess, SQLTxn_RenameFailed);
 }
 
-public SQLTxn_RenameSuccess(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+public void SQLTxn_RenameSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	g_bRenaming = false;
 	PrintToChatAll("[%cCK%c] Database changes done succesfully, reloading the map...");
@@ -546,7 +546,7 @@ public SQLTxn_RenameSuccess(Handle db, any:data, numQueries, Handle[] results, a
 	ForceChangeLevel(g_szMapName, "Database Renaming Done. Restarting Map.");
 }
 
-public SQLTxn_RenameFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+public void SQLTxn_RenameFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	g_bRenaming = false;
 	SetFailState("[ckSurf] Database changes failed! (Renaming) Error: %s", error);
@@ -557,7 +557,7 @@ public SQLTxn_RenameFailed(Handle db, any:data, numQueries, const char[] error, 
 //// PLAYER TITLES ////
 ///////////////////////
 
-public db_checkPlayersTitles(client)
+public void db_checkPlayersTitles(int client)
 {
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
@@ -572,7 +572,7 @@ public db_checkPlayersTitles(client)
 	}
 }
 
-public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] error, any data)
 {
 	if(hndl == null)
 	{
@@ -635,7 +635,7 @@ public SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[] erro
 	DisplayMenu(titleMenu, data, MENU_TIME_FOREVER);
 }
 
-public SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[] error, any data)
 {
 
 	if(hndl == null)
@@ -685,7 +685,7 @@ public SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[] err
 	DisplayMenu(titleMenu, data, MENU_TIME_FOREVER);
 }
 
-public sql_disableTitleFromAllbyIndex(int index)
+public void sql_disableTitleFromAllbyIndex(int index)
 {
 	// Do a transaction 
 	Transaction h_disableUnusedTitles = SQL_CreateTransaction();
@@ -724,19 +724,19 @@ public sql_disableTitleFromAllbyIndex(int index)
 	SQL_ExecuteTransaction(g_hDb, h_disableUnusedTitles, SQLTxn_disablingTitlesSuccess, SQLTxn_disablingTitlesFailed);
 }
 
-public SQLTxn_disablingTitlesFailed(Handle db, any:data, numQueries, const char[] error, failIndex, any:queryData[])
+public void SQLTxn_disablingTitlesFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	PrintToServer("ERROR DISABLING TITLES: %s", error);
 }
 
-public SQLTxn_disablingTitlesSuccess(Handle db, any:data, numQueries, Handle[] results, any:queryData[])
+public void SQLTxn_disablingTitlesSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	PrintToServer("Succesfully disabled titles. Num of queries: %i", numQueries);
 
 }
 
 
-public db_viewPersonalFlags(client, char SteamID[32])
+public void db_viewPersonalFlags(int client, char SteamID[32])
 {
 	char szQuery[728];
 	Handle pack = CreateDataPack();
@@ -746,7 +746,7 @@ public db_viewPersonalFlags(client, char SteamID[32])
 	SQL_TQuery(g_hDb, SQL_PersonalFlagCallback, szQuery, pack, DBPrio_Low);
 }
 
-public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, any:pack)
+public void SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, any pack)
 {
 	ResetPack(pack);
 	int client = ReadPackCell(pack);
@@ -797,7 +797,7 @@ public SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] error, a
 
 }
 
-public db_updateAdminVIP(client, char SteamID[32], bool hasTitleRow)
+public void db_updateAdminVIP(int client, char SteamID[32], bool hasTitleRow)
 {
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -811,7 +811,7 @@ public db_updateAdminVIP(client, char SteamID[32], bool hasTitleRow)
 	SQL_TQuery(g_hDb, db_updateVIPAdminCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_updateVIPAdminCallback(Handle owner, Handle hndl, const char[] error, any:pack)
+public void db_updateVIPAdminCallback(Handle owner, Handle hndl, const char[] error, any pack)
 {
 	if(hndl == null)
 	{
@@ -831,7 +831,7 @@ public db_updateVIPAdminCallback(Handle owner, Handle hndl, const char[] error, 
 
 
 
-public db_checkChangesInTitle(client, char SteamID[32])
+public void db_checkChangesInTitle(int client, char SteamID[32])
 {
 	char szQuery[728];
 	Format(szQuery, 728, sql_selectPlayerFlags, SteamID);
@@ -843,7 +843,7 @@ public db_checkChangesInTitle(client, char SteamID[32])
 	SQL_TQuery(g_hDb, db_checkChangesInTitleCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -934,14 +934,14 @@ public db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char[] er
 	}
 }
 
-public db_insertPlayerTitles(client, titleID)
+public void db_insertPlayerTitles(int client, int titleID)
 {
 	char szQuery[1024];
 	Format(szQuery, 1024, sql_insertPlayerFlags, g_szAdminSelectedSteamID[client], BooltoInt(g_bAdminFlagTitlesTemp[client][0]), BooltoInt(g_bAdminFlagTitlesTemp[client][1]), BooltoInt(g_bAdminFlagTitlesTemp[client][2]), BooltoInt(g_bAdminFlagTitlesTemp[client][3]), BooltoInt(g_bAdminFlagTitlesTemp[client][4]), BooltoInt(g_bAdminFlagTitlesTemp[client][5]), BooltoInt(g_bAdminFlagTitlesTemp[client][6]), BooltoInt(g_bAdminFlagTitlesTemp[client][7]), BooltoInt(g_bAdminFlagTitlesTemp[client][8]), BooltoInt(g_bAdminFlagTitlesTemp[client][9]), BooltoInt(g_bAdminFlagTitlesTemp[client][10]), BooltoInt(g_bAdminFlagTitlesTemp[client][11]), BooltoInt(g_bAdminFlagTitlesTemp[client][12]), BooltoInt(g_bAdminFlagTitlesTemp[client][13]), BooltoInt(g_bAdminFlagTitlesTemp[client][14]), BooltoInt(g_bAdminFlagTitlesTemp[client][15]), BooltoInt(g_bAdminFlagTitlesTemp[client][16]), BooltoInt(g_bAdminFlagTitlesTemp[client][17]), BooltoInt(g_bAdminFlagTitlesTemp[client][18]), BooltoInt(g_bAdminFlagTitlesTemp[client][19]), BooltoInt(g_bAdminFlagTitlesTemp[client][20]), BooltoInt(g_bAdminFlagTitlesTemp[client][21]), BooltoInt(g_bAdminFlagTitlesTemp[client][22]), titleID);
 	SQL_TQuery(g_hDb, SQL_insertFlagCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_insertFlagCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_insertFlagCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -955,14 +955,14 @@ public SQL_insertFlagCallback(Handle owner, Handle hndl, const char[] error, any
 	db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
 }
 
-public db_updatePlayerTitles(client, titleID)
+public void db_updatePlayerTitles(int client, int titleID)
 {
 	char szQuery[1024];
 	Format(szQuery, 1024, sql_updatePlayerFlags, g_bAdminFlagTitlesTemp[client][0], g_bAdminFlagTitlesTemp[client][1], g_bAdminFlagTitlesTemp[client][2], g_bAdminFlagTitlesTemp[client][3], g_bAdminFlagTitlesTemp[client][4], g_bAdminFlagTitlesTemp[client][5], g_bAdminFlagTitlesTemp[client][6], g_bAdminFlagTitlesTemp[client][7], g_bAdminFlagTitlesTemp[client][8], g_bAdminFlagTitlesTemp[client][9], g_bAdminFlagTitlesTemp[client][10], g_bAdminFlagTitlesTemp[client][11], g_bAdminFlagTitlesTemp[client][12], g_bAdminFlagTitlesTemp[client][13], g_bAdminFlagTitlesTemp[client][14], g_bAdminFlagTitlesTemp[client][15], g_bAdminFlagTitlesTemp[client][16], g_bAdminFlagTitlesTemp[client][17], g_bAdminFlagTitlesTemp[client][18], g_bAdminFlagTitlesTemp[client][19], g_bAdminFlagTitlesTemp[client][20], g_bAdminFlagTitlesTemp[client][21], g_bAdminFlagTitlesTemp[client][22], titleID, g_szAdminSelectedSteamID[client]);
 	SQL_TQuery(g_hDb, SQL_updatePlayerFlagsCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_updatePlayerFlagsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_updatePlayerFlagsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -977,7 +977,7 @@ public SQL_updatePlayerFlagsCallback(Handle owner, Handle hndl, const char[] err
 		db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
 }
 
-public db_updatePlayerTitleInUse(int inUse, char szSteamId[32])
+public void db_updatePlayerTitleInUse(int inUse, char szSteamId[32])
 {
 	char szQuery[512];
 	Format(szQuery, 512, sql_updatePlayerFlagsInUse, inUse, szSteamId);
@@ -985,7 +985,7 @@ public db_updatePlayerTitleInUse(int inUse, char szSteamId[32])
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, -1, DBPrio_Low);
 }
 
-public db_deletePlayerTitles(client)
+public void db_deletePlayerTitles(int client)
 {
 	if (IsValidClient(g_iAdminSelectedClient[client]))
 	{
@@ -999,7 +999,7 @@ public db_deletePlayerTitles(client)
 	SQL_TQuery(g_hDb, SQL_deletePlayerTitlesCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_deletePlayerTitlesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deletePlayerTitlesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1015,7 +1015,7 @@ public SQL_deletePlayerTitlesCallback(Handle owner, Handle hndl, const char[] er
 //// SPAWN LOCATIONS ////
 /////////////////////////
 
-public db_deleteSpawnLocations(int zGrp)
+public void db_deleteSpawnLocations(int zGrp)
 {
 	g_bGotSpawnLocation[zGrp] = false;
 	char szQuery[128];
@@ -1024,21 +1024,21 @@ public db_deleteSpawnLocations(int zGrp)
 }
 
 
-public db_updateSpawnLocations(float position[3], float angle[3], zGrp)
+public void db_updateSpawnLocations(float position[3], float angle[3], int zGrp)
 {
 	char szQuery[512];
 	Format(szQuery, 512, sql_updateSpawnLocations, position[0], position[1], position[2], angle[0], angle[1], angle[2], g_szMapName, zGrp);
 	SQL_TQuery(g_hDb, db_editSpawnLocationsCallback, szQuery, zGrp, DBPrio_Low);
 }
 
-public db_insertSpawnLocations(float position[3], float angle[3], zGrp)
+public void db_insertSpawnLocations(float position[3], float angle[3], int zGrp)
 {
 	char szQuery[512];
 	Format(szQuery, 512, sql_insertSpawnLocations, g_szMapName, position[0], position[1], position[2], angle[0], angle[1], angle[2], zGrp);
 	SQL_TQuery(g_hDb, db_editSpawnLocationsCallback, szQuery, zGrp, DBPrio_Low);
 }
 
-public db_editSpawnLocationsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_editSpawnLocationsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1048,7 +1048,7 @@ public db_editSpawnLocationsCallback(Handle owner, Handle hndl, const char[] err
 	db_selectSpawnLocations();
 }
 
-public db_selectSpawnLocations()
+public void db_selectSpawnLocations()
 {
 	for (int i = 0; i < MAXZONEGROUPS; i++)
 		g_bGotSpawnLocation[i] = false;
@@ -1058,7 +1058,7 @@ public db_selectSpawnLocations()
 	SQL_TQuery(g_hDb, db_selectSpawnLocationsCallback, szQuery, 1, DBPrio_Low);
 }
 
-public db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1092,14 +1092,14 @@ public db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const char[] e
 //// PLAYER RANK ////
 /////////////////////
 
-public db_viewMapProRankCount()
+public void db_viewMapProRankCount()
 {
 	g_MapTimesCount = 0;
 	char szQuery[512];
 	Format(szQuery, 512, sql_selectPlayerProCount, g_szMapName);
 	SQL_TQuery(g_hDb, sql_selectPlayerProCountCallback, szQuery,DBPrio_Low);
 }
-public sql_selectPlayerProCountCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public SQLTCallback SQL_selectPlayerProCountCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1117,13 +1117,13 @@ public sql_selectPlayerProCountCallback(Handle owner, Handle hndl, const char[] 
 	if (!g_bServerDataLoaded)
 		db_viewFastestBonus();
 
-	return;
+	//return;
 }
 
 //
 // Get players rank in current map
 //
-public db_viewMapRankPro(client, rank)
+public void db_viewMapRankPro(int client, int rank)
 {
 	char szQuery[512];
 	if (!IsValidClient(client))
@@ -1138,7 +1138,7 @@ public db_viewMapRankPro(client, rank)
 	SQL_TQuery(g_hDb, db_viewMapRankProCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_viewMapRankProCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_viewMapRankProCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1166,7 +1166,7 @@ public db_viewMapRankProCallback(Handle owner, Handle hndl, const char[] error, 
 //
 // Players points have changed in game, make changes in database and recalculate points
 //
-public db_updateStat(client) 
+public void db_updateStat(int client) 
 {
 	char szQuery[512];
 	//"UPDATE ck_playerrank SET finishedmaps ='%i', finishedmapspro='%i', multiplier ='%i'  where steamid='%s'";
@@ -1176,7 +1176,7 @@ public db_updateStat(client)
 	
 }
 
-public SQL_UpdateStatCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_UpdateStatCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1188,7 +1188,7 @@ public SQL_UpdateStatCallback(Handle owner, Handle hndl, const char[] error, any
 	CalculatePlayerRank(data);
 }
 
-public RecalcPlayerRank(client, char steamid[128])
+public void RecalcPlayerRank(int client, char steamid[128])
 {
 	int i = 66;
 	while (g_bProfileRecalc[i] == true)
@@ -1213,7 +1213,7 @@ public RecalcPlayerRank(client, char steamid[128])
 //	- if client > MAXPLAYERS, his rank is being recalculated by an admin
 //	- else player has increased his rank = recalculate points	
 //
-public CalculatePlayerRank(client)
+public void CalculatePlayerRank(int client)
 {
 
 	char szQuery[255];      
@@ -1234,7 +1234,7 @@ public CalculatePlayerRank(client)
 // Fetched values:
 // multiplier
 //
-public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1304,7 +1304,7 @@ public sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char[] er
 // 3. Counting points gained from challenges
 // Fetched values:
 // steamid, bet
-public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1355,7 +1355,7 @@ public sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const char[] 
 // Fetched values
 // mapname, rank, total
 //
-public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1424,7 +1424,7 @@ public sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char[] er
 // Fetching:
 // mapname, rank, total
 //
-public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1497,7 +1497,7 @@ public sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 //
 // 6. Updating points to database
 //
-public db_updatePoints(client)
+public void db_updatePoints(int client)
 {
 	char szQuery[512];
 	char szName[MAX_NAME_LENGTH*2+1];	
@@ -1524,7 +1524,7 @@ public db_updatePoints(client)
 //
 // 7. Calculations done, if calculating all, move forward, if not announce changes.
 //
-public sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1610,7 +1610,7 @@ public sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const char[
 //
 // Called when player joins server
 //
-public db_viewPlayerPoints(client) 
+public void db_viewPlayerPoints(int client) 
 {
 	g_pr_multiplier[client] = 0;
 	g_pr_finishedmaps[client] = 0;
@@ -1625,7 +1625,7 @@ public db_viewPlayerPoints(client)
 	SQL_TQuery(g_hDb, db_viewPlayerPointsCallback, szQuery,client,DBPrio_Low);	
 }
 
-public db_viewPlayerPointsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void db_viewPlayerPointsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1674,7 +1674,7 @@ public db_viewPlayerPointsCallback(Handle owner, Handle hndl, const char[] error
 //
 // Get the amount of palyers, who have more points
 //
-public db_GetPlayerRank(client)
+public void db_GetPlayerRank(int client)
 {
 	char szQuery[512];
 	//"SELECT name FROM ck_playerrank WHERE points >= (SELECT points FROM ck_playerrank WHERE steamid = '%s') ORDER BY points";
@@ -1682,7 +1682,7 @@ public db_GetPlayerRank(client)
 	SQL_TQuery(g_hDb, sql_selectRankedPlayersRankCallback, szQuery, client,DBPrio_Low);		
 }
 
-public sql_selectRankedPlayersRankCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectRankedPlayersRankCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -1709,7 +1709,7 @@ public sql_selectRankedPlayersRankCallback(Handle owner, Handle hndl, const char
 		db_viewPlayerOptions(client, g_szSteamID[client]);	
 }
 
-public db_resetPlayerRecords(client, char steamid[128])
+public void db_resetPlayerRecords(int client, char steamid[128])
 {
 	char szQuery[255];    
 	char szsteamid[128*2+1];
@@ -1735,7 +1735,7 @@ public db_resetPlayerRecords(client, char steamid[128])
 	}
 }
 
-public db_dropPlayerRanks(client)
+public void db_dropPlayerRanks(int client)
 {
 	SQL_LockDatabase(g_hDb);
 	if(g_DbType == MYSQL)
@@ -1748,7 +1748,7 @@ public db_dropPlayerRanks(client)
 	PrintToConsole(client, "playerranks table dropped. Please restart your server!");
 }
 
-public db_dropPlayer(client)
+public void db_dropPlayer(int client)
 {
 	SQL_TQuery(g_hDb, sql_selectMutliplierCallback, "UPDATE ck_playerrank SET multiplier ='0'", client);
 	SQL_LockDatabase(g_hDb);
@@ -1762,7 +1762,7 @@ public db_dropPlayer(client)
 	PrintToConsole(client, "playertimes table dropped. Please restart your server!");
 }
 
-public db_viewPlayerRank(client, char szSteamId[32])
+public void db_viewPlayerRank(int client, char szSteamId[32])
 {
 	char szQuery[512];  
 	Format(g_pr_szrank[client], 512, "");	
@@ -1770,7 +1770,7 @@ public db_viewPlayerRank(client, char szSteamId[32])
 	SQL_TQuery(g_hDb, SQL_ViewRankedPlayerCallback, szQuery, client,DBPrio_Low);
 }
 
-public SQL_ViewRankedPlayerCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRankedPlayerCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1812,7 +1812,7 @@ public SQL_ViewRankedPlayerCallback(Handle owner, Handle hndl, const char[] erro
 
 
 
-public SQL_ViewRankedPlayerCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRankedPlayerCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1836,7 +1836,7 @@ public SQL_ViewRankedPlayerCallback2(Handle owner, Handle hndl, const char[] err
 	}
 }
 
-public SQL_ViewRankedPlayerCallback4(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRankedPlayerCallback4(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -1858,7 +1858,7 @@ public SQL_ViewRankedPlayerCallback4(Handle owner, Handle hndl, const char[] err
 	SQL_TQuery(g_hDb, SQL_ViewRankedPlayerCallback5, szQuery, data,DBPrio_Low);		
 }
 
-public SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2060,7 +2060,7 @@ public SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[] err
 	g_bProfileSelected[client] = true;
 }
 
-public db_viewPlayerRank2(client, char szSteamId[32])
+public void db_viewPlayerRank2(int client, char szSteamId[32])
 {
 	char szQuery[512];  
 	Format(g_pr_szrank[client], 512, "");	
@@ -2068,7 +2068,7 @@ public db_viewPlayerRank2(client, char szSteamId[32])
 	SQL_TQuery(g_hDb, SQL_ViewRankedPlayer2Callback, szQuery, client,DBPrio_Low);
 }
 
-public SQL_ViewRankedPlayer2Callback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRankedPlayer2Callback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2095,7 +2095,7 @@ public SQL_ViewRankedPlayer2Callback(Handle owner, Handle hndl, const char[] err
 	}
 }
 
-public db_viewPlayerAll2(client, char szPlayerName[MAX_NAME_LENGTH])
+public void db_viewPlayerAll2(int client, char szPlayerName[MAX_NAME_LENGTH])
 {
 	char szQuery[512];
 	char szName[MAX_NAME_LENGTH*2+1];
@@ -2107,7 +2107,7 @@ public db_viewPlayerAll2(client, char szPlayerName[MAX_NAME_LENGTH])
 	SQL_TQuery(g_hDb, SQL_ViewPlayerAll2Callback, szQuery, pack,DBPrio_Low);
 }
 
-public SQL_ViewPlayerAll2Callback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewPlayerAll2Callback(Handle owner, Handle hndl, const char[] error,  any data)
 {  
 
 	if(hndl == null)
@@ -2140,7 +2140,7 @@ public SQL_ViewPlayerAll2Callback(Handle owner, Handle hndl, const char[] error,
 
 
 
-public db_viewPlayerAll(client, char szPlayerName[MAX_NAME_LENGTH])
+public void db_viewPlayerAll(int client, char szPlayerName[MAX_NAME_LENGTH])
 {
 	char szQuery[512];
 	char szName[MAX_NAME_LENGTH*2+1];
@@ -2150,7 +2150,7 @@ public db_viewPlayerAll(client, char szPlayerName[MAX_NAME_LENGTH])
 }
 
 
-public SQL_ViewPlayerAllCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewPlayerAllCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {    
 	if(hndl == null)
 	{
@@ -2168,7 +2168,7 @@ public SQL_ViewPlayerAllCallback(Handle owner, Handle hndl, const char[] error, 
 			PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN,WHITE, g_szProfileName[data]);
 }
 
-public ContinueRecalc(client)
+public void ContinueRecalc(int client)
 {
 	//ON RECALC ALL
 	if (client > MAXPLAYERS)
@@ -2207,14 +2207,14 @@ public ContinueRecalc(client)
 //// CHALLENGES ///////////
 ///////////////////////////
 
-public db_selectTopChallengers(client)
+public void db_selectTopChallengers(int client)
 {
 	char szQuery[128];       
 	Format(szQuery, 128, sql_selectTopChallengers);   
 	SQL_TQuery(g_hDb, sql_selectTopChallengersCallback, szQuery, client,DBPrio_Low);
 }
 
-public sql_selectTopChallengersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectTopChallengersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2290,7 +2290,7 @@ public sql_selectTopChallengersCallback(Handle owner, Handle hndl, const char[] 
 	}
 }
 
-public db_resetPlayerResetChallenges(client, char steamid[128])
+public void db_resetPlayerResetChallenges(int client, char steamid[128])
 {
 	char szQuery[255];
 	char szsteamid[128*2+1];
@@ -2303,7 +2303,7 @@ public db_resetPlayerResetChallenges(client, char steamid[128])
 	PrintToConsole(client, "won challenges cleared (%s)", szsteamid);
 }
 
-public db_dropChallenges(client)
+public void db_dropChallenges(int client)
 {
 	SQL_TQuery(g_hDb, SQL_CheckCallback, "UPDATE ck_playerrank SET winratio = '0',pointsratio = '0'", client);
 	SQL_LockDatabase(g_hDb);
@@ -2316,7 +2316,7 @@ public db_dropChallenges(client)
 	PrintToConsole(client, "challenge table dropped. Please restart your server!");
 }
 
-public TopChallengeHandler1(Handle menu, MenuAction:action, param1, param2)
+public int TopChallengeHandler1(Handle menu, MenuAction action, int param1, int param2)
 {
 
 	if (action ==  MenuAction_Select)
@@ -2337,7 +2337,7 @@ public TopChallengeHandler1(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public TopTpHoldersHandler1(Handle menu, MenuAction:action, param1, param2)
+public int TopTpHoldersHandler1(Handle menu, MenuAction action, int param1, int param2)
 {
 
 	if (action ==  MenuAction_Select)
@@ -2357,7 +2357,7 @@ public TopTpHoldersHandler1(Handle menu, MenuAction:action, param1, param2)
 		CloseHandle(menu);
 	}
 }
-public TopProHoldersHandler1(Handle menu, MenuAction:action, param1, param2)
+public int TopProHoldersHandler1(Handle menu, MenuAction action, int param1, int param2)
 {
 
 	if (action ==  MenuAction_Select)
@@ -2378,7 +2378,7 @@ public TopProHoldersHandler1(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public db_viewChallengeHistory(client, char szSteamId[32])
+public void db_viewChallengeHistory(int client, char szSteamId[32])
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectChallenges2, szSteamId, szSteamId);  
@@ -2396,7 +2396,7 @@ public db_viewChallengeHistory(client, char szSteamId[32])
 	ProfileMenu(client, -1);
 }
 
-public sql_selectChallengesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectChallengesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2480,7 +2480,7 @@ public sql_selectChallengesCallback(Handle owner, Handle hndl, const char[] erro
 	}
 }
 
-public sql_selectChallengesCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectChallengesCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2538,7 +2538,7 @@ public sql_selectChallengesCallback2(Handle owner, Handle hndl, const char[] err
 		PrintToConsole(client,"(%s) %s vs. %s, map: %s, bet: %i, result: %s", szDate, szNameTarget, szNameOpponent, szMapName, bet, szCps, szResult);
 }
 
-public sql_selectChallengesCompareCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectChallengesCompareCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2629,7 +2629,7 @@ public sql_selectChallengesCompareCallback(Handle owner, Handle hndl, const char
 		PrintToChat(client,"[%cCK%c] No challenges againgst %s found", szName);
 }
 
-public db_insertPlayerChallenge(client)
+public void db_insertPlayerChallenge(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -2641,7 +2641,7 @@ public db_insertPlayerChallenge(client)
 	SQL_TQuery(g_hDb, sql_insertChallengesCallback, szQuery,client,DBPrio_Low);
 }
 
-public sql_insertChallengesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_insertChallengesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2669,7 +2669,7 @@ public sql_insertChallengesCallback(Handle owner, Handle hndl, const char[] erro
 // PLAYERTIMES ////
 ///////////////////
 
-public db_resetPlayerMapRecord(client, char steamid[128], char szMapName[128])
+public void db_resetPlayerMapRecord(int client, char steamid[128], char szMapName[128])
 {
 	char szQuery[255];
 	char szQuery2[255];
@@ -2702,7 +2702,7 @@ public db_resetPlayerMapRecord(client, char steamid[128], char szMapName[128])
 	} 
 }
 
-public db_resetPlayerRecords2(client, char steamid[128], char szMapName[128])
+public void db_resetPlayerRecords2(int client, char steamid[128], char szMapName[128])
 {
 	char szQuery[255];      
 	char szsteamid[128*2+1];
@@ -2732,7 +2732,7 @@ public db_resetPlayerRecords2(client, char steamid[128], char szMapName[128])
 	}
 }
 
-public db_GetMapRecord_Pro()
+public void db_GetMapRecord_Pro()
 {
 	g_fRecordMapTime=9999999.0;
 	char szQuery[512];      
@@ -2740,7 +2740,7 @@ public db_GetMapRecord_Pro()
 	SQL_TQuery(g_hDb, sql_selectMapRecordProCallback, szQuery,DBPrio_Low);
 }
 
-public sql_selectMapRecordProCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectMapRecordProCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2776,7 +2776,7 @@ public sql_selectMapRecordProCallback(Handle owner, Handle hndl, const char[] er
 }
 
 
-public sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectProSurfersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -2820,7 +2820,7 @@ public sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[] erro
 	DisplayMenu(menu, data, MENU_TIME_FOREVER);
 }
 
-public db_selectTopSurfers(client, char mapname[128])
+public void db_selectTopSurfers(int client, char mapname[128])
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectTopSurfers, mapname);  
@@ -2830,7 +2830,7 @@ public db_selectTopSurfers(client, char mapname[128])
 	SQL_TQuery(g_hDb, sql_selectTopSurfersCallback, szQuery, pack,DBPrio_Low);
 }
 
-public db_selectMapTopSurfers(client, char mapname[128])
+public void db_selectMapTopSurfers(int client, char mapname[128])
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectTopSurfers2, PERCENT,mapname,PERCENT);
@@ -2843,7 +2843,7 @@ public db_selectMapTopSurfers(client, char mapname[128])
 
 //// BONUS //////////'
 
-public db_selectBonusesInMap(client, char mapname[128])
+public void db_selectBonusesInMap(int client, char mapname[128])
 {
 	// SELECT mapname, zonegroup, zonename FROM `ck_zones` WHERE mapname LIKE '%c%s%c' AND zonegroup > 0 GROUP BY zonegroup;
 	char szQuery[512];
@@ -2851,7 +2851,7 @@ public db_selectBonusesInMap(client, char mapname[128])
 	SQL_TQuery(g_hDb, db_selectBonusesInMapCallback, szQuery, client, DBPrio_Low);
 }
 
-public db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[] error, any client)
+public void db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -2910,7 +2910,7 @@ public db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[] err
 	}
 }
 
-public MenuHandler_SelectBonusinMap(Handle sMenu, MenuAction action, client, item)
+public int MenuHandler_SelectBonusinMap(Handle sMenu, MenuAction action, int client, int item)
 {
 	switch(action)
 	{
@@ -2932,7 +2932,7 @@ public MenuHandler_SelectBonusinMap(Handle sMenu, MenuAction action, client, ite
 
 
 
-public db_selectBonusTopSurfers(client, char mapname[128], zGrp)
+public void db_selectBonusTopSurfers(int client, char mapname[128], int zGrp)
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectTopBonusSurfers, PERCENT,mapname,PERCENT, zGrp);
@@ -2943,7 +2943,7 @@ public db_selectBonusTopSurfers(client, char mapname[128], zGrp)
 	SQL_TQuery(g_hDb, sql_selectTopBonusSurfersCallback, szQuery, pack,DBPrio_Low);
 }
 
-public sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const char[] error, any data)
+public void SQL_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const char[] error, any data)
 {
 	if(hndl == null)
 	{
@@ -3024,7 +3024,7 @@ public sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const char[]
 	CloseHandle(stringArray);
 }
 
-public sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectTopSurfersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3107,14 +3107,14 @@ public sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[] erro
 	CloseHandle(stringArray);
 }
 
-public db_selectProSurfers(client)
+public void db_selectProSurfers(int client)
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectProSurfers, g_szMapName);   		
 	SQL_TQuery(g_hDb, sql_selectProSurfersCallback, szQuery, client,DBPrio_Low);
 }
 
-public db_currentRunRank(client)
+public void db_currentRunRank(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -3127,7 +3127,7 @@ public db_currentRunRank(client)
 //
 // Get clients record from database
 //
-public db_selectRecord(client)
+public void db_selectRecord(int client)
 {
 	if (!IsValidClient(client))
 		return;
@@ -3138,7 +3138,7 @@ public db_selectRecord(client)
 	SQL_TQuery(g_hDb, sql_selectRecordCallback, szQuery, client,DBPrio_Low);
 }
 
-public sql_selectRecordCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectRecordCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3189,7 +3189,7 @@ public sql_selectRecordCallback(Handle owner, Handle hndl, const char[] error, a
 //
 // If latest record was faster than old - Update time
 //
-public db_updateRecordPro(client)
+public void db_updateRecordPro(int client)
 {
 	char szUName[MAX_NAME_LENGTH];
 
@@ -3218,7 +3218,7 @@ public db_updateRecordPro(client)
 }
 
 
-public SQL_UpdateRecordProCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_UpdateRecordProCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3244,7 +3244,7 @@ public SQL_UpdateRecordProCallback(Handle owner, Handle hndl, const char[] error
 	}
 }
 
-public SQL_UpdateRecordProCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_UpdateRecordProCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3263,7 +3263,7 @@ public SQL_UpdateRecordProCallback2(Handle owner, Handle hndl, const char[] erro
 	db_viewMapRankPro(data, rank);
 }
 
-public db_viewRecord(client, char szSteamId[32], char szMapName[128])
+public void db_viewRecord(int client, char szSteamId[32], char szMapName[128])
 {
 	char szQuery[512];       
 	Format(szQuery, 512, sql_selectPersonalRecords, szSteamId, szMapName);  
@@ -3272,7 +3272,7 @@ public db_viewRecord(client, char szSteamId[32], char szMapName[128])
 
 
 
-public SQL_ViewRecordCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRecordCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3316,7 +3316,7 @@ public SQL_ViewRecordCallback(Handle owner, Handle hndl, const char[] error, any
 	}
 }
 
-public SQL_ViewRecordCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRecordCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3344,7 +3344,7 @@ public SQL_ViewRecordCallback2(Handle owner, Handle hndl, const char[] error, an
 }
 
 
-public SQL_ViewRecordCallback3(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRecordCallback3(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3403,7 +3403,7 @@ public SQL_ViewRecordCallback3(Handle owner, Handle hndl, const char[] error, an
         }
 }
 
-public SQL_ViewRecordCallback4(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRecordCallback4(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3427,7 +3427,7 @@ public SQL_ViewRecordCallback4(Handle owner, Handle hndl, const char[] error, an
 	}
 }
 
-public SQL_ViewRecordCallback5(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewRecordCallback5(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3484,7 +3484,7 @@ public SQL_ViewRecordCallback5(Handle owner, Handle hndl, const char[] error, an
 	CloseHandle(data);
 }
 
-public db_viewAllRecords(client, char szSteamId[32])
+public void db_viewAllRecords(int client, char szSteamId[32])
 {
 	char szQuery[1024];       
 	Format(szQuery, 1024, sql_selectPersonalAllRecords, szSteamId, szSteamId);  
@@ -3497,7 +3497,7 @@ public db_viewAllRecords(client, char szSteamId[32])
 }
 
 
-public SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3600,7 +3600,7 @@ public SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] error,
 	}
 }
 
-public SQL_ViewAllRecordsCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewAllRecordsCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3629,7 +3629,7 @@ public SQL_ViewAllRecordsCallback2(Handle owner, Handle hndl, const char[] error
 	}
 }
 
-public SQL_ViewAllRecordsCallback3(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewAllRecordsCallback3(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3664,7 +3664,7 @@ public SQL_ViewAllRecordsCallback3(Handle owner, Handle hndl, const char[] error
 }	
 
 
-public db_selectPlayer(client)
+public void db_selectPlayer(int client)
 {
 	char szQuery[255];
 	if (!IsValidClient(client))
@@ -3673,7 +3673,7 @@ public db_selectPlayer(client)
 	SQL_TQuery(g_hDb, SQL_SelectPlayerCallback, szQuery, client,DBPrio_Low);
 }
 
-public SQL_SelectPlayerCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_SelectPlayerCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3685,7 +3685,7 @@ public SQL_SelectPlayerCallback(Handle owner, Handle hndl, const char[] error, a
 		db_insertPlayer(data);
 }
 
-public db_insertPlayer(client)
+public void db_insertPlayer(int client)
 {
 	char szQuery[255];
 	char szUName[MAX_NAME_LENGTH];
@@ -3701,7 +3701,7 @@ public db_insertPlayer(client)
 	SQL_TQuery(g_hDb, SQL_InsertPlayerCallback, szQuery,client,DBPrio_Low);
 }
 
-public SQL_InsertPlayerCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_InsertPlayerCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3713,7 +3713,7 @@ public SQL_InsertPlayerCallback(Handle owner, Handle hndl, const char[] error, a
 //
 // Getting player settings starts here
 //
-public db_viewPersonalRecords(client, char szSteamId[32], char szMapName[128])
+public void db_viewPersonalRecords(int client, char szSteamId[32], char szMapName[128])
 {
 	char szQuery[1024];
 	Format(szQuery, 1024, "SELECT runtimepro FROM ck_playertimes WHERE steamid = '%s' AND mapname ='%s' AND runtimepro > 0.0;", szSteamId, szMapName);
@@ -3721,7 +3721,7 @@ public db_viewPersonalRecords(client, char szSteamId[32], char szMapName[128])
 }
 	
 
-public SQL_selectPersonalRecordsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectPersonalRecordsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -3769,7 +3769,7 @@ public SQL_selectPersonalRecordsCallback(Handle owner, Handle hndl, const char[]
 //// PLAYER TEMP //////
 ///////////////////////
 
-public db_deleteTmp(client)
+public void db_deleteTmp(int client)
 {
 	char szQuery[256];
 	if (!IsValidClient(client))
@@ -3778,7 +3778,7 @@ public db_deleteTmp(client)
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, client,DBPrio_Low);
 }
 
-public db_selectLastRun(client)
+public void db_selectLastRun(int client)
 {
 	char szQuery[512];
 	if (!IsValidClient(client))
@@ -3787,7 +3787,7 @@ public db_selectLastRun(client)
 	SQL_TQuery(g_hDb, SQL_LastRunCallback, szQuery, client,DBPrio_Low);
 }
 
-public SQL_LastRunCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_LastRunCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3871,7 +3871,7 @@ public SQL_LastRunCallback(Handle owner, Handle hndl, const char[] error, any:da
 
 
 
-public db_viewRecordCheckpointInMap()
+public void db_viewRecordCheckpointInMap()
 {
 	for (int k = 0; k < MAXZONEGROUPS; k++)
 	{
@@ -3886,7 +3886,7 @@ public db_viewRecordCheckpointInMap()
 	SQL_TQuery(g_hDb, sql_selectRecordCheckpointsCallback, szQuery, 1, DBPrio_Low);
 }
 
-public sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -3916,7 +3916,7 @@ public sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const char
 	return;
 }
 
-public db_viewCheckpoints(client, char szSteamID[32], char szMapName[128])
+public void db_viewCheckpoints(int client, char szSteamID[32], char szMapName[128])
 {
 	char szQuery[1024];
  	//"SELECT zonegroup, cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s';";
@@ -3924,7 +3924,7 @@ public db_viewCheckpoints(client, char szSteamID[32], char szMapName[128])
 	SQL_TQuery(g_hDb, SQL_selectCheckpointsCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -3954,7 +3954,7 @@ public SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 		g_bSettingsLoaded[client] = true;
 }
 
-public db_viewCheckpointsinZoneGroup(client, char szSteamID[32], char szMapName[128], int zonegroup)
+public void db_viewCheckpointsinZoneGroup(int client, char szSteamID[32], char szMapName[128], int zonegroup)
 {
 	char szQuery[1024];
 	//"SELECT cp1, cp2, cp3, cp4, cp5, cp6, cp7, cp8, cp9, cp10, cp11, cp12, cp13, cp14, cp15, cp16, cp17, cp18, cp19, cp20, cp21, cp22, cp23, cp24, cp25, cp26, cp27, cp28, cp29, cp30, cp31, cp32, cp33, cp34, cp35 FROM ck_checkpoints WHERE mapname='%s' AND steamid = '%s' AND zonegroup = %i;";
@@ -3966,7 +3966,7 @@ public db_viewCheckpointsinZoneGroup(client, char szSteamID[32], char szMapName[
 	SQL_TQuery(g_hDb, db_viewCheckpointsinZoneGroupCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_viewCheckpointsinZoneGroupCallback(Handle owner, Handle hndl, const char[] error, any:pack)
+public void db_viewCheckpointsinZoneGroupCallback(Handle owner, Handle hndl, const char[] error, any pack)
 {
 	if(hndl == null)
 	{
@@ -3998,7 +3998,7 @@ public db_viewCheckpointsinZoneGroupCallback(Handle owner, Handle hndl, const ch
 
 
 
-public db_UpdateCheckpoints(client, char szSteamID[32], zGroup)
+public void db_UpdateCheckpoints(int client, char szSteamID[32], int zGroup)
 {
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
@@ -4017,7 +4017,7 @@ public db_UpdateCheckpoints(client, char szSteamID[32], zGroup)
 	}
 }
 
-public SQL_updateCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_updateCheckpointsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4032,14 +4032,14 @@ public SQL_updateCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 	db_viewCheckpointsinZoneGroup(client, g_szSteamID[client], g_szMapName, zonegrp);
 }
 
-public db_deleteCheckpoints()
+public void db_deleteCheckpoints()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_deleteCheckpoints, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_deleteCheckpointsCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_deleteCheckpointsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteCheckpointsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4066,7 +4066,7 @@ public SQL_deleteCheckpointsCallback(Handle owner, Handle hndl, const char[] err
 //// MapTier /////////
 //////////////////////
 
-public db_insertMapTier(tier, zGrp)
+public void db_insertMapTier(int tier, int zGrp)
 {
 	char szQuery[256];
 	if (g_bTierEntryFound)
@@ -4095,7 +4095,7 @@ public db_insertMapTier(tier, zGrp)
 	}
 }
 
-public db_insertMapTierCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_insertMapTierCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4106,7 +4106,7 @@ public db_insertMapTierCallback(Handle owner, Handle hndl, const char[] error, a
 	db_selectMapTier();
 }
 
-public db_selectMapTier()
+public void db_selectMapTier()
 {
 	g_bTierEntryFound = false;
 
@@ -4115,7 +4115,7 @@ public db_selectMapTier()
 	SQL_TQuery(g_hDb, SQL_selectMapTierCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4186,14 +4186,14 @@ public SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] error, 
 }
 
 
-public db_deleteAllMaptiers(client)
+public void db_deleteAllMaptiers(int client)
 {
 	char szQuery[128];
 	Format(szQuery, 128, sql_deleteAllMapTiers);
 	SQL_TQuery(g_hDb, SQL_deleteAllMapTiersCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_deleteAllMapTiersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteAllMapTiersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4205,27 +4205,10 @@ public SQL_deleteAllMapTiersCallback(Handle owner, Handle hndl, const char[] err
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /////////////////////
 //// SQL Bonus //////
 /////////////////////
-
-
-public db_viewMapRankBonus(client, zgroup, type)
+public void db_viewMapRankBonus(int client, int zgroup, int type)
 {
 	char szQuery[1024];
 	Handle pack = CreateDataPack();
@@ -4237,7 +4220,7 @@ public db_viewMapRankBonus(client, zgroup, type)
 	SQL_TQuery(g_hDb, db_viewMapRankBonusCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_viewMapRankBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_viewMapRankBonusCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4275,7 +4258,7 @@ public db_viewMapRankBonusCallback(Handle owner, Handle hndl, const char[] error
 //
 // Get player rank in bonus - current map
 //
-public	db_viewPersonalBonusRecords(client, char szSteamId[32])
+public void db_viewPersonalBonusRecords(int client, char szSteamId[32])
 {
 	char szQuery[1024];
 	//"SELECT runtime, zonegroup FROM ck_bonus WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'"; 
@@ -4283,7 +4266,7 @@ public	db_viewPersonalBonusRecords(client, char szSteamId[32])
 	SQL_TQuery(g_hDb, SQL_selectPersonalBonusRecordsCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -4325,7 +4308,7 @@ public SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, const c
 	return;
 }
 
-public db_viewFastestBonus()
+public void db_viewFastestBonus()
 {
 	char szQuery[1024];
 	//"SELECT name, runtime, zonegroup FROM ck_bonus WHERE mapname = '%s' GROUP BY zonegroup ORDER BY runtime ASC;";
@@ -4333,7 +4316,7 @@ public db_viewFastestBonus()
 	SQL_TQuery(g_hDb, SQL_selectFastestBonusCallback, szQuery, 1, DBPrio_High);
 }
 
-public SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4376,13 +4359,13 @@ public SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char[] er
 	return;
 }
 
-public db_deleteBonus()
+public void db_deleteBonus()
 {
 	char szQuery[1024];
 	Format(szQuery, 1024, sql_deleteBonus, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_deleteBonusCallback, szQuery, 1, DBPrio_Low);
 }
-public db_viewBonusTotalCount()
+public void db_viewBonusTotalCount()
 {
 	char szQuery[1024];
 	//"SELECT zonegroup, count(1) FROM ck_bonus WHERE mapname = '%s' GROUP BY zonegroup";
@@ -4390,7 +4373,7 @@ public db_viewBonusTotalCount()
 	SQL_TQuery(g_hDb, SQL_selectBonusTotalCountCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4420,7 +4403,7 @@ public SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const char[]
 }
 
 	
-public db_insertBonus(client, char szSteamId[32], char szUName[32], float FinalTime, zoneGrp)
+public void db_insertBonus(int client, char szSteamId[32], char szUName[32], float FinalTime, int zoneGrp)
 {
 	char szQuery[1024];
 	char szName[MAX_NAME_LENGTH*2+1];
@@ -4432,7 +4415,7 @@ public db_insertBonus(client, char szSteamId[32], char szUName[32], float FinalT
 	SQL_TQuery(g_hDb, SQL_insertBonusCallback, szQuery, pack, DBPrio_Low);
 }
 
-public SQL_insertBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_insertBonusCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4450,7 +4433,7 @@ public SQL_insertBonusCallback(Handle owner, Handle hndl, const char[] error, an
 	CalculatePlayerRank(client);
 }	
 
-public db_updateBonus(client, char szSteamId[32], char szUName[32], float FinalTime, zoneGrp)
+public void db_updateBonus(int client, char szSteamId[32], char szUName[32], float FinalTime, int zoneGrp)
 {
 	char szQuery[1024];
 	char szName[MAX_NAME_LENGTH*2+1];
@@ -4463,7 +4446,7 @@ public db_updateBonus(client, char szSteamId[32], char szUName[32], float FinalT
 }
 
 
-public SQL_updateBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_updateBonusCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4481,7 +4464,7 @@ public SQL_updateBonusCallback(Handle owner, Handle hndl, const char[] error, an
 	CalculatePlayerRank(client);
 }
 
-public SQL_deleteBonusCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteBonusCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4490,14 +4473,14 @@ public SQL_deleteBonusCallback(Handle owner, Handle hndl, const char[] error, an
 	}
 }
 
-public db_selectBonusCount()
+public void db_selectBonusCount()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_selectTotalBonusCount);
 	SQL_TQuery(g_hDb, SQL_selectBonusCountCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4545,7 +4528,7 @@ public SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[] erro
 //// SQL Zones /////////////
 ////////////////////////////
 
-public db_setZoneNames(int client, char szName[128])
+public void db_setZoneNames(int client, char szName[128])
 {
 	char szQuery[512], szEscapedName[128*2+1];
 	SQL_EscapeString(g_hDb, szName, szEscapedName, 128*2+1);
@@ -4558,7 +4541,7 @@ public db_setZoneNames(int client, char szName[128])
 	SQL_TQuery(g_hDb, sql_setZoneNamesCallback, szQuery, pack, DBPrio_Low);
 }
 
-public sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_setZoneNamesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4588,7 +4571,7 @@ public sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] error, a
 	db_selectMapZones();
 }
 
-public db_checkAndFixZoneIds()
+public void db_checkAndFixZoneIds()
 {
 	char szQuery[128];
 	//"SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
@@ -4599,7 +4582,7 @@ public db_checkAndFixZoneIds()
 	SQL_TQuery(g_hDb, db_checkAndFixZoneIdsCallback, szQuery, 1, DBPrio_Low);
 }
 
-public db_checkAndFixZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_checkAndFixZoneIdsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4651,14 +4634,14 @@ public db_checkAndFixZoneIdsCallback(Handle owner, Handle hndl, const char[] err
 	db_selectMapZones();
 }
 
-public db_deleteAllZones(client)
+public void db_deleteAllZones(int client)
 {
 	char szQuery[128];
 	Format(szQuery, 128, sql_deleteAllZones);
 	SQL_TQuery(g_hDb, SQL_deleteAllZonesCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_deleteAllZonesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteAllZonesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4669,7 +4652,7 @@ public SQL_deleteAllZonesCallback(Handle owner, Handle hndl, const char[] error,
 	Admin_InsertZonestoDatabase(data);
 }
 
-public ZoneDefaultName(zonetype, zonegroup, char zName[128]) 
+public void ZoneDefaultName(int zonetype, int zonegroup, char zName[128]) 
 {
 	if (zonegroup > 0)
 	{
@@ -4682,7 +4665,7 @@ public ZoneDefaultName(zonetype, zonegroup, char zName[128])
 			Format(zName, 64, "Unknown");
 }
 
-public db_insertZoneCheap(zoneid, zonetype, zonetypeid, float pointax, float pointay, float pointaz, float pointbx, float pointby, float pointbz, vis, team, zGrp, char zName[128], query)
+public void db_insertZoneCheap(int zoneid, int zonetype, int zonetypeid, float pointax, float pointay, float pointaz, float pointbx, float pointby, float pointbz, int vis, int team, int zGrp, char zName[128], int query)
 {
 	char szQuery[1024];
 	//"INSERT INTO ck_zones (mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename) VALUES ('%s', '%i', '%i', '%i', '%f', '%f', '%f', '%f', '%f', '%f', '%i', '%i', '%i', '%s')";
@@ -4690,7 +4673,7 @@ public db_insertZoneCheap(zoneid, zonetype, zonetypeid, float pointax, float poi
 	SQL_TQuery(g_hDb, SQL_insertZonesCheapCallback, szQuery, query, DBPrio_Low);
 }
 
-public SQL_insertZonesCheapCallback(Handle owner, Handle hndl, const char[] error, any:query)
+public void SQL_insertZonesCheapCallback(Handle owner, Handle hndl, const char[] error, any query)
 {
 	if(hndl == null)
 	{
@@ -4702,7 +4685,7 @@ public SQL_insertZonesCheapCallback(Handle owner, Handle hndl, const char[] erro
 		db_selectMapZones();
 }
 
-public db_insertZone(zoneid, zonetype, zonetypeid, float pointax, float pointay, float pointaz, float pointbx, float pointby, float pointbz, vis, team, zonegroup)
+public void db_insertZone(int zoneid, int zonetype, int zonetypeid, float pointax, float pointay, float pointaz, float pointbx, float pointby, float pointbz, int vis, int team, int zonegroup)
 {
 	char szQuery[1024];
 	char zName[128];
@@ -4717,7 +4700,7 @@ public db_insertZone(zoneid, zonetype, zonetypeid, float pointax, float pointay,
 	SQL_TQuery(g_hDb, SQL_insertZonesCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_insertZonesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_insertZonesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4730,14 +4713,14 @@ public SQL_insertZonesCallback(Handle owner, Handle hndl, const char[] error, an
 	db_selectMapZones();
 }
 
-public db_saveZones()
+public void db_saveZones()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_deleteMapZones, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_saveZonesCallBack, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_saveZonesCallBack(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_saveZonesCallBack(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4753,14 +4736,14 @@ public SQL_saveZonesCallBack(Handle owner, Handle hndl, const char[] error, any:
 	}
 }
 
-public db_updateZone(zoneid, zonetype, zonetypeid, float[] Point1, float[] Point2, vis, team, zonegroup)
+public void db_updateZone(int zoneid, int zonetype, int zonetypeid, float[] Point1, float[] Point2, int vis, int team, int zonegroup)
 {
 	char szQuery[1024];
 	Format(szQuery, 1024, sql_updateZone, zonetype, zonetypeid, Point1[0], Point1[1], Point1[2], Point2[0], Point2[1], Point2[2], vis, team, zonegroup, zoneid, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_updateZoneCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_updateZoneCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_updateZoneCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4771,7 +4754,7 @@ public SQL_updateZoneCallback(Handle owner, Handle hndl, const char[] error, any
 	db_selectMapZones();
 }
 
-public db_deleteZonesInGroup(client)
+public void db_deleteZonesInGroup(int client)
 {
 	char szQuery[258];
 	Handle pack = CreateDataPack();
@@ -4781,7 +4764,7 @@ public db_deleteZonesInGroup(client)
 	SQL_TQuery(g_hDb, db_deleteZonesInGroupCallback, szQuery, pack, DBPrio_Low);
 }
 
-public db_deleteZonesInGroupCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_deleteZonesInGroupCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4798,7 +4781,7 @@ public db_deleteZonesInGroupCallback(Handle owner, Handle hndl, const char[] err
 	Format(szQuery, 258, "UPDATE ck_zones SET zonegroup = (zonegroup-1) WHERE zonegroup > %i", zgroup);
 	SQL_TQuery(g_hDb, db_deleteZonesInGroupCallback2, szQuery, client, DBPrio_Low);
 }
-public db_deleteZonesInGroupCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_deleteZonesInGroupCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4814,14 +4797,14 @@ public db_deleteZonesInGroupCallback2(Handle owner, Handle hndl, const char[] er
 		PrintToChat(data, "[%cCK%c] Zone group deleted.", MOSSGREEN, WHITE);
 	}
 }
-public db_selectzoneTypeIds(zonetype, client, zonegrp)
+public void db_selectzoneTypeIds(int zonetype, int client, int zonegrp)
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_selectzoneTypeIds, g_szMapName, zonetype, zonegrp);
 	SQL_TQuery(g_hDb, SQL_selectzoneTypeIdsCallback, szQuery, client, DBPrio_Low);
 }
 
-public SQL_selectzoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectzoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4883,7 +4866,7 @@ public checkZoneTypeIds()
 	SQL_TQuery(g_hDb, checkZoneTypeIdsCallback, szQuery, 1, DBPrio_High);
 }
 
-public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4926,7 +4909,7 @@ public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, a
 	}
 }
 
-public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4962,7 +4945,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 	}
 }
 
-public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data)
+public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -4994,14 +4977,14 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 	}
 }
 */
-public db_selectMapZones()
+public void db_selectMapZones()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_selectMapZones, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_selectMapZonesCallback, szQuery, 1, DBPrio_High);
 }
 
-public SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5214,14 +5197,14 @@ public SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] error,
 	}
 }
 
-public db_deleteMapZones()
+public void db_deleteMapZones()
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_deleteMapZones, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_deleteMapZonesCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_deleteMapZonesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteMapZonesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5230,14 +5213,14 @@ public SQL_deleteMapZonesCallback(Handle owner, Handle hndl, const char[] error,
 	}
 }
 
-public db_deleteZone(zoneid)
+public void db_deleteZone(int zoneid)
 {
 	char szQuery[258];
 	Format(szQuery, 258, sql_deleteZone, g_szMapName, zoneid);
 	SQL_TQuery(g_hDb, SQL_deleteZoneCallback, szQuery, 1, DBPrio_Low);
 }
 
-public SQL_deleteZoneCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_deleteZoneCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {	
 	if(hndl == null)
 	{
@@ -5250,23 +5233,10 @@ public SQL_deleteZoneCallback(Handle owner, Handle hndl, const char[] error, any
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 ///////////////////////
 //// MISC /////////////
 ///////////////////////
-
-
-public db_insertLastPosition(client, char szMapName[128], stage, zgroup)
+public void db_insertLastPosition(int client, char szMapName[128], int stage, int zgroup)
 {	 
 	if(g_bRestore && !g_bRoundEnd && (StrContains(g_szSteamID[client], "STEAM_") != -1) && g_bTimeractivated[client])
 	{
@@ -5282,7 +5252,7 @@ public db_insertLastPosition(client, char szMapName[128], stage, zgroup)
 	}
 }
 
-public db_insertLastPositionCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_insertLastPositionCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5320,19 +5290,19 @@ public db_insertLastPositionCallback(Handle owner, Handle hndl, const char[] err
 	}
 }
 
-public db_deletePlayerTmps()
+public void db_deletePlayerTmps()
 {	 
 	char szQuery[64]; 
 	Format(szQuery, 64, "delete FROM ck_playertemp");
 	SQL_TQuery(g_hDb,SQL_CheckCallback,szQuery,DBPrio_Low);	
 }
 
-public db_ViewLatestRecords(client)
+public void db_ViewLatestRecords(int client)
 {
 	SQL_TQuery(g_hDb, sql_selectLatestRecordsCallback, sql_selectLatestRecords, client,DBPrio_Low);
 }
 
-public sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectLatestRecordsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5370,21 +5340,21 @@ public sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const char[] e
 }
 
 			
-public db_InsertLatestRecords(char szSteamID[32], char szName[32], float FinalTime)
+public void db_InsertLatestRecords(char szSteamID[32], char szName[32], float FinalTime)
 {
 	char szQuery[512];       
 	Format(szQuery, 512, sql_insertLatestRecords, szSteamID, szName, FinalTime, g_szMapName); 
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery,DBPrio_Low);
 }
 
-public GetDBName(client, char szSteamId[32])
+public void GetDBName(int client, char szSteamId[32])
 {
 	char szQuery[512];      
 	Format(szQuery, 512, sql_selectRankedPlayer, szSteamId); 
 	SQL_TQuery(g_hDb, GetDBNameCallback, szQuery, client,DBPrio_Low);
 }
 
-public GetDBNameCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void GetDBNameCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5399,14 +5369,14 @@ public GetDBNameCallback(Handle owner, Handle hndl, const char[] error, any:data
 	}
 }
 
-public db_CalcAvgRunTime()
+public void db_CalcAvgRunTime()
 {
 	char szQuery[256];  
 	Format(szQuery, 256, sql_selectAllMapTimesinMap, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunTimeCallback, szQuery, DBPrio_Low);
 }
 
-public SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5447,14 +5417,14 @@ public SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[] err
 	else
 		db_CalculatePlayerCount();
 }
-public db_CalcAvgRunTimeBonus()
+public void db_CalcAvgRunTimeBonus()
 {
 	char szQuery[256];  
 	Format(szQuery, 256, sql_selectAllBonusTimesinMap, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunBonusTimeCallback, szQuery, DBPrio_Low);
 }
 
-public SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5488,7 +5458,7 @@ public SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const char[
 	return;
 }
 
-public db_GetDynamicTimelimit()
+public void db_GetDynamicTimelimit()
 {
 	if (!g_bDynamicTimelimit)
 	{
@@ -5502,7 +5472,7 @@ public db_GetDynamicTimelimit()
 }
 
 
-public SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const char[] error, any:data) 
+public void SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const char[] error,  any data) 
 {   
 	if(hndl == null)
 	{
@@ -5567,14 +5537,14 @@ public SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const char[
 }
 
 
-public db_CalculatePlayerCount()
+public void db_CalculatePlayerCount()
 {
 	char szQuery[255];
 	Format(szQuery, 255, sql_CountRankedPlayers);      
 	SQL_TQuery(g_hDb, sql_CountRankedPlayersCallback, szQuery,DBPrio_Low);
 }
 
-public db_CalculatePlayersCountGreater0()
+public void db_CalculatePlayersCountGreater0()
 {
 	char szQuery[255];
 	Format(szQuery, 255, sql_CountRankedPlayers2);      
@@ -5583,7 +5553,7 @@ public db_CalculatePlayersCountGreater0()
 
 
 
-public sql_CountRankedPlayersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CountRankedPlayersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5604,7 +5574,7 @@ public sql_CountRankedPlayersCallback(Handle owner, Handle hndl, const char[] er
 	return;
 }
 
-public sql_CountRankedPlayers2Callback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CountRankedPlayers2Callback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5628,7 +5598,7 @@ public sql_CountRankedPlayers2Callback(Handle owner, Handle hndl, const char[] e
 }
 
 
-public db_ClearLatestRecords()
+public void db_ClearLatestRecords()
 {
 	if(g_DbType == MYSQL)
 		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_latestrecords WHERE date < NOW() - INTERVAL 1 WEEK", DBPrio_Low);
@@ -5639,7 +5609,7 @@ public db_ClearLatestRecords()
 		db_GetDynamicTimelimit();
 }
 
-public db_viewUnfinishedMaps(client, char szSteamId[32])
+public void db_viewUnfinishedMaps(int client, char szSteamId[32])
 {
 	char szQuery[1024];       
 	char map[128];
@@ -5671,7 +5641,7 @@ public db_viewUnfinishedMaps(client, char szSteamId[32])
 	}
 }
 
-public db_viewUnfinishedMapsCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_viewUnfinishedMapsCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5706,7 +5676,7 @@ public db_viewUnfinishedMapsCallback(Handle owner, Handle hndl, const char[] err
 	SQL_TQuery(g_hDb, SQL_viewUnfinishedBonusesCallback, szQuery, pack2, DBPrio_Low);
 }
 
-public SQL_viewUnfinishedBonusesCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_viewUnfinishedBonusesCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5768,7 +5738,7 @@ public SQL_viewUnfinishedBonusesCallback(Handle owner, Handle hndl, const char[]
 	}
 }
 
-public SQL_viewUnfinishedBonusesCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_viewUnfinishedBonusesCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5844,7 +5814,7 @@ public SQL_viewUnfinishedBonusesCallback2(Handle owner, Handle hndl, const char[
 		PrintToConsole(client, "%i unfinished bonuses", g_unfinishedBonuses[client]);
 	}}
 
-public db_viewPlayerProfile1(client, char szPlayerName[MAX_NAME_LENGTH])
+public void db_viewPlayerProfile1(int client, char szPlayerName[MAX_NAME_LENGTH])
 {
 	char szQuery[512];
 	char szName[MAX_NAME_LENGTH*2+1];
@@ -5856,7 +5826,7 @@ public db_viewPlayerProfile1(client, char szPlayerName[MAX_NAME_LENGTH])
 	SQL_TQuery(g_hDb, SQL_ViewPlayerProfile1Callback, szQuery, pack,DBPrio_Low);
 }
 
-public SQL_ViewPlayerProfile1Callback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewPlayerProfile1Callback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5886,7 +5856,7 @@ public SQL_ViewPlayerProfile1Callback(Handle owner, Handle hndl, const char[] er
 }
 
 
-public sql_selectPlayerNameCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectPlayerNameCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5914,7 +5884,7 @@ public sql_selectPlayerNameCallback(Handle owner, Handle hndl, const char[] erro
 //
 // 0. Admins counting players points starts here
 //
-public RefreshPlayerRankTable(max)
+public void RefreshPlayerRankTable(int max)
 {
 	g_pr_Recalc_ClientID=1;
 	g_pr_RankingRecalc_InProgress=true;
@@ -5925,7 +5895,7 @@ public RefreshPlayerRankTable(max)
 	SQL_TQuery(g_hDb, sql_selectRankedPlayersCallback, szQuery, max,DBPrio_Low);
 }
 
-public sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_selectRankedPlayersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -5995,7 +5965,7 @@ public sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const char[] e
 		PrintToConsole(g_pr_Recalc_AdminID, " \n>> No valid players found!");
 }
 
-public db_Cleanup()
+public void db_Cleanup()
 {
 	char szQuery[255];
 	
@@ -6007,7 +5977,7 @@ public db_Cleanup()
 	SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_playertimes where runtimepro = -1.0");
 }
 
-public db_resetMapRecords(client, char szMapName[128])
+public void db_resetMapRecords(int client, char szMapName[128])
 {
 	char szQuery[255];      
 	Format(szQuery, 255, sql_resetMapRecords, szMapName);
@@ -6027,7 +5997,7 @@ public db_resetMapRecords(client, char szMapName[128])
 	}            
 }
 
-public SQL_InsertPlayerCallBack(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_InsertPlayerCallBack(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6040,7 +6010,7 @@ public SQL_InsertPlayerCallBack(Handle owner, Handle hndl, const char[] error, a
 }
 
 
-public db_UpdateLastSeen(client)
+public void db_UpdateLastSeen(int client)
 {	 
 	if((StrContains(g_szSteamID[client], "STEAM_") != -1) && !IsFakeClient(client))
 	{
@@ -6059,7 +6029,7 @@ public db_UpdateLastSeen(client)
 ///// DEFAULT CALLBACKS /////
 /////////////////////////////
 
-public SQL_CheckCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CheckCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6069,7 +6039,7 @@ public SQL_CheckCallback(Handle owner, Handle hndl, const char[] error, any:data
 }
 
 
-public SQL_CheckCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CheckCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6081,7 +6051,7 @@ public SQL_CheckCallback2(Handle owner, Handle hndl, const char[] error, any:dat
 	db_GetMapRecord_Pro();
 }
 
-public SQL_CheckCallback3(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CheckCallback3(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6101,7 +6071,7 @@ public SQL_CheckCallback3(Handle owner, Handle hndl, const char[] error, any:dat
 	db_GetMapRecord_Pro();
 }
 
-public SQL_CheckCallback4(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_CheckCallback4(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6135,14 +6105,14 @@ public SQL_CheckCallback4(Handle owner, Handle hndl, const char[] error, any:dat
 ///// PLAYER OPTIONS //////
 ///////////////////////////
 
-public db_viewPlayerOptions(client, char szSteamId[32])
+public void db_viewPlayerOptions(int client, char szSteamId[32])
 {
 	char szQuery[512];      
 	Format(szQuery, 512, sql_selectPlayerOptions, szSteamId);     
 	SQL_TQuery(g_hDb, db_viewPlayerOptionsCallback, szQuery,client,DBPrio_Low);	
 }
 
-public db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[] error, any:client)
+public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if(hndl == null)
 	{
@@ -6212,7 +6182,7 @@ public db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[] erro
 	return;
 }
 
-public db_updatePlayerOptions(client)
+public void db_updatePlayerOptions(int client)
 {
 	if (g_borg_ViewModel[client] != g_bViewModel[client] || g_borg_HideChat[client] != g_bHideChat[client] || g_borg_StartWithUsp[client] != g_bStartWithUsp[client] || g_borg_AutoBhopClient[client] != g_bAutoBhopClient[client] || g_borg_InfoPanel[client] != g_bInfoPanel[client] || g_borg_EnableQuakeSounds[client] != g_bEnableQuakeSounds[client] || g_borg_ShowNames[client] != g_bShowNames[client] || g_borg_GoToClient[client] != g_bGoToClient[client] || g_borg_ShowTime[client] != g_bShowTime[client] || g_borg_Hide[client] != g_bHide[client] || g_borg_ShowSpecs[client] != g_bShowSpecs[client] || g_borg_CheckpointsEnabled[client] != g_bCheckpointsEnabled[client])
 	{
@@ -6242,14 +6212,14 @@ public db_updatePlayerOptions(client)
 //////////////////////////////
 
 
-public db_selectTopProRecordHolders(client)
+public void db_selectTopProRecordHolders(int client)
 {
 	char szQuery[512];       
 	Format(szQuery, 512, sql_selectMapRecordHolders);   
 	SQL_TQuery(g_hDb, db_sql_selectMapRecordHoldersCallback, szQuery, client);
 }
 
-public db_sql_selectMapRecordHoldersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_sql_selectMapRecordHoldersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6298,7 +6268,7 @@ public db_sql_selectMapRecordHoldersCallback(Handle owner, Handle hndl, const ch
 	}
 }
 
-public db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, const char[] error,  any data)
 {       
 	if(hndl == null)
 	{
@@ -6331,14 +6301,14 @@ public db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, const c
 	}	
 }
 
-public db_selectTopPlayers(client)
+public void db_selectTopPlayers(int client)
 {
 	char szQuery[128];       
 	Format(szQuery, 128, sql_selectTopPlayers);   
 	SQL_TQuery(g_hDb, db_selectTop100PlayersCallback, szQuery, client,DBPrio_Low);
 }
 
-public db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char[] error, any:data)
+public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6421,7 +6391,7 @@ public db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char[] er
 	}
 }
 
-public SQL_ViewPlayerProfile2Callback(Handle owner, Handle hndl, const char[] error, any:data)
+public void SQL_ViewPlayerProfile2Callback(Handle owner, Handle hndl, const char[] error,  any data)
 {
 	if(hndl == null)
 	{
@@ -6439,7 +6409,7 @@ public SQL_ViewPlayerProfile2Callback(Handle owner, Handle hndl, const char[] er
 			PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN,WHITE, g_szProfileName[data]);
 }
 
-public ProfileMenuHandler(Handle menu, MenuAction:action, param1,param2)
+public int ProfileMenuHandler(Handle menu, MenuAction action, int param1, int param2)
 { 
 	if(action == MenuAction_Select)
 	{
@@ -6493,7 +6463,7 @@ public ProfileMenuHandler(Handle menu, MenuAction:action, param1,param2)
 		}
 }
 
-public TopPlayersMenuHandler1(Handle menu, MenuAction:action, param1, param2)
+public int TopPlayersMenuHandler1(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
@@ -6512,7 +6482,7 @@ public TopPlayersMenuHandler1(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public MapMenuHandler1(Handle menu, MenuAction:action, param1, param2)
+public int MapMenuHandler1(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
@@ -6531,7 +6501,7 @@ public MapMenuHandler1(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public MapTopMenuHandler2(Handle menu, MenuAction:action, param1, param2)
+public int MapTopMenuHandler2(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
@@ -6542,7 +6512,7 @@ public MapTopMenuHandler2(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public MapMenuHandler2(Handle menu, MenuAction:action, param1, param2)
+public int MapMenuHandler2(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
@@ -6562,7 +6532,7 @@ public MapMenuHandler2(Handle menu, MenuAction:action, param1, param2)
 }
 
 
-public MapMenuHandler3(Handle menu, MenuAction:action, param1, param2)
+public int MapMenuHandler3(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
@@ -6582,7 +6552,7 @@ public MapMenuHandler3(Handle menu, MenuAction:action, param1, param2)
 }
 
 
-public MenuHandler2(Handle menu, MenuAction:action, param1, param2)
+public int MenuHandler2(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Cancel || action ==  MenuAction_Select)
 	{
@@ -6594,7 +6564,7 @@ public MenuHandler2(Handle menu, MenuAction:action, param1, param2)
 	}
 }
 
-public RecordPanelHandler(Handle menu, MenuAction:action, param1, param2)
+public int RecordPanelHandler(Handle menu, MenuAction action, int param1, int param2)
 {
 	if(action ==  MenuAction_Select)
 	{
@@ -6602,7 +6572,7 @@ public RecordPanelHandler(Handle menu, MenuAction:action, param1, param2)
 	}	
 }
 
-public RecordPanelHandler2(Handle menu, MenuAction:action, param1, param2)
+public int RecordPanelHandler2(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action ==  MenuAction_Select)
 	{
