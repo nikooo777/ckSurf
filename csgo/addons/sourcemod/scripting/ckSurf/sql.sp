@@ -5136,8 +5136,18 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 			}
 			else
 			{			
-				if (g_mapZones[g_mapZonesCount][zoneType] == 1)
-					Format(g_szZoneGroupName[g_mapZones[g_mapZonesCount][zoneGroup]], 128, "%s", g_mapZones[g_mapZonesCount][zoneName]);
+				switch(g_mapZones[g_mapZonesCount][zoneType])
+				{
+					case 1:
+					{
+						if (g_mapZones[g_mapZonesCount][zoneGroup] > 0)
+							g_bhasBonus = true;
+						Format(g_szZoneGroupName[g_mapZones[g_mapZonesCount][zoneGroup]], 128, "%s", g_mapZones[g_mapZonesCount][zoneName]);
+					}
+					case 3:
+						g_bhasStages = true;
+
+				}
 			}
 				
 			g_mapZonesTypeCount[g_mapZones[g_mapZonesCount][zoneGroup]][g_mapZones[g_mapZonesCount][zoneType]]++;
