@@ -559,7 +559,7 @@ public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroad
 // https://forums.alliedmods.net/showthread.php?t=267131
 public Action OnTouchPushTrigger(int entity, int other)
 {
-	if(0 < other <= MaxClients && g_bTriggerPushFixEnable == true)
+	if(IsValidClient(other) && g_bTriggerPushFixEnable == true)
 	{
 		if (IsValidEntity(entity))
 		{
@@ -651,14 +651,12 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			if (!g_bClientStopped[client]) // Get start time
 			{
 				if (!IsFakeClient(client))
-					////PrintToServer("Stopped");
 				g_fClientLastMovement[client] = GetEngineTime();
 				g_bClientStopped[client] = true;
 			}
 			else if (GetEngineTime() - g_fClientLastMovement[client] > BEAMLIFE)
 			{
 				if (!IsFakeClient(client))
-					////PrintToServer("Refresh is true");
 				g_bRefreshTrail[client] = true;
 			}
 		}
@@ -670,7 +668,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 		//menu refreshing
 		CheckRun(client);
-
 
 		AutoBhopFunction(client, buttons);
 		NoClipCheck(client);
@@ -792,6 +789,81 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	return Plugin_Continue;
 }
 
+//dhooks
+public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
+{
+	if (!IsValidClient(client))
+	{
+		return MRES_Ignored;
+	}
+
+	if (g_bPushing[client])
+	{
+		g_bPushing[client] = false;
+		return MRES_Ignored;
+	}
+
+	// This one is currently mimicing something.
+	if(g_hBotMimicsRecord[client] != null)
+	{
+		// We didn't allow that teleporting. STOP THAT.
+		if(!g_bValidTeleportCall[client])
+			return MRES_Supercede;
+		g_bValidTeleportCall[client] = false;
+		return MRES_Ignored;
+	}
+	
+	// Don't care if he's not recording.
+	if(g_hRecording[client] == null)
+	{
+		return MRES_Ignored;
+	}
+	
+	float origin[3], angles[3], velocity[3];
+	bool bOriginNull = DHookIsNullParam(hParams, 1);
+	bool bAnglesNull = DHookIsNullParam(hParams, 2);
+	bool bVelocityNull = DHookIsNullParam(hParams, 3);
+
+	if(!bOriginNull)
+	{
+		DHookGetParamVector(hParams, 1, origin);
+	}
+	
+	if(!bAnglesNull)
+	{
+		for(int i=0;i<3;i++)
+			angles[i] = DHookGetParamObjectPtrVar(hParams, 2, i*4, ObjectValueType_Float);
+	}
+	
+	if(!bVelocityNull)
+	{
+		DHookGetParamVector(hParams, 3, velocity);
+	}
+	
+	if(bOriginNull && bAnglesNull && bVelocityNull)
+	{
+		return MRES_Ignored;
+	}
+	
+	int iAT[AT_SIZE];
+	Array_Copy(origin, iAT[view_as<int>(atOrigin)], 3);
+	Array_Copy(angles, iAT[view_as<int>(atAngles)], 3);
+	Array_Copy(velocity, iAT[view_as<int>(atVelocity)], 3);
+	
+	// Remember, 
+	if(!bOriginNull)
+		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
+	if(!bAnglesNull)
+		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
+	if(!bVelocityNull)
+		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
+	
+	PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
+	
+	return MRES_Ignored;
+}
+
+/*
 public Action Event_OnJump(Handle JumpEvent, const char[] Name, bool Broadcast)
 {
 	int client;
@@ -806,8 +878,8 @@ public Action Event_OnJump(Handle JumpEvent, const char[] Name, bool Broadcast)
 	if (flDiff < 4.0)
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
 }
-		
-			
+*/	
+
 public void Hook_PostThinkPost(int entity)
 {
 	SetEntProp(entity, Prop_Send, "m_bInBuyZone", 0);

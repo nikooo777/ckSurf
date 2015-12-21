@@ -544,8 +544,9 @@ public void RecordReplay(int client, int &buttons, int &subtype, int &seed, int 
 {
 	if(g_hRecording[client] != null && !IsFakeClient(client))
 	{
-		if (g_bPause[client])
+		if (g_bPause[client]) //  Dont record pause frames
 			return;
+
 		int iFrame[FRAME_INFO_SIZE];
 		iFrame[playerButtons] = buttons;
 		iFrame[playerImpulse] = impulse;
@@ -575,6 +576,7 @@ public void RecordReplay(int client, int &buttons, int &subtype, int &seed, int 
 			Array_Copy(fBuffer, iAT[atAngles], 3);
 			Entity_GetAbsVelocity(client, fBuffer);
 			Array_Copy(fBuffer, iAT[atVelocity], 3); 
+
 			iAT[atFlags] = ADDITIONAL_FIELD_TELEPORTED_ORIGIN|ADDITIONAL_FIELD_TELEPORTED_ANGLES|ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
 			PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT[0], view_as<int>(AdditionalTeleport));
 			g_OriginSnapshotInterval[client] = 0;
@@ -818,61 +820,3 @@ public void PlayReplay(int client, int &buttons, int  &subtype, int &seed, int &
 	}
 }
 
-//dhooks
-public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
-{
-
-	if (!IsValidClient(client))
-		return MRES_Ignored;
-
-	// This one is currently mimicing something.
-	if(g_hBotMimicsRecord[client] != null)
-	{
-		// We didn't allow that teleporting. STOP THAT.
-		if(!g_bValidTeleportCall[client])
-			return MRES_Supercede;
-		g_bValidTeleportCall[client] = false;
-		return MRES_Ignored;
-	}
-	
-	// Don't care if he's not recording.
-	if(g_hRecording[client] == null)
-		return MRES_Ignored;
-	
-	float origin[3], angles[3], velocity[3];
-	bool bOriginNull = DHookIsNullParam(hParams, 1);
-	bool bAnglesNull = DHookIsNullParam(hParams, 2);
-	bool bVelocityNull = DHookIsNullParam(hParams, 3);
-	
-	if(!bOriginNull)
-		DHookGetParamVector(hParams, 1, origin);
-	
-	if(!bAnglesNull)
-	{
-		for(int i=0;i<3;i++)
-			angles[i] = DHookGetParamObjectPtrVar(hParams, 2, i*4, ObjectValueType_Float);
-	}
-	
-	if(!bVelocityNull)
-		DHookGetParamVector(hParams, 3, velocity);
-	
-	if(bOriginNull && bAnglesNull && bVelocityNull)
-		return MRES_Ignored;
-	
-	int iAT[AT_SIZE];
-	Array_Copy(origin, iAT[view_as<int>(atOrigin)], 3);
-	Array_Copy(angles, iAT[view_as<int>(atAngles)], 3);
-	Array_Copy(velocity, iAT[view_as<int>(atVelocity)], 3);
-	
-	// Remember, 
-	if(!bOriginNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
-	if(!bAnglesNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
-	if(!bVelocityNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
-		
-	PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
-	
-	return MRES_Ignored;
-}

@@ -989,30 +989,6 @@ public Action Command_JoinTeam(int client, const char[] command, int argc)
 	return Plugin_Handled;
 }
 
-//https://forums.alliedmods.net/showthread.php?t=206308
-void TeamChangeActual(int client, int toteam)
-{
-	if (g_bForceCT) {
-		if (toteam == 0 || toteam == 2) {
-			toteam = 3;
-		}
-	} else {
-		if (toteam == 0) { // client is auto-assigning
-			toteam = GetRandomInt(2, 3);
-		}
-	}
-	
-	if(g_bSpectate[client])
-	{
-		if(g_fStartTime[client] != -1.0 && g_bTimeractivated[client] == true)
-			g_fPauseTime[client] = GetGameTime() - g_fStartPauseTime[client];
-		g_bSpectate[client] = false;
-	}	
-	ChangeClientTeam(client, toteam);
-	return;
-}
-
-
 public Action Client_OptionMenu(int client, int args)
 {
 	OptionMenu(client);

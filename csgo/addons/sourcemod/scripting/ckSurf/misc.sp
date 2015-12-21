@@ -223,6 +223,7 @@ void DoPush(int entity, int other, float m_vecPushDir[3])
 		GetEntPropVector(other, Prop_Data, "m_vecVelocity", newVelocity);
 		
 		newVelocity[2] = newVelocity[2] + (vecAbsDir[2] * GetTickInterval());
+		g_bPushing[other] = true;
 		TeleportEntity(other, NULL_VECTOR, NULL_VECTOR, newVelocity);
 		
 		// Remove the base velocity z height so abs velocity can do it and add old base velocity if there is any
@@ -279,6 +280,30 @@ bool DoesClientPassFilter(int entity, int client)
 	
 	return StrEqual(sFilterName, sClientName, true);
 }
+
+//https://forums.alliedmods.net/showthread.php?t=206308
+void TeamChangeActual(int client, int toteam)
+{
+	if (g_bForceCT) {
+		if (toteam == 0 || toteam == 2) {
+			toteam = 3;
+		}
+	} else {
+		if (toteam == 0) { // client is auto-assigning
+			toteam = GetRandomInt(2, 3);
+		}
+	}
+	
+	if(g_bSpectate[client])
+	{
+		if(g_fStartTime[client] != -1.0 && g_bTimeractivated[client] == true)
+			g_fPauseTime[client] = GetGameTime() - g_fStartPauseTime[client];
+		g_bSpectate[client] = false;
+	}	
+	ChangeClientTeam(client, toteam);
+	return;
+}
+
 
 public int getZoneID(int zoneGrp, int stage)
 {
@@ -1358,6 +1383,7 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	g_bPushing[client] = false;
 	g_bSettingsLoaded[client] = false;
 	// Set client location 
 	if (bSpawnToStartZone)

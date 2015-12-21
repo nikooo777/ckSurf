@@ -400,6 +400,8 @@ bool g_ClientRenamingZone[MAXPLAYERS+1];
 // https://forums.alliedmods.net/showthread.php?t=267131
 ConVar g_hTriggerPushFixEnable;
 bool   g_bTriggerPushFixEnable;
+bool	g_bPushing[MAXPLAYERS+1];
+
 
 // Slope Boost Fix by Mev, & Blacky
 // https://forums.alliedmods.net/showthread.php?t=266888
@@ -2380,7 +2382,7 @@ public void OnPluginStart()
 	HookEvent("round_start", Event_OnRoundStart,EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_OnRoundEnd, EventHookMode_Pre);
 	HookEvent("player_hurt", Event_OnPlayerHurt);
-	HookEvent("player_jump", Event_OnJump, EventHookMode_Pre);
+	//HookEvent("player_jump", Event_OnJump, EventHookMode_Pre);
 	HookEvent("weapon_fire",  Event_OnFire, EventHookMode_Pre);
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Post);
 	//HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
@@ -2395,12 +2397,6 @@ public void OnPluginStart()
 	AddCommandListener(Command_ext_Menu, "radio1");
 	AddCommandListener(Command_ext_Menu, "radio2");
 	AddCommandListener(Command_ext_Menu, "radio3");
-	AddCommandListener(Command_ext_Menu, "sm_nominate");
-	AddCommandListener(Command_ext_Menu, "sm_admin");
-	AddCommandListener(Command_ext_Menu, "sm_votekick");
-	AddCommandListener(Command_ext_Menu, "sm_voteban");
-	AddCommandListener(Command_ext_Menu, "sm_votemenu");
-	AddCommandListener(Command_ext_Menu, "sm_revote");
 
 	//hook radio commands
 	for(int g; g < sizeof(RadioCMDS); g++)
