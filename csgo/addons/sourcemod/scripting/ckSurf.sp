@@ -235,7 +235,16 @@ bool g_bRefreshTrail[MAXPLAYERS+1];
 int g_iTrailColor[MAXPLAYERS+1];
 float g_fLastTrailTime[MAXPLAYERS+1];
 float g_fClientLastMovement[MAXPLAYERS+1];
-//Handle g_hTrailTimer[MAXPLAYERS+1] = {null, ...};
+
+int g_AutoVIPFlag;
+bool g_bAutoVIPFlag;
+Handle g_hAutoVIPFlag = null;
+
+////////////////////
+//// Admin Menu ////
+////////////////////
+int g_AdminMenuFlag;
+Handle g_hAdminMenuFlag = null;
 
 //////////////////////////
 //// Replay Variables ////
@@ -303,6 +312,10 @@ Handle AnnounceTimer[MAXPLAYERS+1];
 //////////////////
 //Zone Variables//
 //////////////////
+
+int g_ZoneMenuFlag;
+Handle g_hZoneMenuFlag = null;
+
 float g_fZonePositions[MAXZONES][3];
 Handle g_hZoneDisplayType = null;
 int g_zoneDisplayType;
@@ -1857,7 +1870,39 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar ==  g_hSlopeFixEnable) {
 		g_bSlopeFixEnable = view_as<bool>(StringToInt(newValue));
 	}
-	
+	else if (convar == g_hAutoVIPFlag) {
+		AdminFlag flag;
+		g_bAutoVIPFlag = FindFlagByChar(newValue[0], flag);
+		g_AutoVIPFlag = FlagToBit(flag);
+		if (!g_bAutoVIPFlag)
+			PrintToServer("[ckSurf] Invalid flag for ck_autovip_flag");
+	}
+	else if (convar == g_hZoneMenuFlag) {
+		AdminFlag flag;
+		bool validFlag;
+		validFlag = FindFlagByChar(newValue[0], flag);
+
+		if (!validFlag)
+		{
+			PrintToServer("[ckSurf] Invalid flag for ck_zonemenu_flag");
+			g_ZoneMenuFlag = ADMFLAG_ROOT;
+		}
+		else
+			g_ZoneMenuFlag = FlagToBit(flag);
+	}
+	else if (convar == g_hAdminMenuFlag) {
+		AdminFlag flag;
+		bool validFlag;		
+		validFlag = FindFlagByChar(newValue[0], flag);
+
+		if (!validFlag)
+		{
+			PrintToServer("[ckSurf] Invalid flag for ck_adminmenu_flag");
+			g_AdminMenuFlag = ADMFLAG_GENERIC;
+		}
+		else
+			g_AdminMenuFlag = FlagToBit(flag);
+	}
 
 	if(g_hZoneTimer != INVALID_HANDLE)
 	{
@@ -2228,6 +2273,41 @@ public void OnPluginStart()
 	g_bSlopeFixEnable = GetConVarBool(g_hSlopeFixEnable);
 	HookConVarChange(g_hSlopeFixEnable, OnSettingChanged);
 
+	g_hAutoVIPFlag = CreateConVar("ck_autovip_flag", "a", "Automatically give players with this admin flag the VIP title. Invalid or not set, disables auto VIP.", FCVAR_NOTIFY);
+	char szFlag[24];
+	AdminFlag bufferFlag;
+	GetConVarString(g_hAutoVIPFlag, szFlag, 24);
+	g_bAutoVIPFlag = FindFlagByChar(szFlag[0], bufferFlag);
+	g_AutoVIPFlag = FlagToBit(bufferFlag);
+	HookConVarChange(g_hAutoVIPFlag, OnSettingChanged);
+
+
+	bool validFlag;
+	g_hAdminMenuFlag = CreateConVar("ck_adminmenu_flag", "b", "Admin flag required to open the !ckadmin menu. Invalid or not set, requires flag b.", FCVAR_NOTIFY);
+	GetConVarString(g_hAdminMenuFlag, szFlag, 24);
+	validFlag = FindFlagByChar(szFlag[0], bufferFlag);
+	if (!validFlag)
+	{
+		PrintToServer("[ckSurf] Invalid flag for ck_adminmenu_flag.");
+		g_AdminMenuFlag = ADMFLAG_GENERIC;
+	}
+	else
+		g_AdminMenuFlag = FlagToBit(bufferFlag);
+	HookConVarChange(g_hAdminMenuFlag, OnSettingChanged);
+
+
+	g_hZoneMenuFlag = CreateConVar("ck_zonemenu_flag", "z", "Admin flag required to open the !zones menu. Invalid or not set, requires flag z.", FCVAR_NOTIFY);
+	GetConVarString(g_hZoneMenuFlag, szFlag, 24);
+	validFlag = FindFlagByChar(szFlag[0], bufferFlag);
+	if (!validFlag)
+	{
+		PrintToServer("[ckSurf] Invalid flag for ck_zonemenu_flag.");
+		g_ZoneMenuFlag = ADMFLAG_ROOT;
+	}
+	else
+		g_ZoneMenuFlag = FlagToBit(bufferFlag);
+	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
+
 	db_setupDatabase();
 	
 	//client commands
@@ -2324,8 +2404,8 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_normal", Command_normalMode, "[ckSurf] Switches player back to normal mode.");
 	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode.");
 
-	RegAdminCmd("sm_ckadmin", Admin_ckPanel, ADMFLAG_UNBAN, "[ckSurf] Displays the ckSurf menu panel");
-	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, ADMFLAG_UNBAN, "[ckSurf] Recalculates player profile for given steam id");
+	RegAdminCmd("sm_ckadmin", Admin_ckPanel, g_AdminMenuFlag, "[ckSurf] Displays the ckSurf menu panel");
+	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, g_AdminMenuFlag, "[ckSurf] Recalculates player profile for given steam id");
 	RegAdminCmd("sm_resetchallenges", Admin_DropChallenges, ADMFLAG_ROOT, "[ckSurf] Resets all player challenges (drops table challenges) - requires z flag");
 	RegAdminCmd("sm_resettimes", Admin_DropAllMapRecords, ADMFLAG_ROOT, "[ckSurf] Resets all player times (drops table playertimes) - requires z flag");
 	RegAdminCmd("sm_resetranks", Admin_DropPlayerRanks, ADMFLAG_ROOT, "[ckSurf] Resets the all player points  (drops table playerrank - requires z flag)");
@@ -2338,18 +2418,18 @@ public void OnPluginStart()
 	RegAdminCmd("sm_deletecheckpoints", Admin_DeleteCheckpoints, ADMFLAG_ROOT, "[ckSurf] Reset checkpoints on the current map");
 	RegAdminCmd("sm_insertmaptiers", Admin_InsertMapTiers, ADMFLAG_ROOT, "[ckSurf] Insert premade maptier information into the database (ONLY RUN THIS ONCE)");
 	RegAdminCmd("sm_insertmapzones", Admin_InsertMapZones, ADMFLAG_ROOT, "[ckSurf] Insert premade map zones into the database (ONLY RUN THIS ONCE)");
-	RegAdminCmd("sm_zones", Command_Zones, ADMFLAG_ROOT, "[ckSurf] Opens up the zone creation menu.");
+	RegAdminCmd("sm_zones", Command_Zones, g_ZoneMenuFlag, "[ckSurf] Opens up the zone creation menu.");
 	RegAdminCmd("sm_admintitles", Admin_giveTitle, ADMFLAG_ROOT, "[ckSurf] Gives a player a title");
 	RegAdminCmd("sm_admintitle", Admin_giveTitle, ADMFLAG_ROOT, "[ckSurf] Gives a player a title");
 	RegAdminCmd("sm_givetitle", Admin_giveTitle, ADMFLAG_ROOT, "[ckSurf] Gives a player a title");
 	RegAdminCmd("sm_removetitles", Admin_deleteTitles, ADMFLAG_ROOT, "[ckSurf] Removes player's all titles");
 	RegAdminCmd("sm_removetitle", Admin_deleteTitle, ADMFLAG_ROOT, "[ckSurf] Removes specific title from a player");
 
-	RegAdminCmd("sm_addmaptier", Admin_insertMapTier, ADMFLAG_UNBAN, "[ckSurf] Changes maps tier");
-	RegAdminCmd("sm_amt", Admin_insertMapTier, ADMFLAG_UNBAN, "[ckSurf] Changes maps tier");
-	RegAdminCmd("sm_addspawn", Admin_insertSpawnLocation, ADMFLAG_UNBAN, "[ckSurf] Changes the position !r takes players to");
-	RegAdminCmd("sm_delspawn", Admin_deleteSpawnLocation, ADMFLAG_UNBAN, "[ckSurf] Removes custom !r position");
-	RegAdminCmd("sm_clearassists", Admin_ClearAssists, ADMFLAG_UNBAN, "[ckSurf] Clears assist points (map progress) from all players");
+	RegAdminCmd("sm_addmaptier", Admin_insertMapTier, g_AdminMenuFlag, "[ckSurf] Changes maps tier");
+	RegAdminCmd("sm_amt", Admin_insertMapTier, g_AdminMenuFlag, "[ckSurf] Changes maps tier");
+	RegAdminCmd("sm_addspawn", Admin_insertSpawnLocation, g_AdminMenuFlag, "[ckSurf] Changes the position !r takes players to");
+	RegAdminCmd("sm_delspawn", Admin_deleteSpawnLocation, g_AdminMenuFlag, "[ckSurf] Removes custom !r position");
+	RegAdminCmd("sm_clearassists", Admin_ClearAssists, g_AdminMenuFlag, "[ckSurf] Clears assist points (map progress) from all players");
 
 
 	//chat command listener

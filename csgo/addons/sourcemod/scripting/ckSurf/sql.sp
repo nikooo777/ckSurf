@@ -782,12 +782,17 @@ public void SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] err
 		g_iTitleInUse[client] = SQL_FetchInt(hndl, 23);
 	}
 
-	if (IsValidClient(client) && (GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_RESERVATION))
-		if (!g_bHasTitle[client])
-			db_updateAdminVIP(client, szSteamID, hasTitleRow);
-		else
-			if (!g_bflagTitles[client][0])
+	if (IsValidClient(client) && g_bAutoVIPFlag)
+	{
+		if ((GetUserFlagBits(client) & g_AutoVIPFlag))
+		{
+			if (!g_bHasTitle[client])
 				db_updateAdminVIP(client, szSteamID, hasTitleRow);
+			else
+				if (!g_bflagTitles[client][0])
+					db_updateAdminVIP(client, szSteamID, hasTitleRow);
+		}
+	}
 
 	Array_Copy(g_bflagTitles[client], g_bflagTitles_orig[client], TITLE_COUNT);
 

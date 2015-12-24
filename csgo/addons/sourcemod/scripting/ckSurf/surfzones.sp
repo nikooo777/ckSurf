@@ -677,6 +677,15 @@ stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottom
 //
 public void ZoneMenu(int client)
 {
+	if (!IsValidClient(client))
+	return;
+
+	if (!(GetUserFlagBits(client) & g_ZoneMenuFlag))
+	{
+		PrintToChat(client, "[%cCK%c] You don't have access to the zones menu.", MOSSGREEN, WHITE);
+		return;
+	}
+
 	resetSelection(client);
 	Menu ckZoneMenu = new Menu(Handle_ZoneMenu);
 	ckZoneMenu.SetTitle("Zones");
