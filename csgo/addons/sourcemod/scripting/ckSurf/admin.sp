@@ -452,7 +452,7 @@ public Action Admin_ClearAssists(int client, int args)
 public Action Admin_ckPanel(int client, int args)
 {
 	ckAdminMenu(client);	
-	if ((GetUserFlagBits(client) & ADMFLAG_ROOT))
+	if ((GetUserFlagBits(client) & g_AdminMenuFlag))
 	{
 		PrintToChat(client, "[%cCK%c] See console for more commands", LIMEGREEN,WHITE);
 		PrintToConsole(client,"\n[ckSurf root admin]\n");
@@ -464,8 +464,6 @@ public Action Admin_ckPanel(int client, int args)
 		PrintToConsole(client, "sm_deletecheckpoints (Deletes all checkpoint times in the current map)\n sm_deletebonus (Deletes all bonus times in the current map)\n \n");
 
 	}
-	else
-		PrintToConsole(client," >> FULL ACCESS requires a 'z' (root) flag.) << ");
 	return Plugin_Handled;
 }
 	
@@ -474,36 +472,31 @@ public void ckAdminMenu(int client)
 	if(!IsValidClient(client))
 		return;
 
+	if (!(GetUserFlagBits(client) & g_AdminMenuFlag))
+	{
+		PrintToChat(client, "[%cCK%c] You don't have access to the admin menu.", MOSSGREEN, WHITE);
+		return;		
+	}
+
 	char szTmp[128];
 	
 	Handle adminmenu = CreateMenu(AdminPanelHandler);
-	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)\nNoclip: bind KEY +noclip",VERSION); 	
+	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)",VERSION); 	
 	else
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)\nNoclip: bind KEY +noclip",VERSION); 	
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)",VERSION); 	
 	SetMenuTitle(adminmenu, szTmp);
 
-	
-
-//	if (MAX_PR_PLAYERS <  g_pr_RankedPlayers && (GetUserFlagBits(client) & ADMFLAG_ROOT))
-//		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Recalculate player ranks (Disabled. Too many players in the DB)",ITEMDRAW_DISABLED);
-//	else
-//	{	
-	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
-	{
-		if (!g_pr_RankingRecalc_InProgress)
-			AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Recalculate player ranks");
-		else
-			AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Stop the recalculation");
-	}
+	if (!g_pr_RankingRecalc_InProgress)
+		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Recalculate player ranks");
 	else
-		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Recalculate player ranks",ITEMDRAW_DISABLED);
-//	}
+		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Stop the recalculation");
+
 	AddMenuItem(adminmenu, "", "", ITEMDRAW_SPACER);
 
 	int menuItemNumber = 2;
 
-	if (GetUserFlagBits(client) & ADMFLAG_ROOT)
+	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
 	{
 		Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
 		AddMenuItem(adminmenu, szTmp, szTmp);
@@ -513,7 +506,6 @@ public void ckAdminMenu(int client)
 		Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber); 	
 		AddMenuItem(adminmenu, szTmp, szTmp, ITEMDRAW_DISABLED);
 	}
-
 	menuItemNumber++;
 
 	if (g_bgodmode)
