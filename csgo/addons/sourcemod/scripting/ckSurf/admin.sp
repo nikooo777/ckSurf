@@ -472,7 +472,7 @@ public void ckAdminMenu(int client)
 	if(!IsValidClient(client))
 		return;
 
-	if (!(GetUserFlagBits(client) & g_AdminMenuFlag))
+	if (!(GetUserFlagBits(client) & g_AdminMenuFlag) && !(GetUserFlagBits(client) & ADMFLAG_ROOT))
 	{
 		PrintToChat(client, "[%cCK%c] You don't have access to the admin menu.", MOSSGREEN, WHITE);
 		return;		
