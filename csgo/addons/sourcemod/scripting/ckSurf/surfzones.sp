@@ -680,7 +680,7 @@ public void ZoneMenu(int client)
 	if (!IsValidClient(client))
 	return;
 
-	if (!(GetUserFlagBits(client) & g_ZoneMenuFlag))
+	if (!(GetUserFlagBits(client) & g_ZoneMenuFlag) && !(GetUserFlagBits(client) & ADMFLAG_ROOT))
 	{
 		PrintToChat(client, "[%cCK%c] You don't have access to the zones menu.", MOSSGREEN, WHITE);
 		return;
