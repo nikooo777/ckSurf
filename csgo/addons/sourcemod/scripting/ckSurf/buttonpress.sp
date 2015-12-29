@@ -1,12 +1,14 @@
 
 // - Climb Button OnStartPress -
 public void CL_OnStartTimerPress(int client)
-{
-	if (!g_bServerDataLoaded)
-		return;
-		
+{		
 	if (!IsFakeClient(client))
 	{
+		if (IsValidClient(client))
+		{
+			if (!g_bServerDataLoaded || !g_bSettingsLoaded[client])
+				return;
+		}
 		if (g_bNewReplay[client])
 			return;
 		if (g_bNewBonus[client])
