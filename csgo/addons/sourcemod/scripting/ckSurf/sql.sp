@@ -1351,7 +1351,7 @@ public void sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const ch
 		g_pr_points[client]+= g_Challenge_PointsRatio[client];
 
 	// Next up, calculate bonus points:
-	Format(szQuery, 512, "SELECT mapname, (select count(1)+1 from ck_bonus b where a.mapname=b.mapname and a.runtime > b.runtime) AS rank, (SELECT count(1) FROM ck_bonus b WHERE a.mapname = b.mapname AND a.zonegroup = b.zonegroup) as total FROM ck_bonus a WHERE steamid = '%s';", szSteamId); 
+	Format(szQuery, 512, "SELECT mapname, (SELECT count(1)+1 FROM ck_bonus b WHERE a.mapname=b.mapname AND a.runtime > b.runtime AND a.zonegroup = b.zonegroup) AS rank, (SELECT count(1) FROM ck_bonus b WHERE a.mapname = b.mapname AND a.zonegroup = b.zonegroup) as total FROM ck_bonus a WHERE steamid = '%s';", szSteamId); 
 	SQL_TQuery(g_hDb, sql_CountFinishedBonusCallback, szQuery, client, DBPrio_Low);
 }
 
@@ -4270,8 +4270,8 @@ public void db_viewMapRankBonusCallback(Handle owner, Handle hndl, const char[] 
 	switch(type)
 	{
 		case 1: {
-			PrintChatBonus(client, zgroup);
 			g_iBonusCount[zgroup]++;
+			PrintChatBonus(client, zgroup);
 		}
 		case 2: {
 			PrintChatBonus(client, zgroup);
@@ -4351,7 +4351,6 @@ public void SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char
 
 		return;
 	}
-	int zonegroup;
 
 	for (int i = 0; i < MAXZONEGROUPS; i++)
 	{
@@ -4361,10 +4360,11 @@ public void SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char
 
 	if (SQL_HasResultSet(hndl))
 	{
+		int zonegroup;
 		while (SQL_FetchRow(hndl))
 		{
-			SQL_FetchString(hndl, 0, g_szBonusFastest[data], MAX_NAME_LENGTH);
 			zonegroup = SQL_FetchInt(hndl, 2);
+			SQL_FetchString(hndl, 0, g_szBonusFastest[zonegroup], MAX_NAME_LENGTH);
 			g_fBonusFastest[zonegroup] = SQL_FetchFloat(hndl, 1);
 
 			FormatTimeFloat(1, g_fBonusFastest[zonegroup], 3, g_szBonusFastestTime[zonegroup], 64);
@@ -4406,13 +4406,13 @@ public void SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const c
 			db_selectMapTier();
 		return;
 	}
-	int zonegroup;
 
-	for (int i = 0; i < MAXZONEGROUPS; i++)
+	for (int i = 1; i < MAXZONEGROUPS; i++)
 		g_iBonusCount[i] = 0;
 
 	if(SQL_HasResultSet(hndl))
 	{
+		int zonegroup;
 		while (SQL_FetchRow(hndl))
 		{
 			zonegroup = SQL_FetchInt(hndl, 0);
@@ -5466,7 +5466,7 @@ public void db_CalcAvgRunTimeBonus()
 {
 	char szQuery[256];  
 	Format(szQuery, 256, sql_selectAllBonusTimesinMap, g_szMapName);
-	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunBonusTimeCallback, szQuery, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunBonusTimeCallback, szQuery, 1, DBPrio_Low);
 }
 
 public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const char[] error, any data)
@@ -5478,7 +5478,9 @@ public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const 
 			db_CalculatePlayerCount();
 		return;
 	}
-	g_fAvg_BonusTime[data] = 0.0;
+	for (int i = 1; i < MAXZONEGROUPS; i++)
+		g_fAvg_BonusTime[i] = 0.0;
+		
 	if(SQL_HasResultSet(hndl))
 	{
 		int zonegroup, runtimes[MAXZONEGROUPS];
@@ -5493,8 +5495,9 @@ public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const 
 				runtimes[zonegroup]++;
 			}			
 		}
-		for (int i = 0; i < MAXZONEGROUPS; i++)
-			g_fAvg_BonusTime[zonegroup] = runtime[zonegroup] / runtimes[zonegroup];
+		
+		for (int i = 1; i < MAXZONEGROUPS; i++)
+			g_fAvg_BonusTime[i] = runtime[i] / runtimes[i];
 	}
 
 	if (!g_bServerDataLoaded)

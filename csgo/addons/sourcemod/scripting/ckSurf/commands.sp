@@ -619,7 +619,7 @@ public Action Client_Avg(int client, int args)
 
 			if (g_iBonusCount[i]==0)
 				Format(szBonusTime,32,"00:00:00");
-			PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN,WHITE,GRAY,YELLOW,WHITE,szBonusTime,g_iBonusCount);
+			PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN,WHITE,GRAY,YELLOW,WHITE,szBonusTime,g_iBonusCount[i]);
 		}
 	}
 
