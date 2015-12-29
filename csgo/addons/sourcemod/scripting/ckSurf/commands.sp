@@ -1,14 +1,14 @@
 public Action Command_Vip(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (!g_bflagTitles[client][0])
 	{
 		PrintToChat(client, "[%cCK%c] This command requires the VIP title.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-
+	
 	Menu vipEffects = CreateMenu(h_vipEffects);
 	char szMenuItem[128];
 	
@@ -19,12 +19,12 @@ public Action Command_Vip(int client, int args)
 	else
 		Format(szMenuItem, 128, "[ON] Player Trail");
 	AddMenuItem(vipEffects, "", szMenuItem);
-
+	
 	Format(szMenuItem, 128, "Trail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
 	AddMenuItem(vipEffects, "", szMenuItem);
-
+	
 	AddMenuItem(vipEffects, "", "More to come...", ITEMDRAW_DISABLED);
-
+	
 	SetMenuExitButton(vipEffects, true);
 	DisplayMenu(vipEffects, client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
@@ -32,11 +32,11 @@ public Action Command_Vip(int client, int args)
 
 public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Select:
 		{
-			switch(item)
+			switch (item)
 			{
 				case 0:
 				{
@@ -58,9 +58,9 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 
 public Action Command_SetTitle(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (!g_bHasTitle[client])
 	{
 		PrintToChat(client, "[%cCK%c] You don't have access to any custom titles.", MOSSGREEN, WHITE);
@@ -68,7 +68,7 @@ public Action Command_SetTitle(int client, int args)
 	}
 	Menu playersTitles = CreateMenu(H_PlayersTitles);
 	SetMenuTitle(playersTitles, "Your available titles: ");
-
+	
 	char id[8], szMenuItem[54];
 	for (int i = 0; i < TITLE_COUNT; i++)
 	{
@@ -78,20 +78,20 @@ public Action Command_SetTitle(int client, int args)
 			IntToString(i, id, 8);
 			if (g_iTitleInUse[client] == i)
 				Format(szMenuItem, 54, "[ON] %s", g_szflagTitle[i]);
-			else	
+			else
 				Format(szMenuItem, 54, "[OFF] %s", g_szflagTitle[i]);
-
+			
 			AddMenuItem(playersTitles, id, szMenuItem);
 		}
 	}
-
+	
 	SetMenuExitButton(playersTitles, true);
 	DisplayMenu(playersTitles, client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Select:
 		{
@@ -100,18 +100,18 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 			char aID[8], szSteamID[32];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int titleID = StringToInt(aID);
-
+			
 			if (g_iTitleInUse[client] == titleID)
 				g_iTitleInUse[client] = -1;
 			else
 				g_iTitleInUse[client] = titleID;
-
+			
 			SetPlayerRank(client);
-			CreateTimer(0.5, SetClanTag, client,TIMER_FLAG_NO_MAPCHANGE);		
-
+			CreateTimer(0.5, SetClanTag, client, TIMER_FLAG_NO_MAPCHANGE);
+			
 			//GetClientAuthString(client, szSteamID, 32, true);
-			GetClientAuthId(client, AuthId_Steam2, szSteamID, MAX_NAME_LENGTH,true);				
-
+			GetClientAuthId(client, AuthId_Steam2, szSteamID, MAX_NAME_LENGTH, true);
+			
 			db_updatePlayerTitleInUse(g_iTitleInUse[client], szSteamID);
 		}
 		case MenuAction_End:
@@ -124,13 +124,13 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 
 public Action Command_normalMode(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	Client_Stop(client, 1);
 	g_bPracticeMode[client] = false;
 	Command_Restart(client, 1);
-
+	
 	PrintToChat(client, "%t", "PracticeNormal", MOSSGREEN, WHITE, MOSSGREEN);
 	return Plugin_Handled;
 }
@@ -139,15 +139,15 @@ public Action Command_createPlayerCheckpoint(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (g_iClientInZone[client][0] == 1 || g_iClientInZone[client][0] == 5)
 	{
 		PrintToChat(client, "%t", "PracticeInStartZone", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-
+	
 	float CheckpointTime = GetGameTime();
-
+	
 	// Move old checkpoint to the undo values, if the last checkpoint was made more than a second ago
 	if (g_bCreatedTeleport[client] && (CheckpointTime - g_fLastPlayerCheckpoint[client]) > 1.0)
 	{
@@ -155,24 +155,24 @@ public Action Command_createPlayerCheckpoint(int client, int args)
 		Array_Copy(g_fCheckpointLocation[client], g_fCheckpointLocation_undo[client], 3);
 		Array_Copy(g_fCheckpointVelocity[client], g_fCheckpointVelocity_undo[client], 3);
 		Array_Copy(g_fCheckpointAngle[client], g_fCheckpointAngle_undo[client], 3);
-	} 
-
+	}
+	
 	g_bCreatedTeleport[client] = true;
 	GetClientAbsOrigin(client, g_fCheckpointLocation[client]);
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fCheckpointVelocity[client]);
 	GetClientEyeAngles(client, g_fCheckpointAngle[client]);
-
-
+	
+	
 	PrintToChat(client, "%t", "PracticePointCreated", MOSSGREEN, WHITE, MOSSGREEN, WHITE);
-
+	
 	return Plugin_Handled;
 }
 
 public Action Command_goToPlayerCheckpoint(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (g_fCheckpointLocation[client][0] != 0.0 && g_fCheckpointLocation[client][1] != 0.0 && g_fCheckpointLocation[client][2] != 0.0)
 	{
 		if (g_bPracticeMode[client] == false)
@@ -181,13 +181,13 @@ public Action Command_goToPlayerCheckpoint(int client, int args)
 			PrintToChat(client, "%t", "PracticeStarted2", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE);
 			g_bPracticeMode[client] = true;
 		}
-
-		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>({0.0,0.0,0.0}));	
+		
+		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, 0.0 } ));
 		TeleportEntity(client, g_fCheckpointLocation[client], g_fCheckpointAngle[client], g_fCheckpointVelocity[client]);
 	}
 	else
 		PrintToChat(client, "%t", "PracticeStartError", MOSSGREEN, WHITE, MOSSGREEN);
-
+	
 	return Plugin_Handled;
 }
 
@@ -195,31 +195,31 @@ public Action Command_undoPlayerCheckpoint(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (g_fCheckpointLocation_undo[client][0] != 0.0 && g_fCheckpointLocation_undo[client][1] != 0.0 && g_fCheckpointLocation_undo[client][2] != 0.0)
-	{	
+	{
 		float tempLocation[3], tempVelocity[3], tempAngle[3];
-
+		
 		// Location
 		Array_Copy(g_fCheckpointLocation_undo[client], tempLocation, 3);
 		Array_Copy(g_fCheckpointLocation[client], g_fCheckpointLocation_undo[client], 3);
 		Array_Copy(tempLocation, g_fCheckpointLocation[client], 3);
-
+		
 		// Velocity
 		Array_Copy(g_fCheckpointVelocity_undo[client], tempVelocity, 3);
 		Array_Copy(g_fCheckpointVelocity[client], g_fCheckpointVelocity_undo[client], 3);
 		Array_Copy(tempVelocity, g_fCheckpointVelocity[client], 3);
-
+		
 		// Angle
 		Array_Copy(g_fCheckpointAngle_undo[client], tempAngle, 3);
 		Array_Copy(g_fCheckpointAngle[client], g_fCheckpointAngle_undo[client], 3);
 		Array_Copy(tempAngle, g_fCheckpointAngle[client], 3);
-
-		PrintToChat(client, "%t","PracticeUndo", MOSSGREEN, WHITE);
+		
+		PrintToChat(client, "%t", "PracticeUndo", MOSSGREEN, WHITE);
 	}
 	else
-		PrintToChat(client, "%t","PracticeUndoError", MOSSGREEN, WHITE, MOSSGREEN);
-
+		PrintToChat(client, "%t", "PracticeUndoError", MOSSGREEN, WHITE, MOSSGREEN);
+	
 	return Plugin_Handled;
 }
 
@@ -237,7 +237,7 @@ public Action Command_Teleport(int client, int args)
 		}
 		return Plugin_Handled;
 	}
-
+	
 	teleportClient(client, g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client], false);
 	return Plugin_Handled;
 }
@@ -280,9 +280,9 @@ public void ListBonuses(int client, int type)
 	{
 		listBonusesMenu = new Menu(MenuHandler_SelectBonusTop);
 	}
-
+	
 	listBonusesMenu.SetTitle("Choose a bonus");
-
+	
 	if (g_mapZoneGroupCount > 1)
 	{
 		for (int i = 1; i < g_mapZoneGroupCount; i++)
@@ -296,17 +296,17 @@ public void ListBonuses(int client, int type)
 		PrintToChat(client, "[%cCK%c] There are no bonuses in this map.", MOSSGREEN, WHITE);
 		return;
 	}
-
+	
 	listBonusesMenu.ExitButton = true;
 	listBonusesMenu.Display(client, 60);
 }
 
 public int MenuHandler_SelectBonusTop(Menu sMenu, MenuAction action, int client, int item)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Select:
-		{	
+		{
 			char aID[3];
 			GetMenuItem(sMenu, item, aID, sizeof(aID));
 			int zoneGrp = StringToInt(aID);
@@ -322,14 +322,14 @@ public int MenuHandler_SelectBonusTop(Menu sMenu, MenuAction action, int client,
 
 public int MenuHandler_SelectBonus(Menu sMenu, MenuAction action, int client, int item)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Select:
-		{	
+		{
 			char aID[3];
 			GetMenuItem(sMenu, item, aID, sizeof(aID));
 			int zoneGrp = StringToInt(aID);
-
+			
 			teleportClient(client, zoneGrp, 1, true);
 		}
 		case MenuAction_End:
@@ -343,9 +343,9 @@ public Action Command_ToBonus(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	// If not enough arguments, or there is more than one bonus
-	if(args < 1 && g_mapZoneGroupCount > 2) // Tell player to select specific bonus
+	if (args < 1 && g_mapZoneGroupCount > 2) // Tell player to select specific bonus
 	{
 		PrintToChat(client, "[%cCK%c] Usage: !b <bonus number>", MOSSGREEN, WHITE);
 		if (g_mapZoneGroupCount > 1)
@@ -359,18 +359,18 @@ public Action Command_ToBonus(int client, int args)
 		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
-
+	
 	int zoneGrp;
 	if (g_mapZoneGroupCount > 2) // If there is more than one bonus in the map, get the zGrp from command
 	{
 		char arg1[3];
 		GetCmdArg(1, arg1, sizeof(arg1));
-
+		
 		if (!arg1[0])
 			zoneGrp = args;
 		else
 			zoneGrp = StringToInt(arg1);
-
+		
 		if (zoneGrp == 0) {
 			Command_Restart(client, 1);
 			return Plugin_Handled;
@@ -378,7 +378,7 @@ public Action Command_ToBonus(int client, int args)
 	}
 	else
 		zoneGrp = 1;
-
+	
 	teleportClient(client, zoneGrp, 1, true);
 	return Plugin_Handled;
 }
@@ -398,12 +398,12 @@ public void ListStages(int client, int zonegroup)
 	SetMenuTitle(sMenu, "Stage selector");
 	int amount = 0;
 	char StageName[64], ZoneInfo[6];
-
-	int StageIds[MAXZONES] = {-1, ...};
-
+	
+	int StageIds[MAXZONES] =  { -1, ... };
+	
 	if (g_mapZonesCount > 0)
 	{
-		for(int i = 0; i<=g_mapZonesCount;i++)
+		for (int i = 0; i <= g_mapZonesCount; i++)
 		{
 			if (g_mapZones[i][zoneType] == 3 && g_mapZones[i][zoneGroup] == zonegroup)
 			{
@@ -414,23 +414,23 @@ public void ListStages(int client, int zonegroup)
 		if (amount == 0)
 		{
 			AddMenuItem(sMenu, "", "The map is linear.", ITEMDRAW_DISABLED);
-		} 
-		else 
+		}
+		else
 		{
 			amount = 0;
-			for(int t=0; t<128; t++) 
+			for (int t = 0; t < 128; t++)
 			{
-				if (StageIds[t]>=0)
+				if (StageIds[t] >= 0)
 				{
 					amount++;
-					Format(StageName, sizeof(StageName), "Stage %i", (amount+1));
-					IntToString(amount+1, ZoneInfo, 6);
+					Format(StageName, sizeof(StageName), "Stage %i", (amount + 1));
+					IntToString(amount + 1, ZoneInfo, 6);
 					AddMenuItem(sMenu, ZoneInfo, StageName);
 				}
 			}
 		}
-	} 
-	else 
+	}
+	else
 	{
 		AddMenuItem(sMenu, "", "No stages are available.", ITEMDRAW_DISABLED);
 	}
@@ -441,7 +441,7 @@ public void ListStages(int client, int zonegroup)
 
 public int MenuHandler_SelectStage(Menu tMenu, MenuAction action, int client, int item)
 {
-	switch(action)
+	switch (action)
 	{
 		case MenuAction_Select:
 		{
@@ -461,18 +461,18 @@ public Action Command_ToStage(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	if(args < 1)
+	if (args < 1)
 	{
 		PrintToChat(client, "Usage: !s <stage number>");
 		return Plugin_Handled;
 	}
-
+	
 	char arg1[3];
 	GetCmdArg(1, arg1, sizeof(arg1));
 	int StageId = StringToInt(arg1);
-
+	
 	teleportClient(client, g_iClientInZone[client][2], StageId, true);
-
+	
 	return Plugin_Handled;
 }
 
@@ -492,16 +492,16 @@ public Action Client_HideChat(int client, int args)
 {
 	HideChat(client);
 	if (g_bHideChat[client])
-		PrintToChat(client, "%t", "HideChat1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideChat1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "HideChat2",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideChat2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
 public void HideChat(int client)
 {
 	if (!g_bHideChat[client])
-		SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD")|HIDE_RADAR|HIDE_CHAT);
+		SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT);
 	else
 		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
 	
@@ -512,25 +512,25 @@ public Action ToggleCheckpoints(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (g_bCheckpointsEnabled[client])
 	{
 		g_bCheckpointsEnabled[client] = false;
 		if (g_bActivateCheckpointsOnStart[client])
 			g_bActivateCheckpointsOnStart[client] = false;
-		PrintToChat(client, "%t", "ToogleCheckpoints1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "ToogleCheckpoints1", MOSSGREEN, WHITE);
 	}
 	else
 	{
 		if (g_bTimeractivated[client])
 		{
-			PrintToChat(client, "%t", "ToggleCheckpoints3",MOSSGREEN, WHITE);
+			PrintToChat(client, "%t", "ToggleCheckpoints3", MOSSGREEN, WHITE);
 			g_bActivateCheckpointsOnStart[client] = true;
 		}
-		else 
+		else
 		{
 			g_bCheckpointsEnabled[client] = true;
-			PrintToChat(client, "%t", "ToggleCheckpoints2",MOSSGREEN, WHITE);
+			PrintToChat(client, "%t", "ToggleCheckpoints2", MOSSGREEN, WHITE);
 		}
 	}
 	return Plugin_Handled;
@@ -540,15 +540,15 @@ public Action Client_HideWeapon(int client, int args)
 {
 	HideViewModel(client);
 	if (g_bViewModel[client])
-		PrintToChat(client, "%t", "HideViewModel2",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideViewModel2", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "HideViewModel1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideViewModel1", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
 public void HideViewModel(int client)
 {
-	Client_SetDrawViewModel(client,!g_bViewModel[client]);
+	Client_SetDrawViewModel(client, !g_bViewModel[client]);
 	g_bViewModel[client] = !g_bViewModel[client];
 }
 public Action Client_Wr(int client, int args)
@@ -556,7 +556,7 @@ public Action Client_Wr(int client, int args)
 	if (IsValidClient(client))
 	{
 		if (g_fRecordMapTime == 9999999.0)
-			PrintToChat(client, "%t", "NoRecordTop", MOSSGREEN,WHITE);
+			PrintToChat(client, "%t", "NoRecordTop", MOSSGREEN, WHITE);
 		else
 			PrintMapRecords(client);
 	}
@@ -571,16 +571,16 @@ public Action Command_Tier(int client, int args)
 
 public Action Command_bTier(int client, int args)
 {
-	if (IsValidClient(client)) 
+	if (IsValidClient(client))
 	{
 		if (g_mapZoneGroupCount == 1)
 		{
 			PrintToChat(client, "[%cCK%c] There are no bonuses in this map.", MOSSGREEN, WHITE);
 			return;
 		}
-
+		
 		int found = 0;
-		for(int i = 1; i < MAXZONEGROUPS; i++)
+		for (int i = 1; i < MAXZONEGROUPS; i++)
 		{
 			if (g_bTierFound[i])
 			{
@@ -588,7 +588,7 @@ public Action Command_bTier(int client, int args)
 				found++;
 			}
 		}
-
+		
 		if (found == 0)
 		{
 			PrintToChat(client, "[%cCK%c] Bonus tiers have not been set on this map.", MOSSGREEN, WHITE);
@@ -598,37 +598,37 @@ public Action Command_bTier(int client, int args)
 
 public Action Client_Avg(int client, int args)
 {
-	if(!IsValidClient(client))
-		return Plugin_Handled;	
+	if (!IsValidClient(client))
+		return Plugin_Handled;
 	
 	char szProTime[32];
 	FormatTimeFloat(client, g_favg_maptime, 3, szProTime, sizeof(szProTime));
-
-	if (g_MapTimesCount==0)
-		Format(szProTime,32,"00:00:00");
-
-	PrintToChat(client, "%t", "AvgTime", MOSSGREEN,WHITE,GRAY,DARKBLUE,WHITE,szProTime,g_MapTimesCount);
-
+	
+	if (g_MapTimesCount == 0)
+		Format(szProTime, 32, "00:00:00");
+	
+	PrintToChat(client, "%t", "AvgTime", MOSSGREEN, WHITE, GRAY, DARKBLUE, WHITE, szProTime, g_MapTimesCount);
+	
 	if (g_bhasBonus)
 	{
 		char szBonusTime[32];
-
+		
 		for (int i = 1; i < g_mapZoneGroupCount; i++)
 		{
 			FormatTimeFloat(client, g_fAvg_BonusTime[i], 3, szBonusTime, sizeof(szBonusTime));
-
-			if (g_iBonusCount[i]==0)
-				Format(szBonusTime,32,"00:00:00");
-			PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN,WHITE,GRAY,YELLOW,WHITE,szBonusTime,g_iBonusCount[i]);
+			
+			if (g_iBonusCount[i] == 0)
+				Format(szBonusTime, 32, "00:00:00");
+			PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN, WHITE, GRAY, YELLOW, WHITE, szBonusTime, g_iBonusCount[i]);
 		}
 	}
-
+	
 	return Plugin_Handled;
 }
 
 public Action Client_Flashlight(int client, int args)
 {
-	if (IsValidClient(client) && IsPlayerAlive(client)) 
+	if (IsValidClient(client) && IsPlayerAlive(client))
 		SetEntProp(client, Prop_Send, "m_fEffects", GetEntProp(client, Prop_Send, "m_fEffects") ^ 4);
 	return Plugin_Handled;
 }
@@ -637,7 +637,7 @@ public Action Client_Challenge(int client, int args)
 {
 	if (!g_bChallenge[client] && !g_bChallenge_Request[client])
 	{
-		if(IsPlayerAlive(client))
+		if (IsPlayerAlive(client))
 		{
 			if (g_bNoBlock)
 			{
@@ -647,93 +647,93 @@ public Action Client_Challenge(int client, int args)
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nYour Points: %i", g_pr_points[client]);
 				else
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nPlayer point system disabled", g_pr_points[client]);
-				SetMenuTitle(menu2, tmp);		
-				AddMenuItem(menu2, "0", "No bet");			
+				SetMenuTitle(menu2, tmp);
+				AddMenuItem(menu2, "0", "No bet");
 				if (g_bPointSystem)
 				{
-					Format(tmp, 64, "%i", g_pr_PointUnit*50);
-					if (g_pr_PointUnit*5  <= g_pr_points[client])
-						AddMenuItem(menu2, tmp, tmp);	
-					Format(tmp, 64, "%i", (g_pr_PointUnit*100));
-					if ((g_pr_PointUnit*10)  <= g_pr_points[client])
-						AddMenuItem(menu2, tmp, tmp);		
-					Format(tmp, 64, "%i", (g_pr_PointUnit*250));
-					if ((g_pr_PointUnit*25)  <= g_pr_points[client])
-						AddMenuItem(menu2, tmp, tmp);		
-					Format(tmp, 64, "%i", (g_pr_PointUnit*500));
-					if ((g_pr_PointUnit*50)  <= g_pr_points[client])
-						AddMenuItem(menu2, tmp, tmp);	
+					Format(tmp, 64, "%i", g_pr_PointUnit * 50);
+					if (g_pr_PointUnit * 5 <= g_pr_points[client])
+						AddMenuItem(menu2, tmp, tmp);
+					Format(tmp, 64, "%i", (g_pr_PointUnit * 100));
+					if ((g_pr_PointUnit * 10) <= g_pr_points[client])
+						AddMenuItem(menu2, tmp, tmp);
+					Format(tmp, 64, "%i", (g_pr_PointUnit * 250));
+					if ((g_pr_PointUnit * 25) <= g_pr_points[client])
+						AddMenuItem(menu2, tmp, tmp);
+					Format(tmp, 64, "%i", (g_pr_PointUnit * 500));
+					if ((g_pr_PointUnit * 50) <= g_pr_points[client])
+						AddMenuItem(menu2, tmp, tmp);
 				}
 				SetMenuOptionFlags(menu2, MENUFLAG_BUTTON_EXIT);
 				DisplayMenu(menu2, client, MENU_TIME_FOREVER);
 			}
 			else
-				PrintToChat(client, "%t", "ChallengeFailed1",RED,WHITE);
+				PrintToChat(client, "%t", "ChallengeFailed1", RED, WHITE);
 		}
 		else
-			PrintToChat(client, "%t", "ChallengeFailed2",RED,WHITE);
+			PrintToChat(client, "%t", "ChallengeFailed2", RED, WHITE);
 	}
 	else
-		PrintToChat(client, "%t", "ChallengeFailed3",RED,WHITE);
+		PrintToChat(client, "%t", "ChallengeFailed3", RED, WHITE);
 	return Plugin_Handled;
 }
 
 
 public int ChallengeMenuHandler2(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		GetMenuItem(menu, param2, info, sizeof(info));
 		int value = StringToInt(info);
-		if (value == g_pr_PointUnit*50)		
+		if (value == g_pr_PointUnit * 50)
 			g_Challenge_Bet[param1] = 50;
 		else
-			if (value == (g_pr_PointUnit*100))	
+			if (value == (g_pr_PointUnit * 100))
 				g_Challenge_Bet[param1] = 100;
 			else
-				if (value == (g_pr_PointUnit*250))	
-					g_Challenge_Bet[param1] = 250;		
+				if (value == (g_pr_PointUnit * 250))
+					g_Challenge_Bet[param1] = 250;
 				else
-					if (value == (g_pr_PointUnit*500))	
-						g_Challenge_Bet[param1] = 500;		
+					if (value == (g_pr_PointUnit * 500))
+						g_Challenge_Bet[param1] = 500;
 					else
-						g_Challenge_Bet[param1] = 0;		
-		char szPlayerName[MAX_NAME_LENGTH];	
+						g_Challenge_Bet[param1] = 0;
+		char szPlayerName[MAX_NAME_LENGTH];
 		Menu menu2 = CreateMenu(ChallengeMenuHandler3);
 		SetMenuTitle(menu2, "ckSurf - Challenge: Select your Opponent");
-		int playerCount=0;
+		int playerCount = 0;
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i) && IsPlayerAlive(i) && i != param1 && !IsFakeClient(i))
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				AddMenuItem(menu2, szPlayerName, szPlayerName);	
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				AddMenuItem(menu2, szPlayerName, szPlayerName);
 				playerCount++;
 			}
 		}
-		if (playerCount>0)
+		if (playerCount > 0)
 		{
 			SetMenuOptionFlags(menu2, MENUFLAG_BUTTON_EXIT);
-			DisplayMenu(menu2, param1, MENU_TIME_FOREVER);		
+			DisplayMenu(menu2, param1, MENU_TIME_FOREVER);
 		}
 		else
 		{
-			PrintToChat(param1, "%t", "ChallengeFailed4",MOSSGREEN,WHITE);
+			PrintToChat(param1, "%t", "ChallengeFailed4", MOSSGREEN, WHITE);
 		}
 		
 	}
 	else
-
+		
 	if (action == MenuAction_End)
-	{	
+	{
 		CloseHandle(menu);
 	}
 }
 
 public int ChallengeMenuHandler3(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		char szPlayerName[MAX_NAME_LENGTH];
@@ -744,45 +744,45 @@ public int ChallengeMenuHandler3(Menu menu, MenuAction action, int param1, int p
 		{
 			if (IsValidClient(i) && IsPlayerAlive(i) && i != param1)
 			{
-				GetClientName(i, szTargetName, MAX_NAME_LENGTH);	
+				GetClientName(i, szTargetName, MAX_NAME_LENGTH);
 				
-				if(StrEqual(info,szTargetName))
+				if (StrEqual(info, szTargetName))
 				{
 					if (!g_bChallenge[i])
 					{
-						if ((g_pr_PointUnit*g_Challenge_Bet[param1]) <= g_pr_points[i])
+						if ((g_pr_PointUnit * g_Challenge_Bet[param1]) <= g_pr_points[i])
 						{
 							//id of challenger
 							char szSteamId[32];
 							//GetClientAuthString(i, szSteamId, 32);
-							GetClientAuthId(i, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);				
-							Format(g_szChallenge_OpponentID[param1], 32, szSteamId);					
+							GetClientAuthId(i, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH, true);
+							Format(g_szChallenge_OpponentID[param1], 32, szSteamId);
 							char cp[16];
 							if (g_bChallenge_Checkpoints[param1])
 								Format(cp, 16, " allowed");
 							else
 								Format(cp, 16, " forbidden");
 							int value = g_pr_PointUnit * g_Challenge_Bet[param1];
-							PrintToChat(param1, "%t", "Challenge1", RED,WHITE, YELLOW, szTargetName, value,cp);					
+							PrintToChat(param1, "%t", "Challenge1", RED, WHITE, YELLOW, szTargetName, value, cp);
 							//target msg
-							EmitSoundToClient(i,"buttons/button15.wav",i);
-							PrintToChat(i, "%t", "Challenge2", RED,WHITE, YELLOW, szPlayerName, GREEN, WHITE, value,cp);
+							EmitSoundToClient(i, "buttons/button15.wav", i);
+							PrintToChat(i, "%t", "Challenge2", RED, WHITE, YELLOW, szPlayerName, GREEN, WHITE, value, cp);
 							g_fChallenge_RequestTime[param1] = GetGameTime();
-							g_bChallenge_Request[param1]=true;
+							g_bChallenge_Request[param1] = true;
 						}
 						else
 						{
-							PrintToChat(param1, "%t", "ChallengeFailed5", RED,WHITE, szTargetName, g_pr_points[i]);
+							PrintToChat(param1, "%t", "ChallengeFailed5", RED, WHITE, szTargetName, g_pr_points[i]);
 						}
 					}
 					else
-						PrintToChat(param1, "%t", "ChallengeFailed6", RED,WHITE, szTargetName);
+						PrintToChat(param1, "%t", "ChallengeFailed6", RED, WHITE, szTargetName);
 				}
 			}
 		}
 	}
 	else if (action == MenuAction_End)
-	{	
+	{
 		CloseHandle(menu);
 	}
 }
@@ -790,9 +790,9 @@ public int ChallengeMenuHandler3(Menu menu, MenuAction action, int param1, int p
 public Action Client_Language(int client, int args)
 {
 	if (!IsValidClient(client))
-			return Plugin_Handled;
-
-	DisplayMenu(g_hLangMenu, client, MENU_TIME_FOREVER);	
+		return Plugin_Handled;
+	
+	DisplayMenu(g_hLangMenu, client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 
@@ -803,13 +803,13 @@ public Action Client_Abort(int client, int args)
 	{
 		if (g_bChallenge_Abort[client])
 		{
-			g_bChallenge_Abort[client]=false;
-			PrintToChat(client, "[%cCK%c] You have disagreed to abort the challenge.",RED,WHITE);
+			g_bChallenge_Abort[client] = false;
+			PrintToChat(client, "[%cCK%c] You have disagreed to abort the challenge.", RED, WHITE);
 		}
 		else
 		{
-			g_bChallenge_Abort[client]=true;
-			PrintToChat(client, "[%cCK%c] You have agreed to abort the challenge. Waiting for your opponent..",RED,WHITE, GREEN);
+			g_bChallenge_Abort[client] = true;
+			PrintToChat(client, "[%cCK%c] You have agreed to abort the challenge. Waiting for your opponent..", RED, WHITE, GREEN);
 		}
 	}
 	return Plugin_Handled;
@@ -820,46 +820,46 @@ public Action Client_Accept(int client, int args)
 	char szSteamId[32];
 	char szCP[32];
 	//GetClientAuthString(client, szSteamId, 32);
-	GetClientAuthId(client, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);	
-		
+	GetClientAuthId(client, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH, true);
+	
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i) && IsPlayerAlive(i) && i != client && g_bChallenge_Request[i])
 		{
-			if(StrEqual(szSteamId,g_szChallenge_OpponentID[i]))
-			{		
+			if (StrEqual(szSteamId, g_szChallenge_OpponentID[i]))
+			{
 				//GetClientAuthString(i, g_szChallenge_OpponentID[client], 32);
-				GetClientAuthId(i, AuthId_Steam2, g_szChallenge_OpponentID[client], MAX_NAME_LENGTH,true);	
-				g_bChallenge_Request[i]=false;
-				g_bChallenge[i]=true;
-				g_bChallenge[client]=true;
-				g_bChallenge_Abort[client]=false;
-				g_bChallenge_Abort[i]=false;
+				GetClientAuthId(i, AuthId_Steam2, g_szChallenge_OpponentID[client], MAX_NAME_LENGTH, true);
+				g_bChallenge_Request[i] = false;
+				g_bChallenge[i] = true;
+				g_bChallenge[client] = true;
+				g_bChallenge_Abort[client] = false;
+				g_bChallenge_Abort[i] = false;
 				g_Challenge_Bet[client] = g_Challenge_Bet[i];
 				g_bChallenge_Checkpoints[client] = g_bChallenge_Checkpoints[i];
-				TeleportEntity(client, g_fSpawnPosition[i],NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
-				TeleportEntity(i, g_fSpawnPosition[i],NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
+				TeleportEntity(client, g_fSpawnPosition[i], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ));
+				TeleportEntity(i, g_fSpawnPosition[i], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ));
 				SetEntityMoveType(i, MOVETYPE_NONE);
 				SetEntityMoveType(client, MOVETYPE_NONE);
 				g_CountdownTime[i] = 10;
 				g_CountdownTime[client] = 10;
-				CreateTimer(1.0, Timer_Countdown, i, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-				CreateTimer(1.0, Timer_Countdown, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-				PrintToChat(client, "%t", "Challenge3",RED,WHITE, YELLOW);
-				PrintToChat(i, "%t", "Challenge3",RED,WHITE, YELLOW);			
-				char szPlayer1[MAX_NAME_LENGTH];			
+				CreateTimer(1.0, Timer_Countdown, i, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(1.0, Timer_Countdown, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+				PrintToChat(client, "%t", "Challenge3", RED, WHITE, YELLOW);
+				PrintToChat(i, "%t", "Challenge3", RED, WHITE, YELLOW);
+				char szPlayer1[MAX_NAME_LENGTH];
 				char szPlayer2[MAX_NAME_LENGTH];
 				GetClientName(i, szPlayer1, MAX_NAME_LENGTH);
 				GetClientName(client, szPlayer2, MAX_NAME_LENGTH);
 				
 				if (g_bChallenge_Checkpoints[i])
-					Format(szCP, sizeof(szCP), "Allowed"); 
+					Format(szCP, sizeof(szCP), "Allowed");
 				else
 					Format(szCP, sizeof(szCP), "Forbidden");
-				int points = g_Challenge_Bet[i]*2*g_pr_PointUnit;
-				PrintToChatAll("[%cCK%c] Challenge: %c%s%c vs. %c%s%c",RED,WHITE,MOSSGREEN,szPlayer1,WHITE,MOSSGREEN,szPlayer2,WHITE);
-				PrintToChatAll("[%cCK%c] Checkpoints: %c%s%c, Pot: %c%ip",RED,WHITE,GRAY,szCP,WHITE,GRAY,points);
-		
+				int points = g_Challenge_Bet[i] * 2 * g_pr_PointUnit;
+				PrintToChatAll("[%cCK%c] Challenge: %c%s%c vs. %c%s%c", RED, WHITE, MOSSGREEN, szPlayer1, WHITE, MOSSGREEN, szPlayer2, WHITE);
+				PrintToChatAll("[%cCK%c] Checkpoints: %c%s%c, Pot: %c%ip", RED, WHITE, GRAY, szCP, WHITE, GRAY, points);
+				
 				int r1 = GetRandomInt(55, 255);
 				int r2 = GetRandomInt(55, 255);
 				int r3 = GetRandomInt(0, 55);
@@ -868,8 +868,8 @@ public Action Client_Accept(int client, int args)
 				SetEntityRenderColor(client, r1, r2, r3, r4);
 				Client_Stop(client, 1);
 				Client_Stop(i, 1);
-				CreateTimer(1.0, CheckChallenge, i, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-				CreateTimer(1.0, CheckChallenge, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(1.0, CheckChallenge, i, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(1.0, CheckChallenge, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -878,16 +878,16 @@ public Action Client_Accept(int client, int args)
 
 public Action Client_Usp(int client, int args)
 {
-	if(!IsValidClient(client) || !IsPlayerAlive(client))
+	if (!IsValidClient(client) || !IsPlayerAlive(client))
 		return Plugin_Handled;
-
+	
 	if ((GetGameTime() - g_flastClientUsp[client]) < 10.0)
 		return Plugin_Handled;
 	
 	g_flastClientUsp[client] = GetGameTime();
-
-	if(Client_HasWeapon(client, "weapon_hkp2000"))
-	{			
+	
+	if (Client_HasWeapon(client, "weapon_hkp2000"))
+	{
 		int weapon = Client_GetWeapon(client, "weapon_hkp2000");
 		FakeClientCommand(client, "use %s", weapon);
 		InstantSwitch(client, weapon);
@@ -897,55 +897,55 @@ public Action Client_Usp(int client, int args)
 	return Plugin_Handled;
 }
 
-void InstantSwitch(int client, int weapon, int timer = 0) 
+void InstantSwitch(int client, int weapon, int timer = 0)
 {
-	if (weapon==-1)
+	if (weapon == -1)
 		return;
-
+	
 	float GameTime = GetGameTime();
-
-	if (!timer) 
+	
+	if (!timer)
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GameTime);
 	}
-
+	
 	SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GameTime);
 	int ViewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
 	SetEntProp(ViewModel, Prop_Send, "m_nSequence", 0);
 }
 
-public Action Client_Surrender (int client, int args)
+public Action Client_Surrender(int client, int args)
 {
 	char szSteamIdOpponent[32];
-	char szNameOpponent[MAX_NAME_LENGTH];	
-	char szName[MAX_NAME_LENGTH];	
+	char szNameOpponent[MAX_NAME_LENGTH];
+	char szName[MAX_NAME_LENGTH];
 	if (g_bChallenge[client])
 	{
 		GetClientName(client, szName, MAX_NAME_LENGTH);
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i) && i != client)
-			{	
+			{
 				//GetClientAuthString(i, szSteamIdOpponent, 32);
-				GetClientAuthId(i, AuthId_Steam2, szSteamIdOpponent, MAX_NAME_LENGTH,true);	
-				if (StrEqual(szSteamIdOpponent,g_szChallenge_OpponentID[client]))
+				GetClientAuthId(i, AuthId_Steam2, szSteamIdOpponent, MAX_NAME_LENGTH, true);
+				if (StrEqual(szSteamIdOpponent, g_szChallenge_OpponentID[client]))
 				{
-					GetClientName(i, szNameOpponent, MAX_NAME_LENGTH);	
-					g_bChallenge[i]=false;
-					g_bChallenge[client]=false;
+					GetClientName(i, szNameOpponent, MAX_NAME_LENGTH);
+					g_bChallenge[i] = false;
+					g_bChallenge[client] = false;
 					db_insertPlayerChallenge(i);
-					SetEntityRenderColor(i, 255,255,255,255);
-					SetEntityRenderColor(client, 255,255,255,255);
+					SetEntityRenderColor(i, 255, 255, 255, 255);
+					SetEntityRenderColor(client, 255, 255, 255, 255);
 					
 					//msg
 					for (int j = 1; j <= MaxClients; j++)
 					{
 						if (IsValidClient(j) && IsValidEntity(j))
-						{						
-							PrintToChat(j, "%t", "Challenge4",RED,WHITE,MOSSGREEN,szNameOpponent, WHITE,MOSSGREEN,szName,WHITE);
+						{
+							PrintToChat(j, "%t", "Challenge4", RED, WHITE, MOSSGREEN, szNameOpponent, WHITE, MOSSGREEN, szName, WHITE);
 						}
-					}	
+					}
 					//win ratio
 					SetEntityMoveType(client, MOVETYPE_WALK);
 					SetEntityMoveType(i, MOVETYPE_WALK);
@@ -953,38 +953,38 @@ public Action Client_Surrender (int client, int args)
 					if (g_Challenge_Bet[client] > 0)
 					{
 						g_pr_showmsg[i] = true;
-						PrintToChat(i, "%t", "Rc_PlayerRankStart", MOSSGREEN,WHITE,GRAY);
-						PrintToChat(client, "%t", "Rc_PlayerRankStart", MOSSGREEN,WHITE,GRAY);
+						PrintToChat(i, "%t", "Rc_PlayerRankStart", MOSSGREEN, WHITE, GRAY);
+						PrintToChat(client, "%t", "Rc_PlayerRankStart", MOSSGREEN, WHITE, GRAY);
 						int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
 						for (int j = 1; j <= MaxClients; j++)
 							if (IsValidClient(j) && IsValidEntity(j))
-								PrintToChat(j, "[%cCK%c] %c%s%c has lost %c%i %cpoints!", MOSSGREEN, WHITE, PURPLE,szName, GRAY, RED, lostpoints,GRAY);
+								PrintToChat(j, "[%cCK%c] %c%s%c has lost %c%i %cpoints!", MOSSGREEN, WHITE, PURPLE, szName, GRAY, RED, lostpoints, GRAY);
 					}
 					//db update
-					CreateTimer(0.0, UpdatePlayerProfile, i,TIMER_FLAG_NO_MAPCHANGE);
-					CreateTimer(0.5, UpdatePlayerProfile, client,TIMER_FLAG_NO_MAPCHANGE);
-					i = MaxClients+1;
+					CreateTimer(0.0, UpdatePlayerProfile, i, TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(0.5, UpdatePlayerProfile, client, TIMER_FLAG_NO_MAPCHANGE);
+					i = MaxClients + 1;
 				}
 			}
-		}		
+		}
 	}
 	return Plugin_Handled;
 }
 
-public Action Command_ext_Menu(int client, const char[] command, int argc) 
+public Action Command_ext_Menu(int client, const char[] command, int argc)
 {
 	return Plugin_Handled;
 }
 
 //https://forums.alliedmods.net/showthread.php?t=206308
 public Action Command_JoinTeam(int client, const char[] command, int argc)
-{ 
-	if(!IsValidClient(client) || argc < 1)
-		return Plugin_Handled;		
+{
+	if (!IsValidClient(client) || argc < 1)
+		return Plugin_Handled;
 	char arg[4];
 	GetCmdArg(1, arg, sizeof(arg));
-	int toteam = StringToInt(arg);	
-
+	int toteam = StringToInt(arg);
+	
 	TeamChangeActual(client, toteam);
 	return Plugin_Handled;
 }
@@ -997,10 +997,10 @@ public Action Client_OptionMenu(int client, int args)
 
 public Action NoClip(int client, int args)
 {
-	if (!IsValidClient(client))					
-		return Plugin_Handled;	
-
-	Action_NoClip(client);	
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+	
+	Action_NoClip(client);
 	
 	return Plugin_Handled;
 }
@@ -1013,16 +1013,16 @@ public Action UnNoClip(int client, int args)
 }
 
 public Action Client_Top(int client, int args)
-{	
+{
 	ckTopMenu(client);
 	return Plugin_Handled;
 }
 
 public Action Client_MapTop(int client, int args)
-{	
-	char szArg[128];   
-
-	if (args==0)
+{
+	char szArg[128];
+	
+	if (args == 0)
 	{
 		Format(szArg, 128, "%s", g_szMapName);
 	}
@@ -1030,19 +1030,19 @@ public Action Client_MapTop(int client, int args)
 	{
 		GetCmdArg(1, szArg, 128);
 	}
-	db_selectMapTopSurfers(client,szArg);
+	db_selectMapTopSurfers(client, szArg);
 	return Plugin_Handled;
 }
 
 public Action Client_BonusTop(int client, int args)
 {
-	char szArg[128], zGrp; 
-
-	if (!IsValidClient(client)) 
+	char szArg[128], zGrp;
+	
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
-	switch(args) {
-		case 0: { // !btop
+	
+	switch (args) {
+		case 0: {  // !btop
 			if (g_mapZoneGroupCount == 1)
 			{
 				PrintToChat(client, "[%cCK%c] No bonus found on this map.", MOSSGREEN, WHITE);
@@ -1060,7 +1060,7 @@ public Action Client_BonusTop(int client, int args)
 				return Plugin_Handled;
 			}
 		}
-		case 1: { //!btop <mapname> / <bonus id>
+		case 1: {  //!btop <mapname> / <bonus id>
 			// 1st check if bonus id or mapname
 			GetCmdArg(1, szArg, 128);
 			if (StringToInt(szArg) == 0 && szArg[0] != '0') // passes, if not a number (argument is mapname)
@@ -1095,7 +1095,7 @@ public Action Client_BonusTop(int client, int args)
 				zGrp = StringToInt(szArg);
 				GetCmdArg(2, szArg, 128);
 			}
-
+			
 			if (0 > zGrp || zGrp > MAXZONEGROUPS)
 			{
 				PrintToChat(client, "[%cCK%c] Invalid bonus ID %i.", MOSSGREEN, WHITE, zGrp);
@@ -1113,49 +1113,49 @@ public Action Client_BonusTop(int client, int args)
 
 
 public Action Client_Spec(int client, int args)
-{	
+{
 	SpecPlayer(client, args);
 	return Plugin_Handled;
 }
 
 // Measure-Plugin by DaFox
 //https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action Command_Menu(int client, int args) 
+public Action Command_Menu(int client, int args)
 {
-	DisplayMenu(g_hMainMenu,client,MENU_TIME_FOREVER);
+	DisplayMenu(g_hMainMenu, client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 
-public int Handler_MainMenu(Menu menu,MenuAction action, int param1, int param2) 
+public int Handler_MainMenu(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select) 
+	if (action == MenuAction_Select)
 	{
-		switch(param2) 
+		switch (param2)
 		{
-			case 0: {	//Point 1 (Red)
-				GetPos(param1,0);
+			case 0: {  //Point 1 (Red)
+				GetPos(param1, 0);
 			}
-			case 1: {	//Point 2 (Green)
-				GetPos(param1,1);
+			case 1: {  //Point 2 (Green)
+				GetPos(param1, 1);
 			}
-			case 2: {	//Find Distance
-				if(g_bMeasurePosSet[param1][0] && g_bMeasurePosSet[param1][1]) 
+			case 2: {  //Find Distance
+				if (g_bMeasurePosSet[param1][0] && g_bMeasurePosSet[param1][1])
 				{
-					float vDist = GetVectorDistance(g_fvMeasurePos[param1][0],g_fvMeasurePos[param1][1]);
+					float vDist = GetVectorDistance(g_fvMeasurePos[param1][0], g_fvMeasurePos[param1][1]);
 					float vHightDist = (g_fvMeasurePos[param1][0][2] - g_fvMeasurePos[param1][1][2]);
-					PrintToChat(param1, "%t", "Measure1",MOSSGREEN,WHITE,vDist,vHightDist);					
-					Beam(param1,g_fvMeasurePos[param1][0],g_fvMeasurePos[param1][1],4.0,2.0,0,0,255);
+					PrintToChat(param1, "%t", "Measure1", MOSSGREEN, WHITE, vDist, vHightDist);
+					Beam(param1, g_fvMeasurePos[param1][0], g_fvMeasurePos[param1][1], 4.0, 2.0, 0, 0, 255);
 				}
-				else 
-					PrintToChat(param1, "%t", "Measure2",MOSSGREEN,WHITE);
+				else
+					PrintToChat(param1, "%t", "Measure2", MOSSGREEN, WHITE);
 			}
-			case 3: {	//Reset
+			case 3: {  //Reset
 				ResetPos(param1);
 			}
 		}
-		DisplayMenu(g_hMainMenu,param1,MENU_TIME_FOREVER);
+		DisplayMenu(g_hMainMenu, param1, MENU_TIME_FOREVER);
 	}
-	else if(action == MenuAction_Cancel) 
+	else if (action == MenuAction_Cancel)
 	{
 		ResetPos(param1);
 	}
@@ -1169,39 +1169,39 @@ public void SpecPlayer(int client, int args)
 	char szOrgTargetName[MAX_NAME_LENGTH];
 	char szTargetName[MAX_NAME_LENGTH];
 	char szArg[MAX_NAME_LENGTH];
-	Format(szTargetName, MAX_NAME_LENGTH, ""); 
-	Format(szOrgTargetName, MAX_NAME_LENGTH, ""); 
+	Format(szTargetName, MAX_NAME_LENGTH, "");
+	Format(szOrgTargetName, MAX_NAME_LENGTH, "");
 	
-	if (args==0)
-	{		
+	if (args == 0)
+	{
 		Menu menu = CreateMenu(SpecMenuHandler);
 		
-		if(g_bSpectate[client])
-			SetMenuTitle(menu, "ckSurf - Spec menu (press 'm' to rejoin a team!)");	
+		if (g_bSpectate[client])
+			SetMenuTitle(menu, "ckSurf - Spec menu (press 'm' to rejoin a team!)");
 		else
-			SetMenuTitle(menu, "ckSurf - Spec menu");	
-		int playerCount=0;
+			SetMenuTitle(menu, "ckSurf - Spec menu");
+		int playerCount = 0;
 		
 		//add replay bots
 		if (g_RecordBot != -1)
 		{
 			if (g_RecordBot != -1 && IsValidClient(g_RecordBot) && IsPlayerAlive(g_RecordBot))
 			{
-				Format(szPlayerName2, 256, "Map record replay (%s)",g_szReplayTime);
+				Format(szPlayerName2, 256, "Map record replay (%s)", g_szReplayTime);
 				AddMenuItem(menu, "MAP RECORD REPLAY", szPlayerName2);
 				playerCount++;
-			}   	
+			}
 		}
 		if (g_BonusBot != -1)
 		{
 			if (g_BonusBot != -1 && IsValidClient(g_BonusBot) && IsPlayerAlive(g_BonusBot))
 			{
-				Format(szPlayerName2, 256, "Bonus record replay (%s)",g_szBonusTime);
+				Format(szPlayerName2, 256, "Bonus record replay (%s)", g_szBonusTime);
 				AddMenuItem(menu, "BONUS RECORD REPLAY", szPlayerName2);
 				playerCount++;
-			}   	
+			}
 		}
-
+		
 		
 		int count = 0;
 		//add players
@@ -1209,80 +1209,80 @@ public void SpecPlayer(int client, int args)
 		{
 			if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
 			{
-				if (count==0)
+				if (count == 0)
 				{
 					int bestrank = 99999999;
 					for (int x = 1; x <= MaxClients; x++)
 					{
 						if (IsValidClient(x) && IsPlayerAlive(x) && x != client && !IsFakeClient(x) && g_PlayerRank[x] > 0)
 							if (g_PlayerRank[x] <= bestrank)
-								bestrank = g_PlayerRank[x];					
+							bestrank = g_PlayerRank[x];
 					}
 					char szMenu[128];
-					Format (szMenu,128,"Highest ranked player (#%i)",bestrank);
+					Format(szMenu, 128, "Highest ranked player (#%i)", bestrank);
 					AddMenuItem(menu, "brp123123xcxc", szMenu);
-					AddMenuItem(menu, "", "",ITEMDRAW_SPACER);					
+					AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
 				}
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				Format(szPlayerName2, 256, "%s (%s)",szPlayerName, g_pr_rankname[i]);
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				Format(szPlayerName2, 256, "%s (%s)", szPlayerName, g_pr_rankname[i]);
 				AddMenuItem(menu, szPlayerName, szPlayerName2);
-				playerCount++;		
+				playerCount++;
 				count++;
 			}
 		}
 		
-		if (playerCount>0 || g_RecordBot != -1 || g_BonusBot != -1)
+		if (playerCount > 0 || g_RecordBot != -1 || g_BonusBot != -1)
 		{
 			SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
-			DisplayMenu(menu, client, MENU_TIME_FOREVER);		
-		}		
+			DisplayMenu(menu, client, MENU_TIME_FOREVER);
+		}
 		else
-			PrintToChat(client, "%t", "ChallengeFailed4",MOSSGREEN,WHITE);
-			
+			PrintToChat(client, "%t", "ChallengeFailed4", MOSSGREEN, WHITE);
+		
 	}
-	else 
+	else
 	{
 		for (int i = 1; i < 20; i++)
 		{
 			GetCmdArg(i, szArg, MAX_NAME_LENGTH);
 			if (!StrEqual(szArg, "", false))
 			{
-				if (i==1)
-					Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg); 
+				if (i == 1)
+					Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg);
 				else
-					Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg); 
+					Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg);
 			}
-		}	
-		Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName); 
-		StringToUpper(szTargetName);	
+		}
+		Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName);
+		StringToUpper(szTargetName);
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsValidClient(i) && IsPlayerAlive(i) && i != client )
+			if (IsValidClient(i) && IsPlayerAlive(i) && i != client)
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);		
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
 				StringToUpper(szPlayerName);
 				if ((StrContains(szPlayerName, szTargetName) != -1))
 				{
 					ChangeClientTeam(client, 1);
-					SetEntPropEnt(client, Prop_Send, "m_hObserverTarget", i);  
+					SetEntPropEnt(client, Prop_Send, "m_hObserverTarget", i);
 					SetEntProp(client, Prop_Send, "m_iObserverMode", 4);
 					return;
 				}
 			}
-		}	
-		PrintToChat(client, "%t", "PlayerNotFound",MOSSGREEN,WHITE, szOrgTargetName);	
+		}
+		PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, WHITE, szOrgTargetName);
 	}
 }
 
 public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		char szPlayerName[MAX_NAME_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
-	
-		if(StrEqual(info,"brp123123xcxc"))
+		
+		if (StrEqual(info, "brp123123xcxc"))
 		{
 			int playerid;
 			int count = 0;
@@ -1297,41 +1297,41 @@ public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 						playerid = i;
 						count++;
 					}
-				}						
+				}
 			}
-			if (count==0)
-				PrintToChat(param1, "%t", "NoPlayerTop", MOSSGREEN,WHITE);
+			if (count == 0)
+				PrintToChat(param1, "%t", "NoPlayerTop", MOSSGREEN, WHITE);
 			else
 			{
 				ChangeClientTeam(param1, 1);
-				SetEntPropEnt(param1, Prop_Send, "m_hObserverTarget", playerid);  
-				SetEntProp(param1, Prop_Send, "m_iObserverMode", 4);						
+				SetEntPropEnt(param1, Prop_Send, "m_hObserverTarget", playerid);
+				SetEntProp(param1, Prop_Send, "m_iObserverMode", 4);
 			}
 		}
 		else
-		{		
+		{
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsValidClient(i) && IsPlayerAlive(i) && i != param1)
 				{
-					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
+					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
 					if (i == g_RecordBot)
-						Format(szPlayerName, MAX_NAME_LENGTH, "MAP RECORD REPLAY"); 
+						Format(szPlayerName, MAX_NAME_LENGTH, "MAP RECORD REPLAY");
 					if (i == g_BonusBot)
 						Format(szPlayerName, MAX_NAME_LENGTH, "BONUS RECORD REPLAY");
-					if(StrEqual(info,szPlayerName))
+					if (StrEqual(info, szPlayerName))
 					{
 						ChangeClientTeam(param1, 1);
-						SetEntPropEnt(param1, Prop_Send, "m_hObserverTarget", i);  
-						SetEntProp(param1, Prop_Send, "m_iObserverMode", 4);			
+						SetEntPropEnt(param1, Prop_Send, "m_hObserverTarget", i);
+						SetEntProp(param1, Prop_Send, "m_iObserverMode", 4);
 					}
-				}			
+				}
 			}
-		}		
+		}
 	}
 	else
-	if (action == MenuAction_End)
-	{	
+		if (action == MenuAction_End)
+	{
 		CloseHandle(menu);
 	}
 }
@@ -1339,60 +1339,60 @@ public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 public void CompareMenu(int client, int args)
 {
 	char szArg[MAX_NAME_LENGTH];
-	char szPlayerName[MAX_NAME_LENGTH];	
+	char szPlayerName[MAX_NAME_LENGTH];
 	if (args == 0)
 	{
 		Format(szPlayerName, MAX_NAME_LENGTH, "");
 		Menu menu = CreateMenu(CompareSelectMenuHandler);
-		SetMenuTitle(menu, "ckSurf - Compare menu");		
-		int playerCount=0;
+		SetMenuTitle(menu, "ckSurf - Compare menu");
+		int playerCount = 0;
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				AddMenuItem(menu, szPlayerName, szPlayerName);	
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				AddMenuItem(menu, szPlayerName, szPlayerName);
 				playerCount++;
 			}
 		}
-		if (playerCount>0)
+		if (playerCount > 0)
 		{
 			SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
-			DisplayMenu(menu, client, MENU_TIME_FOREVER);	
-		}	
+			DisplayMenu(menu, client, MENU_TIME_FOREVER);
+		}
 		else
-			PrintToChat(client,"[%cCK%c] No valid players found",MOSSGREEN,WHITE);
+			PrintToChat(client, "[%cCK%c] No valid players found", MOSSGREEN, WHITE);
 		return;
 	}
 	else
-	{	
+	{
 		for (int i = 1; i < 20; i++)
 		{
 			GetCmdArg(i, szArg, MAX_NAME_LENGTH);
 			if (!StrEqual(szArg, "", false))
 			{
-				if (i==1)
-					Format(szPlayerName, MAX_NAME_LENGTH, "%s", szArg); 
+				if (i == 1)
+					Format(szPlayerName, MAX_NAME_LENGTH, "%s", szArg);
 				else
-					Format(szPlayerName, MAX_NAME_LENGTH, "%s %s",  szPlayerName, szArg); 
+					Format(szPlayerName, MAX_NAME_LENGTH, "%s %s", szPlayerName, szArg);
 			}
 		}
 		//player ingame? new name?
-		if (!StrEqual(szPlayerName,"",false))
+		if (!StrEqual(szPlayerName, "", false))
 		{
 			int id = -1;
 			char szName[MAX_NAME_LENGTH];
-			char szName2[MAX_NAME_LENGTH];		
+			char szName2[MAX_NAME_LENGTH];
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (IsValidClient(i) && i!=client)
+				if (IsValidClient(i) && i != client)
 				{
-					GetClientName(i, szName, MAX_NAME_LENGTH);		
+					GetClientName(i, szName, MAX_NAME_LENGTH);
 					StringToUpper(szName);
-					Format(szName2, MAX_NAME_LENGTH, "%s", szPlayerName); 
+					Format(szName2, MAX_NAME_LENGTH, "%s", szPlayerName);
 					if ((StrContains(szName, szName2) != -1))
 					{
-						id=i;
+						id = i;
 						continue;
 					}
 				}
@@ -1401,13 +1401,13 @@ public void CompareMenu(int client, int args)
 				db_viewPlayerRank2(client, g_szSteamID[id]);
 			else
 				db_viewPlayerAll2(client, szPlayerName);
-		}	
+		}
 	}
 }
 
 public int CompareSelectMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		char szPlayerName[MAX_NAME_LENGTH];
@@ -1417,20 +1417,20 @@ public int CompareSelectMenuHandler(Menu menu, MenuAction action, int param1, in
 		{
 			if (IsValidClient(i) && i != param1)
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				if(StrEqual(info,szPlayerName))
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				if (StrEqual(info, szPlayerName))
 				{
 					db_viewPlayerRank2(param1, g_szSteamID[param1]);
 				}
 			}
 		}
-		CompareMenu(param1,0);
+		CompareMenu(param1, 0);
 	}
 	else
-	if (action == MenuAction_End)
-	{	
+		if (action == MenuAction_End)
+	{
 		if (IsValidClient(param1))
-			g_bSelectProfile[param1]=false;
+			g_bSelectProfile[param1] = false;
 		CloseHandle(menu);
 	}
 }
@@ -1441,7 +1441,7 @@ public void ProfileMenu(int client, int args)
 	float diff = GetGameTime() - g_fProfileMenuLastQuery[client];
 	if (diff < 0.5)
 	{
-		g_bSelectProfile[client]=false;
+		g_bSelectProfile[client] = false;
 		return;
 	}
 	g_fProfileMenuLastQuery[client] = GetGameTime();
@@ -1450,63 +1450,63 @@ public void ProfileMenu(int client, int args)
 	//no argument
 	if (args == 0)
 	{
-		char szPlayerName[MAX_NAME_LENGTH];	
+		char szPlayerName[MAX_NAME_LENGTH];
 		Menu menu = CreateMenu(ProfileSelectMenuHandler);
-		SetMenuTitle(menu, "ckSurf - Profile menu");		
-		GetClientName(client, szPlayerName, MAX_NAME_LENGTH);	
-		AddMenuItem(menu, szPlayerName, szPlayerName);	
-		int playerCount=1;
+		SetMenuTitle(menu, "ckSurf - Profile menu");
+		GetClientName(client, szPlayerName, MAX_NAME_LENGTH);
+		AddMenuItem(menu, szPlayerName, szPlayerName);
+		int playerCount = 1;
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i) && i != client && !IsFakeClient(i))
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				AddMenuItem(menu, szPlayerName, szPlayerName);	
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				AddMenuItem(menu, szPlayerName, szPlayerName);
 				playerCount++;
 			}
 		}
-		g_bSelectProfile[client]=true;
+		g_bSelectProfile[client] = true;
 		SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
-		DisplayMenu(menu, client, MENU_TIME_FOREVER);		
+		DisplayMenu(menu, client, MENU_TIME_FOREVER);
 		return;
 	}
-	else 
+	else
 	{
 		if (args != -1)
 		{
-			g_bSelectProfile[client]=false;
+			g_bSelectProfile[client] = false;
 			Format(g_szProfileName[client], MAX_NAME_LENGTH, "");
 			for (int i = 1; i < 20; i++)
 			{
 				GetCmdArg(i, szArg, MAX_NAME_LENGTH);
 				if (!StrEqual(szArg, "", false))
 				{
-					if (i==1)
-						Format( g_szProfileName[client], MAX_NAME_LENGTH, "%s", szArg); 
+					if (i == 1)
+						Format(g_szProfileName[client], MAX_NAME_LENGTH, "%s", szArg);
 					else
-						Format( g_szProfileName[client], MAX_NAME_LENGTH, "%s %s",  g_szProfileName[client], szArg); 
+						Format(g_szProfileName[client], MAX_NAME_LENGTH, "%s %s", g_szProfileName[client], szArg);
 				}
 			}
 		}
 	}
 	//player ingame? new name?
-	if (args != 0 && !StrEqual(g_szProfileName[client],"",false))
+	if (args != 0 && !StrEqual(g_szProfileName[client], "", false))
 	{
-		bool bPlayerFound=false;
+		bool bPlayerFound = false;
 		char szSteamId2[32];
 		char szName[MAX_NAME_LENGTH];
-		char szName2[MAX_NAME_LENGTH];		
+		char szName2[MAX_NAME_LENGTH];
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i))
 			{
-				GetClientName(i, szName, MAX_NAME_LENGTH);		
+				GetClientName(i, szName, MAX_NAME_LENGTH);
 				StringToUpper(szName);
-				Format(szName2, MAX_NAME_LENGTH, "%s", g_szProfileName[client]); 
+				Format(szName2, MAX_NAME_LENGTH, "%s", g_szProfileName[client]);
 				if ((StrContains(szName, szName2) != -1))
 				{
-					bPlayerFound=true;
-					GetClientAuthId(i, AuthId_Steam2, szSteamId2, MAX_NAME_LENGTH,true);	
+					bPlayerFound = true;
+					GetClientAuthId(i, AuthId_Steam2, szSteamId2, MAX_NAME_LENGTH, true);
 					//GetClientAuthString(i, szSteamId2, 32);
 					continue;
 				}
@@ -1521,7 +1521,7 @@ public void ProfileMenu(int client, int args)
 
 public int ProfileSelectMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		char szPlayerName[MAX_NAME_LENGTH];
@@ -1531,12 +1531,12 @@ public int ProfileSelectMenuHandler(Menu menu, MenuAction action, int param1, in
 		{
 			if (IsValidClient(i))
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				if(StrEqual(info,szPlayerName))
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				if (StrEqual(info, szPlayerName))
 				{
-					Format(g_szProfileName[param1], MAX_NAME_LENGTH, "%s", szPlayerName); 
+					Format(g_szProfileName[param1], MAX_NAME_LENGTH, "%s", szPlayerName);
 					char szSteamId[32];
-					GetClientAuthId(i, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH,true);	
+					GetClientAuthId(i, AuthId_Steam2, szSteamId, MAX_NAME_LENGTH, true);
 					//GetClientAuthString(i, szSteamId, 32);	
 					db_viewPlayerRank(param1, szSteamId);
 				}
@@ -1544,44 +1544,44 @@ public int ProfileSelectMenuHandler(Menu menu, MenuAction action, int param1, in
 		}
 	}
 	else
-	if (action == MenuAction_End)
-	{	
+		if (action == MenuAction_End)
+	{
 		if (IsValidClient(param1))
-			g_bSelectProfile[param1]=false;
+			g_bSelectProfile[param1] = false;
 		CloseHandle(menu);
 	}
 }
 
-public Action Client_AutoBhop(int client, int args) 
-{ 	
+public Action Client_AutoBhop(int client, int args)
+{
 	AutoBhop(client);
 	if (g_bAutoBhop)
 	{
 		if (!g_bAutoBhopClient[client])
-			PrintToChat(client, "%t", "AutoBhop2",MOSSGREEN,WHITE);
+			PrintToChat(client, "%t", "AutoBhop2", MOSSGREEN, WHITE);
 		else
-			PrintToChat(client, "%t", "AutoBhop1",MOSSGREEN,WHITE);
+			PrintToChat(client, "%t", "AutoBhop1", MOSSGREEN, WHITE);
 	}
 	return Plugin_Handled;
-} 
+}
 
 public void AutoBhop(int client)
 {
 	if (!g_bAutoBhop)
-		PrintToChat(client, "%t", "AutoBhop3",MOSSGREEN,WHITE);
-
-	g_bAutoBhopClient[client] = !g_bAutoBhopClient[client]; 
+		PrintToChat(client, "%t", "AutoBhop3", MOSSGREEN, WHITE);
+	
+	g_bAutoBhopClient[client] = !g_bAutoBhopClient[client];
 }
 
-public Action Client_Hide(int client, int args) 
-{ 	
+public Action Client_Hide(int client, int args)
+{
 	HideMethod(client);
 	if (!g_bHide[client])
-		PrintToChat(client, "%t", "Hide1",MOSSGREEN,WHITE);
+		PrintToChat(client, "%t", "Hide1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "Hide2",MOSSGREEN,WHITE);
+		PrintToChat(client, "%t", "Hide2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
-} 
+}
 
 public void HideMethod(int client)
 {
@@ -1609,54 +1609,54 @@ public Action Client_Help(int client, int args)
 public Action Client_Ranks(int client, int args)
 {
 	if (IsValidClient(client))
-		PrintToChat(client, "[%cCK%c] %c%s (0p)  %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)",
-		MOSSGREEN,WHITE, WHITE, g_szSkillGroups[0],WHITE,g_szSkillGroups[1],WHITE,g_pr_rank_Percentage[1], GRAY, g_szSkillGroups[2],GRAY,g_pr_rank_Percentage[2],LIGHTBLUE, 
-		g_szSkillGroups[3],LIGHTBLUE,g_pr_rank_Percentage[3],BLUE, g_szSkillGroups[4],BLUE,g_pr_rank_Percentage[4],DARKBLUE,g_szSkillGroups[5],DARKBLUE,g_pr_rank_Percentage[5],
-		PINK,g_szSkillGroups[6],PINK,g_pr_rank_Percentage[6],LIGHTRED,g_szSkillGroups[7],LIGHTRED,g_pr_rank_Percentage[7],DARKRED,g_szSkillGroups[8],DARKRED,g_pr_rank_Percentage[8]);
+		PrintToChat(client, "[%cCK%c] %c%s (0p)  %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)", 
+		MOSSGREEN, WHITE, WHITE, g_szSkillGroups[0], WHITE, g_szSkillGroups[1], WHITE, g_pr_rank_Percentage[1], GRAY, g_szSkillGroups[2], GRAY, g_pr_rank_Percentage[2], LIGHTBLUE, 
+		g_szSkillGroups[3], LIGHTBLUE, g_pr_rank_Percentage[3], BLUE, g_szSkillGroups[4], BLUE, g_pr_rank_Percentage[4], DARKBLUE, g_szSkillGroups[5], DARKBLUE, g_pr_rank_Percentage[5], 
+		PINK, g_szSkillGroups[6], PINK, g_pr_rank_Percentage[6], LIGHTRED, g_szSkillGroups[7], LIGHTRED, g_pr_rank_Percentage[7], DARKRED, g_szSkillGroups[8], DARKRED, g_pr_rank_Percentage[8]);
 	return Plugin_Handled;
 }
 
 public Action Client_Profile(int client, int args)
 {
-	ProfileMenu(client,args);
+	ProfileMenu(client, args);
 	return Plugin_Handled;
 }
 
 public Action Client_Compare(int client, int args)
 {
-	CompareMenu(client,args);
+	CompareMenu(client, args);
 	return Plugin_Handled;
 }
 
 public Action Client_RankingSystem(int client, int args)
 {
-	PrintToChat(client,"[%cCK%c]%c Loading html page.. (requires cl_disablehtmlmotd 0)", MOSSGREEN,WHITE,LIMEGREEN);
-	ShowMOTDPanel(client, "ckSurf - Ranking System" ,"http://koti.kapsi.fi/~mukavajoni/ranking/index.html", MOTDPANEL_TYPE_URL);
+	PrintToChat(client, "[%cCK%c]%c Loading html page.. (requires cl_disablehtmlmotd 0)", MOSSGREEN, WHITE, LIMEGREEN);
+	ShowMOTDPanel(client, "ckSurf - Ranking System", "http://koti.kapsi.fi/~mukavajoni/ranking/index.html", MOTDPANEL_TYPE_URL);
 	return Plugin_Handled;
 }
 
-public Action Client_Pause(int client, int args) 
+public Action Client_Pause(int client, int args)
 {
-	if (GetClientTeam(client) == 1) return Plugin_Handled;
-	PauseMethod(client);	
-	if (g_bPause[client]==false)
-		PrintToChat(client, "%t", "Pause2",MOSSGREEN, WHITE, RED, WHITE);
+	if (GetClientTeam(client) == 1)return Plugin_Handled;
+	PauseMethod(client);
+	if (g_bPause[client] == false)
+		PrintToChat(client, "%t", "Pause2", MOSSGREEN, WHITE, RED, WHITE);
 	else
-		PrintToChat(client, "%t", "Pause3",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "Pause3", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
 public void PauseMethod(int client)
 {
-	if (GetClientTeam(client) == 1) return;
-	if (g_bPause[client]==false && IsValidEntity(client))
+	if (GetClientTeam(client) == 1)return;
+	if (g_bPause[client] == false && IsValidEntity(client))
 	{
-		if (g_bPauseServerside==false && client != g_RecordBot && client != g_BonusBot) 
+		if (g_bPauseServerside == false && client != g_RecordBot && client != g_BonusBot)
 		{
-			PrintToChat(client, "%t", "Pause1",MOSSGREEN, WHITE,RED,WHITE);
+			PrintToChat(client, "%t", "Pause1", MOSSGREEN, WHITE, RED, WHITE);
 			return;
 		}
-		g_bPause[client]=true;		
+		g_bPause[client] = true;
 		float fVel[3];
 		fVel[0] = 0.000000;
 		fVel[1] = 0.000000;
@@ -1664,23 +1664,23 @@ public void PauseMethod(int client)
 		SetEntPropVector(client, Prop_Data, "m_vecVelocity", fVel);
 		SetEntityMoveType(client, MOVETYPE_NONE);
 		//Timer enabled?
-		if(g_bTimeractivated[client] == true)
+		if (g_bTimeractivated[client] == true)
 		{
 			g_fStartPauseTime[client] = GetGameTime();
 			if (g_fPauseTime[client] > 0.0)
-				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];	
+				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];
 		}
 		SetEntityRenderMode(client, RENDER_NONE);
 		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 	}
 	else
 	{
-		if(g_fStartTime[client] != -1.0 && g_bTimeractivated[client] == true)
+		if (g_fStartTime[client] != -1.0 && g_bTimeractivated[client] == true)
 		{
 			g_fPauseTime[client] = GetGameTime() - g_fStartPauseTime[client];
 		}
-		g_bNoClip[client]=false;
-		g_bPause[client]=false;
+		g_bNoClip[client] = false;
+		g_bPause[client] = false;
 		if (!g_bRoundEnd)
 			SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_NORMAL);
@@ -1688,18 +1688,18 @@ public void PauseMethod(int client)
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 		else
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 5, true);
-
-		TeleportEntity(client, NULL_VECTOR,NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
+		
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ));
 	}
 }
 
-public Action Client_HideSpecs(int client, int args) 
+public Action Client_HideSpecs(int client, int args)
 {
 	HideSpecs(client);
 	if (g_bShowSpecs[client] == true)
-		PrintToChat(client, "%t", "HideSpecs1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideSpecs1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "HideSpecs2",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "HideSpecs2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
@@ -1708,13 +1708,13 @@ public void HideSpecs(int client)
 	g_bShowSpecs[client] = !g_bShowSpecs[client];
 }
 
-public Action Client_Showtime(int client, int args) 
+public Action Client_Showtime(int client, int args)
 {
 	ShowTime(client);
 	if (g_bShowTime[client])
-		PrintToChat(client, "%t", "Showtime1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "Showtime1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "Showtime2",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "Showtime2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
@@ -1722,72 +1722,72 @@ public void ShowTime(int client)
 {
 	g_bShowTime[client] = !g_bShowTime[client];
 }
-	
+
 public int GoToMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		char szPlayerName[MAX_NAME_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 		for (int i = 1; i <= MaxClients; i++)
-		{	
+		{
 			if (IsValidClient(i) && IsPlayerAlive(i) && i != param1)
 			{
-				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-				if(StrEqual(info,szPlayerName))
+				GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+				if (StrEqual(info, szPlayerName))
 				{
-					GotoMethod(param1,i);
+					GotoMethod(param1, i);
 				}
 				else
 				{
 					if (i == MaxClients)
 					{
-						PrintToChat(param1, "%t", "Goto4", MOSSGREEN,WHITE, szPlayerName);
-						Client_GoTo(param1,0);
+						PrintToChat(param1, "%t", "Goto4", MOSSGREEN, WHITE, szPlayerName);
+						Client_GoTo(param1, 0);
 					}
 				}
 			}
 		}
 	}
 	else
-	if (action == MenuAction_End)
-	{	
+		if (action == MenuAction_End)
+	{
 		CloseHandle(menu);
 	}
 }
 
 public void GotoMethod(int client, int target)
-{	
+{
 	if (!IsValidClient(client) || IsFakeClient(client))
 		return;
 	char szTargetName[MAX_NAME_LENGTH];
-	GetClientName(target, szTargetName, MAX_NAME_LENGTH);	
+	GetClientName(target, szTargetName, MAX_NAME_LENGTH);
 	if (GetEntityFlags(target) & FL_ONGROUND)
 	{
 		Client_Stop(client, 0);
-
+		
 		int ducked = GetEntProp(target, Prop_Send, "m_bDucked");
 		int ducking = GetEntProp(target, Prop_Send, "m_bDucking");
 		if (!(GetClientButtons(client) & IN_DUCK) && ducked == 0 && ducking == 0)
 		{
-			if (GetClientTeam(client) == 1 ||GetClientTeam(client) == 0)
+			if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0)
 			{
 				float position[3];
 				float angles[3];
-				GetClientAbsOrigin(target,position);
-				GetClientEyeAngles(target,angles);
-
-				AddVectors(position, angles, g_fTeleLocation[client]);
-				g_fTeleLocation[client][0]=FloatDiv(g_fTeleLocation[client][0], 2.0);
-				g_fTeleLocation[client][1]=FloatDiv(g_fTeleLocation[client][1], 2.0);
-				g_fTeleLocation[client][2]=FloatDiv(g_fTeleLocation[client][2], 2.0);
+				GetClientAbsOrigin(target, position);
+				GetClientEyeAngles(target, angles);
 				
-
+				AddVectors(position, angles, g_fTeleLocation[client]);
+				g_fTeleLocation[client][0] = FloatDiv(g_fTeleLocation[client][0], 2.0);
+				g_fTeleLocation[client][1] = FloatDiv(g_fTeleLocation[client][1], 2.0);
+				g_fTeleLocation[client][2] = FloatDiv(g_fTeleLocation[client][2], 2.0);
+				
+				
 				g_fCurVelVec[client][0] = 0.0;
 				g_fCurVelVec[client][1] = 0.0;
 				g_fCurVelVec[client][2] = 0.0;
-
+				
 				g_bRespawnPosition[client] = false;
 				g_specToStage[client] = true;
 				TeamChangeActual(client, 0);
@@ -1796,112 +1796,112 @@ public void GotoMethod(int client, int target)
 			{
 				float position[3];
 				float angles[3];
-				GetClientAbsOrigin(target,position);
-				GetClientEyeAngles(target,angles);
-				performTeleport(client, position, angles, view_as<float>({0.0,0.0,-100.0}), g_iClientInZone[target][3], target);
+				GetClientAbsOrigin(target, position);
+				GetClientEyeAngles(target, angles);
+				performTeleport(client, position, angles, view_as<float>( { 0.0, 0.0, -100.0 } ), g_iClientInZone[target][3], target);
 				//TeleportEntity(client, position, angles, Float:{0.0,0.0,-100.0});
 				char szClientName[MAX_NAME_LENGTH];
-				GetClientName(client, szClientName, MAX_NAME_LENGTH);	
-				PrintToChat(target, "%t", "Goto5", MOSSGREEN,WHITE, szClientName);
+				GetClientName(client, szClientName, MAX_NAME_LENGTH);
+				PrintToChat(target, "%t", "Goto5", MOSSGREEN, WHITE, szClientName);
 			}
 		}
 		else
 		{
-			PrintToChat(client, "%t", "Goto6", MOSSGREEN,WHITE, szTargetName);
-			Client_GoTo(client,0);
+			PrintToChat(client, "%t", "Goto6", MOSSGREEN, WHITE, szTargetName);
+			Client_GoTo(client, 0);
 		}
 	}
 	else
 	{
-		PrintToChat(client, "%t", "Goto7", MOSSGREEN,WHITE, szTargetName);
-		Client_GoTo(client,0);
+		PrintToChat(client, "%t", "Goto7", MOSSGREEN, WHITE, szTargetName);
+		Client_GoTo(client, 0);
 	}
 }
 
 
 
-public Action Client_GoTo(int client, int args) 
+public Action Client_GoTo(int client, int args)
 {
 	if (!g_bGoToServer)
-		PrintToChat(client, "%t", "Goto1",MOSSGREEN,WHITE,RED,WHITE);
+		PrintToChat(client, "%t", "Goto1", MOSSGREEN, WHITE, RED, WHITE);
 	else
-	if (!g_bNoBlock)
-		PrintToChat(client, "%t", "Goto2",MOSSGREEN,WHITE);
-	else
-	if (g_bTimeractivated[client])
-		PrintToChat(client, "%t", "Goto3",MOSSGREEN,WHITE, GREEN,WHITE);
-	else
-	{
-		char szPlayerName[MAX_NAME_LENGTH];
-		char szOrgTargetName[MAX_NAME_LENGTH];
-		char szTargetName[MAX_NAME_LENGTH];
-		char szArg[MAX_NAME_LENGTH];
-		if (args==0)
-		{
-			Menu menu = CreateMenu(GoToMenuHandler);
-			SetMenuTitle(menu, "ckSurf - Goto menu");
-			int playerCount=0;
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
-				{
-					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);	
-					AddMenuItem(menu, szPlayerName, szPlayerName);	
-					playerCount++;
-				}
-			}
-			if (playerCount>0)
-			{
-				SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
-				DisplayMenu(menu, client, MENU_TIME_FOREVER);		
-			}
+		if (!g_bNoBlock)
+			PrintToChat(client, "%t", "Goto2", MOSSGREEN, WHITE);
+		else
+			if (g_bTimeractivated[client])
+				PrintToChat(client, "%t", "Goto3", MOSSGREEN, WHITE, GREEN, WHITE);
 			else
 			{
-				CloseHandle(menu);
-				PrintToChat(client, "%t", "ChallengeFailed4",MOSSGREEN,WHITE);
-			}
-		}
-		else 
-		{
-			for (int i = 1; i < 20; i++)
-			{
-				GetCmdArg(i, szArg, MAX_NAME_LENGTH);
-				if (!StrEqual(szArg, "", false))
+				char szPlayerName[MAX_NAME_LENGTH];
+				char szOrgTargetName[MAX_NAME_LENGTH];
+				char szTargetName[MAX_NAME_LENGTH];
+				char szArg[MAX_NAME_LENGTH];
+				if (args == 0)
 				{
-					if (i==1)
-						Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg); 
-					else
-						Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg); 
-				}
-			}	
-			Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName); 
-			StringToUpper(szTargetName);	
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsValidClient(i) && IsPlayerAlive(i) && i != client )
-				{
-					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);		
-					StringToUpper(szPlayerName);
-					if ((StrContains(szPlayerName, szTargetName) != -1))
+					Menu menu = CreateMenu(GoToMenuHandler);
+					SetMenuTitle(menu, "ckSurf - Goto menu");
+					int playerCount = 0;
+					for (int i = 1; i <= MaxClients; i++)
 					{
-						GotoMethod(client,i);
-						return Plugin_Handled;
+						if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
+						{
+							GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+							AddMenuItem(menu, szPlayerName, szPlayerName);
+							playerCount++;
+						}
+					}
+					if (playerCount > 0)
+					{
+						SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
+						DisplayMenu(menu, client, MENU_TIME_FOREVER);
+					}
+					else
+					{
+						CloseHandle(menu);
+						PrintToChat(client, "%t", "ChallengeFailed4", MOSSGREEN, WHITE);
 					}
 				}
-			}	
-			PrintToChat(client, "%t", "PlayerNotFound",MOSSGREEN,WHITE, szOrgTargetName);	
-		}
-	}
+				else
+				{
+					for (int i = 1; i < 20; i++)
+					{
+						GetCmdArg(i, szArg, MAX_NAME_LENGTH);
+						if (!StrEqual(szArg, "", false))
+						{
+							if (i == 1)
+								Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg);
+							else
+								Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg);
+						}
+					}
+					Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName);
+					StringToUpper(szTargetName);
+					for (int i = 1; i <= MaxClients; i++)
+					{
+						if (IsValidClient(i) && IsPlayerAlive(i) && i != client)
+						{
+							GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+							StringToUpper(szPlayerName);
+							if ((StrContains(szPlayerName, szTargetName) != -1))
+							{
+								GotoMethod(client, i);
+								return Plugin_Handled;
+							}
+						}
+					}
+					PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, WHITE, szOrgTargetName);
+				}
+			}
 	return Plugin_Handled;
 }
-		
-public Action Client_QuakeSounds(int client, int args) 
+
+public Action Client_QuakeSounds(int client, int args)
 {
 	QuakeSounds(client);
 	if (g_bEnableQuakeSounds[client])
-		PrintToChat(client, "%t", "QuakeSounds1", MOSSGREEN,WHITE);
+		PrintToChat(client, "%t", "QuakeSounds1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "QuakeSounds2", MOSSGREEN,WHITE);
+		PrintToChat(client, "%t", "QuakeSounds2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
@@ -1915,7 +1915,7 @@ public Action Client_Stop(int client, int args)
 	if (g_bTimeractivated[client])
 	{
 		//PlayerPanel(client);
-		g_bTimeractivated[client] = false;	
+		g_bTimeractivated[client] = false;
 		g_fStartTime[client] = -1.0;
 		g_fCurrentRunTime[client] = -1.0;
 	}
@@ -1923,60 +1923,60 @@ public Action Client_Stop(int client, int args)
 }
 
 public void Action_NoClip(int client)
-{    
-	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_bNoClipS)
+{
+	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_bNoClipS)
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		int team = GetClientTeam(client);
-		if (team==2 || team==3)
+		if (team == 2 || team == 3)
 		{
-			MoveType mt = GetEntityMoveType(client);   
-			if(mt == MOVETYPE_WALK)
+			MoveType mt = GetEntityMoveType(client);
+			if (mt == MOVETYPE_WALK)
 			{
 				if (g_bTimeractivated[client])
 				{
 					Client_Stop(client, 1);
 					g_fStartTime[client] = -1.0;
 					g_fCurrentRunTime[client] = -1.0;
-				}				
+				}
 				SetEntityMoveType(client, MOVETYPE_NOCLIP);
-				SetEntityRenderMode(client , RENDER_NONE); 
+				SetEntityRenderMode(client, RENDER_NONE);
 				SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				g_bNoClip[client] = true;
 			}
 		}
 	}
 	return;
-}  
+}
 
 public void Action_UnNoClip(int client)
-{    
-	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+{
+	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		CreateTimer(5.0, timerAfterNoclip, client, TIMER_FLAG_NO_MAPCHANGE);
 		int team = GetClientTeam(client);
-		if (team==2 || team==3)
+		if (team == 2 || team == 3)
 		{
-			MoveType mt = GetEntityMoveType(client);   
-			if(mt == MOVETYPE_NOCLIP)
+			MoveType mt = GetEntityMoveType(client);
+			if (mt == MOVETYPE_NOCLIP)
 			{
 				SetEntityMoveType(client, MOVETYPE_WALK);
 				SetEntityRenderMode(client, RENDER_NORMAL);
-				if(g_bNoBlock)
+				if (g_bNoBlock)
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				else
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
-				g_bNoClip[client] = false;			
+				g_bNoClip[client] = false;
 			}
 		}
 	}
 	return;
-}  
+}
 
 public void ckTopMenu(int client)
 {
-	g_MenuLevel[client]=-1;
+	g_MenuLevel[client] = -1;
 	Menu cktopmenu = CreateMenu(TopMenuHandler);
 	SetMenuTitle(cktopmenu, "ckSurf - Top Menu");
 	if (g_bPointSystem)
@@ -1992,32 +1992,32 @@ public void ckTopMenu(int client)
 
 public int TopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
-		if(g_bPointSystem)
+		if (g_bPointSystem)
 		{
-			switch(param2)
+			switch (param2)
 			{
-				case 0: db_selectTopPlayers(param1);
-				case 1: db_selectTopChallengers(param1);
-				case 2: db_selectTopSurfers(param1,g_szMapName); 
-				case 3: BonusTopMenu(param1);
+				case 0:db_selectTopPlayers(param1);
+				case 1:db_selectTopChallengers(param1);
+				case 2:db_selectTopSurfers(param1, g_szMapName);
+				case 3:BonusTopMenu(param1);
 			}
 		}
 		else
 		{
-			switch(param2)
+			switch (param2)
 			{
-				case 0: db_selectTopChallengers(param1);
-				case 1: db_selectTopProRecordHolders(param1);
-				case 2: db_selectTopSurfers(param1,g_szMapName);
-				case 3: BonusTopMenu(param1);
+				case 0:db_selectTopChallengers(param1);
+				case 1:db_selectTopProRecordHolders(param1);
+				case 2:db_selectTopSurfers(param1, g_szMapName);
+				case 3:BonusTopMenu(param1);
 			}
 		}
 	}
 	else
 		if (action == MenuAction_End)
-			CloseHandle(menu);
+		CloseHandle(menu);
 }
 
 public void BonusTopMenu(int client)
@@ -2027,7 +2027,7 @@ public void BonusTopMenu(int client)
 		char buffer[3];
 		Menu sMenu = new Menu(BonusTopMenuHandler);
 		sMenu.SetTitle("Bonus selector");
-
+		
 		if (g_mapZoneGroupCount > 1)
 		{
 			for (int i = 1; i < g_mapZoneGroupCount; i++)
@@ -2041,10 +2041,10 @@ public void BonusTopMenu(int client)
 			PrintToChat(client, "[%cCK%c] There are no bonuses in this map.", MOSSGREEN, WHITE);
 			return;
 		}
-
+		
 		sMenu.ExitButton = true;
 		sMenu.Display(client, 60);
-	} 
+	}
 	else {
 		db_selectBonusTopSurfers(client, g_szMapName, 1);
 	}
@@ -2054,7 +2054,7 @@ public int BonusTopMenuHandler(Menu menu, MenuAction action, int param1, int par
 {
 	if (action == MenuAction_Select)
 	{
-		db_selectBonusTopSurfers(param1, g_szMapName, param2+1);
+		db_selectBonusTopSurfers(param1, g_szMapName, param2 + 1);
 	}
 }
 
@@ -2063,13 +2063,13 @@ public void HelpPanel(int client)
 	PrintConsoleInfo(client);
 	Handle panel = CreatePanel();
 	char title[64];
-	Format(title, 64, "ckSurf Help (1/4) - v%s\nby Elzi",VERSION);
+	Format(title, 64, "ckSurf Help (1/4) - v%s\nby Elzi", VERSION);
 	DrawPanelText(panel, title);
 	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!help - opens this menu");
 	DrawPanelText(panel, "!help2 - explanation of the ranking system");
 	DrawPanelText(panel, "!menu - checkpoint menu");
-	DrawPanelText(panel, "!options - player options menu");	
+	DrawPanelText(panel, "!options - player options menu");
 	DrawPanelText(panel, "!top - top menu");
 	DrawPanelText(panel, "!latest - prints in console the last map records");
 	DrawPanelText(panel, "!profile/!ranks - opens your profile");
@@ -2084,7 +2084,7 @@ public int HelpPanelHandler(Menu menu, MenuAction action, int param1, int param2
 {
 	if (action == MenuAction_Select)
 	{
-		if(param2==1)
+		if (param2 == 1)
 			HelpPanel2(param1);
 	}
 }
@@ -2093,15 +2093,15 @@ public int HelpPanel2(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
-	Format(szTmp, 64, "ckSurf Help (2/4) - v%s\nby Elzi",VERSION);
+	Format(szTmp, 64, "ckSurf Help (2/4) - v%s\nby Elzi", VERSION);
 	DrawPanelText(panel, szTmp);
 	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!start/!r - go back to start");
 	DrawPanelText(panel, "!stop - stops the timer");
-	DrawPanelText(panel, "!pause - on/off pause");	
+	DrawPanelText(panel, "!pause - on/off pause");
 	DrawPanelText(panel, "!usp - spawns a usp silencer");
-	DrawPanelText(panel, "!challenge - allows you to start a race against others");	
-	DrawPanelText(panel, "!spec [<name>] - select a player you want to watch");	
+	DrawPanelText(panel, "!challenge - allows you to start a race against others");
+	DrawPanelText(panel, "!spec [<name>] - select a player you want to watch");
 	DrawPanelText(panel, "!goto [<name>] - teleports you to a given player");
 	DrawPanelText(panel, "!compare [<name>] - compare your challenge results with a given player");
 	DrawPanelText(panel, "!showsettings - shows ckSurf plugin settings");
@@ -2117,11 +2117,11 @@ public int HelpPanel2Handler(Menu menu, MenuAction action, int param1, int param
 {
 	if (action == MenuAction_Select)
 	{
-		if(param2==1)
+		if (param2 == 1)
 			HelpPanel(param1);
 		else
-			if(param2==2)
-				HelpPanel3(param1);
+			if (param2 == 2)
+			HelpPanel3(param1);
 	}
 }
 
@@ -2129,9 +2129,9 @@ public void HelpPanel3(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
-	Format(szTmp, 64, "ckSurf Help (3/4) - v%s\nby Elzi",VERSION);
+	Format(szTmp, 64, "ckSurf Help (3/4) - v%s\nby Elzi", VERSION);
 	DrawPanelText(panel, szTmp);
-	DrawPanelText(panel, " ");	
+	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!maptop <mapname> - displays map top for a given map");
 	DrawPanelText(panel, "!flashlight - on/off flashlight");
 	DrawPanelText(panel, "!ranks - prints in chat the available ranks");
@@ -2151,11 +2151,11 @@ public int HelpPanel3Handler(Menu menu, MenuAction action, int param1, int param
 {
 	if (action == MenuAction_Select)
 	{
-		if(param2==1)
+		if (param2 == 1)
 			HelpPanel2(param1);
 		else
-			if(param2==2)
-				HelpPanel4(param1);
+			if (param2 == 2)
+			HelpPanel4(param1);
 	}
 }
 
@@ -2163,9 +2163,9 @@ public void HelpPanel4(int client)
 {
 	Handle panel = CreatePanel();
 	char szTmp[64];
-	Format(szTmp, 64, "ckSurf Help (4/4) - v%s\nby Elzi",VERSION);
+	Format(szTmp, 64, "ckSurf Help (4/4) - v%s\nby Elzi", VERSION);
 	DrawPanelText(panel, szTmp);
-	DrawPanelText(panel, " ");	
+	DrawPanelText(panel, " ");
 	DrawPanelText(panel, "!cp - Creates a checkpoint to use in practice mode.");
 	DrawPanelText(panel, "!tele / !teleport / !practice / !prac - Starts practice mode");
 	DrawPanelText(panel, "!undo - Undoes your latest checkpoint");
@@ -2180,7 +2180,7 @@ public int HelpPanel4Handler(Menu menu, MenuAction action, int param1, int param
 {
 	if (action == MenuAction_Select)
 	{
-		if(param2==1)
+		if (param2 == 1)
 			HelpPanel2(param1);
 	}
 }
@@ -2201,7 +2201,7 @@ public void ShowSrvSettings(int client)
 	PrintToConsole(client, "ck_clean_weapons %b", g_bCleanWeapons);
 	PrintToConsole(client, "ck_connect_msg %b", g_bConnectMsg);
 	PrintToConsole(client, "ck_country_tag %b", g_bCountry);
-	PrintToConsole(client, "ck_custom_models %b", g_bPlayerSkinChange);	
+	PrintToConsole(client, "ck_custom_models %b", g_bPlayerSkinChange);
 	PrintToConsole(client, "ck_dynamic_timelimit %b (requires ck_map_end 1)", g_bDynamicTimelimit);
 	PrintToConsole(client, "ck_godmode %b", g_bgodmode);
 	PrintToConsole(client, "ck_goto %b", g_bGoToServer);
@@ -2219,30 +2219,30 @@ public void ShowSrvSettings(int client)
 	PrintToConsole(client, "---------------");
 	PrintToConsole(client, "Server settings");
 	PrintToConsole(client, "---------------");
-	Handle hTmp;	
+	Handle hTmp;
 	hTmp = FindConVar("sv_airaccelerate");
-	float  flAA = GetConVarFloat(hTmp);			
+	float flAA = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_accelerate");
-	float  flA = GetConVarFloat(hTmp);	
+	float flA = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_friction");
-	float  flFriction = GetConVarFloat(hTmp);	
+	float flFriction = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_gravity");
-	float  flGravity = GetConVarFloat(hTmp);	
+	float flGravity = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_enablebunnyhopping");
-	int iBhop = GetConVarInt(hTmp);	
+	int iBhop = GetConVarInt(hTmp);
 	hTmp = FindConVar("sv_maxspeed");
-	float  flMaxSpeed = GetConVarFloat(hTmp);	
+	float flMaxSpeed = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_maxvelocity");
-	float  flMaxVel = GetConVarFloat(hTmp);	
+	float flMaxVel = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_staminalandcost");
-	float  flStamLand = GetConVarFloat(hTmp);	
+	float flStamLand = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_staminajumpcost");
-	float  flStamJump = GetConVarFloat(hTmp);		
+	float flStamJump = GetConVarFloat(hTmp);
 	hTmp = FindConVar("sv_wateraccelerate");
-	float  flWaterA = GetConVarFloat(hTmp);
+	float flWaterA = GetConVarFloat(hTmp);
 	if (hTmp != null)
-		CloseHandle(hTmp);		
-	PrintToConsole(client, "sv_accelerate %.1f", flA);	
+		CloseHandle(hTmp);
+	PrintToConsole(client, "sv_accelerate %.1f", flA);
 	PrintToConsole(client, "sv_airaccelerate %.1f", flAA);
 	PrintToConsole(client, "sv_friction %.1f", flFriction);
 	PrintToConsole(client, "sv_gravity %.1f", flGravity);
@@ -2252,18 +2252,18 @@ public void ShowSrvSettings(int client)
 	PrintToConsole(client, "sv_staminalandcost %.2f", flStamLand);
 	PrintToConsole(client, "sv_staminajumpcost %.2f", flStamJump);
 	PrintToConsole(client, "sv_wateraccelerate %.1f", flWaterA);
-	PrintToConsole(client, "-------------------------------------");		
-	PrintToChat(client, "[%cCK%c] See console for output!", MOSSGREEN,WHITE);	
+	PrintToConsole(client, "-------------------------------------");
+	PrintToChat(client, "[%cCK%c] See console for output!", MOSSGREEN, WHITE);
 }
 
 public void OptionMenu(int client)
 {
 	Menu optionmenu = CreateMenu(OptionMenuHandler);
-	SetMenuTitle(optionmenu, "ckSurf - Options Menu");			
+	SetMenuTitle(optionmenu, "ckSurf - Options Menu");
 	if (g_bHide[client])
 		AddMenuItem(optionmenu, "Hide Players  -  Enabled", "Hide other players  -  Enabled");
 	else
-		AddMenuItem(optionmenu, "Hide Players  -  Disabled", "Hide other players  -  Disabled");			
+		AddMenuItem(optionmenu, "Hide Players  -  Disabled", "Hide other players  -  Disabled");
 	if (g_bEnableQuakeSounds[client])
 		AddMenuItem(optionmenu, "Quake sounds - Enabled", "Quake sounds - Enabled");
 	else
@@ -2271,15 +2271,15 @@ public void OptionMenu(int client)
 	if (g_bShowTime[client])
 		AddMenuItem(optionmenu, "Show Timer  -  Enabled", "Show timer text  -  Enabled");
 	else
-		AddMenuItem(optionmenu, "Show Timer  -  Disabled", "Show timer text  -  Disabled");			
+		AddMenuItem(optionmenu, "Show Timer  -  Disabled", "Show timer text  -  Disabled");
 	if (g_bShowSpecs[client])
 		AddMenuItem(optionmenu, "Spectator list  -  Enabled", "Spectator list  -  Enabled");
 	else
-		AddMenuItem(optionmenu, "Spectator list  -  Disabled", "Spectator list  -  Disabled");	
+		AddMenuItem(optionmenu, "Spectator list  -  Disabled", "Spectator list  -  Disabled");
 	if (g_bInfoPanel[client])
 		AddMenuItem(optionmenu, "Speed/Stage panel  -  Enabled", "Speed/Stage panel  -  Enabled");
 	else
-		AddMenuItem(optionmenu, "Speed/Stage panel  -  Disabled", "Speed/Stage panel  -  Disabled");					
+		AddMenuItem(optionmenu, "Speed/Stage panel  -  Disabled", "Speed/Stage panel  -  Disabled");
 	if (g_bStartWithUsp[client])
 		AddMenuItem(optionmenu, "Active start weapon  -  Usp", "Start weapon  -  USP");
 	else
@@ -2287,29 +2287,29 @@ public void OptionMenu(int client)
 	if (g_bGoToClient[client])
 		AddMenuItem(optionmenu, "Goto  -  Enabled", "Goto me  -  Enabled");
 	else
-		AddMenuItem(optionmenu, "Goto  -  Disabled", "Goto me  -  Disabled");	
+		AddMenuItem(optionmenu, "Goto  -  Disabled", "Goto me  -  Disabled");
 	if (g_bAutoBhop)
 	{
 		if (g_bAutoBhopClient[client])
 			AddMenuItem(optionmenu, "AutoBhop  -  Enabled", "AutoBhop  -  Enabled");
 		else
-			AddMenuItem(optionmenu, "AutoBhop  -  Disabled", "AutoBhop  -  Disabled");	
+			AddMenuItem(optionmenu, "AutoBhop  -  Disabled", "AutoBhop  -  Disabled");
 	}
 	if (g_bHideChat[client])
 		AddMenuItem(optionmenu, "Hide Chat - Hidden", "Hide Chat - Hidden");
-	else 
+	else
 		AddMenuItem(optionmenu, "Hide Chat - Visible", "Hide Chat - Visible");
-
+	
 	if (g_bViewModel[client])
 		AddMenuItem(optionmenu, "Hide Weapon - Visible", "Hide Weapon - Visible");
-	else 
+	else
 		AddMenuItem(optionmenu, "Hide Weapon - Hidden", "Hide Weapon - Hidden");
-
+	
 	if (g_bCheckpointsEnabled[client])
 		AddMenuItem(optionmenu, "Checkpoints - Enabled", "Checkpoints - Enabled");
-	else 
+	else
 		AddMenuItem(optionmenu, "Checkpoints - Disabled", "Checkpoints - Disabled");
-
+	
 	SetMenuOptionFlags(optionmenu, MENUFLAG_BUTTON_EXIT);
 	if (g_OptionsMenuLastPage[client] < 6)
 		DisplayMenuAtItem(optionmenu, client, 0, MENU_TIME_FOREVER);
@@ -2327,13 +2327,13 @@ public void SwitchStartWeapon(int client)
 	g_bStartWithUsp[client] = !g_bStartWithUsp[client];
 }
 
-public Action Client_DisableGoTo(int client, int args)  
+public Action Client_DisableGoTo(int client, int args)
 {
 	DisableGoTo(client);
 	if (g_bGoToClient[client])
-		PrintToChat(client, "%t", "DisableGoto1",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "DisableGoto1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "DisableGoto2",MOSSGREEN, WHITE);
+		PrintToChat(client, "%t", "DisableGoto2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
@@ -2343,13 +2343,13 @@ public void DisableGoTo(int client)
 	g_bGoToClient[client] = !g_bGoToClient[client];
 }
 
-public Action Client_InfoPanel(int client, int args) 
+public Action Client_InfoPanel(int client, int args)
 {
 	InfoPanel(client);
 	if (g_bInfoPanel[client] == true)
-		PrintToChat(client, "%t", "Info1", MOSSGREEN,WHITE);
+		PrintToChat(client, "%t", "Info1", MOSSGREEN, WHITE);
 	else
-		PrintToChat(client, "%t", "Info2", MOSSGREEN,WHITE);	
+		PrintToChat(client, "%t", "Info2", MOSSGREEN, WHITE);
 	return Plugin_Handled;
 }
 
@@ -2361,28 +2361,28 @@ public void InfoPanel(int client)
 
 public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
-		switch(param2)
-		{	
-			case 0: HideMethod(param1);
-			case 1: QuakeSounds(param1);
-			case 2: ShowTime(param1);
-			case 3: HideSpecs(param1);
-			case 4: InfoPanel(param1);	
-			case 5: SwitchStartWeapon(param1);
-			case 6: DisableGoTo(param1);
-			case 7: AutoBhop(param1);
-			case 8: HideChat(param1);
-			case 9: HideViewModel(param1);
-			case 10: ToggleCheckpoints(param1, 1);
+		switch (param2)
+		{
+			case 0:HideMethod(param1);
+			case 1:QuakeSounds(param1);
+			case 2:ShowTime(param1);
+			case 3:HideSpecs(param1);
+			case 4:InfoPanel(param1);
+			case 5:SwitchStartWeapon(param1);
+			case 6:DisableGoTo(param1);
+			case 7:AutoBhop(param1);
+			case 8:HideChat(param1);
+			case 9:HideViewModel(param1);
+			case 10:ToggleCheckpoints(param1, 1);
 		}
 		g_OptionsMenuLastPage[param1] = param2;
-		OptionMenu(param1);					
+		OptionMenu(param1);
 	}
 	else
 		if (action == MenuAction_End)
-		{	
-			CloseHandle(menu);
-		}
-}
+	{
+		CloseHandle(menu);
+	}
+} 
