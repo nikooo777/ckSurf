@@ -22,7 +22,7 @@ public Action Command_Vip(int client, int args)
 	
 	Format(szMenuItem, 128, "Trail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
 	AddMenuItem(vipEffects, "", szMenuItem);
-	
+	AddMenuItem(vipEffects, "", "Vote to extend map");
 	AddMenuItem(vipEffects, "", "More to come...", ITEMDRAW_DISABLED);
 	
 	SetMenuExitButton(vipEffects, true);
@@ -45,6 +45,10 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 				case 1:
 				{
 					changeTrailColor(client);
+				}
+				case 2:
+				{
+					Command_VoteExtend(client, 0);
 				}
 			}
 			CreateTimer(0.1, RefreshVIPMenu, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -121,6 +125,104 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 	}
 }
 
+public Action Command_VoteExtend(int client, int args)
+{
+	if(!IsValidClient(client))
+		return Plugin_Handled;
+	
+	if (!g_bflagTitles[client][0])
+	{
+		ReplyToCommand(client, "[CK] This command requires the VIP title.");
+		return Plugin_Handled;
+	}
+	
+	if (IsVoteInProgress())
+	{
+		ReplyToCommand(client, "[CK] Please wait until the current vote has finished.");
+		return Plugin_Handled;
+	}
+
+	if (g_VoteExtends >= g_MaxVoteExtends)
+	{
+		ReplyToCommand(client, "[CK] There have been too many extends this map.");
+		return Plugin_Handled;
+	}
+
+	// Here we go through and make sure this user has not already voted. This persists throughout map.
+	for (int i = 0; i < g_VoteExtends; i++)
+	{
+		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false))
+		{
+			ReplyToCommand(client, "[CK] You have already used your vote to extend this map.");
+			return Plugin_Handled;
+		}
+	}
+
+	StartVoteExtend(client);
+	return Plugin_Handled;
+}
+
+public void StartVoteExtend(int client)
+{
+	char szPlayerName[MAX_NAME_LENGTH];	
+	GetClientName(client, szPlayerName, MAX_NAME_LENGTH);
+	CPrintToChatAll("[{olive}CK{default}] Vote to Extend started by {green}%s{default}", szPlayerName);
+
+	g_szUsedVoteExtend[g_VoteExtends] = g_szSteamID[client];	// Add the user's steam ID to the list
+	g_VoteExtends++;	// Increment the total number of vote extends so far
+
+	Menu voteExtend = CreateMenu(H_VoteExtend);
+	SetVoteResultCallback(voteExtend, H_VoteExtendCallback);
+	char szMenuTitle[128];
+
+	char buffer[8];
+	IntToString(RoundToFloor(g_fVoteExtendTime), buffer, sizeof(buffer));
+
+	Format(szMenuTitle, sizeof(szMenuTitle), "Extend map for %s minutes?", buffer);
+	SetMenuTitle(voteExtend, szMenuTitle);
+	
+	AddMenuItem(voteExtend, "", "Yes");
+	AddMenuItem(voteExtend, "", "No");
+	SetMenuExitButton(voteExtend, false);
+	VoteMenuToAll(voteExtend, 20);
+}
+
+public int H_VoteExtend(Menu tMenu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_End)
+	{
+		CloseHandle(tMenu);
+	}
+}
+
+public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
+{
+	int votesYes = 0;
+	int votesNo = 0;
+
+	if (item_info[0][VOTEINFO_ITEM_INDEX] == 0) {	// If the winner is Yes
+		votesYes = item_info[0][VOTEINFO_ITEM_VOTES];
+		if (num_items > 1) {
+			votesNo = item_info[1][VOTEINFO_ITEM_VOTES];
+		}
+	}
+	else {	// If the winner is No
+		votesNo = item_info[0][VOTEINFO_ITEM_VOTES];
+		if (num_items > 1) {
+			votesYes = item_info[1][VOTEINFO_ITEM_VOTES];
+		}
+	}
+
+	if (votesYes > votesNo) // A tie is a failure
+	{
+		CPrintToChatAll("[{olive}CK{default}] Vote to Extend succeeded - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
+		ExtendMapTimeLimit(RoundToFloor(g_fVoteExtendTime*60));
+	} 
+	else
+	{
+		CPrintToChatAll("[{olive}CK{default}] Vote to Extend failed");
+	}
+}
 
 public Action Command_normalMode(int client, int args)
 {
