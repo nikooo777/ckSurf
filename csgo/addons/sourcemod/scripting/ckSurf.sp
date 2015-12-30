@@ -447,6 +447,8 @@ Handle g_PracticeFinishForward;
 
 char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12];
 
+ConVar g_hCommandToEnd;
+bool g_bCommandToEnd;
 
 int g_failedTransactions[7];
 bool g_bSettingsLoaded[MAXPLAYERS + 1];
@@ -1296,30 +1298,25 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 {
 	if (convar == g_hGoToServer)
 	{
-		if (newValue[0] == '1')
-			g_bGoToServer = true;
-		else
-			g_bGoToServer = false;
+		g_bGoToServer = view_as<bool>(StringToInt(newValue[0]));
+	}
+	else if (convar == g_hCommandToEnd)
+	{
+		g_bCommandToEnd = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hChallengePoints)
 	{
-		if (newValue[0] == '1')
-			g_bChallengePoints = true;
-		else
-			g_bChallengePoints = false;
+		g_bChallengePoints = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hNoClipS)
 	{
-		if (newValue[0] == '1')
-			g_bNoClipS = true;
-		else
-			g_bNoClipS = false;
+		g_bNoClipS = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hReplayBot)
 	{
-		if (newValue[0] == '1')
+		g_bReplayBot = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bReplayBot)
 		{
-			g_bReplayBot = true;
 			LoadReplays();
 		}
 		else
@@ -1347,14 +1344,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					ServerCommand("bot_quota 1");
 				else
 					ServerCommand("bot_quota 0");
-			g_bReplayBot = false;
 		}
 	}
 	else if (convar == g_hBonusBot)
 	{
-		if (newValue[0] == '1')
+		g_bBonusBot = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bBonusBot)
 		{
-			g_bBonusBot = true;
 			LoadReplays();
 		}
 		else
@@ -1382,21 +1378,19 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					ServerCommand("bot_quota 1");
 				else
 					ServerCommand("bot_quota 0");
-			g_bBonusBot = false;
 		}
 	}
 	else if (convar == g_hAdminClantag)
 	{
-		if (newValue[0] == '1')
+		g_bAdminClantag = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bAdminClantag)
 		{
-			g_bAdminClantag = true;
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
-			g_bAdminClantag = false;
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
@@ -1404,88 +1398,60 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hAutoTimer)
 	{
-		if (newValue[0] == '1')
-			g_bAutoTimer = true;
-		else
-			g_bAutoTimer = false;
+		g_bAutoTimer = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hColoredNames)
 	{
-		if (newValue[0] == '1')
-			g_bColoredNames = true;
-		else
-			g_bColoredNames = false;
+		g_bColoredNames = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hPauseServerside)
 	{
-		if (newValue[0] == '1')
-			g_bPauseServerside = true;
-		else
-			g_bPauseServerside = false;
+		g_bPauseServerside = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hDynamicTimelimit)
 	{
-		if (newValue[0] == '1')
-			g_bDynamicTimelimit = true;
-		else
-			g_bDynamicTimelimit = false;
+		g_bDynamicTimelimit = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hAutohealing_Hp)
 		g_Autohealing_Hp = StringToInt(newValue[0]);
 	
 	else if (convar == g_hAutoRespawn)
 	{
-		if (newValue[0] == '1')
+		g_bAutoRespawn = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bAutoRespawn)
 		{
 			ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
-			g_bAutoRespawn = true;
 		}
 		else
 		{
 			ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
-			g_bAutoRespawn = false;
 		}
 	}
 	else if (convar == g_hRadioCommands)
 	{
-		if (newValue[0] == '1')
-			g_bRadioCommands = true;
-		else
-			g_bRadioCommands = false;
+		g_bRadioCommands = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hcvarRestore)
 	{
-		if (newValue[0] == '1')
-			g_bRestore = true;
-		else
-			g_bRestore = false;
+		g_bRestore = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hMapEnd)
 	{
-		if (newValue[0] == '1')
-			g_bMapEnd = true;
-		else
-			g_bMapEnd = false;
+		g_bMapEnd = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hConnectMsg)
 	{
-		if (newValue[0] == '1')
-			g_bConnectMsg = true;
-		else
-			g_bConnectMsg = false;
+		g_bConnectMsg = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hDisconnectMsg)
 	{
-		if (newValue[0] == '1')
-			g_bDisconnectMsg = true;
-		else
-			g_bDisconnectMsg = false;
+		g_bDisconnectMsg = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hPlayerSkinChange)
 	{
-		if (newValue[0] == '1')
+		g_bPlayerSkinChange = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bPlayerSkinChange)
 		{
-			g_bPlayerSkinChange = true;
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 				{
@@ -1501,14 +1467,12 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					}
 				}
 		}
-		else
-			g_bPlayerSkinChange = false;
 	}
 	else if (convar == g_hPointSystem)
 	{
-		if (newValue[0] == '1')
+		g_bPointSystem = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bPointSystem)
 		{
-			g_bPointSystem = true;
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
@@ -1521,14 +1485,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					Format(g_pr_rankname[i], 32, "");
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 				}
-			g_bPointSystem = false;
 		}
 	}
 	else if (convar == g_hcvarNoBlock)
 	{
-		if (newValue[0] == '1')
+		g_bNoBlock = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bNoBlock)
 		{
-			g_bNoBlock = true;
 			for (int client = 1; client <= MAXPLAYERS; client++)
 				if (IsValidEntity(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
@@ -1536,7 +1499,6 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		}
 		else
 		{
-			g_bNoBlock = false;
 			for (int client = 1; client <= MAXPLAYERS; client++)
 				if (IsValidEntity(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
@@ -1544,21 +1506,14 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hAttackSpamProtection)
 	{
-		if (newValue[0] == '1')
-		{
-			g_bAttackSpamProtection = true;
-		}
-		else
-		{
-			g_bAttackSpamProtection = false;
-		}
+		g_bAttackSpamProtection = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hCleanWeapons)
 	{
-		if (newValue[0] == '1')
+		g_bCleanWeapons = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bCleanWeapons)
 		{
 			char szclass[32];
-			g_bCleanWeapons = true;
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsValidClient(i) && IsPlayerAlive(i))
@@ -1578,29 +1533,18 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					}
 				}
 			}
-			
 		}
-		else
-			g_bCleanWeapons = false;
 	}
 	else if (convar == g_hAutoBhopConVar)
 	{
-		if (newValue[0] == '1')
-		{
-			g_bAutoBhopConVar = true;
-			g_bAutoBhop = true;
-		}
-		else
-		{
-			g_bAutoBhopConVar = false;
-			g_bAutoBhop = false;
-		}
+		g_bAutoBhopConVar = view_as<bool>(StringToInt(newValue[0]));
+		g_bAutoBhop = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hCountry)
 	{
-		if (newValue[0] == '1')
+		g_bCountry = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bCountry)
 		{
-			g_bCountry = true;
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsValidClient(i))
@@ -1613,7 +1557,6 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		}
 		else
 		{
-			g_bCountry = false;
 			if (g_bPointSystem)
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
@@ -1621,17 +1564,16 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		}
 	}
 	else if (convar == g_hExtraPoints)
+	{
 		g_ExtraPoints = StringToInt(newValue[0]);
+	}
 	else if (convar == g_hExtraPoints2)
+	{
 		g_ExtraPoints2 = StringToInt(newValue[0]);
-	
-	
+	}
 	else if (convar == g_hcvargodmode)
 	{
-		if (newValue[0] == '1')
-			g_bgodmode = true;
-		else
-			g_bgodmode = false;
+		g_bgodmode = view_as<bool>(StringToInt(newValue[0]));
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if (IsValidClient(i))
@@ -1645,14 +1587,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hInfoBot)
 	{
-		if (newValue[0] == '1')
+		g_bInfoBot = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bInfoBot)
 		{
-			g_bInfoBot = true;
 			LoadInfoBot();
 		}
 		else
 		{
-			g_bInfoBot = false;
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i) && IsFakeClient(i))
 				{
@@ -1711,8 +1652,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				SetEntPropString(i, Prop_Send, "m_szArmsModel", newValue[0]);
 	}
 	else if (convar == g_hWelcomeMsg)
+	{
 		Format(g_sWelcomeMsg, 512, "%s", newValue[0]);
-	
+	}
 	else if (convar == g_hReplayBotColor)
 	{
 		char color[256];
@@ -1739,15 +1681,14 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hAllowRoundEndCvar)
 	{
-		if (newValue[0] == '1')
+		g_bAllowRoundEndCvar = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bAllowRoundEndCvar)
 		{
 			ServerCommand("mp_ignore_round_win_conditions 0");
-			g_bAllowRoundEndCvar = true;
 		}
 		else
 		{
 			ServerCommand("mp_ignore_round_win_conditions 1;mp_maxrounds 1");
-			g_bAllowRoundEndCvar = false;
 		}
 	}
 	else if (convar == g_hChecker)
@@ -1838,18 +1779,10 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		g_fBonusPreSpeed = StringToFloat(newValue[0]);
 	}
 	else if (convar == g_hSpawnToStartZone) {
-		if (newValue[0] == '1') {
-			bSpawnToStartZone = true;
-		} else {
-			bSpawnToStartZone = false;
-		}
+		bSpawnToStartZone = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hSoundEnabled) {
-		if (newValue[0] == '1') {
-			bSoundEnabled = true;
-		} else {
-			bSoundEnabled = false;
-		}
+		bSoundEnabled = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hSoundPath) {
 		strcopy(sSoundPath, sizeof(sSoundPath), newValue);
@@ -2049,6 +1982,10 @@ public void OnPluginStart()
 	g_hGoToServer = CreateConVar("ck_goto", "1", "on/off - Allows players to use the !goto command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bGoToServer = GetConVarBool(g_hGoToServer);
 	HookConVarChange(g_hGoToServer, OnSettingChanged);
+	
+	g_hCommandToEnd = CreateConVar("ck_end", "1", "on/off - Allows players to use the !end command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bCommandToEnd = GetConVarBool(g_hCommandToEnd);
+	HookConVarChange(g_hCommandToEnd, OnSettingChanged);
 	
 	g_hcvargodmode = CreateConVar("ck_godmode", "1", "on/off - unlimited hp", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bgodmode = GetConVarBool(g_hcvargodmode);
@@ -2326,7 +2263,7 @@ public void OnPluginStart()
 	}
 	else
 		g_ZoneMenuFlag = FlagToBit(bufferFlag);
-	
+		
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
 
 	db_setupDatabase();

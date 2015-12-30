@@ -580,6 +580,14 @@ public Action Command_ToStage(int client, int args)
 
 public Action Command_ToEnd(int client, int args)
 {
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+		
+	if (!g_bCommandToEnd)
+	{
+		ReplyToCommand(client, "[%cCK%c] Teleportation to the end zone has been disabled on this server.", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
 	teleportClient(client, g_iClientInZone[client][2], -1, true);
 	return Plugin_Handled;
 }
