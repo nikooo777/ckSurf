@@ -25,7 +25,7 @@
 #include <hgr>
 #include <mapchooser>
 #include <ckSurf>
-
+#include <timers>
 
 /*============================================
 =           	 Definitions 		         =
@@ -239,6 +239,16 @@ float g_fClientLastMovement[MAXPLAYERS+1];
 int g_AutoVIPFlag;
 bool g_bAutoVIPFlag;
 Handle g_hAutoVIPFlag = null;
+
+// Vote Extend
+char g_szUsedVoteExtend[MAXPLAYERS+1][32];
+int g_VoteExtends = 0;
+
+ConVar g_hVoteExtendTime;
+float g_fVoteExtendTime;
+
+ConVar g_hMaxVoteExtends;
+int g_MaxVoteExtends;
 
 ////////////////////
 //// Admin Menu ////
@@ -1903,6 +1913,12 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		else
 			g_AdminMenuFlag = FlagToBit(flag);
 	}
+	else if (convar == g_hVoteExtendTime) {
+		g_fVoteExtendTime = StringToFloat(newValue[0]);
+	}
+	else if (convar == g_hMaxVoteExtends) {
+		g_MaxVoteExtends = StringToInt(newValue[0]);
+	}
 
 	if(g_hZoneTimer != INVALID_HANDLE)
 	{
@@ -2256,7 +2272,6 @@ public void OnPluginStart()
 	g_benableChatProcessing = GetConVarBool(g_henableChatProcessing);
 	HookConVarChange(g_henableChatProcessing, OnSettingChanged);
 
-
 	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
 	g_bBonusBotTrailEnabled = GetConVarBool(g_hBonusBotTrail);
 	HookConVarChange(g_hBonusBotTrail, OnSettingChanged);
@@ -2281,6 +2296,13 @@ public void OnPluginStart()
 	g_AutoVIPFlag = FlagToBit(bufferFlag);
 	HookConVarChange(g_hAutoVIPFlag, OnSettingChanged);
 
+	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
+	g_fVoteExtendTime = GetConVarFloat(g_hVoteExtendTime);
+	HookConVarChange(g_hVoteExtendTime, OnSettingChanged);
+
+	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
+	g_MaxVoteExtends = GetConVarInt(g_hMaxVoteExtends);
+	HookConVarChange(g_hMaxVoteExtends, OnSettingChanged);
 
 	bool validFlag;
 	g_hAdminMenuFlag = CreateConVar("ck_adminmenu_flag", "b", "Admin flag required to open the !ckadmin menu. Invalid or not set, requires flag b.", FCVAR_NOTIFY);
@@ -2384,6 +2406,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_bonusinfo", Command_bTier, "[ckSurf] Prints tier information on current map's bonuses");
 	RegConsoleCmd("sm_bi", Command_bTier, "[ckSurf] Prints tier information on current map's bonuses");
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
+	RegConsoleCmd("sm_ve", Command_VoteExtend, "[ckSurf] Vote to extend the map");
 
 	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");

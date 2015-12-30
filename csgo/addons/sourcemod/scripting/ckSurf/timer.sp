@@ -36,7 +36,7 @@ public Action RefreshAdminMenu(Handle timer, any client)
 
 public Action RefreshVIPMenu(Handle timer, any client)
 {
-	if (IsValidEntity(client) && !IsFakeClient(client))
+	if (IsValidEntity(client) && !IsFakeClient(client) && !IsVoteInProgress())
 		Command_Vip(client, 1);
 
 	return Plugin_Handled;
