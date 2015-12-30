@@ -129,16 +129,16 @@ public Action Command_VoteExtend(int client, int args)
 {
 	if(!IsValidClient(client))
 		return Plugin_Handled;
-
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[CK] Please wait until the current vote has finished.");
-		return Plugin_Handled;
-	}
-
+	
 	if (!g_bflagTitles[client][0])
 	{
 		ReplyToCommand(client, "[CK] This command requires the VIP title.");
+		return Plugin_Handled;
+	}
+	
+	if (IsVoteInProgress())
+	{
+		ReplyToCommand(client, "[CK] Please wait until the current vote has finished.");
 		return Plugin_Handled;
 	}
 
