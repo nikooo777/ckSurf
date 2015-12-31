@@ -3203,7 +3203,7 @@ public void CenterHudAlive(int client)
 
 public void Checkpoint(int client, int zone, int zonegroup)
 {
-	if (!IsValidClient(client) || g_bPositionRestored[client] || IsFakeClient(client) || zone > CPLIMIT)
+	if (!IsValidClient(client) || g_bPositionRestored[client] || IsFakeClient(client) || zone >= CPLIMIT)
 		return;
 	
 	float time = g_fCurrentRunTime[client];
