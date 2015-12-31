@@ -4597,12 +4597,12 @@ public void sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] err
 
 public void db_checkAndFixZoneIds()
 {
-	char szQuery[128];
+	char szQuery[512];
 	//"SELECT mapname, zoneid, zonetype, zonetypeid, pointa_x, pointa_y, pointa_z, pointb_x, pointb_y, pointb_z, vis, team, zonegroup, zonename FROM ck_zones WHERE mapname = '%s' ORDER BY zoneid ASC";
 	if (!g_szMapName[0])
 		GetCurrentMap(g_szMapName, 128);
 	
-	Format(szQuery, 128, sql_selectZoneIds, g_szMapName);
+	Format(szQuery, 512, sql_selectZoneIds, g_szMapName);
 	SQL_TQuery(g_hDb, db_checkAndFixZoneIdsCallback, szQuery, 1, DBPrio_Low);
 }
 
