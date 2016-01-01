@@ -450,8 +450,10 @@ ConVar g_hCommandToEnd;
 bool g_bCommandToEnd;
 
 int g_failedTransactions[7];
+
 bool g_bSettingsLoaded[MAXPLAYERS + 1];
 bool g_bServerDataLoaded;
+float g_fErrorMessage[MAXPLAYERS + 1];
 
 bool g_bInTransactionChain = false;
 float g_flastClientUsp[MAXPLAYERS + 1];
@@ -2191,7 +2193,7 @@ public void OnPluginStart()
 	bSoundEnabled = GetConVarBool(g_hSoundEnabled);
 	HookConVarChange(g_hSoundEnabled, OnSettingChanged);
 	
-	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons/button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_NOTIFY);
+	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_NOTIFY);
 	GetConVarString(g_hSoundPath, sSoundPath, sizeof(sSoundPath));
 	HookConVarChange(g_hSoundPath, OnSettingChanged);
 	

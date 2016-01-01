@@ -648,6 +648,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		
 		if (speed < 10.0 && g_bOnGround[client]) // Not moving
 		{
+			g_bNoClipUsed[client] = false;
 			if (!g_bClientStopped[client]) // Get start time
 			{
 				if (!IsFakeClient(client))

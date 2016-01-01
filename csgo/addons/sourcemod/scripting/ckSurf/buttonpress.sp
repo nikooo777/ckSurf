@@ -1,13 +1,21 @@
 
 // - Climb Button OnStartPress -
 public void CL_OnStartTimerPress(int client)
-{		
+{
 	if (!IsFakeClient(client))
 	{
 		if (IsValidClient(client))
 		{
 			if (!g_bServerDataLoaded || !g_bSettingsLoaded[client])
+			{
+				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+				{
+					PrintToChat(client, "[%cCK%c] The server hasn't finished loading your settings, please wait.", MOSSGREEN, WHITE);
+					ClientCommand(client, "play buttons\\button10.wav");
+					g_fErrorMessage[client] = GetGameTime();
+				}
 				return;
+			}
 		}
 		if (g_bNewReplay[client])
 			return;

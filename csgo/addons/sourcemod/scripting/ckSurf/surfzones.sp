@@ -175,173 +175,122 @@ public Action EndTouchTrigger(int caller, int activator)
 
 public void StartTouch(int client, int action[3])
 {
-	// real client
-	if (1 <= client <= MaxClients)
+	if (IsValidClient(client))
 	{
 		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-		switch (action[0])
+		
+		if (action[0] == 0) // Stop Zone
 		{
-			case 0: // Stop Zone
+			Client_Stop(client, 1);
+			lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
+		}
+		else if (action[0] == 1 || action[0] == 5) // Start Zone or Speed Start
+		{
+			if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // If practice mode is on
+				Command_goToPlayerCheckpoint(client, 1);
+			else
+			{
+				g_Stage[g_iClientInZone[client][2]][client] = 1;
+				
+				Client_Stop(client, 1);
+				// Resetting last checkpoint
+				lastCheckpoint[g_iClientInZone[client][2]][client] = 1;
+			}
+		}
+		else if (action[0] == 2) // End Zone
+		{
+			if (g_iClientInZone[client][2] == action[2]) //  Cant end bonus timer in this zone && in the having the same timer on
+				CL_OnEndTimerPress(client);
+			else
 			{
 				Client_Stop(client, 1);
-				lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
 			}
-			case 1: // Start Zone
+			if (g_bPracticeMode[client]) // Go back to normal mode if checkpoint mode is on
 			{
-				if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // If practice mode is on
+				Command_normalMode(client, 1);
+				clearPlayerCheckPoints(client);
+			}
+			// Resetting checkpoints
+			lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
+		}
+		else if (action[0] == 3) // Stage Zone
+		{
+			if (g_bPracticeMode[client]) // If practice mode is on
+			{
+				if (action[1] > lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2] || lastCheckpoint[g_iClientInZone[client][2]][client] == 999)
+				{
+					Command_normalMode(client, 1); // Temp fix. Need to track stages checkpoints were made in.
+				}
+				else
 					Command_goToPlayerCheckpoint(client, 1);
-				else
-				{
-					g_Stage[g_iClientInZone[client][2]][client] = 1;
-					
-					Client_Stop(client, 1);
-					// Resetting last checkpoint
-					lastCheckpoint[g_iClientInZone[client][2]][client] = 1;
-				}
 			}
-			case 2: // End Zone
-			{
-				if (g_iClientInZone[client][2] == action[2]) //  Cant end bonus timer in this zone && in the having the same timer on
-					CL_OnEndTimerPress(client);
-				else
-				{
-					Client_Stop(client, 1);
-				}
-				if (g_bPracticeMode[client]) // Go back to normal mode if checkpoint mode is on
-				{
-					Command_normalMode(client, 1);
-					clearPlayerCheckPoints(client);
-				}
-				// Resetting checkpoints
-				lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
-			}
-			case 3: // Stage Zone
-			{
-				if (g_bPracticeMode[client]) // If practice mode is on
-				{
-					if (action[1] > lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2] || lastCheckpoint[g_iClientInZone[client][2]][client] == 999)
-					{
-						Command_normalMode(client, 1); // Temp fix. Need to track stages checkpoints were made in.
-					}
-					else
-						Command_goToPlayerCheckpoint(client, 1);
-				}
-				else
-				{  // Setting valid to false, in case of checkers
-					g_bValidRun[client] = false;
-					
-					// Announcing checkpoint
-					if (action[1] != lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2])
-					{
-						g_Stage[g_iClientInZone[client][2]][client] = (action[1] + 2);
-						Checkpoint(client, action[1], g_iClientInZone[client][2]);
-						lastCheckpoint[g_iClientInZone[client][2]][client] = action[1];
-					}
-				}
-			}
-			case 4: // Checkpoint Zone
-			{
+			else
+			{  // Setting valid to false, in case of checkers
+				g_bValidRun[client] = false;
+				
+				// Announcing checkpoint
 				if (action[1] != lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2])
 				{
-					// Announcing checkpoint in linear maps
+					g_Stage[g_iClientInZone[client][2]][client] = (action[1] + 2);
 					Checkpoint(client, action[1], g_iClientInZone[client][2]);
 					lastCheckpoint[g_iClientInZone[client][2]][client] = action[1];
 				}
 			}
-			case 5: // Speed Start Zone
+		}
+		else if (action[0] == 4) // Checkpoint Zone
+		{
+			if (action[1] != lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2])
 			{
-				if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // Practice mode
-					Command_goToPlayerCheckpoint(client, 1);
-				else
-				{
-					// Set Zone Group
-					g_Stage[g_iClientInZone[client][2]][client] = 1;
-					
-					Client_Stop(client, 1);
-					lastCheckpoint[g_iClientInZone[client][2]][client] = 1;
-				}
+				// Announcing checkpoint in linear maps
+				Checkpoint(client, action[1], g_iClientInZone[client][2]);
+				lastCheckpoint[g_iClientInZone[client][2]][client] = action[1];
 			}
-			case 6: // TeleToStart Zone
-			{
-				Client_Stop(client, 1);
-				lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
-				Command_Restart(client, 1);
-			}
-			case 7: // Run Validator Zone
-			{
-				g_bValidRun[client] = true;
-			}
-			case 8: // Run Checker Zone
-			{
-				if (!g_bValidRun[client])
-					Command_Teleport(client, 1);
-			}
+		}
+		else if (action[0] == 6) // TeleToStart Zone
+		{
+			Command_Restart(client, 1);
+		}
+		else if (action[0] == 7) // Validator Zone
+		{
+			g_bValidRun[client] = true;
+		}
+		else if (action[0] == 8) // Checker Zone
+		{
+			if (!g_bValidRun[client])
+				Command_Teleport(client, 1);
 		}
 	}
 }
 
 public void EndTouch(int client, int action[3])
 {
-	// real client
-	if (1 <= client <= MaxClients)
+	if (IsValidClient(client))
 	{
 		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-		switch (action[0])
+		if (action[0] == 1 || action[0] == 5)
 		{
-			case 1: // Start Zone
+			if (g_bPracticeMode[client] && !g_bTimeractivated[client]) // If on practice mode, but timer isn't on - start timer
 			{
-				if (g_bPracticeMode[client] && !g_bTimeractivated[client])
-				{  // If on practice mode, but timer isn't on - start timer
-					CL_OnStartTimerPress(client);
-				}
-				else
-				{
-					if (!g_bPracticeMode[client])
-					{
-						// NoClip check if not using prespeec cap
-						if (((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0) && GetSpeed(client) > 500.0)
-						{
-							Command_Restart(client, 1);
-							return;
-						}
-						
-						g_Stage[g_iClientInZone[client][2]][client] = 1;
-						lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
-						
-						CL_OnStartTimerPress(client);
-						
-						if (bSoundEnabled)
-						{
-							EmitSoundToClient(client, sSoundPath);
-						}
-						
-						g_bValidRun[client] = false;
-					}
-				}
+				CL_OnStartTimerPress(client);
 			}
-			case 5: // Speed Start Zone
+			else
 			{
-				if (g_bPracticeMode[client] && !g_bTimeractivated[client])
-				{
-					CL_OnStartTimerPress(client);
-				}
-				else
-				{
-					if (!g_bPracticeMode[client])
+				if (!g_bPracticeMode[client])
+				{	
+					g_Stage[g_iClientInZone[client][2]][client] = 1;
+					lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
+					
+					// NoClip check
+					if (g_bNoClip[client] || (!g_bNoClip[client] && (GetGameTime() - g_fLastTimeNoClipUsed[client]) < 3.0))
 					{
-						if (((GetGameTime() - g_fLastTimeNoClipUsed[client]) < 5.0) && GetSpeed(client) > 500.0)
-						{
-							Command_Restart(client, 1);
-							return;
-						}
-						
-						CL_OnStartTimerPress(client);
-						
-						if (bSoundEnabled)
-							EmitSoundToClient(client, sSoundPath);
-						
-						g_bValidRun[client] = false;
+						PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
+						ClientCommand(client, "play buttons\\button10.wav");
+						return;
 					}
+					else
+						CL_OnStartTimerPress(client);
+
+					g_bValidRun[client] = false;
 				}
 			}
 		}

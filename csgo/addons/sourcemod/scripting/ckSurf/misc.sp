@@ -1114,14 +1114,16 @@ public void PlayButtonSound(int client)
 {
 	if (!bSoundEnabled)
 		return;
-	
+		
+	// Players button sound
 	if (!IsFakeClient(client))
 	{
 		char buffer[255];
-		Format(buffer, sizeof(buffer), "play *buttons/button3.wav");
+		Format(buffer, sizeof(buffer), "play %s", sSoundPath);
 		ClientCommand(client, buffer);
 	}
-	//spec stop sound
+	
+	// Spectators button sound
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i) && !IsPlayerAlive(i))
@@ -1133,7 +1135,7 @@ public void PlayButtonSound(int client)
 				if (Target == client)
 				{
 					char szsound[255];
-					Format(szsound, sizeof(szsound), "play *buttons/button3.wav");
+					Format(szsound, sizeof(szsound), "play %s", sSoundPath);
 					ClientCommand(i, szsound);
 				}
 			}
@@ -1161,6 +1163,7 @@ public void LimitSpeed(int client)
 	// Dont limits speed if in practice mode, or if there is no end zone in current zonegroup
 	if (!IsValidClient(client) || !IsPlayerAlive(client) || IsFakeClient(client) || g_bPracticeMode[client] || g_mapZonesTypeCount[g_iClientInZone[client][2]][2] == 0)
 		return;
+		
 	float speedCap = 0.0, CurVelVec[3];
 	
 	if (g_iClientInZone[client][0] == 1 && g_iClientInZone[client][2] > 0)
@@ -1170,7 +1173,12 @@ public void LimitSpeed(int client)
 			speedCap = g_fStartPreSpeed;
 		else
 			if (g_iClientInZone[client][0] == 5)
-				speedCap = g_fSpeedPreSpeed;
+			{
+				if (!g_bNoClipUsed[client])
+					speedCap = g_fSpeedPreSpeed;
+				else
+					speedCap = g_fStartPreSpeed; // If noclipping, top speed at normal start zone speed
+			}
 	
 	if (speedCap == 0.0)
 		return;
@@ -1387,6 +1395,7 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
 	g_bSettingsLoaded[client] = false;
 	// Set client location 

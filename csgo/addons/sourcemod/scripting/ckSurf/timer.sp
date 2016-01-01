@@ -5,16 +5,6 @@ public Action afterStageCheckpoint(Handle timer, any client)
 	return Plugin_Handled;
 }
 
-public Action timerAfterNoclip(Handle timer, any client)
-{
-	if (IsValidClient(client))
-	{
-		Client_Stop(client, 1);
-	}
-	
-	return Plugin_Handled;
-}
-
 public Action AnnounceMap(Handle timer, any client)
 {
 	if (IsValidClient(client))

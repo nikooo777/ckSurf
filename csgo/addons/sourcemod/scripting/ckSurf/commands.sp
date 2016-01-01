@@ -2064,7 +2064,6 @@ public void Action_UnNoClip(int client)
 	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
-		CreateTimer(5.0, timerAfterNoclip, client, TIMER_FLAG_NO_MAPCHANGE);
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{
