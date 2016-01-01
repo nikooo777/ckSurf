@@ -5,7 +5,7 @@
 
 
 /*=============================================
-=            Section comment block            =
+=            		Includes		          =
 =============================================*/
 
 #include <sourcemod>
@@ -25,7 +25,6 @@
 #include <hgr>
 #include <mapchooser>
 #include <ckSurf>
-#include <timers>
 
 /*============================================
 =           	 Definitions 		         =
@@ -1034,6 +1033,9 @@ public void OnMapStart()
 	g_insertingInformation = false;
 	g_fMapStartTime = GetGameTime();
 	g_bRoundEnd = false;
+
+	for (int i = 0; i < MAXPLAYERS+1; i++)
+		g_szUsedVoteExtend[i][0] = '\0';
 	
 }
 
@@ -1082,7 +1084,8 @@ public void OnConfigsExecuted()
 	}
 	
 	// Count the amount of bonuses and then set skillgroups
-	db_selectBonusCount();
+	if (!g_bRenaming && !g_bInTransactionChain)
+		db_selectBonusCount();
 	
 	ServerCommand("sv_pure 0");
 }
