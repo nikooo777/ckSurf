@@ -1036,7 +1036,8 @@ public void OnMapStart()
 
 	for (int i = 0; i < MAXPLAYERS+1; i++)
 		g_szUsedVoteExtend[i][0] = '\0';
-	
+
+	g_VoteExtends = 0;
 }
 
 public void OnMapEnd()
