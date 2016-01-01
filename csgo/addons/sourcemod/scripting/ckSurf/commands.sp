@@ -220,7 +220,7 @@ public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, cons
 	} 
 	else
 	{
-		CPrintToChatAll("[{olive}CK{default}] Vote to Extend failed");
+		CPrintToChatAll("[{olive}CK{default}] Vote to Extend failed - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
 	}
 }
 
