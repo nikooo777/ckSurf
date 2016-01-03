@@ -1115,8 +1115,6 @@ public void OnAutoConfigsBuffered()
 		ServerCommand("exec %s", szPath);
 	else
 		SetFailState("<ckSurf> %s not found.", szPath2);
-	
-	SetServerTags();
 }
 
 public void OnClientConnected(int client)

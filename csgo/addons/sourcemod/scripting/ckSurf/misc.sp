@@ -909,26 +909,6 @@ public void SetSkillGroups()
 		SetFailState("<ckSurf> addons/sourcemod/configs/ckSurf/skillgroups.cfg not found.");
 }
 
-public void SetServerTags()
-{
-	Handle CvarHandle;
-	CvarHandle = FindConVar("sv_tags");
-	char szServerTags[2048];
-	GetConVarString(CvarHandle, szServerTags, 2048);
-	if (StrContains(szServerTags, "ckSurf", true) == -1)
-	{
-		Format(szServerTags, 2048, "%s, ckSurf", szServerTags);
-		SetConVarString(CvarHandle, szServerTags);
-	}
-	if (StrContains(szServerTags, "ckSurf 1.", true) == -1 && StrContains(szServerTags, "Tickrate", true) == -1)
-	{
-		Format(szServerTags, 2048, "%s, ckSurf %s, Tickrate %i", szServerTags, VERSION, g_Server_Tickrate);
-		SetConVarString(CvarHandle, szServerTags);
-	}
-	if (CvarHandle != null)
-		CloseHandle(CvarHandle);
-}
-
 public void PrintConsoleInfo(int client)
 {
 	int iConsoleTimeleft;
