@@ -5015,6 +5015,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 			db_GetMapRecord_Pro();
 		return;
 	}
+	
 	RemoveZones();
 	
 	if (SQL_HasResultSet(hndl))

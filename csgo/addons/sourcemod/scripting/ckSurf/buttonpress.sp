@@ -37,6 +37,7 @@ public void CL_OnStartTimerPress(int client)
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_NORMAL);
 		g_fStartTime[client] = GetGameTime();
+		g_fCurrentRunTime[client] = 0.0;
 		g_bPositionRestored[client] = false;
 		g_bMissedMapBest[client] = true;
 		g_bMissedBonusBest[client] = true;
