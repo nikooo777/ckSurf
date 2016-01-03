@@ -2,6 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script>
+function validateForm() {
+    var mapnames = document.forms["maps-form"]["maps"].value;
+    if (mapnames == null || mapnames == "") {
+        alert("You have to add in maps.");
+        return false;
+    }
+
+    if (!mapnames.match(/^[0-9a-zA-Z\_\-\n]*$/))
+    {
+        alert("Map list contains invalid map names");
+        return false;
+    }
+}
+</script>
 <title>
 ckSurf UMC Mapcycle Generator
 </title>
@@ -21,7 +36,7 @@ BODY
 </center>
 <div style="display: inline-box; width: 55%; margin-left: auto; margin-right: auto">
 	<div style="float:left"> 
-		<form method="post" action="generator.php" style="padding-bottom: 50px;">
+		<form name="maps-form" method="post" action="generator.php" style="padding-bottom: 50px;" onsubmit="return validateForm()">
 			<textarea name='maps' rows="25" cols="50" placeholder="surf_bbb                               surf_kitsune                             surf_beginner..."></textarea>
 			<br />
 			<p>How many maps to display in the vote per tier?</p>
