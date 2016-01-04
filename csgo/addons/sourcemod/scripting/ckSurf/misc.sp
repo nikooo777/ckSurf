@@ -129,15 +129,10 @@ stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
 
 void performTeleport(int client, float pos[3], float ang[3], float vel[3], int destinationZoneId, int targetClient = -1)
 {
+	Client_Stop(client, 1);
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-	// If teleporting to the exact same zone or the client is not in a zone
-	if (destinationZoneId == g_iClientInZone[client][3])
+	if (destinationZoneId != g_iClientInZone[client][3])
 	{
-		Client_Stop(client, 1);
-	}
-	else
-	{
-		Client_Stop(client, 1);
 		// If teleporting to another zone group or a zone that is not a start zone, ignore the next end touch trigger
 		if (g_iClientInZone[client][0] != -1)
 			g_bIgnoreZone[client] = true;
@@ -151,12 +146,12 @@ void performTeleport(int client, float pos[3], float ang[3], float vel[3], int d
 		}
 		else
 			if (targetClient > -1)
-		{
-			g_iClientInZone[client][0] = -1;
-			g_iClientInZone[client][1] = -1;
-			g_iClientInZone[client][2] = g_iClientInZone[targetClient][2];
-			g_iClientInZone[client][3] = -1;
-		}
+			{
+				g_iClientInZone[client][0] = -1;
+				g_iClientInZone[client][1] = -1;
+				g_iClientInZone[client][2] = g_iClientInZone[targetClient][2];
+				g_iClientInZone[client][3] = -1;
+			}
 	}
 	TeleportEntity(client, pos, ang, vel);
 }
@@ -1375,6 +1370,8 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	g_bClientRestarting[client] = false;
+	g_fClientRestarting[client] = GetGameTime();
 	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
 	g_bSettingsLoaded[client] = false;

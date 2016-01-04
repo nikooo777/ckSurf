@@ -148,10 +148,13 @@ public Action EndTouchTrigger(int caller, int activator)
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
 	
-	if (action[2] != g_iClientInZone[activator][2] || action[0] == 6 || action[0] == 8) // Ignore end touches in other zonegroups or zone that teleports away
+	if (action[2] != g_iClientInZone[activator][2] || action[0] == 6 || action[0] == 8 || action[0] != g_iClientInZone[activator][0]) // Ignore end touches in other zonegroups, zones that teleports away or multiple zones on top of each other 
 		return Plugin_Handled;
-	
+
+	// End touch
 	EndTouch(activator, action);
+	
+	// Refresh trail
 	if (!IsFakeClient(activator))
 	{
 		if (g_bTrailOn[activator])
@@ -164,11 +167,6 @@ public Action EndTouchTrigger(int caller, int activator)
 		if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
 			refreshTrail(activator);
 	}
-	// Set client location 
-	g_iClientInZone[activator][0] = -1;
-	g_iClientInZone[activator][1] = -1;
-	g_iClientInZone[activator][2] = g_mapZones[id][zoneGroup];
-	g_iClientInZone[activator][3] = -1;
 	
 	return Plugin_Handled;
 }
@@ -294,6 +292,12 @@ public void EndTouch(int client, int action[3])
 				}
 			}
 		}
+		
+		// Set client location
+		g_iClientInZone[client][0] = -1;
+		g_iClientInZone[client][1] = -1;
+		g_iClientInZone[client][2] = action[2];
+		g_iClientInZone[client][3] = -1;
 	}
 }
 
@@ -1847,6 +1851,7 @@ stock void RemoveZones()
 		{
 			SDKUnhook(i, SDKHook_StartTouch, StartTouchTrigger);
 			SDKUnhook(i, SDKHook_EndTouch, EndTouchTrigger);
+			AcceptEntityInput(i, "Disable");
 			AcceptEntityInput(i, "Kill");
 		}
 	}

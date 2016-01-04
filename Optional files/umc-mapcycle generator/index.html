@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script>
+function validateForm() {
+    var mapnames = document.forms["maps-form"]["maps"].value;
+    if (mapnames == null || mapnames == "") {
+        alert("You have to add in maps.");
+        return false;
+    }
+
+    if (!mapnames.match(/^[0-9a-zA-Z\_\-\n]*$/))
+    {
+        alert("Map list contains invalid map names");
+        return false;
+    }
+}
+</script>
+<title>
+ckSurf UMC Mapcycle Generator
+</title>
+<style type="text/css">
+BODY
+   {
+   font-family:Lucida Sans Unicode;
+   }
+</style>
+</head>
+<body>
+<center>
+<h1>ckSurf UMC Mapcycle Generator</h1>
+<hr />
+<h4>The purpose of this tool is to automatically create a UMC mapcycle template for surf servers using ckSurf.<br /> The result will only be a template, as fine tuning for your preference has to be done manually.</h4>
+<p>Copy and paste your mapcycle.txt here, to generate a <a href="https://forums.alliedmods.net/showthread.php?t=134190">UMC Mapcycle file</a> with tier, bonus and stage information. This enables more map information to be shown on the map vote:</p>
+<p>Download the CSGO version of UMC from <a href="https://forums.alliedmods.net/showpost.php?p=2345591&postcount=4355">here</a>
+</center>
+<div style="display: inline-box; width: 55%; margin-left: auto; margin-right: auto">
+	<div style="float:left"> 
+		<form name="maps-form" method="post" action="generator.php" style="padding-bottom: 50px;" onsubmit="return validateForm()">
+			<textarea name='maps' rows="25" cols="50" placeholder="surf_bbb                               surf_kitsune                             surf_beginner..."></textarea>
+			<br />
+			<p>How many maps to display in the vote per tier?</p>
+			Tier 1: <input type="number" name="tier-1" min="1" max="6" value="2"><br />
+			Tier 2: <input type="number" name="tier-2" min="1" max="6" value="2"><br />
+			Tier 3: <input type="number" name="tier-3" min="1" max="6" value="2"><br />
+			Tier 4: <input type="number" name="tier-4" min="1" max="6" value="2"><br />
+			Tier 5: <input type="number" name="tier-5" min="1" max="6" value="2"><br />
+			Tier 6: <input type="number" name="tier-6" min="1" max="6" value="2"><br />
+			<br />
+			<input type="Submit" value="Generate"/>
+		</form>
+	</div>
+	<div style="float:right">
+		<img src="vote.jpg"/>
+	</div>
+</div>
+</body>
+</html>

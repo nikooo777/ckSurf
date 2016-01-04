@@ -3950,9 +3950,11 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 		{
 			zoneGrp = SQL_FetchInt(hndl, 0);
 			g_bCheckpointsFound[zoneGrp][client] = true;
+			int k = 1;
 			for (int i = 0; i < CPLIMIT; i++)
 			{
-				g_fCheckpointTimesRecord[zoneGrp][client][i] = SQL_FetchFloat(hndl, (i + 1));
+				g_fCheckpointTimesRecord[zoneGrp][client][i] = SQL_FetchFloat(hndl, k);
+				k++;
 			}
 		}
 	}
@@ -5015,6 +5017,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 			db_GetMapRecord_Pro();
 		return;
 	}
+	
 	RemoveZones();
 	
 	if (SQL_HasResultSet(hndl))
