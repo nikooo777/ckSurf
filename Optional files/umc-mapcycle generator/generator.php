@@ -59,7 +59,6 @@ $mapCycleSize = 0;
 $stages;
 $bonuses;
 $tierString;
-$unknownMaps;
 
 // Handle query on MySQL
 if (DB === "MYSQL")

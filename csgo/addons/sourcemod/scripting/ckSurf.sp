@@ -455,6 +455,10 @@ bool g_bSettingsLoaded[MAXPLAYERS + 1];
 bool g_bServerDataLoaded;
 float g_fErrorMessage[MAXPLAYERS + 1];
 
+float g_fClientRestarting[MAXPLAYERS + 1];
+bool g_bClientRestarting[MAXPLAYERS + 1];
+
+
 bool g_bInTransactionChain = false;
 float g_flastClientUsp[MAXPLAYERS + 1];
 bool g_insertingInformation;

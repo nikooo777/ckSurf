@@ -594,6 +594,21 @@ public Action Command_ToEnd(int client, int args)
 
 public Action Command_Restart(int client, int args)
 {
+	if (GetGameTime() - g_fClientRestarting[client] > 5.0)
+		g_bClientRestarting[client] = false;
+	
+	// Check that the client has a timer running, the zonegroup he is in has stages and that this is the first click
+	if (IsValidClient(client) && g_bTimeractivated[client] && g_mapZonesTypeCount[g_iClientInZone[client][2]][3] > 0 && !g_bClientRestarting[client] && g_Stage[g_iClientInZone[client][2]][client] > 1)
+	{
+		g_fClientRestarting[client] = GetGameTime();
+		g_bClientRestarting[client] = true;
+		PrintToChat(client, "[%cCK%c] Are you sure you want to restart your run? Use %c!r%c again to restart.", MOSSGREEN, WHITE, GREEN, WHITE);
+		ClientCommand(client, "play ambient/misc/clank4");
+		return Plugin_Handled;
+	}
+	
+	g_bClientRestarting[client] = false;
+	
 	teleportClient(client, 0, 1, true);
 	return Plugin_Handled;
 }

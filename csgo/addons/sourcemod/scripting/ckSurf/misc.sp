@@ -1390,6 +1390,8 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	g_bClientRestarting[client] = false;
+	g_fClientRestarting[client] = GetGameTime();
 	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
 	g_bSettingsLoaded[client] = false;
