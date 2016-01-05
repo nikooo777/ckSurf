@@ -458,6 +458,8 @@ float g_fErrorMessage[MAXPLAYERS + 1];
 float g_fClientRestarting[MAXPLAYERS + 1];
 bool g_bClientRestarting[MAXPLAYERS + 1];
 
+ConVar g_hDoubleRestartCommand;
+bool g_bDoubleRestartCommand;
 
 bool g_bInTransactionChain = false;
 float g_flastClientUsp[MAXPLAYERS + 1];
@@ -1860,6 +1862,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar == g_hMaxVoteExtends) {
 		g_MaxVoteExtends = StringToInt(newValue[0]);
 	}
+	else if (convar == g_hDoubleRestartCommand) {
+		g_bDoubleRestartCommand = view_as<bool>(StringToInt(newValue));
+	}
 	
 	if (g_hZoneTimer != INVALID_HANDLE)
 	{
@@ -2248,6 +2253,10 @@ public void OnPluginStart()
 	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
 	g_MaxVoteExtends = GetConVarInt(g_hMaxVoteExtends);
 	HookConVarChange(g_hMaxVoteExtends, OnSettingChanged);
+
+	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "1", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bDoubleRestartCommand = GetConVarBool(g_hDoubleRestartCommand);
+	HookConVarChange(g_hDoubleRestartCommand, OnSettingChanged);
 
 	bool validFlag;
 	g_hAdminMenuFlag = CreateConVar("ck_adminmenu_flag", "b", "Admin flag required to open the !ckadmin menu. Invalid or not set, requires flag b.", FCVAR_NOTIFY);
