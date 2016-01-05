@@ -594,6 +594,7 @@ public Action Command_ToEnd(int client, int args)
 
 public Action Command_Restart(int client, int args)
 {
+	/*
 	if (GetGameTime() - g_fClientRestarting[client] > 5.0)
 		g_bClientRestarting[client] = false;
 	
@@ -608,7 +609,7 @@ public Action Command_Restart(int client, int args)
 	}
 	
 	g_bClientRestarting[client] = false;
-	
+	*/
 	teleportClient(client, 0, 1, true);
 	return Plugin_Handled;
 }
