@@ -200,6 +200,9 @@ public void PlayerSpawn(int client)
 	//get speed & origin
 	g_fLastSpeed[client] = GetSpeed(client);
 	GetClientAbsOrigin(client, g_fLastPosition[client]);
+
+	// ViewModel
+	Client_SetDrawViewModel(client, g_bViewModel[client]);
 }
 
 public Action Say_Hook(int client, const char[] command, int argc)
