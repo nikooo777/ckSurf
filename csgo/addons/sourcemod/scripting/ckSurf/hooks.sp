@@ -648,27 +648,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_bOnGround[client] = true;
 		else
 			g_bOnGround[client] = false;
-		
-		if (speed < 10.0 && g_bOnGround[client]) // Not moving
-		{
-			g_bNoClipUsed[client] = false;
-			if (!g_bClientStopped[client]) // Get start time
-			{
-				if (!IsFakeClient(client))
-					g_fClientLastMovement[client] = GetEngineTime();
-				g_bClientStopped[client] = true;
-			}
-			else if (GetEngineTime() - g_fClientLastMovement[client] > BEAMLIFE)
-			{
-				if (!IsFakeClient(client))
-					g_bRefreshTrail[client] = true;
-			}
-		}
-		else
-		{
-			if (!IsFakeClient(client))
-				g_bClientStopped[client] = false;
-		}
+	
+		checkTrailStatus(client, speed);
 		
 		//menu refreshing
 		CheckRun(client);

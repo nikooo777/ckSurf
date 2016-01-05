@@ -154,19 +154,9 @@ public Action EndTouchTrigger(int caller, int activator)
 	// End touch
 	EndTouch(activator, action);
 	
-	// Refresh trail
-	if (!IsFakeClient(activator))
-	{
-		if (g_bTrailOn[activator])
-		{
-			refreshTrail(activator);
-		}
-	}
-	else
-	{
-		if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
-			refreshTrail(activator);
-	}
+	// Refresh bot trail
+	if (IsFakeClient(activator))
+		refreshTrailBot(activator);
 	
 	return Plugin_Handled;
 }

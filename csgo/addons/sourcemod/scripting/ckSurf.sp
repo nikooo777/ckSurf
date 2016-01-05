@@ -229,10 +229,10 @@ int g_iCustomTitleCount;
 //// VIP Variables ////
 ///////////////////////
 bool g_bTrailOn[MAXPLAYERS + 1];
+bool g_bTrailApplied[MAXPLAYERS + 1];
 bool g_bClientStopped[MAXPLAYERS + 1];
 bool g_bRefreshTrail[MAXPLAYERS + 1];
 int g_iTrailColor[MAXPLAYERS + 1];
-float g_fLastTrailTime[MAXPLAYERS + 1];
 float g_fClientLastMovement[MAXPLAYERS + 1];
 
 int g_AutoVIPFlag;
@@ -676,8 +676,6 @@ bool g_borg_AutoBhopClient[MAXPLAYERS + 1];
 bool g_bBeam[MAXPLAYERS + 1];
 bool g_bOnGround[MAXPLAYERS + 1];
 bool g_specToStage[MAXPLAYERS + 1];
-float g_fLastTimeMoved[MAXPLAYERS + 1];
-bool g_bMoving[MAXPLAYERS + 1];
 float g_fTeleLocation[MAXPLAYERS + 1][3];
 float g_fCurVelVec[MAXPLAYERS + 1][3];
 

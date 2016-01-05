@@ -1209,30 +1209,40 @@ public void changeTrailColor(int client)
 	return;
 }
 
-public void refreshTrail(int client)
+public void refreshTrailClient(int client)
 {
-	if (!IsValidClient(client))
+	if (!IsValidClient(client) || !g_bTrailOn[client])
 		return;
 	
 	int ent = GetPlayerWeaponSlot(client, 2);
 	if (!IsValidEntity(ent))
 		return;
 	
+	g_bTrailApplied[client] = true;
+	
 	if (!IsFakeClient(client))
 	{
-		if (((GetEngineTime() - g_fLastTrailTime[client]) > 10.0) && g_bRefreshTrail[client])
+		for (int i = 1; i < MAXPLAYERS + 1; i++)
 		{
-			
-			//PrintToServer("TRAILING: CLIENT %i", client);
-			g_fLastTrailTime[client] = GetEngineTime();
-			g_bRefreshTrail[client] = false;
-			for (int i = 1; i < MAXPLAYERS + 1; i++)
+			if (i == client)
 			{
-				if (i == client)
+				int ownTrailColor[4];
+				Array_Copy(RGB_COLORS[g_iTrailColor[client]], ownTrailColor, 4);
+				ownTrailColor[3] = 50;
+				TE_SetupBeamFollow(ent, 
+					g_BeamSprite, 
+					0, 
+					BEAMLIFE, 
+					4.0, 
+					1.0, 
+					1, 
+					ownTrailColor);
+				TE_SendToClient(i);
+			}
+			else
+			{
+				if (IsValidClient(i) && !g_bHide[i])
 				{
-					int ownTrailColor[4];
-					Array_Copy(RGB_COLORS[g_iTrailColor[client]], ownTrailColor, 4);
-					ownTrailColor[3] = 80;
 					TE_SetupBeamFollow(ent, 
 						g_BeamSprite, 
 						0, 
@@ -1240,30 +1250,27 @@ public void refreshTrail(int client)
 						4.0, 
 						1.0, 
 						1, 
-						ownTrailColor);
+						RGB_COLORS[g_iTrailColor[client]]);
 					TE_SendToClient(i);
-				}
-				else
-				{
-					if (ClientCanSeeClient(i, client))
-					{
-						TE_SetupBeamFollow(ent, 
-							g_BeamSprite, 
-							0, 
-							BEAMLIFE, 
-							4.0, 
-							1.0, 
-							1, 
-							RGB_COLORS[g_iTrailColor[client]]);
-						TE_SendToClient(i);
-					}
 				}
 			}
 		}
 	}
-	else if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
+}
+
+public void refreshTrailBot(int bot)
+{
+	if (!IsValidClient(bot))
+		return;
+	
+	int ent = GetPlayerWeaponSlot(bot, 2);
+	if (!IsValidEntity(ent))
+		return;
+	
+	
+	if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
 	{
-		if (client == g_BonusBot)
+		if (bot == g_BonusBot)
 		{
 			//PrintToServer("TRAILING: BONUS BOT");
 			TE_SetupBeamFollow(ent, 
@@ -1276,7 +1283,7 @@ public void refreshTrail(int client)
 				g_BonusBotTrailColor);
 			TE_SendToAll();
 		}
-		else if (client == g_RecordBot)
+		else if (bot == g_RecordBot)
 		{
 			//PrintToServer("TRAILING: RECORD BOT");
 			TE_SetupBeamFollow(ent, 
@@ -1300,51 +1307,17 @@ public void toggleTrail(int client)
 	if (!g_bTrailOn[client])
 	{
 		PrintToChat(client, "[%cCK%c] Player trail %cenabled", MOSSGREEN, WHITE, MOSSGREEN);
-		//g_hTrailTimer[client] = CreateTimer(10.0, TrailTimer, client, TIMER_REPEAT);
 		g_bTrailOn[client] = true;
-		refreshTrail(client);
+		
+		if (!g_bTrailApplied[client])
+			refreshTrailClient(client);
 	}
 	else
 	{
 		PrintToChat(client, "[%cCK%c] Player trail %cdisabled", MOSSGREEN, WHITE, RED);
 		g_bTrailOn[client] = false;
-		/*	if (g_hTrailTimer[client] != null)
-		{
-			CloseHandle(g_hTrailTimer[client]);
-			g_hTrailTimer[client] = null;
-		}*/
 	}
 }
-
-stock bool ClientCanSeeClient(int client, int target, float distance = 0.0, float height = 50.0)
-{
-	if (!IsValidClient(client) || !IsValidClient(target))
-		return false;
-	
-	float vMonsterPosition[3], vTargetPosition[3];
-	
-	GetEntPropVector(client, Prop_Send, "m_vecOrigin", vMonsterPosition);
-	vMonsterPosition[2] += height;
-	
-	GetClientEyePosition(target, vTargetPosition);
-	
-	if (distance == 0.0 || GetVectorDistance(vMonsterPosition, vTargetPosition, false) < distance)
-	{
-		Handle trace = TR_TraceRayFilterEx(vMonsterPosition, vTargetPosition, MASK_SOLID_BRUSHONLY, RayType_EndPoint, Base_TraceFilter);
-		
-		if (TR_DidHit(trace))
-		{
-			CloseHandle(trace);
-			return (false);
-		}
-		
-		CloseHandle(trace);
-		
-		return (true);
-	}
-	return false;
-}
-
 
 public bool Base_TraceFilter(int entity, int contentsMask, any data)
 {
@@ -1358,32 +1331,27 @@ public bool Base_TraceFilter(int entity, int contentsMask, any data)
 
 public void checkTrailStatus(int client, float speed)
 {
-	// Check if trail is on
-	if (g_bTrailOn[client])
+	if (!IsFakeClient(client))
 	{
-		if (speed == 0.0 && (GetEntityFlags(client) & FL_ONGROUND)) // Standing still
+		if (speed < 5.0 && g_bOnGround[client]) // Not moving
 		{
-			// Check if client has stood still for over trail time
-			if (g_bMoving[client]) // Stopped moving
+			g_bNoClipUsed[client] = false;
+			if (!g_bClientStopped[client]) // Get start time
 			{
-				g_fLastTimeMoved[client] = GetGameTime();
-				g_bMoving[client] = false;
+				g_fClientLastMovement[client] = GetEngineTime();
+				g_bClientStopped[client] = true;
 			}
-			else // Not moving
+			else if (GetEngineTime() - g_fClientLastMovement[client] >= BEAMLIFE) // Trail has died, refresh
 			{
-				if ((GetGameTime() - g_fLastTimeMoved[client]) > (BEAMLIFE + 0.1)) // if beam has faded
-				{
-					// Redo beam
-					//PrintToChatAll("Restarting Beam!");
-					g_fLastTimeMoved[client] = GetGameTime();
-					//startTrail(client);
-				}
+				g_bTrailApplied[client] = false;
+				g_fClientLastMovement[client] = GetEngineTime();
+				refreshTrailClient(client);
 			}
 		}
-		else // Moving
+		else
 		{
-			// Reset variables on standing still
-			g_bMoving[client] = true;
+			if (!IsFakeClient(client))
+				g_bClientStopped[client] = false;
 		}
 	}
 }
@@ -1412,14 +1380,11 @@ public void SetClientDefaults(int client)
 	
 	
 	g_bClientStopped[client] = false;
+	g_bTrailApplied[client] = false;
 	g_bRefreshTrail[client] = false;
 	g_fClientLastMovement[client] = GetEngineTime();
 	g_fLastDifferenceTime[client] = 0.0;
-	g_fLastTrailTime[client] = GetEngineTime();
 	g_bTrailOn[client] = false;
-	
-	g_bMoving[client] = true;
-	g_fLastTimeMoved[client] = GetGameTime();
 	
 	g_bHasTitle[client] = false;
 	g_iTitleInUse[client] = -1;

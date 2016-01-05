@@ -741,7 +741,7 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 			CL_OnStartTimerPress(client);
 			
 			if (((client == g_BonusBot) && g_bBonusBotTrailEnabled) || ((client == g_RecordBot) && g_bRecordBotTrailEnabled))
-				refreshTrail(client);
+				refreshTrailBot(client);
 			
 			g_bValidTeleportCall[client] = true;
 			TeleportEntity(client, g_fInitialPosition[client], g_fInitialAngles[client], fAcutalVelocity);
