@@ -452,6 +452,7 @@ bool g_bCommandToEnd;
 int g_failedTransactions[7];
 
 bool g_bSettingsLoaded[MAXPLAYERS + 1];
+bool g_bLoadingSettings[MAXPLAYERS + 1];
 bool g_bServerDataLoaded;
 float g_fErrorMessage[MAXPLAYERS + 1];
 
@@ -1186,7 +1187,7 @@ public void OnClientPutInServer(int client)
 	if (g_bTierFound[0])
 		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
 	
-	if (!g_bRenaming && !g_bInTransactionChain && g_bServerDataLoaded && !g_bSettingsLoaded[client])
+	if (!g_bRenaming && !g_bInTransactionChain && g_bServerDataLoaded && !g_bSettingsLoaded[client] && !g_bLoadingSettings[client])
 	{
 		/**
 			Start loading client settings
@@ -1199,6 +1200,7 @@ public void OnClientPutInServer(int client)
 			7. Load client titles (db_viewPersonalFlags)
 			8. Load client checkpoints (db_viewCheckpoints)
 		*/
+		g_bLoadingSettings[client] = true;
 		db_viewPersonalRecords(client, g_szSteamID[client], g_szMapName);
 	}
 }

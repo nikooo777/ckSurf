@@ -3960,7 +3960,23 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 	}
 	
 	if (!g_bSettingsLoaded[client])
+	{
 		g_bSettingsLoaded[client] = true;
+		g_bLoadingSettings[client] = false;
+		
+		// Seach for next client to load
+		for (int i = 1; i < MAXPLAYERS + 1; i++)
+		{
+			if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i] && !g_bLoadingSettings[i])
+			{
+				char szSteamID[32];
+				GetClientAuthId(i, AuthId_Steam2, szSteamID, 32, true);
+				db_viewPersonalRecords(i, szSteamID, g_szMapName);
+				g_bLoadingSettings[i] = true;
+				break;
+			}
+		}
+	}		
 }
 
 public void db_viewCheckpointsinZoneGroup(int client, char szSteamID[32], char szMapName[128], int zonegroup)

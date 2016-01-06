@@ -110,7 +110,7 @@ public Action StartTouchTrigger(int caller, int activator)
 	}
 	else
 	{
-		if (action[0] == 1 || action[0] == 5) // Ignore other than start zones in other zonegroups
+		if (action[0] == 1 || action[0] == 5) // Ignore other than start and misc zones in other zonegroups
 		{
 			// Set client location 
 			g_iClientInZone[activator][0] = action[0];
@@ -119,6 +119,9 @@ public Action StartTouchTrigger(int caller, int activator)
 			g_iClientInZone[activator][3] = id;
 			StartTouch(activator, action);
 		}
+		else
+			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 0)
+				StartTouch(activator, action);
 	}
 	
 	return Plugin_Handled;

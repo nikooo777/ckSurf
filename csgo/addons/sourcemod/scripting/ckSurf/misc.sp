@@ -1,12 +1,16 @@
 public void loadAllClientSettings()
 {
 	for (int i = 1; i < MAXPLAYERS + 1; i++)
-		if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i])
+	{
+		if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i] && !g_bLoadingSettings[i])
+		{
 			db_viewPersonalRecords(i, g_szSteamID[i], g_szMapName);
+			g_bLoadingSettings[i] = true;
+			break;
+		}
+	}
 	
 	g_bServerDataLoaded = true;
-	
-	
 }
 public void getSteamIDFromClient(int client, char[] buffer, int length)
 {
@@ -1363,6 +1367,7 @@ public void SetClientDefaults(int client)
 	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
 	g_bSettingsLoaded[client] = false;
+	
 	// Set client location 
 	if (bSpawnToStartZone)
 	{
