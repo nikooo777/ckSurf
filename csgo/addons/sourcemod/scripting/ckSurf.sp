@@ -228,6 +228,9 @@ int g_iCustomTitleCount;
 ///////////////////////
 //// VIP Variables ////
 ///////////////////////
+bool g_bServerVipCommand;
+ConVar g_hServerVipCommand;
+
 bool g_bTrailOn[MAXPLAYERS + 1];
 bool g_bTrailApplied[MAXPLAYERS + 1];
 bool g_bClientStopped[MAXPLAYERS + 1];
@@ -237,7 +240,7 @@ float g_fClientLastMovement[MAXPLAYERS + 1];
 
 int g_AutoVIPFlag;
 bool g_bAutoVIPFlag;
-Handle g_hAutoVIPFlag = null;
+ConVar g_hAutoVIPFlag = null;
 
 // Vote Extend
 char g_szUsedVoteExtend[MAXPLAYERS+1][32];
@@ -1865,6 +1868,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar == g_hDoubleRestartCommand) {
 		g_bDoubleRestartCommand = view_as<bool>(StringToInt(newValue));
 	}
+	else if (convar == g_hServerVipCommand) {
+		g_bServerVipCommand = view_as<bool>(StringToInt(newValue));
+	}
 	
 	if (g_hZoneTimer != INVALID_HANDLE)
 	{
@@ -2284,6 +2290,10 @@ public void OnPluginStart()
 		g_ZoneMenuFlag = FlagToBit(bufferFlag);
 		
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
+	
+	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bServerVipCommand = GetConVarBool(g_hServerVipCommand);
+	HookConVarChange(g_hServerVipCommand, OnSettingChanged);
 
 	db_setupDatabase();
 	
@@ -2346,9 +2356,13 @@ public void OnPluginStart()
 	// Titles
 	RegConsoleCmd("sm_title", Command_SetTitle, "[ckSurf] Displays player's titles");
 	RegConsoleCmd("sm_titles", Command_SetTitle, "[ckSurf] Displays player's titles");
-	RegConsoleCmd("sm_vip", Command_Vip, "[ckSurf] VIP's commands and effects.");
-	RegConsoleCmd("sm_effects", Command_Vip, "[ckSurf] VIP's commands and effects.");
-	RegConsoleCmd("sm_effect", Command_Vip, "[ckSurf] VIP's commands and effects.");
+	
+	if(g_bServerVipCommand)
+	{
+		RegConsoleCmd("sm_vip", Command_Vip, "[ckSurf] VIP's commands and effects.");
+		RegConsoleCmd("sm_effects", Command_Vip, "[ckSurf] VIP's commands and effects.");
+		RegConsoleCmd("sm_effect", Command_Vip, "[ckSurf] VIP's commands and effects.");
+	}
 	
 	// MISC
 	RegConsoleCmd("sm_tier", Command_Tier, "[ckSurf] Prints information on the current map");
