@@ -565,15 +565,20 @@ public Action Command_ToStage(int client, int args)
 		return Plugin_Handled;
 	if (args < 1)
 	{
-		PrintToChat(client, "Usage: !s <stage number>");
-		return Plugin_Handled;
+		// Remove chat output to reduce chat spam
+		//PrintToChat(client, "Teleport to stage 1 | Default usage: !s <stage number>");
+		teleportClient(client, g_iClientInZone[client][2], 1, true);
+	}
+	else
+	{
+		char arg1[3];
+		GetCmdArg(1, arg1, sizeof(arg1));
+		int StageId = StringToInt(arg1);
+		
+		teleportClient(client, g_iClientInZone[client][2], StageId, true);
 	}
 	
-	char arg1[3];
-	GetCmdArg(1, arg1, sizeof(arg1));
-	int StageId = StringToInt(arg1);
 	
-	teleportClient(client, g_iClientInZone[client][2], StageId, true);
 	
 	return Plugin_Handled;
 }
