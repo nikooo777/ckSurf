@@ -1136,6 +1136,33 @@ public Action UnNoClip(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Command_ckNoClip(int client, int args)
+{
+	if(!IsValidClient(client))
+		return Plugin_Handled;
+
+	if(!IsPlayerAlive(client))
+	{
+		ReplyToCommand(client, "[%cCK%c] You cannot use NoClip while you are dead", MOSSGREEN, WHITE);
+	}
+	else
+	{
+		MoveType mt = GetEntityMoveType(client);
+		
+		if (mt != MOVETYPE_NOCLIP)
+		{
+			Action_NoClip(client);
+		}
+		else
+		{
+			Action_UnNoClip(client);
+		}
+	}
+		
+	return Plugin_Handled;
+}
+
+
 public Action Client_Top(int client, int args)
 {
 	ckTopMenu(client);

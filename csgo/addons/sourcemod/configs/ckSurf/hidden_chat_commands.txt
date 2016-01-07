@@ -104,3 +104,5 @@
 !addspawn
 !delspawn
 !clearassists
+!noclip
+!nc
