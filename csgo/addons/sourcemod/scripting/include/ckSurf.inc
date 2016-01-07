@@ -45,7 +45,21 @@ native ckSurf_EmulateStopButtonPress(client);
  */
 native Float:ckSurf_GetCurrentTime(client);
 
+/**
+ * Checks if the client has VIP status
+ *
+ * @param client     Client's id
+ * @return           True / False
+ */
+native bool:ckSurf_ClientIsVIP(client);
 
+/**
+ * Gets the server rank of a client
+ *
+ * @param client     Client's id
+ * @return           Server rank as an int
+ */
+native ckSurf_GetServerRank(client);
 
 /*
 		FORWARDS
@@ -94,4 +108,6 @@ public __pl_ckSurf_SetNTVOptional()
 	MarkNativeAsOptional("ckSurf_EmulateStartButtonPress");	
 	MarkNativeAsOptional("ckSurf_EmulateStopButtonPress");
 	MarkNativeAsOptional("ckSurf_GetCurrentTime");
+	MarkNativeAsOptional("ckSurf_ClientIsVIP");
+	MarkNativeAsOptional("ckSurf_GetServerRank");
 }

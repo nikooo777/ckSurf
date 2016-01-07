@@ -1908,6 +1908,16 @@ public int Native_EmulateStopButtonPress(Handle plugin, int numParams)
 	CL_OnEndTimerPress(GetNativeCell(1));
 }
 
+public int Native_ClientIsVIP(Handle plugin, int numParams)
+{
+	return view_as<bool>(g_bflagTitles[GetNativeCell(1)][0]);
+}
+
+public int Native_GetServerRank(Handle plugin, int numParams)
+{
+	return g_PlayerRank[GetNativeCell(1)];
+}
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	RegPluginLibrary("ckSurf");
@@ -1916,6 +1926,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ckSurf_EmulateStartButtonPress", Native_EmulateStartButtonPress);
 	CreateNative("ckSurf_EmulateStopButtonPress", Native_EmulateStopButtonPress);
 	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
+	CreateNative("ckSurf_ClientIsVIP", Native_ClientIsVIP);
+	CreateNative("ckSurf_GetServerRank", Native_GetServerRank);
 	
 	MarkNativeAsOptional("HGR_IsHooking");
 	MarkNativeAsOptional("HGR_IsGrabbing");
@@ -2535,4 +2547,4 @@ public void OnPluginStart()
 	Format(szLIGHTBLUE, 12, "%c", LIGHTBLUE);
 	Format(szPINK, 12, "%c", PINK);
 	Format(szLIGHTRED, 12, "%c", LIGHTRED);
-} 
+}
