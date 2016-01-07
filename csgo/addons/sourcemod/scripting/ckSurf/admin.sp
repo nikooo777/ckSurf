@@ -714,7 +714,6 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				{
 					for (int i = 66; i < MAX_PR_PLAYERS; i++)
 						g_bProfileRecalc[i] = false;
-					g_bTop100Refresh = false;
 					g_bManualRecalc = false;
 					g_pr_RankingRecalc_InProgress = false;
 					PrintToChat(param1, "%t", "StopRecalculation", MOSSGREEN, WHITE);

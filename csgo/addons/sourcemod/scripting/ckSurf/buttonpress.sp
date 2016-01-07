@@ -45,11 +45,7 @@ public void CL_OnStartTimerPress(int client)
 		
 		//valid players
 		if (!IsFakeClient(client))
-		{
-			//Get start position
-			GetClientAbsOrigin(client, g_fPlayerCordsRestart[client]);
-			GetClientEyeAngles(client, g_fPlayerAnglesRestart[client]);
-			
+		{	
 			//star message
 			if (g_iClientInZone[client][2] == 0)
 			{
@@ -62,13 +58,10 @@ public void CL_OnStartTimerPress(int client)
 					g_bMissedBonusBest[client] = false;
 				
 			}
-			
-			
-			g_fLastOverlay[client] = GetGameTime() - 2.5;
-			
-			if (g_bFirstButtonTouch[client])
+						
+			if (g_bFirstTimerStart[client])
 			{
-				g_bFirstButtonTouch[client] = false;
+				g_bFirstTimerStart[client] = false;
 				Client_Avg(client, 0);
 			}
 		}
@@ -163,7 +156,6 @@ public void CL_OnEndTimerPress(int client)
 	FormatTimeFloat(client, g_fFinalTime[client], 3, szTime, sizeof(szTime));
 	Format(g_szFinalTime[client], 32, "%s", szTime);
 	g_bOverlay[client] = true;
-	g_fLastOverlay[client] = GetGameTime();
 	PrintHintText(client, "%t", "TimerStopped", g_szFinalTime[client]);
 	
 	char szDiff[54];

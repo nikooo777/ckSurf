@@ -60,10 +60,9 @@ public void PlayerSpawn(int client)
 	if (!IsValidClient(client))
 		return;
 	
-	g_fStartCommandUsed_LastTime[client] = GetGameTime();
 	g_SpecTarget[client] = -1;
 	g_bPause[client] = false;
-	g_bFirstButtonTouch[client] = true;
+	g_bFirstTimerStart[client] = true;
 	SetEntityMoveType(client, MOVETYPE_WALK);
 	SetEntityRenderMode(client, RENDER_NORMAL);
 	
@@ -199,7 +198,6 @@ public void PlayerSpawn(int client)
 	
 	//get speed & origin
 	g_fLastSpeed[client] = GetSpeed(client);
-	GetClientAbsOrigin(client, g_fLastPosition[client]);
 
 	// ViewModel
 	Client_SetDrawViewModel(client, g_bViewModel[client]);
@@ -434,8 +432,6 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];
 		}
 		g_bSpectate[client] = true;
-		if (g_bPause[client])
-			g_bPauseWasActivated[client] = true;
 		g_bPause[client] = false;
 	}
 	return Plugin_Continue;
@@ -639,7 +635,6 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
 		
 		float speed, origin[3], ang[3];
-		g_CurrentButton[client] = buttons;
 		GetClientAbsOrigin(client, origin);
 		GetClientEyeAngles(client, ang);
 		
@@ -657,18 +652,11 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		AutoBhopFunction(client, buttons);
 		NoClipCheck(client);
 		AttackProtection(client, buttons);
-		HookCheck(client);
 		
 		// If in start zone, cap speed
 		LimitSpeed(client);
 		
-		if (g_bOnGround[client])
-		{
-			g_bBeam[client] = false;
-		}
-		g_fLastAngles[client] = ang;
 		g_fLastSpeed[client] = speed;
-		g_fLastPosition[client] = origin;
 		g_LastButton[client] = buttons;
 		
 		BeamBox_OnPlayerRunCmd(client);
@@ -847,23 +835,6 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 	
 	return MRES_Ignored;
 }
-
-/*
-public Action Event_OnJump(Handle JumpEvent, const char[] Name, bool Broadcast)
-{
-	int client;
-	client = GetClientOfUserId(GetEventInt(JumpEvent, "userid"));	
-	g_bBeam[client]=true;
-	
-	//noclip check
-	float  flEngineTime;
-	flEngineTime = GetGameTime();
-	float flDiff;
-	flDiff = flEngineTime - g_fLastTimeNoClipUsed[client];
-	if (flDiff < 4.0)
-		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, view_as<float>({0.0,0.0,-100.0}));
-}
-*/
 
 public void Hook_PostThinkPost(int entity)
 {

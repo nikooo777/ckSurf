@@ -16,7 +16,7 @@ public void CreateZoneEntity(int zoneIndex)
 	int iEnt = CreateEntityByName("trigger_multiple");
 	
 	if (iEnt > 0 && IsValidEntity(iEnt)) {
-		SetEntityModel(iEnt, g_sModel);
+		SetEntityModel(iEnt, ZONE_MODEL);
 		// Spawnflags:	1 - only a player can trigger this by touch, makes it so a NPC cannot fire a trigger_multiple
 		// 2 - Won't fire unless triggering ent's view angles are within 45 degrees of trigger's angles (in addition to any other conditions), so if you want the player to only be able to fire the entity at a 90 degree angle you would do ",angles,0 90 0," into your spawnstring.
 		// 4 - Won't fire unless player is in it and pressing use button (in addition to any other conditions), you must make a bounding box,(max\mins) for this to work.

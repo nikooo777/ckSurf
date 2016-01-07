@@ -921,16 +921,6 @@ public int ChallengeMenuHandler3(Menu menu, MenuAction action, int param1, int p
 	}
 }
 
-public Action Client_Language(int client, int args)
-{
-	if (!IsValidClient(client))
-		return Plugin_Handled;
-	
-	DisplayMenu(g_hLangMenu, client, MENU_TIME_FOREVER);
-	return Plugin_Handled;
-}
-
-
 public Action Client_Abort(int client, int args)
 {
 	if (g_bChallenge[client])
@@ -1251,50 +1241,6 @@ public Action Client_Spec(int client, int args)
 	SpecPlayer(client, args);
 	return Plugin_Handled;
 }
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action Command_Menu(int client, int args)
-{
-	DisplayMenu(g_hMainMenu, client, MENU_TIME_FOREVER);
-	return Plugin_Handled;
-}
-
-public int Handler_MainMenu(Menu menu, MenuAction action, int param1, int param2)
-{
-	if (action == MenuAction_Select)
-	{
-		switch (param2)
-		{
-			case 0: {  //Point 1 (Red)
-				GetPos(param1, 0);
-			}
-			case 1: {  //Point 2 (Green)
-				GetPos(param1, 1);
-			}
-			case 2: {  //Find Distance
-				if (g_bMeasurePosSet[param1][0] && g_bMeasurePosSet[param1][1])
-				{
-					float vDist = GetVectorDistance(g_fvMeasurePos[param1][0], g_fvMeasurePos[param1][1]);
-					float vHightDist = (g_fvMeasurePos[param1][0][2] - g_fvMeasurePos[param1][1][2]);
-					PrintToChat(param1, "%t", "Measure1", MOSSGREEN, WHITE, vDist, vHightDist);
-					Beam(param1, g_fvMeasurePos[param1][0], g_fvMeasurePos[param1][1], 4.0, 2.0, 0, 0, 255);
-				}
-				else
-					PrintToChat(param1, "%t", "Measure2", MOSSGREEN, WHITE);
-			}
-			case 3: {  //Reset
-				ResetPos(param1);
-			}
-		}
-		DisplayMenu(g_hMainMenu, param1, MENU_TIME_FOREVER);
-	}
-	else if (action == MenuAction_Cancel)
-	{
-		ResetPos(param1);
-	}
-}
-
 
 public void SpecPlayer(int client, int args)
 {
@@ -1916,11 +1862,6 @@ public void GotoMethod(int client, int target)
 				g_fTeleLocation[client][0] = FloatDiv(g_fTeleLocation[client][0], 2.0);
 				g_fTeleLocation[client][1] = FloatDiv(g_fTeleLocation[client][1], 2.0);
 				g_fTeleLocation[client][2] = FloatDiv(g_fTeleLocation[client][2], 2.0);
-				
-				
-				g_fCurVelVec[client][0] = 0.0;
-				g_fCurVelVec[client][1] = 0.0;
-				g_fCurVelVec[client][2] = 0.0;
 				
 				g_bRespawnPosition[client] = false;
 				g_specToStage[client] = true;

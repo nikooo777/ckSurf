@@ -203,10 +203,6 @@ public Action CKTimer2(Handle timer)
 		if (!IsValidClient(i) || i == g_InfoBot)
 			continue;
 		
-		//overlay check
-		if (g_bOverlay[i] && GetGameTime() - g_fLastOverlay[i] > 5.0)
-			g_bOverlay[i] = false;
-		
 		
 		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
 		if (g_hRecording[i] != null && g_fCurrentRunTime[i] > 6720.0)
@@ -479,11 +475,6 @@ public Action StartMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
-		
-		/* No other languages yet, so dont advert.
-		if (!g_bLanguageSelected[client])
-			PrintToChat(client, "%t", "LanguageSwitch", MOSSGREEN,WHITE,GRAY,WHITE);
-		*/
 		PrintMapRecords(client);
 	}
 	return Plugin_Handled;
@@ -496,7 +487,6 @@ public Action CenterMsgTimer(Handle timer, any client)
 		if (g_bRestorePositionMsg[client])
 		{
 			g_bOverlay[client] = true;
-			g_fLastOverlay[client] = GetGameTime();
 			PrintHintText(client, "%t", "PositionRestored");
 		}
 		g_bRestorePositionMsg[client] = false;

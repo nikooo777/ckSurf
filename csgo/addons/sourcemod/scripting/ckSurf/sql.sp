@@ -1567,10 +1567,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 					{
 						if (g_bManualRecalc)
 							PrintToChat(i, "%t", "PrUpdateFinished", MOSSGREEN, WHITE, LIMEGREEN);
-						if (g_bTop100Refresh)
-							PrintToChat(i, "%t", "Top100Refreshed", MOSSGREEN, WHITE, LIMEGREEN);
 					}
-				g_bTop100Refresh = false;
 				g_bManualRecalc = false;
 				g_pr_RankingRecalc_InProgress = false;
 				
@@ -2061,7 +2058,6 @@ public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[
 	}
 	profileMenu.ExitButton = true;
 	profileMenu.Display(client, MENU_TIME_FOREVER);
-	g_bProfileSelected[client] = true;
 }
 
 public void db_viewPlayerRank2(int client, char szSteamId[32])
@@ -3024,7 +3020,6 @@ public void sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const c
 	}
 	else
 		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
-	Format(g_szMapTopName[client], 128, "%s", szFirstMap);
 	Format(title, 256, "Top 50 Times on %s (B %i) \n    Rank    Time               Player", szFirstMap, zGrp);
 	topMenu.SetTitle(title);
 	topMenu.OptionFlags = MENUFLAG_BUTTON_EXIT;
@@ -3107,7 +3102,6 @@ public void sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[]
 	}
 	else
 		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
-	Format(g_szMapTopName[client], 128, "%s", szFirstMap);
 	Format(title, 256, "Top 50 Times on %s \n    Rank    Time               Player", szFirstMap);
 	SetMenuTitle(menu, title);
 	SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
@@ -5931,11 +5925,7 @@ public void sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const cha
 				{
 					if (g_bManualRecalc)
 						PrintToChat(c, "%t", "PrUpdateFinished", MOSSGREEN, WHITE, LIMEGREEN);
-					if (g_bTop100Refresh)
-						PrintToChat(c, "%t", "Top100Refreshed", MOSSGREEN, WHITE, LIMEGREEN);
 				}
-			
-			g_bTop100Refresh = false;
 			g_bManualRecalc = false;
 			g_pr_RankingRecalc_InProgress = false;
 			
@@ -6470,7 +6460,6 @@ public int ProfileMenuHandler(Handle menu, MenuAction action, int client, int it
 					if (g_bSelectProfile[client])
 						ProfileMenu(client, 0);
 				}
-				g_bProfileSelected[client] = false;
 			}
 		}
 		else

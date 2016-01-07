@@ -3,17 +3,14 @@
 *					By Elzi 			       =
 =============================================*/
 
-
 /*=============================================
 =            		Includes		          =
 =============================================*/
 
 #include <sourcemod>
-#include <sdktools>
 #include <sdkhooks>
 #include <adminmenu>
 #include <cstrike>
-#include <entity>
 #include <smlib>
 #include <geoip>
 #include <basecomm>
@@ -22,9 +19,12 @@
 #include <clientprefs>
 #undef REQUIRE_PLUGIN
 #include <dhooks>
-#include <hgr>
 #include <mapchooser>
 #include <ckSurf>
+
+/*====================================
+=            Declarations            =
+====================================*/
 
 /*============================================
 =           	 Definitions 		         =
@@ -82,15 +82,26 @@
 #define RGB_ORANGE {238, 154, 0, 255}
 #define RGB_GREY {145, 145, 145, 255}
 #define RGB_DARKGREY {69, 69, 69, 255}
-int RGB_COLORS[][] =  { RGB_GREEN, RGB_RED, RGB_DARKRED, RGB_BLUE, RGB_LIGHTBLUE, RGB_DARKBLUE, RBG_YELLOW, RGB_GREENYELLOW, RGB_PURPLE, RGB_MAGENTA, RGB_PINK, RGB_WHITE, RGB_CYAN, RGB_SPRINGGREEN, RGB_OLIVE, RGB_ORANGE, RGB_GREY, RGB_DARKGREY };
-char RGB_COLOR_NAMES[][] =  { "Green", "Red", "Darkred", "Blue", "Lightblue", "Darkblue", "Yellow", "Greenyellow", "Purple", "Magenta", "Pink", "White", "Cyan", "Springgreen", "Olive", "Orange", "Grey", "Darkgrey" };
+
+// Paths & configs
+#define CK_REPLAY_PATH "data/cKreplays/"
+#define BLOCKED_LIST_PATH "configs/ckSurf/hidden_chat_commands.txt"
+#define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
+#define PRO_FULL_SOUND_PATH "sound/quake/holyshit.mp3"
+#define PRO_RELATIVE_SOUND_PATH "*quake/holyshit.mp3"
+#define CP_FULL_SOUND_PATH "sound/quake/wickedsick.mp3"
+#define CP_RELATIVE_SOUND_PATH "*quake/wickedsick.mp3"
+#define UNSTOPPABLE_SOUND_PATH "sound/quake/unstoppable.mp3"
+#define UNSTOPPABLE_RELATIVE_SOUND_PATH "*quake/unstoppable.mp3"
 
 // Checkpoint definitions
-#define CPLIMIT 35					// Maximum amount of checkpoints in a map
+#define CPLIMIT 35			// Maximum amount of checkpoints in a map
 
-#define ZONEAMOUNT 9				// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-#define MAXZONEGROUPS 11			// Maximum amount of zonegroups in a map
-#define MAXZONES 128				// Maximum amount of zones in a map
+// Zone definitions
+#define ZONE_MODEL "models/props/de_train/barrel.mdl"
+#define ZONEAMOUNT 9		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+#define MAXZONEGROUPS 11	// Maximum amount of zonegroups in a map
+#define MAXZONES 128		// Maximum amount of zones in a map
 
 // Ranking definitions
 #define MAX_PR_PLAYERS 1066
@@ -111,10 +122,7 @@ char RGB_COLOR_NAMES[][] =  { "Green", "Red", "Darkred", "Blue", "Lightblue", "D
 #define FILE_HEADER_LENGTH 74
 
 // Title definitions
-#define TITLE_COUNT 23				// The amount of custom titles that can be configured in custom_chat_titles.txt
-
-
-
+#define TITLE_COUNT 23		// The amount of custom titles that can be configured in custom_chat_titles.txt
 
 
 /*====================================
@@ -155,19 +163,11 @@ enum FileHeader
 	Handle:FH_frames
 }
 
-enum EJoinTeamReason
-{
-	k_OneTeamChange = 0, 
-	k_TeamsFull = 1, 
-	k_TTeamFull = 2, 
-	k_CTTeamFull = 3
-}
-
 enum MapZone
 {
-	zoneId,  		// ID within the map
-	zoneType,  		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-	zoneTypeId, 	// ID of the same type eg. Start-1, Start-2, Start-3...
+	zoneId,  				// ID within the map
+	zoneType,  				// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+	zoneTypeId, 			// ID of the same type eg. Start-1, Start-2, Start-3...
 	Float:PointA[3], 
 	Float:PointB[3], 
 	String:zoneName[128], 
@@ -176,11 +176,12 @@ enum MapZone
 	Team, 
 }
 
-/**
-*	Plugin Info
-*
-**/
 
+
+
+/*===================================
+=            Plugin Info            =
+===================================*/
 
 public Plugin myinfo = 
 {
@@ -192,644 +193,582 @@ public Plugin myinfo =
 };
 
 
+
+
 /*=================================
 =            Variables            =
 =================================*/
 
-///////////////////
-//Stage Variables//
-///////////////////
-int g_Stage[MAXZONEGROUPS][MAXPLAYERS + 1];
-bool g_bhasStages;
+/*----------  Stages  ----------*/
+int g_Stage[MAXZONEGROUPS][MAXPLAYERS + 1];						// Which stage is the client in
+bool g_bhasStages; 												// Does the map have stages
 
-/////////////////////////
-//// Spawn Locations ////
-/////////////////////////
-float g_fSpawnLocation[MAXZONEGROUPS][3];
-float g_fSpawnAngle[MAXZONEGROUPS][3];
-bool g_bGotSpawnLocation[MAXZONEGROUPS];
+/*----------  Spawn locations  ----------*/
+float g_fSpawnLocation[MAXZONEGROUPS][3];						// Spawn coordinates 
+float g_fSpawnAngle[MAXZONEGROUPS][3];							// Spawn angle
+bool g_bGotSpawnLocation[MAXZONEGROUPS]; 						// Does zonegroup have a spawn location
 
-///////////////////////
-//// Player titles ////
-///////////////////////
-bool g_bflagTitles[MAXPLAYERS + 1][TITLE_COUNT];
-bool g_bAdminFlagTitlesTemp[MAXPLAYERS + 1][TITLE_COUNT];
-bool g_bflagTitles_orig[MAXPLAYERS + 1][TITLE_COUNT];
-bool g_bAdminSelectedHasFlag[MAXPLAYERS + 1];
-bool g_bHasTitle[MAXPLAYERS + 1];
-char g_szflagTitle_Colored[TITLE_COUNT][128];
-char g_szflagTitle[TITLE_COUNT][128];
-char g_szAdminSelectedSteamID[MAXPLAYERS + 1][32];
-int g_iAdminSelectedClient[MAXPLAYERS + 1];
-int g_iAdminEditingType[MAXPLAYERS + 1];
-int g_iTitleInUse[MAXPLAYERS + 1];
-int g_iCustomTitleCount;
+/*----------  Player titles  ----------*/
+bool g_bflagTitles[MAXPLAYERS + 1][TITLE_COUNT]; 				// Which titles have been given for client
+bool g_bflagTitles_orig[MAXPLAYERS + 1][TITLE_COUNT]; 			// Used to track which title the user gained / lost
+bool g_bHasTitle[MAXPLAYERS + 1]; 								// Does the client have any titles
+char g_szflagTitle_Colored[TITLE_COUNT][128]; 					// Titles with colors
+char g_szflagTitle[TITLE_COUNT][128]; 							// Titles loaded from config
+int g_iTitleInUse[MAXPLAYERS + 1]; 								// Which title the client is using
+int g_iCustomTitleCount; 										// How many custom titles are loaded
+// Chat Colors in String Format
+char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12];
+bool g_bAdminSelectedHasFlag[MAXPLAYERS + 1]; 					// Does the client the admin selected have titles?
+char g_szAdminSelectedSteamID[MAXPLAYERS + 1][32]; 				// SteamID of the user admin chose when giving title
+bool g_bAdminFlagTitlesTemp[MAXPLAYERS + 1][TITLE_COUNT]; 		// Which title admin chose to give in !givetitles
+int g_iAdminSelectedClient[MAXPLAYERS + 1]; 					// Which clientid did the admin select
+int g_iAdminEditingType[MAXPLAYERS + 1]; 						// What the admin is editing
 
-///////////////////////
-//// VIP Variables ////
-///////////////////////
+/*----------  VIP Variables  ----------*/
+// Enable VIP CVar
 bool g_bServerVipCommand;
 ConVar g_hServerVipCommand;
-
-bool g_bTrailOn[MAXPLAYERS + 1];
-bool g_bTrailApplied[MAXPLAYERS + 1];
-bool g_bClientStopped[MAXPLAYERS + 1];
-bool g_bRefreshTrail[MAXPLAYERS + 1];
-int g_iTrailColor[MAXPLAYERS + 1];
-float g_fClientLastMovement[MAXPLAYERS + 1];
-
+// Trail variables
+bool g_bTrailOn[MAXPLAYERS + 1]; 								// Client is using a trail
+bool g_bTrailApplied[MAXPLAYERS + 1]; 							// Client has been given a title
+bool g_bClientStopped[MAXPLAYERS + 1]; 							// Client is not moving
+int g_iTrailColor[MAXPLAYERS + 1]; 								// Trail color the client is using
+float g_fClientLastMovement[MAXPLAYERS + 1]; 					// Last time the client moved
+// Auto VIP Cvar
 int g_AutoVIPFlag;
 bool g_bAutoVIPFlag;
 ConVar g_hAutoVIPFlag = null;
-
 // Vote Extend
-char g_szUsedVoteExtend[MAXPLAYERS+1][32];
-int g_VoteExtends = 0;
-
-ConVar g_hVoteExtendTime;
+char g_szUsedVoteExtend[MAXPLAYERS+1][32]; 						// SteamID's which triggered extend vote
+int g_VoteExtends = 0; 											// How many extends have happened in current map
+ConVar g_hVoteExtendTime; 										// Extend time CVar
 float g_fVoteExtendTime;
-
-ConVar g_hMaxVoteExtends;
+ConVar g_hMaxVoteExtends; 										// Extend max count CVar
 int g_MaxVoteExtends;
 
-////////////////////
-//// Admin Menu ////
-////////////////////
-int g_AdminMenuFlag;
-Handle g_hAdminMenuFlag = null;
-
-//////////////////////////
-//// Replay Variables ////
-//////////////////////////
-bool g_bReplayAtEnd[MAXPLAYERS + 1];
-float g_fReplayRestarted[MAXPLAYERS + 1];
-
-
-///////////////////
-//Bonus Variables//
-///////////////////
-//bool g_bBonusTimer[MAXPLAYERS+1];								// True if client is using the bonus timer
+/*----------  Bonus variables  ----------*/
 char g_szBonusFastest[MAXZONEGROUPS][MAX_NAME_LENGTH]; 			// Name of the #1 in the current maps bonus
 char g_szBonusFastestTime[MAXZONEGROUPS][64]; 					// Fastest bonus time in 00:00:00:00 format
 float g_fPersonalRecordBonus[MAXZONEGROUPS][MAXPLAYERS + 1]; 	// Clients personal bonus record in the current map
-char g_szPersonalRecordBonus[MAXZONEGROUPS][MAXPLAYERS + 1][64];
+char g_szPersonalRecordBonus[MAXZONEGROUPS][MAXPLAYERS + 1][64]; // Personal bonus record in 00:00:00 format
 float g_fBonusFastest[MAXZONEGROUPS]; 							// Fastest bonus time in the current map
 float g_fOldBonusRecordTime[MAXZONEGROUPS];						// Old record time, for prints + counting
 int g_MapRankBonus[MAXZONEGROUPS][MAXPLAYERS + 1];				// Clients personal bonus rank in the current map
 int g_OldMapRankBonus[MAXZONEGROUPS][MAXPLAYERS + 1];			// Old rank in bonus
 int g_bMissedBonusBest[MAXPLAYERS + 1]; 						// Has the client mbissed his best bonus time
-int g_tmpBonusCount[MAXZONEGROUPS];
+int g_tmpBonusCount[MAXZONEGROUPS];								// Used to make sure bonus finished prints are correct
 int g_iBonusCount[MAXZONEGROUPS]; 								// Amount of players that have passed the bonus in current map
 int g_totalBonusCount; 											// How many total bonuses there are
-//int g_inZoneGroup[MAXPLAYERS+1];								// In which bonus the player is currently in. 0 = normal map
-bool g_bhasBonus;
-int g_clientFinishedBonuses[MAX_PR_PLAYERS + 1];
-int g_ClientFinishedBonusesRowCount[MAX_PR_PLAYERS + 1];
-bool g_bBonusFirstRecord[MAXPLAYERS + 1];
-bool g_bBonusPBRecord[MAXPLAYERS + 1];
-bool g_bBonusSRVRecord[MAXPLAYERS + 1];
-char g_szBonusTimeDifference[MAXPLAYERS + 1];
+bool g_bhasBonus;												// Does map have a bonus?
 
-////////////////////////
-//Checkpoint Variables//
-////////////////////////
+/*----------  Checkpoint variables  ----------*/
 float g_fCheckpointTimesRecord[MAXZONEGROUPS][MAXPLAYERS + 1][CPLIMIT]; // Clients best run's times
-float g_fCheckpointTimesNew[MAXZONEGROUPS][MAXPLAYERS + 1][CPLIMIT]; // Clients current runs times
-float g_fCheckpointServerRecord[MAXZONEGROUPS][CPLIMIT];
-char g_szLastSRDifference[MAXPLAYERS + 1][64];
-char g_szLastPBDifference[MAXPLAYERS + 1][64];
-float g_fLastDifferenceTime[MAXPLAYERS + 1];
-float tmpDiff[MAXPLAYERS + 1];
-int lastCheckpoint[MAXZONEGROUPS][MAXPLAYERS + 1];
-bool g_bCheckpointsEnabled[MAXPLAYERS + 1];
-bool g_borg_CheckpointsEnabled[MAXPLAYERS + 1];
-bool g_bCheckpointsFound[MAXZONEGROUPS][MAXPLAYERS + 1];
-bool g_bActivateCheckpointsOnStart[MAXPLAYERS + 1];
-bool g_bCheckpointRecordFound[MAXZONEGROUPS];
+float g_fCheckpointTimesNew[MAXZONEGROUPS][MAXPLAYERS + 1][CPLIMIT]; // Clients current run's times
+float g_fCheckpointServerRecord[MAXZONEGROUPS][CPLIMIT]; 		// Server record checkpoint times
+char g_szLastSRDifference[MAXPLAYERS + 1][64]; 					// Last difference to the server record checkpoint
+char g_szLastPBDifference[MAXPLAYERS + 1][64]; 					// Last difference to clients own record checkpoint
+float g_fLastDifferenceTime[MAXPLAYERS + 1]; 					// The time difference was shown, used to show for a few seconds in timer panel
+float tmpDiff[MAXPLAYERS + 1]; 									// Used to calculate time gain / lost
+int lastCheckpoint[MAXZONEGROUPS][MAXPLAYERS + 1]; 				// Used to track which checkpoint was last reached
+bool g_bCheckpointsFound[MAXZONEGROUPS][MAXPLAYERS + 1]; 		// Clients checkpoints have been found?
+bool g_bCheckpointRecordFound[MAXZONEGROUPS];					// Map record checkpoints found?
+float g_fMaxPercCompleted[MAXPLAYERS + 1]; 						// The biggest % amount the player has reached in current map
+
+/*----------  Advert variables  ----------*/
+int g_Advert; 													// Defines which advert to play
 
 
-///////////////////
-//Advert Variable//
-///////////////////
-int g_Advert; // Defines which advert to play
+/*----------  Maptier Variables  ----------*/
+char g_sTierString[MAXZONEGROUPS][512];							// The string for each zonegroup
+bool g_bTierEntryFound;											// Tier data found?
+bool g_bTierFound[MAXZONEGROUPS];								// Tier data found in ZGrp
+Handle AnnounceTimer[MAXPLAYERS + 1];							// Tier announce timer
 
-/////////////////////
-//MapTier Bariables//
-/////////////////////
-char g_sTierString[MAXZONEGROUPS][512];
-bool g_bTierEntryFound;
-bool g_bTierFound[MAXZONEGROUPS];
-Handle AnnounceTimer[MAXPLAYERS + 1];
+/*----------  Zone Variables  ----------*/
+// Client
+bool g_bIgnoreZone[MAXPLAYERS + 1]; 							// Ignore end zone end touch if teleporting from inside a zone
+int g_iClientInZone[MAXPLAYERS + 1][4];							// Which zone the client is in 0 = ZoneType, 1 = ZoneTypeId, 2 = ZoneGroup, 3 = ZoneID
+// Zone Counts & Data
+int g_mapZonesTypeCount[MAXZONEGROUPS][ZONEAMOUNT];				// Zone type count in each zoneGroup
+char g_szZoneGroupName[MAXZONEGROUPS][128];						// Zone group's name
+int g_mapZones[MAXZONES][MapZone];								// Map Zone array
+int g_mapZonesCount;											// The total amount of zones in the map
+int g_mapZoneCountinGroup[MAXZONEGROUPS];						// Map zone count in zonegroups
+int g_mapZoneGroupCount;										// Zone group cound
 
-//////////////////
-//Zone Variables//
-//////////////////
-
-int g_ZoneMenuFlag;
-Handle g_hZoneMenuFlag = null;
-
-float g_fZonePositions[MAXZONES][3];
-Handle g_hZoneDisplayType = null;
-int g_zoneDisplayType;
-Handle g_hZonesToDisplay = null;
-int g_zonesToDisplay;
-Handle g_hChecker;
-float g_fChecker;
-
-Handle g_hZoneTimer = INVALID_HANDLE;
-bool g_bEditZoneType[MAXPLAYERS + 1];
-char g_CurrentZoneName[MAXPLAYERS + 1][64];
-float g_Positions[MAXPLAYERS + 1][2][3];
-float g_fBonusStartPos[MAXPLAYERS + 1][2][3];
-float g_fBonusEndPos[MAXPLAYERS + 1][2][3];
-float g_AvaliableScales[5] =  { 1.0, 5.0, 10.0, 50.0, 100.0 };
-int beamColorT[] =  { 255, 0, 0, 255 };
-int beamColorCT[] =  { 0, 0, 255, 255 };
+// Editing zones
+bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
+char g_CurrentZoneName[MAXPLAYERS + 1][64];						// Selected zone's name
+float g_Positions[MAXPLAYERS + 1][2][3];						// Selected zone's position
+float g_fBonusStartPos[MAXPLAYERS + 1][2][3];					// Bonus start zone position
+float g_fBonusEndPos[MAXPLAYERS + 1][2][3];						// Bonus end zone positions
+float g_AvaliableScales[5] =  { 1.0, 5.0, 10.0, 50.0, 100.0 };	// Scaling options
+int g_CurrentSelectedZoneGroup[MAXPLAYERS + 1];					// Currently selected zonegroup
+int g_CurrentZoneTeam[MAXPLAYERS + 1];							// Current zone team TODO: Remove
+int g_CurrentZoneVis[MAXPLAYERS + 1];							// Current zone visibility per team TODO: Remove
+int g_CurrentZoneType[MAXPLAYERS + 1];							// Currenyly selected zone's type
+int g_Editing[MAXPLAYERS + 1];									// What state of editing is happening eg. editing, creating etc.
+int g_ClientSelectedZone[MAXPLAYERS + 1] =  { -1, ... };		// Currently selected zone id
+int g_ClientSelectedScale[MAXPLAYERS + 1];						// Currently selected scale
+int g_ClientSelectedPoint[MAXPLAYERS + 1];						// Currently selected point
+int g_CurrentZoneTypeId[MAXPLAYERS + 1];						// Currently selected zone's type ID
+bool g_ClientRenamingZone[MAXPLAYERS + 1];						// Is client renaming zone?
+float g_fZonePositions[MAXZONES][3];							// Loaded zone positions in memory
+int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
+int beamColorCT[] =  { 0, 0, 255, 255 };				
 int beamColorN[] =  { 255, 255, 0, 255 };
 int beamColorM[] =  { 0, 255, 0, 255 };
-
-int g_zoneStartColor[4];
-Handle g_hzoneStartColor = null;
-char g_szzoneStartColor[24];
-
-int g_zoneEndColor[4];
-Handle g_hzoneEndColor = null;
-char g_szzoneEndColor[24];
-
-int g_zoneBonusStartColor[4];
-Handle g_hzoneBonusStartColor = null;
-char g_szzoneBonusStartColor[24];
-
-
-int g_zoneBonusEndColor[4];
-Handle g_hzoneBonusEndColor = null;
-char g_szzoneBonusEndColor[24];
-
-
-int g_zoneStageColor[4];
-Handle g_hzoneStageColor = null;
-char g_szzoneStageColor[24];
-
-
-int g_zoneCheckpointColor[4];
-Handle g_hzoneCheckpointColor = null;
-char g_szzoneCheckpointColor[24];
-
-
-int g_zoneSpeedColor[4];
-Handle g_hzoneSpeedColor = null;
-char g_szzoneSpeedColor[24];
-
-
-int g_zoneTeleToStartColor[4];
-Handle g_hzoneTeleToStartColor = null;
-char g_szzoneTeleToStartColor[24];
-
-
-int g_zoneValidatorColor[4];
-Handle g_hzoneValidatorColor = null;
-char g_szzoneValidatorColor[24];
-
-
-int g_zoneCheckerColor[4];
-Handle g_hzoneCheckerColor = null;
-char g_szzoneCheckerColor[24];
-
-
-int g_zoneStopColor[4];
-Handle g_hzoneStopColor = null;
-char g_szzoneStopColor[24];
-char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" };
-
-int g_CurrentSelectedZoneGroup[MAXPLAYERS + 1];
-int g_CurrentZoneTeam[MAXPLAYERS + 1];
-int g_CurrentZoneVis[MAXPLAYERS + 1];
-int g_CurrentZoneType[MAXPLAYERS + 1];
-int g_Editing[MAXPLAYERS + 1];
-int g_ClientSelectedZone[MAXPLAYERS + 1] =  { -1, ... };
-int g_BeamSprite;
+char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" }; // Default zone names
+int g_BeamSprite;												// Zone sprites
 int g_HaloSprite;
-int g_mapZonesTypeCount[MAXZONEGROUPS][ZONEAMOUNT];
-char g_szZoneGroupName[MAXZONEGROUPS][128];
-int g_mapZones[MAXZONES][MapZone];
-int g_mapZonesCount;
-int g_mapZoneCountinGroup[MAXZONEGROUPS];
-int g_mapZoneGroupCount;
-int g_ClientSelectedScale[MAXPLAYERS + 1];
-int g_ClientSelectedPoint[MAXPLAYERS + 1];
-int g_CurrentZoneTypeId[MAXPLAYERS + 1];
-bool g_ClientRenamingZone[MAXPLAYERS + 1];
 
-
-// PushFix by Mev, George, & Blacky
-// https://forums.alliedmods.net/showthread.php?t=267131
+/*----------  PushFix by Mev, George & Blacky  ----------*/
+/*----------  https://forums.alliedmods.net/showthread.php?t=267131  ----------*/
 ConVar g_hTriggerPushFixEnable;
 bool g_bTriggerPushFixEnable;
 bool g_bPushing[MAXPLAYERS + 1];
 
-
-// Slope Boost Fix by Mev, & Blacky
-// https://forums.alliedmods.net/showthread.php?t=266888
+/*----------  Slope Boost Fix by Mev & Blacky  ----------*/
+/*----------  https://forums.alliedmods.net/showthread.php?t=266888  ----------*/
 float g_vCurrent[MAXPLAYERS + 1][3];
 float g_vLast[MAXPLAYERS + 1][3];
-
 bool g_bOnGroundFix[MAXPLAYERS + 1];
 bool g_bLastOnGround[MAXPLAYERS + 1];
-
 ConVar g_hSlopeFixEnable;
 bool g_bSlopeFixEnable;
 
-//////////////////////
-// ckSurf Variables///
-//////////////////////
-// Forwards
+/*----------  Forwards  ----------*/
 Handle g_MapFinishForward;
 Handle g_BonusFinishForward;
 Handle g_PracticeFinishForward;
 
-char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12];
-
-ConVar g_hCommandToEnd;
+/*----------  CVars  ----------*/
+// Zones
+int g_ZoneMenuFlag;
+ConVar g_hZoneMenuFlag = null;
+ConVar g_hZoneDisplayType = null;								 // How zones are displayed (lower edge, full)
+int g_zoneDisplayType;
+ConVar g_hZonesToDisplay = null; 								// Which zones are displayed
+int g_zonesToDisplay;
+ConVar g_hChecker; 												// Zone refresh rate
+float g_fChecker;
+Handle g_hZoneTimer = INVALID_HANDLE;
+//Zone Colors
+int g_zoneStartColor[4];
+ConVar g_hzoneStartColor = null;
+char g_szzoneStartColor[24];
+int g_zoneEndColor[4];
+ConVar g_hzoneEndColor = null;
+char g_szzoneEndColor[24];
+int g_zoneBonusStartColor[4];
+ConVar g_hzoneBonusStartColor = null;
+char g_szzoneBonusStartColor[24];
+int g_zoneBonusEndColor[4];
+ConVar g_hzoneBonusEndColor = null;
+char g_szzoneBonusEndColor[24];
+int g_zoneStageColor[4];
+ConVar g_hzoneStageColor = null;
+char g_szzoneStageColor[24];
+int g_zoneCheckpointColor[4];
+ConVar g_hzoneCheckpointColor = null;
+char g_szzoneCheckpointColor[24];
+int g_zoneSpeedColor[4];
+ConVar g_hzoneSpeedColor = null;
+char g_szzoneSpeedColor[24];
+int g_zoneTeleToStartColor[4];
+ConVar g_hzoneTeleToStartColor = null;
+char g_szzoneTeleToStartColor[24];
+int g_zoneValidatorColor[4];
+ConVar g_hzoneValidatorColor = null;
+char g_szzoneValidatorColor[24];
+int g_zoneCheckerColor[4];
+ConVar g_hzoneCheckerColor = null;
+char g_szzoneCheckerColor[24];
+int g_zoneStopColor[4];
+ConVar g_hzoneStopColor = null;
+char g_szzoneStopColor[24];
+ConVar g_hCommandToEnd; 										// !end Enable / Disable
 bool g_bCommandToEnd;
-
-int g_failedTransactions[7];
-
-bool g_bSettingsLoaded[MAXPLAYERS + 1];
-bool g_bLoadingSettings[MAXPLAYERS + 1];
-bool g_bServerDataLoaded;
-float g_fErrorMessage[MAXPLAYERS + 1];
-
-float g_fClientRestarting[MAXPLAYERS + 1];
-bool g_bClientRestarting[MAXPLAYERS + 1];
-
-ConVar g_hDoubleRestartCommand;
-bool g_bDoubleRestartCommand;
-
-bool g_bInTransactionChain = false;
-float g_flastClientUsp[MAXPLAYERS + 1];
-bool g_insertingInformation;
-bool g_bValidRun[MAXPLAYERS + 1];
-bool g_bNewRecordBot;
-bool g_bNewBonusBot;
-bool g_bHideChat[MAXPLAYERS + 1];
-bool g_borg_HideChat[MAXPLAYERS + 1];
-bool g_bViewModel[MAXPLAYERS + 1];
-bool g_borg_ViewModel[MAXPLAYERS + 1];
-int g_DbType;
-float g_fMaxPercCompleted[MAXPLAYERS + 1];
-Handle g_hTeleport = null;
-Handle g_hMainMenu = null;
-Handle g_hAdminMenu = null;
-Handle g_MapList = null;
-Handle g_hDb = null;
-Handle g_hLangMenu = null;
-Handle g_hCookie = null;
-Handle g_OnLangChanged = null;
-Handle g_hRecording[MAXPLAYERS + 1];
-Handle g_hLoadedRecordsAdditionalTeleport = null;
-Handle g_hBotMimicsRecord[MAXPLAYERS + 1] =  { null, ... };
-Handle g_hP2PRed[MAXPLAYERS + 1] =  { null, ... };
-Handle g_hP2PGreen[MAXPLAYERS + 1] =  { null, ... };
-Handle g_hRecordingAdditionalTeleport[MAXPLAYERS + 1];
-Menu g_menuTopSurfersMenu[MAXPLAYERS + 1] = null;
-Handle g_hWelcomeMsg = null;
-char g_sWelcomeMsg[512];
-Handle g_hReplayBotPlayerModel = null;
-char g_sReplayBotPlayerModel[256];
-Handle g_hReplayBotArmModel = null;
+ConVar g_hWelcomeMsg = null;
+char g_sWelcomeMsg[512]; 										// Welcome message
+ConVar g_hReplayBotPlayerModel = null;
+char g_sReplayBotPlayerModel[256]; 								// Repalay bot player model
+ConVar g_hReplayBotArmModel = null; 							// Replay bot arm model
 char g_sReplayBotArmModel[256];
-Handle g_hPlayerModel = null;
+ConVar g_hPlayerModel = null; 									// Player models
 char g_sPlayerModel[256];
-Handle g_hArmModel = null;
+ConVar g_hArmModel = null; 										// Player arm models
 char g_sArmModel[256];
-Handle g_hcvarRestore = null;
+ConVar g_hcvarRestore = null; 									// Restore player's runs?
 bool g_bRestore;
-Handle g_hNoClipS = null;
+ConVar g_hNoClipS = null; 										// Allow noclip?
 bool g_bNoClipS;
-Handle g_hReplayBot = null;
+ConVar g_hReplayBot = null; 									// Replay bot?
+bool g_bMapReplay; // Why two bools?
 bool g_bReplayBot;
-Handle g_hBonusBot = null;
-bool g_bBonusBot;
-Handle g_hColoredNames = null;
-bool g_bColoredNames;
-Handle g_hPauseServerside = null;
-bool g_bPauseServerside;
-Handle g_hChallengePoints = null;
-bool g_bChallengePoints;
-Handle g_hAutoBhopConVar = null;
-bool g_bAutoBhopConVar;
-bool g_bAutoBhop;
-Handle g_hDynamicTimelimit = null;
-bool g_bDynamicTimelimit;
-Handle g_hAdminClantag = null;
-bool g_bAdminClantag;
-Handle g_hConnectMsg = null;
-bool g_bConnectMsg;
-Handle g_hDisconnectMsg = null;
-bool g_bDisconnectMsg;
-Handle g_hRadioCommands = null;
-bool g_bRadioCommands;
-Handle g_hInfoBot = null;
-bool g_bInfoBot;
-Handle g_hAttackSpamProtection = null;
-bool g_bAttackSpamProtection;
-Handle g_hGoToServer = null;
-bool g_bGoToServer;
-Handle g_hAllowRoundEndCvar = null;
-bool g_bAllowRoundEndCvar;
-Handle g_hPlayerSkinChange = null;
-bool g_bPlayerSkinChange;
-Handle g_hCountry = null;
-bool g_bCountry;
-Handle g_hAutoRespawn = null;
-bool g_bAutoRespawn;
-Handle g_hcvarNoBlock = null;
-bool g_bNoBlock;
-Handle g_hPointSystem = null;
-bool g_bPointSystem;
-Handle g_hCleanWeapons = null;
-bool g_bCleanWeapons;
-Handle g_hcvargodmode = null;
-bool g_bAutoTimer;
-Handle g_hAutoTimer = null;
-bool g_bgodmode;
-Handle g_hMapEnd = null;
-bool g_bMapEnd;
-Handle g_hAutohealing_Hp = null;
-int g_Autohealing_Hp;
-Handle g_hExtraPoints = null;
-int g_ExtraPoints;
-Handle g_hExtraPoints2 = null;
-int g_ExtraPoints2;
-
-// Bot Colors & effects:
-Handle g_hReplayBotColor = null;
-int g_ReplayBotColor[3];
-Handle g_hBonusBotColor = null;
-int g_BonusBotColor[3];
-
-Handle g_hBonusBotTrail = null;
-bool g_bBonusBotTrailEnabled;
-
-Handle g_hRecordBotTrail = null;
-bool g_bRecordBotTrailEnabled;
-
-Handle g_hReplayBotTrailColor = null;
-int g_ReplayBotTrailColor[4];
-Handle g_hBonusBotTrailColor = null;
-int g_BonusBotTrailColor[4];
-
-float g_fMapStartTime;
-float g_fvMeasurePos[MAXPLAYERS + 1][2][3];
-float g_fStartTime[MAXPLAYERS + 1];
-float g_fFinalTime[MAXPLAYERS + 1];
-float g_fPauseTime[MAXPLAYERS + 1];
-float g_fLastTimeNoClipUsed[MAXPLAYERS + 1];
-float g_fLastOverlay[MAXPLAYERS + 1];
-float g_fStartPauseTime[MAXPLAYERS + 1];
-float g_fPlayerCordsLastPosition[MAXPLAYERS + 1][3];
-float g_fPlayerLastTime[MAXPLAYERS + 1];
-float g_fPlayerAnglesLastPosition[MAXPLAYERS + 1][3];
-float g_fPlayerCordsRestart[MAXPLAYERS + 1][3];
-float g_fPlayerAnglesRestart[MAXPLAYERS + 1][3];
-float g_fPlayerCordsRestore[MAXPLAYERS + 1][3];
-float g_fPlayerAnglesRestore[MAXPLAYERS + 1][3];
-float g_fPersonalRecord[MAXPLAYERS + 1];
-char g_szPersonalRecord[MAXPLAYERS + 1][64];
-float g_fCurrentRunTime[MAXPLAYERS + 1];
-float g_fLastTimeButtonSound[MAXPLAYERS + 1];
-float g_fPlayerConnectedTime[MAXPLAYERS + 1];
-float g_fStartCommandUsed_LastTime[MAXPLAYERS + 1];
-float g_fProfileMenuLastQuery[MAXPLAYERS + 1];
-float g_favg_maptime;
-float g_fAvg_BonusTime[MAXZONEGROUPS];
-float g_fLastSpeed[MAXPLAYERS + 1];
-float g_fInitialPosition[MAXPLAYERS + 1][3];
-float g_fInitialAngles[MAXPLAYERS + 1][3];
-float g_fChallenge_RequestTime[MAXPLAYERS + 1];
-float g_fSpawnPosition[MAXPLAYERS + 1][3];
-float g_fLastPosition[MAXPLAYERS + 1][3];
-float g_fLastAngles[MAXPLAYERS + 1][3];
-float g_fRecordMapTime;
-char g_szRecordMapTime[64];
-char g_szRecordMapSteamID[MAX_NAME_LENGTH];
-float g_pr_finishedmaps_perc[MAX_PR_PLAYERS + 1];
-bool g_bRenaming = false;
-bool g_bLateLoaded = false;
-bool g_bRoundEnd;
-bool g_bMapReplay;
+ConVar g_hBonusBot = null; 										// Bonus bot?
+bool g_bBonusBot; // Why two bools?
 bool g_bMapBonusReplay;
-bool g_pr_RankingRecalc_InProgress;
-bool g_bHookMod;
-bool g_bMapChooser;
-bool g_bUseCPrefs;
-bool g_bLoaded[MAXPLAYERS + 1];
-bool g_bFirstButtonTouch[MAXPLAYERS + 1];
-bool g_bClientOwnReason[MAXPLAYERS + 1];
-bool g_pr_Calculating[MAXPLAYERS + 1];
-bool g_bChallenge_Checkpoints[MAXPLAYERS + 1];
-bool g_bNoClipUsed[MAXPLAYERS + 1];
-bool g_bPause[MAXPLAYERS + 1];
-bool g_bPauseWasActivated[MAXPLAYERS + 1];
-bool g_bOverlay[MAXPLAYERS + 1];
-bool g_bSpectate[MAXPLAYERS + 1];
-bool g_bTimeractivated[MAXPLAYERS + 1];
-bool g_bFirstTeamJoin[MAXPLAYERS + 1];
-bool g_bFirstSpawn[MAXPLAYERS + 1];
-bool g_bTop100Refresh;
-bool g_bMissedMapBest[MAXPLAYERS + 1];
-bool g_bRestorePosition[MAXPLAYERS + 1];
-bool g_bRestorePositionMsg[MAXPLAYERS + 1];
-bool g_bNoClip[MAXPLAYERS + 1];
-bool g_bMapFinished[MAXPLAYERS + 1];
-bool g_bRespawnPosition[MAXPLAYERS + 1];
-bool g_bProfileRecalc[MAX_PR_PLAYERS + 1];
-bool g_bProfileSelected[MAXPLAYERS + 1];
-bool g_bManualRecalc;
-bool g_bSelectProfile[MAXPLAYERS + 1];
-bool g_bChallenge_Abort[MAXPLAYERS + 1];
-bool g_bValidTeleportCall[MAXPLAYERS + 1];
-bool g_bMapRankToChat[MAXPLAYERS + 1];
-bool g_bChallenge[MAXPLAYERS + 1];
-bool g_bChallenge_Request[MAXPLAYERS + 1];
-bool g_pr_showmsg[MAXPLAYERS + 1];
-bool g_bRecalcRankInProgess[MAXPLAYERS + 1];
-bool g_bLanguageSelected[MAXPLAYERS + 1];
-bool g_bNewReplay[MAXPLAYERS + 1];
-bool g_bNewBonus[MAXPLAYERS + 1];
-bool g_bPositionRestored[MAXPLAYERS + 1];
-bool g_bInfoPanel[MAXPLAYERS + 1];
-bool g_bEnableQuakeSounds[MAXPLAYERS + 1];
-bool g_bShowNames[MAXPLAYERS + 1];
-bool g_bStartWithUsp[MAXPLAYERS + 1];
-bool g_bShowTime[MAXPLAYERS + 1];
-bool g_bHide[MAXPLAYERS + 1];
-bool g_bShowSpecs[MAXPLAYERS + 1];
-bool g_bGoToClient[MAXPLAYERS + 1];
-bool g_bMeasurePosSet[MAXPLAYERS + 1][2];
-bool g_bAutoBhopClient[MAXPLAYERS + 1];
-bool g_borg_StartWithUsp[MAXPLAYERS + 1];
-bool g_borg_InfoPanel[MAXPLAYERS + 1];
+ConVar g_hColoredNames = null; 									// Colored names in chat?
+bool g_bColoredNames;
+ConVar g_hPauseServerside = null; 								// Allow !pause?
+bool g_bPauseServerside;
+ConVar g_hChallengePoints = null; 								// Allow betting points in challenges?
+bool g_bChallengePoints;
+ConVar g_hAutoBhopConVar = null; 								// Allow autobhop?
+bool g_bAutoBhopConVar; // Why two bools?
+bool g_bAutoBhop;
+ConVar g_hDynamicTimelimit = null; 								// Dynamic timelimit?
+bool g_bDynamicTimelimit;
+ConVar g_hAdminClantag = null;									// Admin clan tag?
+bool g_bAdminClantag;
+ConVar g_hConnectMsg = null; 									// Connect message?
+bool g_bConnectMsg;
+ConVar g_hDisconnectMsg = null; 								// Disconnect message?
+bool g_bDisconnectMsg;
+ConVar g_hRadioCommands = null; 								// Allow radio commands?
+bool g_bRadioCommands;
+ConVar g_hInfoBot = null; 										// Info bot?
+bool g_bInfoBot;
+ConVar g_hAttackSpamProtection = null; 							// Throttle shooting?
+bool g_bAttackSpamProtection;
+int g_AttackCounter[MAXPLAYERS + 1]; 							// Used to calculate player shots
+ConVar g_hGoToServer = null; 									// Allow !goto?
+bool g_bGoToServer;
+ConVar g_hAllowRoundEndCvar = null; 							// Allow round ending?
+bool g_bRoundEnd; // Why two bools?
+bool g_bAllowRoundEndCvar;
+ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
+bool g_bPlayerSkinChange;
+ConVar g_hCountry = null; 										// Display countries for players?
+bool g_bCountry;
+ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
+bool g_bAutoRespawn;
+ConVar g_hcvarNoBlock = null; 									// Allow player blocking?
+bool g_bNoBlock;
+ConVar g_hPointSystem = null; 									// Use the point system?
+bool g_bPointSystem;
+ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
+bool g_bCleanWeapons;
+int g_ownerOffset; 												// Used to clear weapons from ground
+ConVar g_hcvargodmode = null;									// Enable god mode?
+bool g_bgodmode;
+bool g_bAutoTimer; 												// Start timer automatically? Kinda useless for ckSurf
+ConVar g_hAutoTimer = null;
+ConVar g_hMapEnd = null; 										// Allow map ending?
+bool g_bMapEnd;
+ConVar g_hAutohealing_Hp = null; 								// Automatically heal lost HP?
+int g_Autohealing_Hp;
+ConVar g_hExtraPoints = null; 									// How many extra points for improving times?
+int g_ExtraPoints;
+ConVar g_hExtraPoints2 = null; 									// How many extra points for finishing a map for the first time?
+int g_ExtraPoints2;
+// Bot Colors & effects:
+ConVar g_hReplayBotColor = null; 								// Replay bot color
+int g_ReplayBotColor[3];
+ConVar g_hBonusBotColor = null; 								// Bonus bot color
+int g_BonusBotColor[3];
+ConVar g_hBonusBotTrail = null; 								// Bonus bot trail?
+bool g_bBonusBotTrailEnabled;
+ConVar g_hRecordBotTrail = null; 								// Record bot trail?
+bool g_bRecordBotTrailEnabled;
+ConVar g_hReplayBotTrailColor = null; 							// Replay bot trail color
+int g_ReplayBotTrailColor[4];
+ConVar g_hBonusBotTrailColor = null; 							// Bonus bot trail color
+int g_BonusBotTrailColor[4];
+ConVar g_hDoubleRestartCommand;
+bool g_bDoubleRestartCommand; 									// Doube !r on / off
+ConVar g_hStartPreSpeed = null; 								// Start zone speed cap
+float g_fStartPreSpeed;
+ConVar g_hSpeedPreSpeed = null; 								// Speed Start zone speed cap
+float g_fSpeedPreSpeed;
+ConVar g_hBonusPreSpeed = null; 								// Bonus start zone speed cap
+float g_fBonusPreSpeed;
+ConVar g_hSoundEnabled = null; 									// Enable timer start sound
+bool bSoundEnabled;
+ConVar g_hSoundPath = null;										// Define start sound
+char sSoundPath[64];
+ConVar g_hSpawnToStartZone = null; 								// Teleport on spawn to start zone 
+bool bSpawnToStartZone;
+ConVar g_hAnnounceRank = null; 									// Min rank to announce in chat
+int g_AnnounceRank;
+ConVar g_hForceCT = null; 										// Force players CT
+bool g_bForceCT;
+ConVar g_hChatSpamFilter = null; 								// Chat spam limiter
+float g_fChatSpamFilter;
+float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
+int g_messages[MAXPLAYERS + 1]; 								// Spam message count
+ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
+bool g_benableChatProcessing;
+
+/*----------  SQL Variables  ----------*/
+Handle g_hDb = null; 											// SQL driver
+int g_DbType; 													// Database type
+bool g_bInTransactionChain = false; 							// Used to check if SQL changes are being made
+int g_failedTransactions[7]; 									// Used to track failed transactions when making database changes
+bool g_bRenaming = false; 										// Used to track if sql tables are being renamed
+bool g_bSettingsLoaded[MAXPLAYERS + 1]; 						// Used to track if a players settings have been loaded
+bool g_bLoadingSettings[MAXPLAYERS + 1]; 						// Used to track if players settings are being loaded
+bool g_bServerDataLoaded; 										// Are the servers settings loaded
+char g_szRecordMapSteamID[MAX_NAME_LENGTH]; 					// SteamdID of #1 player in map, used to fetch checkpoint times
+
+/*----------  User Commands  ----------*/
+float g_flastClientUsp[MAXPLAYERS + 1]; 						// Throttle !usp command
+bool g_insertingInformation; 									// Used to check if a admin is inserting zone or maptier information, don't allow many at the same time
+bool g_bNoClip[MAXPLAYERS + 1]; 								// Client is noclipping
+
+/*----------  User Options  ----------*/
+// org variables track the original setting status, on disconnect, check if changed, if so, update new settings to database
+bool g_bHideChat[MAXPLAYERS + 1];								// Hides chat
+bool g_borg_HideChat[MAXPLAYERS + 1];
+bool g_bViewModel[MAXPLAYERS + 1]; 								// Hides viewmodel
+bool g_borg_ViewModel[MAXPLAYERS + 1];
+bool g_bCheckpointsEnabled[MAXPLAYERS + 1]; 					// Command to disable checkpoints
+bool g_borg_CheckpointsEnabled[MAXPLAYERS + 1];
+bool g_bActivateCheckpointsOnStart[MAXPLAYERS + 1]; 			// Did client enable checkpoints? Then start using them again on the next run
+bool g_bEnableQuakeSounds[MAXPLAYERS + 1]; 						// Enable quake sounds?
 bool g_borg_EnableQuakeSounds[MAXPLAYERS + 1];
+bool g_bShowNames[MAXPLAYERS + 1]; // TODO: remove
 bool g_borg_ShowNames[MAXPLAYERS + 1];
-bool g_borg_GoToClient[MAXPLAYERS + 1];
+bool g_bStartWithUsp[MAXPLAYERS + 1]; // TODO: Remove
+bool g_borg_StartWithUsp[MAXPLAYERS + 1];
+bool g_bShowTime[MAXPLAYERS + 1]; // TODO: Remove
 bool g_borg_ShowTime[MAXPLAYERS + 1];
+bool g_bHide[MAXPLAYERS + 1]; 									// Hide other players?
 bool g_borg_Hide[MAXPLAYERS + 1];
+bool g_bShowSpecs[MAXPLAYERS + 1];								// Show spectator list?
 bool g_borg_ShowSpecs[MAXPLAYERS + 1];
+bool g_bGoToClient[MAXPLAYERS + 1]; 							// Allow !goto
+bool g_borg_GoToClient[MAXPLAYERS + 1];
+bool g_bAutoBhopClient[MAXPLAYERS + 1]; 						// Use auto bhop?
 bool g_borg_AutoBhopClient[MAXPLAYERS + 1];
-bool g_bBeam[MAXPLAYERS + 1];
-bool g_bOnGround[MAXPLAYERS + 1];
-bool g_specToStage[MAXPLAYERS + 1];
-float g_fTeleLocation[MAXPLAYERS + 1][3];
-float g_fCurVelVec[MAXPLAYERS + 1][3];
+bool g_bInfoPanel[MAXPLAYERS + 1]; 								// Client is showing the info panel
+bool g_borg_InfoPanel[MAXPLAYERS + 1];
 
-// Player checkpoints
-float g_fCheckpointVelocity_undo[MAXPLAYERS + 1][3];
-float g_fCheckpointVelocity[MAXPLAYERS + 1][3];
-float g_fCheckpointLocation[MAXPLAYERS + 1][3];
-float g_fCheckpointLocation_undo[MAXPLAYERS + 1][3];
-float g_fCheckpointAngle[MAXPLAYERS + 1][3];
-float g_fCheckpointAngle_undo[MAXPLAYERS + 1][3];
-float g_fLastPlayerCheckpoint[MAXPLAYERS + 1];
+/*----------  Run Variables  ----------*/
+float g_fPersonalRecord[MAXPLAYERS + 1];						// Clients personal record in map
+bool g_bTimeractivated[MAXPLAYERS + 1]; 						// Is clients timer running
+bool g_bValidRun[MAXPLAYERS + 1];								// Used to check if a clients run is valid in validator and checker zones
+bool g_bBonusFirstRecord[MAXPLAYERS + 1];						// First bonus time in map?
+bool g_bBonusPBRecord[MAXPLAYERS + 1];							// Personal best time in bonus
+bool g_bBonusSRVRecord[MAXPLAYERS + 1];							// New server record in bonus
+char g_szBonusTimeDifference[MAXPLAYERS + 1];					// How many seconds were improved / lost in that run
+float g_fStartTime[MAXPLAYERS + 1]; 							// Time when run was started
+float g_fFinalTime[MAXPLAYERS + 1]; 							// Total time the run took
+char g_szFinalTime[MAXPLAYERS + 1][32]; 						// Total time the run took in 00:00:00 format
+float g_fPauseTime[MAXPLAYERS + 1]; 							// Time spent in !pause this run
+float g_fStartPauseTime[MAXPLAYERS + 1]; 						// Time when !pause started
+float g_fCurrentRunTime[MAXPLAYERS + 1]; 						// Current runtime
+bool g_bMissedMapBest[MAXPLAYERS + 1]; 							// Missed personal record time?
+bool g_bMapRankToChat[MAXPLAYERS + 1]; 							// Will finish message be announced to chat?
+char g_szTimeDifference[MAXPLAYERS + 1][32]; 					// Used to print the client's new times difference to record
+float g_fRecordMapTime; 										// Record map time in seconds
+char g_szRecordMapTime[64]; 									// Record map time in 00:00:00 format
+char g_szPersonalRecord[MAXPLAYERS + 1][64]; 					// Client's peronal record in 00:00:00 format
+float g_favg_maptime; 											// Average map time
+float g_fAvg_BonusTime[MAXZONEGROUPS]; 							// Average bonus times TODO: Combine with g_favg_maptime
+bool g_bFirstTimerStart[MAXPLAYERS + 1];						// If timer is started for the first time, print avg times
+bool g_bPause[MAXPLAYERS + 1]; 									// Client has timer paused
+int g_MapTimesCount; 											// How many times the map has been beaten
+int g_MapRank[MAXPLAYERS + 1]; 									// Clients rank in current map
+int g_OldMapRank[MAXPLAYERS + 1];								// Clients old rank
+int g_Time_Type[MAXPLAYERS + 1]; 								// Did the client improve his time? New Server record? etc.
+int g_Sound_Type[MAXPLAYERS + 1];								// Which quake sound to play
+char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's name
 
-bool g_bCreatedTeleport[MAXPLAYERS + 1];
-bool g_bPracticeMode[MAXPLAYERS + 1];
-
-int g_Beam[3];
-int g_ownerOffset;
-int g_ragdolls = -1;
-int g_Server_Tickrate;
-int g_MapTimesCount;
-int g_RecordBot = -1;
-int g_BonusBot = -1;
-int g_InfoBot = -1;
-int g_pr_Recalc_ClientID = 0;
-int g_pr_Recalc_AdminID = -1;
-int g_pr_AllPlayers;
-int g_pr_RankedPlayers;
-int g_pr_MapCount;
-int g_pr_rank_Percentage[9];
-int g_pr_PointUnit;
-int g_pr_TableRowCount;
-int g_pr_points[MAX_PR_PLAYERS + 1];
-int g_pr_oldpoints[MAX_PR_PLAYERS + 1];
-int g_pr_multiplier[MAX_PR_PLAYERS + 1];
-int g_pr_finishedmaps[MAX_PR_PLAYERS + 1];
-int g_PlayerRank[MAXPLAYERS + 1];
-int g_SelectedTeam[MAXPLAYERS + 1];
-int g_BotMimicRecordTickCount[MAXPLAYERS + 1] =  { 0, ... };
+/*----------  Replay Variables  ----------*/
+bool g_bNewRecordBot; 											// Checks if the bot is new, if so, set weapon
+bool g_bNewBonusBot; 											// Checks if the bot is new, if so, set weapon
+Handle g_hTeleport = null; 										// Used to track teleportations
+Handle g_hRecording[MAXPLAYERS + 1]; 							// Client is beign recorded
+Handle g_hLoadedRecordsAdditionalTeleport = null;
+Handle g_hRecordingAdditionalTeleport[MAXPLAYERS + 1];
+Handle g_hBotMimicsRecord[MAXPLAYERS + 1] =  { null, ... }; 	// Is mimicing a record
+float g_fInitialPosition[MAXPLAYERS + 1][3]; 					// Replay start position
+float g_fInitialAngles[MAXPLAYERS + 1][3]; 						// Replay start angle
+bool g_bValidTeleportCall[MAXPLAYERS + 1]; 						// Is teleport valid?
+bool g_bNewReplay[MAXPLAYERS + 1]; 								// Don't allow starting a new run if saving a record run
+bool g_bNewBonus[MAXPLAYERS + 1]; 								// Don't allow starting a new run if saving a record run
+int g_BotMimicRecordTickCount[MAXPLAYERS + 1] =  { 0, ... }; 
 int g_BotActiveWeapon[MAXPLAYERS + 1] =  { -1, ... };
 int g_CurrentAdditionalTeleportIndex[MAXPLAYERS + 1];
 int g_RecordedTicks[MAXPLAYERS + 1];
 int g_RecordPreviousWeapon[MAXPLAYERS + 1];
 int g_OriginSnapshotInterval[MAXPLAYERS + 1];
 int g_BotMimicTick[MAXPLAYERS + 1] =  { 0, ... };
-int g_AttackCounter[MAXPLAYERS + 1];
-int g_MenuLevel[MAXPLAYERS + 1];
+int g_RecordBot = -1; 											// Record bot client ID
+int g_BonusBot = -1; 											// Bonus bot client ID 
+int g_InfoBot = -1; 											// Info bot client ID
+bool g_bReplayAtEnd[MAXPLAYERS + 1]; 							// Replay is at the end
+float g_fReplayRestarted[MAXPLAYERS + 1]; 						// Make replay stand still for long enough for trail to die
+char g_szReplayName[128]; 										// Replay bot name
+char g_szReplayTime[128]; 										// Replay bot time
+char g_szBonusName[128]; 										// Replay bot name
+char g_szBonusTime[128]; 										// Replay bot time
+
+/*----------  Misc  ----------*/
+Handle g_MapList = null; 										// Used to load the mapcycle
+float g_fMapStartTime; 											// Used to check if a player just joined the server
+// Use !r twice to restart the run
+float g_fErrorMessage[MAXPLAYERS + 1]; 							// Used to limit error message spam too often
+float g_fClientRestarting[MAXPLAYERS + 1]; 						// Used to track the time the player took to write the second !r, if too long, reset the boolean
+bool g_bClientRestarting[MAXPLAYERS + 1]; 						// Client wanted to restart run
+float g_fLastTimeNoClipUsed[MAXPLAYERS + 1]; 					// Last time the client used noclip
+bool g_bRespawnPosition[MAXPLAYERS + 1]; 						// Does client have a respawn location in memory?
+float g_fLastTimeButtonSound[MAXPLAYERS + 1]; 					// Last time start beep was player, used to prevent spam
+float g_fLastSpeed[MAXPLAYERS + 1]; 							// Client's last speed, used in panels
+bool g_bLateLoaded = false; 									// Was plugin loaded late?
+bool g_bMapChooser; 											// Known mapchooser loaded? Used to update info bot
+bool g_bClientOwnReason[MAXPLAYERS + 1]; 						// If call admin, ignore chat message
+bool g_bNoClipUsed[MAXPLAYERS + 1]; 							// Has client used noclip to gain current speed
+bool g_bOverlay[MAXPLAYERS + 1];								// Map finished overlay
+bool g_bSpectate[MAXPLAYERS + 1]; 								// Is client spectating
+bool g_bFirstTeamJoin[MAXPLAYERS + 1];							// First time client joined game, show start messages & start timers
+bool g_bFirstSpawn[MAXPLAYERS + 1]; 							// First time client spawned
+bool g_bSelectProfile[MAXPLAYERS + 1];
+bool g_bOnGround[MAXPLAYERS + 1]; 								// Is client touching the ground?
+bool g_specToStage[MAXPLAYERS + 1]; 							// Is client teleporting from spectate?
+float g_fTeleLocation[MAXPLAYERS + 1][3];						// Location where client is spawned from spectate
+int g_ragdolls = -1; 											// Used to clear ragdolls from ground
+int g_Server_Tickrate; 											// Server tickrate
+int g_SpecTarget[MAXPLAYERS + 1];								// Who the client is spectating?
+int g_LastButton[MAXPLAYERS + 1];								// Buttons the client is using, used to show them when specating
+int g_MVPStars[MAXPLAYERS + 1]; 								// The amount of MVP's a client has  TODO: make sure this is used everywhere
+int g_PlayerChatRank[MAXPLAYERS + 1]; 							// What rank is displayed for the client in chat
+char g_pr_chat_coloredrank[MAXPLAYERS + 1][128]; 				// Clients rank, colored, used in chat
+char g_pr_rankname[MAXPLAYERS + 1][128]; 						// Client's rank, non-colored, used in clantag
+char g_szMapPrefix[2][32]; 										// Map's prefix, used to execute prefix cfg's
+char g_szMapName[128]; 											// Current map's name
+char g_szPlayerPanelText[MAXPLAYERS + 1][512];					// Info panel text when spectating
+char g_szCountry[MAXPLAYERS + 1][100];							// Country codes
+char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
+char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
+char g_szSkillGroups[9][32];									// Skill group names loaded from config
+char g_BlockedChatText[256][256];								// Blocked chat commands
+
+/*----------  Player location restoring  ----------*/
+bool g_bPositionRestored[MAXPLAYERS + 1]; 						// Clients location was restored this run
+bool g_bRestorePositionMsg[MAXPLAYERS + 1]; 					// Show client restore message?
+bool g_bRestorePosition[MAXPLAYERS + 1]; 						// Clients position is being restored
+float g_fPlayerCordsLastPosition[MAXPLAYERS + 1][3]; 			// Client's last location, used on recovering run and coming back from spectate
+float g_fPlayerLastTime[MAXPLAYERS + 1]; 						// Client's last time, used on recovering run and coming back from spec
+float g_fPlayerAnglesLastPosition[MAXPLAYERS + 1][3]; 			// Client's last angles, used on recovering run and coming back from spec
+float g_fPlayerCordsRestore[MAXPLAYERS + 1][3]; 				// Used in restoring players location
+float g_fPlayerAnglesRestore[MAXPLAYERS + 1][3]; 				// Used in restoring players angle
+
+/*----------  Menus  ----------*/
+Menu g_menuTopSurfersMenu[MAXPLAYERS + 1] = null;
+float g_fProfileMenuLastQuery[MAXPLAYERS + 1]; 					// Last time profile was queried by player, spam protection
+int g_MenuLevel[MAXPLAYERS + 1];								// Tracking menu level
+int g_OptionsMenuLastPage[MAXPLAYERS + 1];						// Weird options menu tricker TODO: wtf
+char g_pr_szrank[MAXPLAYERS + 1][512];							// Client's rank string displayed in !profile
+char g_szProfileName[MAXPLAYERS + 1][MAX_NAME_LENGTH];			// !Profile name 
+char g_szProfileSteamId[MAXPLAYERS + 1][32];
+// Admin
+int g_AdminMenuFlag; 											// Admin flag required for !ckadmin
+ConVar g_hAdminMenuFlag = null;
+Handle g_hAdminMenu = null; 									// Add !ckadmin to !admin
+int g_AdminMenuLastPage[MAXPLAYERS + 1]; 						// Weird admin menu trickery TODO: wtf
+
+/*----------  Challenge variables  ----------*/ 
+/**
+
+	TODO:
+	- Recode completely
+
+ */
+
+float g_fChallenge_RequestTime[MAXPLAYERS + 1]; 				// How long a challenge request is available
+float g_fSpawnPosition[MAXPLAYERS + 1][3]; 						// Challenge start location
+bool g_bChallenge_Checkpoints[MAXPLAYERS + 1]; 					// Allow checkpoints in challenge. TODO: remove
+bool g_bChallenge_Abort[MAXPLAYERS + 1];						// Abort challenge
+bool g_bChallenge[MAXPLAYERS + 1];
+bool g_bChallenge_Request[MAXPLAYERS + 1];
+int g_pr_PointUnit;
 int g_Challenge_Bet[MAXPLAYERS + 1];
-int g_MapRank[MAXPLAYERS + 1];
-int g_OldMapRank[MAXPLAYERS + 1];
-int g_Time_Type[MAXPLAYERS + 1];
-int g_Sound_Type[MAXPLAYERS + 1];
-int g_MapRecordCount[MAXPLAYERS + 1];
-bool g_bnewRecord[MAXPLAYERS + 1];
 int g_Challenge_WinRatio[MAX_PR_PLAYERS + 1];
 int g_CountdownTime[MAXPLAYERS + 1];
 int g_Challenge_PointsRatio[MAX_PR_PLAYERS + 1];
-int g_SpecTarget[MAXPLAYERS + 1];
-int g_LastButton[MAXPLAYERS + 1];
-int g_CurrentButton[MAXPLAYERS + 1];
-int g_MVPStars[MAXPLAYERS + 1];
-int g_AdminMenuLastPage[MAXPLAYERS + 1];
-int g_OptionsMenuLastPage[MAXPLAYERS + 1];
-int g_PlayerChatRank[MAXPLAYERS + 1];
-char g_pr_chat_coloredrank[MAXPLAYERS + 1][128];
-char g_pr_rankname[MAXPLAYERS + 1][128];
-char g_pr_szrank[MAXPLAYERS + 1][512];
-char g_pr_szName[MAX_PR_PLAYERS + 1][64];
-char g_pr_szSteamID[MAX_PR_PLAYERS + 1][32];
-char g_szMapPrefix[2][32];
-char g_szReplayName[128];
-char g_szReplayTime[128];
-char g_szBonusName[128];
-char g_szBonusTime[128];
 char g_szChallenge_OpponentID[MAXPLAYERS + 1][32];
-char g_szTimeDifference[MAXPLAYERS + 1][32];
-char g_szFinalTime[MAXPLAYERS + 1][32];
-char g_szMapName[128];
-char g_szMapTopName[MAXPLAYERS + 1][128];
-//char g_szTimerTitle[MAXPLAYERS+1][255];
-char g_szRecordPlayer[MAX_NAME_LENGTH];
-char g_szProfileName[MAXPLAYERS + 1][MAX_NAME_LENGTH];
-char g_szPlayerPanelText[MAXPLAYERS + 1][512];
-char g_szProfileSteamId[MAXPLAYERS + 1][32];
-char g_szCountry[MAXPLAYERS + 1][100];
-char g_szCountryCode[MAXPLAYERS + 1][16];
-char g_szSteamID[MAXPLAYERS + 1][32];
-char g_szSkillGroups[9][32];
-char g_szServerName[64];
-char g_szServerIp[32];
-char g_szServerCountry[100];
-char g_szServerCountryCode[32];
-char EntityList[][] =  { "logic_timer", "team_round_timer", "logic_relay", "trigger_hurt", "/weapon_.*/" };
-char CK_REPLAY_PATH[] = "data/cKreplays/";
-char BLOCKED_LIST_PATH[] = "configs/ckSurf/hidden_chat_commands.txt";
-char CUSTOM_TITLE_PATH[] = "configs/ckSurf/custom_chat_titles.txt";
-char PRO_FULL_SOUND_PATH[] = "sound/quake/holyshit.mp3";
-char PRO_RELATIVE_SOUND_PATH[] = "*quake/holyshit.mp3";
-char CP_FULL_SOUND_PATH[] = "sound/quake/wickedsick.mp3";
-char CP_RELATIVE_SOUND_PATH[] = "*quake/wickedsick.mp3";
-char UNSTOPPABLE_SOUND_PATH[] = "sound/quake/unstoppable.mp3";
-char UNSTOPPABLE_RELATIVE_SOUND_PATH[] = "*quake/unstoppable.mp3";
-char g_sModel[] = "models/props/de_train/barrel.mdl";
-char RadioCMDS[][] =  { "coverme", "takepoint", "holdpos", "regroup", "followme", "takingfire", "go", "fallback", "sticktog", 
-	"getinpos", "stormfront", "report", "roger", "enemyspot", "needbackup", "sectorclear", "inposition", "reportingin", 
-	"getout", "negative", "enemydown", "cheer", "thanks", "nice", "compliment" };
-char g_BlockedChatText[256][256];
-char g_szReplay_PlayerName[MAXPLAYERS + 1][64];
 
-// Speed Cap Variables
-Handle g_hStartPreSpeed = null;
-float g_fStartPreSpeed;
-Handle g_hSpeedPreSpeed = null;
-float g_fSpeedPreSpeed;
-Handle g_hBonusPreSpeed = null;
-float g_fBonusPreSpeed;
+/*----------  Player Points  ----------*/
+float g_pr_finishedmaps_perc[MAX_PR_PLAYERS + 1]; 				// % of maps the client has finished
+bool g_pr_RankingRecalc_InProgress; 							// Is point recalculation in progress?
+bool g_pr_Calculating[MAXPLAYERS + 1]; 							// Clients points are being calculated
+bool g_bProfileRecalc[MAX_PR_PLAYERS + 1]; 						// Has this profile been recalculated?
+bool g_bManualRecalc; 											// Point recalculation type
+bool g_pr_showmsg[MAXPLAYERS + 1]; 								// Print the amount of gained points to chat?
+bool g_bRecalcRankInProgess[MAXPLAYERS + 1]; 					// Is clients points being recalculated?
+int g_pr_Recalc_ClientID = 0;									// Client ID being recalculated
+int g_pr_Recalc_AdminID = -1;									// ClientID that started the recalculation
+int g_pr_AllPlayers; 											// Ranked player count on server
+int g_pr_RankedPlayers; 										// Player count with points
+int g_pr_MapCount;												// Total map count in mapcycle
+int g_pr_rank_Percentage[9];									// The amount of points required for each rank
+int g_pr_TableRowCount; 										// The amount of clients that get recalculated in a full recalculation
+int g_pr_points[MAX_PR_PLAYERS + 1]; 							// Clients points
+int g_pr_oldpoints[MAX_PR_PLAYERS + 1];							// Clients points before recalculation
+int g_pr_multiplier[MAX_PR_PLAYERS + 1]; 						// How many times has the client improved on his times
+int g_pr_finishedmaps[MAX_PR_PLAYERS + 1]; 						// How many maps a client has finished
+int g_PlayerRank[MAXPLAYERS + 1]; 								// Players server rank
+int g_MapRecordCount[MAXPLAYERS + 1];							// SR's the client has
+bool g_bnewRecord[MAXPLAYERS + 1]; 								// Was client's run a new record?
+char g_pr_szName[MAX_PR_PLAYERS + 1][64];						// Used to update client's name in database
+char g_pr_szSteamID[MAX_PR_PLAYERS + 1][32];					// steamid of client being recalculated
 
-bool g_bIgnoreZone[MAXPLAYERS + 1];
+/*----------  Practice Mode  ----------*/
+float g_fCheckpointVelocity_undo[MAXPLAYERS + 1][3]; 			// Velocity at checkpoint that is on !undo
+float g_fCheckpointVelocity[MAXPLAYERS + 1][3]; 				// Current checkpoints velocity
+float g_fCheckpointLocation[MAXPLAYERS + 1][3]; 				// Current checkpoint location
+float g_fCheckpointLocation_undo[MAXPLAYERS + 1][3]; 			// Undo checkpoints location
+float g_fCheckpointAngle[MAXPLAYERS + 1][3]; 					// Current checkpoints angle
+float g_fCheckpointAngle_undo[MAXPLAYERS + 1][3];				// Undo checkpoints angle
+float g_fLastPlayerCheckpoint[MAXPLAYERS + 1]; 					// Don't overwrite checkpoint if spamming !cp
+bool g_bCreatedTeleport[MAXPLAYERS + 1];						// Client has created atleast one checkpoint
+bool g_bPracticeMode[MAXPLAYERS + 1]; 							// Client is in the practice mode
 
-int g_iClientInZone[MAXPLAYERS + 1][4];
 
-Handle g_hSoundEnabled = null;
-bool bSoundEnabled;
+/*=========================================
+=            Predefined arrays            =
+=========================================*/
 
-Handle g_hSoundPath = null;
-char sSoundPath[64];
+char EntityList[][] =  // Disable entities that often break maps
+{
+	"logic_timer",
+	"team_round_timer",
+	"logic_relay",
+	"trigger_hurt" 
+};
 
-//////////////////////
-// CVARS//////////////
-//////////////////////
+char RadioCMDS[][] =  // Disable radio commands
+{
+	"coverme", "takepoint", "holdpos", "regroup", "followme", "takingfire", "go", "fallback", "sticktog", 
+	"getinpos", "stormfront", "report", "roger", "enemyspot", "needbackup", "sectorclear", "inposition", 
+	"reportingin", "getout", "negative", "enemydown", "cheer", "thanks", "nice", "compliment" 
+};
 
-// Teleport on spawn to start zone (or speed zone) stuff 
-Handle g_hSpawnToStartZone = null;
-bool bSpawnToStartZone;
+int RGB_COLORS[][] = // Store defined RGB colors in an array
+{
+	RGB_GREEN, RGB_RED, RGB_DARKRED, RGB_BLUE, RGB_LIGHTBLUE, RGB_DARKBLUE, RBG_YELLOW, RGB_GREENYELLOW,
+	RGB_PURPLE, RGB_MAGENTA, RGB_PINK, RGB_WHITE, RGB_CYAN, RGB_SPRINGGREEN, RGB_OLIVE, RGB_ORANGE,
+	RGB_GREY, RGB_DARKGREY 
+};
 
-// Min rank to announce in chat
-Handle g_hAnnounceRank = null;
-int g_AnnounceRank;
-// Force players CT
-Handle g_hForceCT = null;
-bool g_bForceCT;
+char RGB_COLOR_NAMES[][] =  // Store RGB color names in an array also
+{
+	"Green", "Red", "Darkred", "Blue", "Lightblue", "Darkblue", "Yellow", "Greenyellow", "Purple",
+	"Magenta", "Pink", "White", "Cyan", "Springgreen", "Olive", "Orange", "Grey", "Darkgrey" 
+};
 
-// Chat spam limiter
-Handle g_hChatSpamFilter = null;
-float g_fChatSpamFilter;
-float g_fLastChatMessage[MAXPLAYERS + 1];
-int g_messages[MAXPLAYERS + 1];
 
-// Is chat processing enabled
-Handle g_henableChatProcessing = null;
-bool g_benableChatProcessing;
+/*=====  End of Declarations  ======*/
+
+
+
+
+/*================================
+=            Includes            =
+================================*/
 
 #include "ckSurf/misc.sp"
 #include "ckSurf/admin.sp"
@@ -841,10 +780,15 @@ bool g_benableChatProcessing;
 #include "ckSurf/replay.sp"
 #include "ckSurf/surfzones.sp"
 
+
+
+
+/*==============================
+=            Events            =
+==============================*/
+
 public void OnLibraryAdded(const char[] name)
 {
-	if (StrEqual("hookgrabrope", name))
-		g_bHookMod = true;
 	Handle tmp = FindPluginByFile("mapchooser_extended.smx");
 	if ((StrEqual("mapchooser", name)) || (tmp != null && GetPluginStatus(tmp) == Plugin_Running))
 		g_bMapChooser = true;
@@ -880,12 +824,6 @@ public void OnLibraryAdded(const char[] name)
 	}
 }
 
-public void OnClientPostAdminCheck(int client)
-{
-	g_ClientSelectedZone[client] = -1;
-	g_Editing[client] = 0;
-}
-
 public void OnPluginEnd()
 {
 	//remove clan tags
@@ -916,14 +854,6 @@ public void OnLibraryRemoved(const char[] name)
 		g_hAdminMenu = null;
 	if (StrEqual(name, "dhooks"))
 		g_hTeleport = null;
-	if (StrEqual("hookgrabrope", name))
-		g_bHookMod = false;
-}
-
-public void OnAllPluginsLoaded()
-{
-	if (LibraryExists("hookgrabrope"))
-		g_bHookMod = true;
 }
 
 public void OnMapStart()
@@ -1035,10 +965,7 @@ public void OnMapStart()
 	}
 	
 	OnConfigsExecuted();
-	
-	//server infos
-	GetServerInfo();
-	
+		
 	// Set default values
 	g_insertingInformation = false;
 	g_fMapStartTime = GetGameTime();
@@ -1127,11 +1054,6 @@ public void OnAutoConfigsBuffered()
 	SetServerTags();
 }
 
-public void OnClientConnected(int client)
-{
-	g_SelectedTeam[client] = 0;
-}
-
 public void OnClientPutInServer(int client)
 {
 	if (!IsValidClient(client))
@@ -1161,12 +1083,6 @@ public void OnClientPutInServer(int client)
 	
 	//client country
 	GetCountry(client);
-	
-	//client language
-	if (g_bUseCPrefs && !IsFakeClient(client))
-		if (AreClientCookiesCached(client) && !g_bLoaded[client])
-		LoadCookies(client);
-	
 	
 	if (LibraryExists("dhooks"))
 		DHookEntity(g_hTeleport, false, client);
@@ -1304,9 +1220,6 @@ public void OnClientDisconnect(int client)
 	// Stop recording
 	if (g_hRecording[client] != null)
 		StopRecording(client);
-	
-	//language
-	g_bLoaded[client] = false;
 }
 
 public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
@@ -1883,50 +1796,6 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	
 }
 
-public int Native_GetTimerStatus(Handle plugin, int numParams)
-{
-	return g_bTimeractivated[GetNativeCell(1)];
-}
-
-public int Native_StopTimer(Handle plugin, int numParams)
-{
-	Client_Stop(GetNativeCell(1), 0);
-}
-
-public int Native_GetCurrentTime(Handle plugin, int numParams)
-{
-	return view_as<int>(g_fCurrentRunTime[GetNativeCell(1)]);
-}
-
-public int Native_EmulateStartButtonPress(Handle plugin, int numParams)
-{
-	CL_OnStartTimerPress(GetNativeCell(1));
-}
-
-public int Native_EmulateStopButtonPress(Handle plugin, int numParams)
-{
-	CL_OnEndTimerPress(GetNativeCell(1));
-}
-
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	RegPluginLibrary("ckSurf");
-	CreateNative("ckSurf_GetTimerStatus", Native_GetTimerStatus);
-	CreateNative("ckSurf_StopTimer", Native_StopTimer);
-	CreateNative("ckSurf_EmulateStartButtonPress", Native_EmulateStartButtonPress);
-	CreateNative("ckSurf_EmulateStopButtonPress", Native_EmulateStopButtonPress);
-	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
-	
-	MarkNativeAsOptional("HGR_IsHooking");
-	MarkNativeAsOptional("HGR_IsGrabbing");
-	MarkNativeAsOptional("HGR_IsBeingGrabbed");
-	MarkNativeAsOptional("HGR_IsRoping");
-	MarkNativeAsOptional("HGR_IsPushing");
-	g_OnLangChanged = CreateGlobalForward("GeoLang_OnLanguageChanged", ET_Ignore, Param_Cell, Param_Cell);
-	g_bLateLoaded = late;
-	return APLRes_Success;
-}
-
 public void OnPluginStart()
 {
 	g_bServerDataLoaded = false;
@@ -1943,16 +1812,6 @@ public void OnPluginStart()
 	
 	//language file
 	LoadTranslations("ckSurf.phrases");
-	
-	// https://forums.alliedmods.net/showthread.php?p=1436866
-	// GeoIP Language Selection by GoD-Tony
-	Init_GeoLang();
-	if (LibraryExists("clientprefs"))
-	{
-		g_hCookie = RegClientCookie("GeoLanguage", "The client's preferred language.", CookieAccess_Protected);
-		SetCookieMenuItem(CookieMenu_GeoLanguage, 0, "Language");
-		g_bUseCPrefs = true;
-	}
 	
 	CreateConVar("ckSurf_version", VERSION, "ckSurf Version.", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	
@@ -2305,7 +2164,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_hideweapon", Client_HideWeapon, "[ckSurf] hides your weapon model");
 	RegConsoleCmd("sm_disarm", Client_HideWeapon, "[ckSurf] hides your weapon model");
 	RegConsoleCmd("sm_goto", Client_GoTo, "[ckSurf] teleports you to a selected player");
-	RegConsoleCmd("sm_language", Client_Language, "[ckSurf] select your language");
 	RegConsoleCmd("sm_sound", Client_QuakeSounds, "[ckSurf] on/off quake sounds");
 	RegConsoleCmd("sm_surrender", Client_Surrender, "[ckSurf] surrender your current challenge");
 	RegConsoleCmd("sm_bhop", Client_AutoBhop, "[ckSurf] on/off autobhop");
@@ -2315,7 +2173,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_hidespecs", Client_HideSpecs, "[ckSurf] hides spectators from menu/panel");
 	RegConsoleCmd("sm_compare", Client_Compare, "[ckSurf] compare your challenge results");
 	RegConsoleCmd("sm_wr", Client_Wr, "[ckSurf] prints records in chat");
-	RegConsoleCmd("sm_measure", Command_Menu, "[ckSurf] allows you to measure the distance between 2 points");
 	RegConsoleCmd("sm_abort", Client_Abort, "[ckSurf] abort your current challenge");
 	RegConsoleCmd("sm_spec", Client_Spec, "[ckSurf] chooses a player who you want to spectate and switch you to spectators");
 	RegConsoleCmd("sm_watch", Client_Spec, "[ckSurf] chooses a player who you want to spectate and switch you to spectators");
@@ -2436,15 +2293,6 @@ public void OnPluginStart()
 	g_ownerOffset = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity");
 	g_ragdolls = FindSendPropInfo("CCSPlayer", "m_hRagdoll");
 	
-	//Credits: Measure by DaFox
-	//https://forums.alliedmods.net/showthread.php?t=88830
-	g_hMainMenu = CreateMenu(Handler_MainMenu);
-	SetMenuTitle(g_hMainMenu, "ckSurf - Measure");
-	AddMenuItem(g_hMainMenu, "", "Point 1 (Red)");
-	AddMenuItem(g_hMainMenu, "", "Point 2 (Green)");
-	AddMenuItem(g_hMainMenu, "", "Find Distance");
-	AddMenuItem(g_hMainMenu, "", "Reset");
-	
 	//add to admin menu
 	Handle tpMenu;
 	if (LibraryExists("adminmenu") && ((tpMenu = GetAdminTopMenu()) != null))
@@ -2536,3 +2384,53 @@ public void OnPluginStart()
 	Format(szPINK, 12, "%c", PINK);
 	Format(szLIGHTRED, 12, "%c", LIGHTRED);
 } 
+
+/*=====  End of Events  ======*/
+
+
+
+
+/*===============================
+=            Natives            =
+===============================*/
+
+public int Native_GetTimerStatus(Handle plugin, int numParams)
+{
+	return g_bTimeractivated[GetNativeCell(1)];
+}
+
+public int Native_StopTimer(Handle plugin, int numParams)
+{
+	Client_Stop(GetNativeCell(1), 0);
+}
+
+public int Native_GetCurrentTime(Handle plugin, int numParams)
+{
+	return view_as<int>(g_fCurrentRunTime[GetNativeCell(1)]);
+}
+
+public int Native_EmulateStartButtonPress(Handle plugin, int numParams)
+{
+	CL_OnStartTimerPress(GetNativeCell(1));
+}
+
+public int Native_EmulateStopButtonPress(Handle plugin, int numParams)
+{
+	CL_OnEndTimerPress(GetNativeCell(1));
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	RegPluginLibrary("ckSurf");
+	CreateNative("ckSurf_GetTimerStatus", Native_GetTimerStatus);
+	CreateNative("ckSurf_StopTimer", Native_StopTimer);
+	CreateNative("ckSurf_EmulateStartButtonPress", Native_EmulateStartButtonPress);
+	CreateNative("ckSurf_EmulateStopButtonPress", Native_EmulateStopButtonPress);
+	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
+	
+	g_bLateLoaded = late;
+	return APLRes_Success;
+}
+
+
+/*=====  End of Natives  ======*/

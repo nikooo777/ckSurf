@@ -562,7 +562,7 @@ public void checkSpawnPoints()
 				}
 				else
 				{
-					LogError("No valid spawn points found in the map! Record bots will not work. Try adding a spawn point with !addspawn");
+					PrintToServer("No valid spawn points found in the map! Record bots will not work. Try adding a spawn point with !addspawn");
 					return;
 				}
 			}
@@ -698,173 +698,6 @@ stock bool IsValidClient(int client)
 	if (client >= 1 && client <= MaxClients && IsValidEntity(client) && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-void FormatLanguage(char[] language)
-{
-	// Format the input language.
-	int length = strlen(language);
-	
-	if (length <= 1)
-		return;
-	
-	// Capitalize first letter.
-	language[0] = CharToUpper(language[0]);
-	
-	// Lower case the rest.
-	for (int i = 1; i < length; i++)
-	{
-		language[i] = CharToLower(language[i]);
-	}
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-void LoadCookies(int client)
-{
-	char sCookie[4];
-	sCookie[0] = '\0';
-	g_bLanguageSelected[client] = true;
-	GetClientCookie(client, g_hCookie, sCookie, sizeof(sCookie));
-	if (sCookie[0] != '\0')
-		SetClientLanguageByCode(client, sCookie);
-	else
-		g_bLanguageSelected[client] = false;
-	g_bLoaded[client] = true;
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-void SetClientLanguageByCode(int client, const char[] code)
-{
-	/* Set a client's language based on the language code. */
-	int iLangID = GetLanguageByCode(code);
-	if (iLangID >= 0)
-		SetClientLanguage2(client, iLangID);
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-void SetClientLanguage2(int client, int language)
-{
-	// Set language.
-	SetClientLanguage(client, language);
-	
-	Call_StartForward(g_OnLangChanged);
-	Call_PushCell(client);
-	Call_PushCell(language);
-	Call_Finish();
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-public int LanguageMenu_Handler(Handle menu, MenuAction action, int client, int item)
-{
-	/* Handle the language selection menu. */
-	switch (action)
-	{
-		case MenuAction_DrawItem:
-		{
-			// Disable selection for currently used language.
-			char sLangID[4];
-			GetMenuItem(menu, item, sLangID, sizeof(sLangID));
-			
-			if (StringToInt(sLangID) == GetClientLanguage(client))
-			{
-				return ITEMDRAW_DISABLED;
-			}
-			
-			return ITEMDRAW_DEFAULT;
-		}
-		
-		case MenuAction_Select:
-		{
-			char sLangID[4], sLanguage[32];
-			GetMenuItem(menu, item, sLangID, sizeof(sLangID), _, sLanguage, sizeof(sLanguage));
-			
-			int iLangID = StringToInt(sLangID);
-			SetClientLanguage2(client, iLangID);
-			
-			if (g_bUseCPrefs)
-			{
-				char sLangCode[6];
-				GetLanguageInfo(iLangID, sLangCode, sizeof(sLangCode));
-				SetClientCookie(client, g_hCookie, sLangCode);
-			}
-			
-			PrintToChat(client, "[%cCK%c] Language changed to \"%s\".", MOSSGREEN, WHITE, sLanguage);
-		}
-	}
-	
-	return 0;
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-void Init_GeoLang()
-{
-	// Create and cache language selection menu.
-	Handle hLangArray = CreateArray(32);
-	char sLangID[4];
-	char sLanguage[128];
-	
-	int maxLangs = GetLanguageCount();
-	for (int i = 0; i < maxLangs; i++)
-	{
-		GetLanguageInfo(i, _, _, sLanguage, sizeof(sLanguage));
-		//if (StrEqual(sLanguage,"german") || StrEqual(sLanguage,"russian") || StrEqual(sLanguage,"schinese") || StrEqual(sLanguage,"english")  || StrEqual(sLanguage,"swedish")  || StrEqual(sLanguage,"french"))
-		if (StrEqual(sLanguage, "english"))
-		{
-			FormatLanguage(sLanguage);
-			PushArrayString(hLangArray, sLanguage);
-		}
-	}
-	
-	// Sort languages alphabetically.
-	SortADTArray(hLangArray, Sort_Ascending, Sort_String);
-	
-	// Create and cache the menu.
-	g_hLangMenu = CreateMenu(LanguageMenu_Handler, MenuAction_DrawItem);
-	SetMenuTitle(g_hLangMenu, "Language:");
-	SetMenuPagination(g_hLangMenu, MENU_NO_PAGINATION);
-	
-	maxLangs = GetArraySize(hLangArray);
-	for (int i = 0; i < maxLangs; i++)
-	{
-		GetArrayString(hLangArray, i, sLanguage, sizeof(sLanguage));
-		
-		// Get language ID.
-		IntToString(GetLanguageByName(sLanguage), sLangID, sizeof(sLangID));
-		
-		// Add to menu.
-		if (StrEqual(sLanguage, "Schinese"))
-			Format(sLanguage, 128, "Chinese");
-		AddMenuItem(g_hLangMenu, sLangID, sLanguage);
-	}
-	
-	SetMenuExitButton(g_hLangMenu, true);
-	
-	CloseHandle(hLangArray);
-}
-
-// https://forums.alliedmods.net/showthread.php?p=1436866
-// GeoIP Language Selection by GoD-Tony
-public void CookieMenu_GeoLanguage(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)
-{
-	/* Menu when accessed through !settings. */
-	switch (action)
-	{
-		case CookieMenuAction_DisplayOption:
-		{
-			Format(buffer, maxlen, "Language");
-		}
-		case CookieMenuAction_SelectOption:
-		{
-			DisplayMenu(g_hLangMenu, client, MENU_TIME_FOREVER);
-		}
-	}
 }
 
 public void SetSkillGroups()
@@ -1004,44 +837,6 @@ public void StringToUpper(char[] input)
 			return;
 		input[i] = CharToUpper(input[i]);
 	}
-}
-
-public void GetServerInfo()
-{
-	int pieces[4];
-	char code2[3];
-	char NetIP[256];
-	int longip = GetConVarInt(FindConVar("hostip"));
-	int port = GetConVarInt(FindConVar("hostport"));
-	pieces[0] = (longip >> 24) & 0x000000FF;
-	pieces[1] = (longip >> 16) & 0x000000FF;
-	pieces[2] = (longip >> 8) & 0x000000FF;
-	pieces[3] = longip & 0x000000FF;
-	Format(NetIP, sizeof(NetIP), "%d.%d.%d.%d", pieces[0], pieces[1], pieces[2], pieces[3]);
-	GeoipCountry(NetIP, g_szServerCountry, 100);
-	
-	if (!strcmp(g_szServerCountry, NULL_STRING))
-		Format(g_szServerCountry, 100, "Unknown", g_szServerCountry);
-	else
-		if (StrContains(g_szServerCountry, "United", false) != -1 || 
-		StrContains(g_szServerCountry, "Republic", false) != -1 || 
-		StrContains(g_szServerCountry, "Federation", false) != -1 || 
-		StrContains(g_szServerCountry, "Island", false) != -1 || 
-		StrContains(g_szServerCountry, "Netherlands", false) != -1 || 
-		StrContains(g_szServerCountry, "Isle", false) != -1 || 
-		StrContains(g_szServerCountry, "Bahamas", false) != -1 || 
-		StrContains(g_szServerCountry, "Maldives", false) != -1 || 
-		StrContains(g_szServerCountry, "Philippines", false) != -1 || 
-		StrContains(g_szServerCountry, "Vatican", false) != -1)
-	{
-		Format(g_szServerCountry, 100, "The %s", g_szServerCountry);
-	}
-	if (GeoipCode2(NetIP, code2))
-		Format(g_szServerCountryCode, 16, "%s", code2);
-	else
-		Format(g_szServerCountryCode, 16, "??", code2);
-	Format(g_szServerIp, sizeof(g_szServerIp), "%s:%i", NetIP, port);
-	GetConVarString(FindConVar("hostname"), g_szServerName, sizeof(g_szServerName));
 }
 
 public void GetCountry(int client)
@@ -1362,6 +1157,10 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+
+	g_ClientSelectedZone[client] = -1;
+	g_Editing[client] = 0;
+	
 	g_bClientRestarting[client] = false;
 	g_fClientRestarting[client] = GetGameTime();
 	g_fErrorMessage[client] = GetGameTime();
@@ -1386,7 +1185,6 @@ public void SetClientDefaults(int client)
 	
 	g_bClientStopped[client] = false;
 	g_bTrailApplied[client] = false;
-	g_bRefreshTrail[client] = false;
 	g_fClientLastMovement[client] = GetEngineTime();
 	g_fLastDifferenceTime[client] = 0.0;
 	g_bTrailOn[client] = false;
@@ -1394,17 +1192,13 @@ public void SetClientDefaults(int client)
 	g_bHasTitle[client] = false;
 	g_iTitleInUse[client] = -1;
 	
-	g_fLastOverlay[client] = GetGameTime() - 5.0;
 	g_flastClientUsp[client] = GetGameTime();
 	
-	g_clientFinishedBonuses[client] = 0;
-	g_ClientFinishedBonusesRowCount[client] = 0;
 	g_ClientRenamingZone[client] = false;
 	g_iClientInZone[client][2] = 0;
 	
-	g_bProfileSelected[client] = false;
 	g_bNewReplay[client] = false;
-	g_bFirstButtonTouch[client] = true;
+	g_bFirstTimerStart[client] = true;
 	g_pr_Calculating[client] = false;
 	
 	g_bTimeractivated[client] = false;
@@ -1416,12 +1210,10 @@ public void SetClientDefaults(int client)
 	g_bRecalcRankInProgess[client] = false;
 	g_bPause[client] = false;
 	g_bPositionRestored[client] = false;
-	g_bPauseWasActivated[client] = false;
 	g_bRestorePosition[client] = false;
 	g_bRestorePositionMsg[client] = false;
 	g_bRespawnPosition[client] = false;
 	g_bNoClip[client] = false;
-	g_bMapFinished[client] = false;
 	g_bMapRankToChat[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;
@@ -1437,7 +1229,6 @@ public void SetClientDefaults(int client)
 	g_fCurrentRunTime[client] = -1.0;
 	g_fPlayerCordsLastPosition[client] = view_as<float>( { 0.0, 0.0, 0.0 } );
 	g_fLastChatMessage[client] = GetGameTime();
-	g_fPlayerConnectedTime[client] = GetGameTime();
 	g_fLastTimeButtonSound[client] = GetGameTime();
 	g_fLastTimeNoClipUsed[client] = -1.0;
 	g_fStartTime[client] = -1.0;
@@ -1635,9 +1426,6 @@ public void InitPrecache()
 	AddFileToDownloadsTable(g_sPlayerModel);
 	AddFileToDownloadsTable(g_sReplayBotArmModel);
 	AddFileToDownloadsTable(g_sReplayBotPlayerModel);
-	g_Beam[0] = PrecacheModel("materials/sprites/laser.vmt", true);
-	g_Beam[1] = PrecacheModel("materials/sprites/halo01.vmt", true);
-	g_Beam[2] = PrecacheModel("materials/sprites/bluelaser1.vmt", true);
 	PrecacheModel(g_sReplayBotArmModel, true);
 	PrecacheModel(g_sReplayBotPlayerModel, true);
 	PrecacheModel(g_sArmModel, true);
@@ -1645,7 +1433,7 @@ public void InitPrecache()
 	
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
-	PrecacheModel(g_sModel);
+	PrecacheModel(ZONE_MODEL);
 }
 
 
@@ -1763,7 +1551,6 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 		if (rank == 99999 && IsValidClient(client))
 			PrintToChat(client, "[%cCK%c] %cFailed to save your data correctly! Please contact an admin.", MOSSGREEN, WHITE, DARKRED, RED, DARKRED);
 		
-		g_bMapFinished[client] = true;
 		CreateTimer(0.0, UpdatePlayerProfile, client, TIMER_FLAG_NO_MAPCHANGE);
 		g_fStartTime[client] = -1.0;
 		
@@ -2442,18 +2229,6 @@ public void PlayQuakeSound_Spec(int client, char[] buffer)
 	}
 }
 
-
-public void HookCheck(int client)
-{
-	if (g_bHookMod)
-	{
-		if (HGR_IsHooking(client) || HGR_IsGrabbing(client) || HGR_IsBeingGrabbed(client) || HGR_IsRoping(client) || HGR_IsPushing(client))
-		{
-			Client_Stop(client, 1);
-		}
-	}
-}
-
 public void AttackProtection(int client, int &buttons)
 {
 	if (g_bAttackSpamProtection)
@@ -2741,150 +2516,6 @@ public void SpecListMenuAlive(int client) // What player sees
 	else
 		Format(g_szPlayerPanelText[client], 512, "");
 }
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-void GetPos(int client, int arg)
-{
-	float origin[3], angles[3];
-	GetClientEyePosition(client, origin);
-	GetClientEyeAngles(client, angles);
-	Handle trace = TR_TraceRayFilterEx(origin, angles, MASK_SHOT, RayType_Infinite, TraceFilterPlayers, client);
-	if (!TR_DidHit(trace))
-	{
-		CloseHandle(trace);
-		PrintToChat(client, "%t", "Measure3", MOSSGREEN, WHITE);
-		return;
-	}
-	TR_GetEndPosition(origin, trace);
-	CloseHandle(trace);
-	g_fvMeasurePos[client][arg][0] = origin[0];
-	g_fvMeasurePos[client][arg][1] = origin[1];
-	g_fvMeasurePos[client][arg][2] = origin[2];
-	PrintToChat(client, "%t", "Measure4", MOSSGREEN, WHITE, arg + 1, origin[0], origin[1], origin[2]);
-	if (arg == 0)
-	{
-		if (g_hP2PRed[client] != null)
-		{
-			CloseHandle(g_hP2PRed[client]);
-			g_hP2PRed[client] = null;
-		}
-		g_bMeasurePosSet[client][0] = true;
-		g_hP2PRed[client] = CreateTimer(1.0, Timer_P2PRed, client, TIMER_REPEAT);
-		P2PXBeam(client, 0);
-	}
-	else
-	{
-		if (g_hP2PGreen[client] != null)
-		{
-			CloseHandle(g_hP2PGreen[client]);
-			g_hP2PGreen[client] = null;
-		}
-		g_bMeasurePosSet[client][1] = true;
-		P2PXBeam(client, 1);
-		g_hP2PGreen[client] = CreateTimer(1.0, Timer_P2PGreen, client, TIMER_REPEAT);
-	}
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action Timer_P2PRed(Handle timer, any client)
-{
-	P2PXBeam(client, 0);
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public Action Timer_P2PGreen(Handle timer, any client)
-{
-	P2PXBeam(client, 1);
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-void P2PXBeam(int client, int arg)
-{
-	float Origin0[3], Origin1[3], Origin2[3], Origin3[3];
-	Origin0[0] = (g_fvMeasurePos[client][arg][0] + 8.0);
-	Origin0[1] = (g_fvMeasurePos[client][arg][1] + 8.0);
-	Origin0[2] = g_fvMeasurePos[client][arg][2];
-	Origin1[0] = (g_fvMeasurePos[client][arg][0] - 8.0);
-	Origin1[1] = (g_fvMeasurePos[client][arg][1] - 8.0);
-	Origin1[2] = g_fvMeasurePos[client][arg][2];
-	Origin2[0] = (g_fvMeasurePos[client][arg][0] + 8.0);
-	Origin2[1] = (g_fvMeasurePos[client][arg][1] - 8.0);
-	Origin2[2] = g_fvMeasurePos[client][arg][2];
-	Origin3[0] = (g_fvMeasurePos[client][arg][0] - 8.0);
-	Origin3[1] = (g_fvMeasurePos[client][arg][1] + 8.0);
-	Origin3[2] = g_fvMeasurePos[client][arg][2];
-	if (arg == 0)
-	{
-		Beam(client, Origin0, Origin1, 0.97, 2.0, 255, 0, 0);
-		Beam(client, Origin2, Origin3, 0.97, 2.0, 255, 0, 0);
-	}
-	else
-	{
-		Beam(client, Origin0, Origin1, 0.97, 2.0, 0, 255, 0);
-		Beam(client, Origin2, Origin3, 0.97, 2.0, 0, 255, 0);
-	}
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-void Beam(int client, float vecStart[3], float vecEnd[3], float life, float width, int r, int g, int b)
-{
-	TE_Start("BeamPoints");
-	TE_WriteNum("m_nModelIndex", g_Beam[2]);
-	TE_WriteNum("m_nHaloIndex", 0);
-	TE_WriteNum("m_nStartFrame", 0);
-	TE_WriteNum("m_nFrameRate", 0);
-	TE_WriteFloat("m_fLife", life);
-	TE_WriteFloat("m_fWidth", width);
-	TE_WriteFloat("m_fEndWidth", width);
-	TE_WriteNum("m_nFadeLength", 0);
-	TE_WriteFloat("m_fAmplitude", 0.0);
-	TE_WriteNum("m_nSpeed", 0);
-	TE_WriteNum("r", r);
-	TE_WriteNum("g", g);
-	TE_WriteNum("b", b);
-	TE_WriteNum("a", 255);
-	TE_WriteNum("m_nFlags", 0);
-	TE_WriteVector("m_vecStartPoint", vecStart);
-	TE_WriteVector("m_vecEndPoint", vecEnd);
-	TE_SendToClient(client);
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-void ResetPos(int client)
-{
-	if (g_hP2PRed[client] != null)
-	{
-		CloseHandle(g_hP2PRed[client]);
-		g_hP2PRed[client] = null;
-	}
-	if (g_hP2PGreen[client] != null)
-	{
-		CloseHandle(g_hP2PGreen[client]);
-		g_hP2PGreen[client] = null;
-	}
-	g_bMeasurePosSet[client][0] = false;
-	g_bMeasurePosSet[client][1] = false;
-	
-	g_fvMeasurePos[client][0][0] = 0.0; //This is stupid.
-	g_fvMeasurePos[client][0][1] = 0.0;
-	g_fvMeasurePos[client][0][2] = 0.0;
-	g_fvMeasurePos[client][1][0] = 0.0;
-	g_fvMeasurePos[client][1][1] = 0.0;
-	g_fvMeasurePos[client][1][2] = 0.0;
-}
-
-// Measure-Plugin by DaFox
-//https://forums.alliedmods.net/showthread.php?t=88830?t=88830
-public bool TraceFilterPlayers(int entity, int contentsMask)
-{
-	return (entity > MaxClients) ? true : false;
-} //Thanks petsku
 
 public void LoadInfoBot()
 {

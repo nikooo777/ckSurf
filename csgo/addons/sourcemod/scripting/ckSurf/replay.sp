@@ -56,7 +56,6 @@ public void StopRecording(int client)
 	g_hRecordingAdditionalTeleport[client] = null;
 	g_RecordedTicks[client] = 0;
 	g_RecordPreviousWeapon[client] = 0;
-	g_szReplay_PlayerName[client][0] = 0;
 	g_CurrentAdditionalTeleportIndex[client] = 0;
 	g_OriginSnapshotInterval[client] = 0;
 }
