@@ -276,7 +276,6 @@ public void EndTouch(int client, int action[3])
 					{
 						PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
-						return;
 					}
 					else
 						CL_OnStartTimerPress(client);
