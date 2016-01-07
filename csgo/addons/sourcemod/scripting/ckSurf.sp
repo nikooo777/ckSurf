@@ -2419,6 +2419,16 @@ public int Native_EmulateStopButtonPress(Handle plugin, int numParams)
 	CL_OnEndTimerPress(GetNativeCell(1));
 }
 
+public int Native_ClientIsVIP(Handle plugin, int numParams)
+{
+	return view_as<bool>(g_bflagTitles[GetNativeCell(1)][0]);
+}
+
+public int Native_GetServerRank(Handle plugin, int numParams)
+{
+	return g_PlayerRank[GetNativeCell(1)];
+}
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	RegPluginLibrary("ckSurf");
@@ -2427,10 +2437,17 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ckSurf_EmulateStartButtonPress", Native_EmulateStartButtonPress);
 	CreateNative("ckSurf_EmulateStopButtonPress", Native_EmulateStopButtonPress);
 	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
+	CreateNative("ckSurf_ClientIsVIP", Native_ClientIsVIP);
+	CreateNative("ckSurf_GetServerRank", Native_GetServerRank);
 	
+	MarkNativeAsOptional("HGR_IsHooking");
+	MarkNativeAsOptional("HGR_IsGrabbing");
+	MarkNativeAsOptional("HGR_IsBeingGrabbed");
+	MarkNativeAsOptional("HGR_IsRoping");
+	MarkNativeAsOptional("HGR_IsPushing");
+	g_OnLangChanged = CreateGlobalForward("GeoLang_OnLanguageChanged", ET_Ignore, Param_Cell, Param_Cell);
 	g_bLateLoaded = late;
 	return APLRes_Success;
 }
-
 
 /*=====  End of Natives  ======*/
