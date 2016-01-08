@@ -349,18 +349,23 @@ public void readMultiServerMapcycle()
 	
 	ClearArray(g_MapList);
 
-
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", MULTI_SERVER_MAPCYCLE);
-
 	Handle fileHandle = OpenFile(sPath, "r");
-	while (!IsEndOfFile(fileHandle) && ReadFileLine(fileHandle, line, sizeof(line)))
+
+	if (fileHandle != null)
 	{
-		TrimString(line); // Only take the map name
-		if (StrContains(line, "//", true) == -1) // Escape comments
+		while (!IsEndOfFile(fileHandle) && ReadFileLine(fileHandle, line, sizeof(line)))
 		{
-			PushArrayString(g_MapList, line);
- 		}
+			TrimString(line); // Only take the map name
+			if (StrContains(line, "//", true) == -1) // Escape comments
+			{
+				PushArrayString(g_MapList, line);
+	 		}
+		}
 	}
+	else
+		SetFailState("[ckSurf] %s is empty or does not exists.", MULTI_SERVER_MAPCYCLE);
+
 	if (fileHandle != null)
 		CloseHandle(fileHandle);
 	
@@ -397,6 +402,7 @@ public void readMapycycle()
 			g_pr_MapCount++;
 		}
 	}
+	return;
 }
 
 public bool loadHiddenChatCommands()

@@ -83,7 +83,7 @@
 #define RGB_GREY {145, 145, 145, 255}
 #define RGB_DARKGREY {69, 69, 69, 255}
 
-// Paths & configs
+// Paths
 #define CK_REPLAY_PATH "data/cKreplays/"
 #define BLOCKED_LIST_PATH "configs/ckSurf/hidden_chat_commands.txt"
 #define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
