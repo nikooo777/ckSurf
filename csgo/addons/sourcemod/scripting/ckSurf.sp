@@ -86,6 +86,7 @@
 // Paths & configs
 #define CK_REPLAY_PATH "data/cKreplays/"
 #define BLOCKED_LIST_PATH "configs/ckSurf/hidden_chat_commands.txt"
+#define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
 #define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
 #define PRO_FULL_SOUND_PATH "sound/quake/holyshit.mp3"
 #define PRO_RELATIVE_SOUND_PATH "*quake/holyshit.mp3"
@@ -500,6 +501,8 @@ float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
 int g_messages[MAXPLAYERS + 1]; 								// Spam message count
 ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
 bool g_benableChatProcessing;
+ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
+bool g_bMultiServerMapcycle;
 
 /*----------  SQL Variables  ----------*/
 Handle g_hDb = null; 											// SQL driver
@@ -994,35 +997,11 @@ public void OnMapEnd()
 
 public void OnConfigsExecuted()
 {
-	char map[128];
-	char map2[128];
-	int mapListSerial = -1;
-	g_pr_MapCount = 0;
-	if (ReadMapList(g_MapList, 
-			mapListSerial, 
-			"mapcyclefile", 
-			MAPLIST_FLAG_CLEARARRAY | MAPLIST_FLAG_NO_DEFAULT)
-		 == null)
-	{
-		if (mapListSerial == -1)
-		{
-			SetFailState("[ckSurf] mapcycle.txt is empty or does not exists.");
-		}
-	}
-	for (int i = 0; i < GetArraySize(g_MapList); i++)
-	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		if (!StrEqual(map, "", false))
-		{
-			//fix workshop map name			
-			char mapPieces[6][128];
-			int lastPiece = ExplodeString(map, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
-			Format(map2, sizeof(map2), "%s", mapPieces[lastPiece - 1]);
-			SetArrayString(g_MapList, i, map2);
-			g_pr_MapCount++;
-		}
-	}
-	
+	if (!g_bMultiServerMapcycle)
+		readMapycycle();
+	else
+		readMultiServerMapcycle();
+
 	// Count the amount of bonuses and then set skillgroups
 	if (!g_bRenaming && !g_bInTransactionChain)
 		db_selectBonusCount();
@@ -1729,6 +1708,10 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar == g_henableChatProcessing) {
 		g_benableChatProcessing = view_as<bool>(StringToInt(newValue[0]));
 	}
+	else if (convar == g_hMultiServerMapcycle)
+	{
+		g_bMultiServerMapcycle = view_as<bool>(StringToInt(newValue[0]));
+	}
 	else if (convar == g_hRecordBotTrail) {
 		g_bRecordBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
 	}
@@ -2088,6 +2071,10 @@ public void OnPluginStart()
 	g_henableChatProcessing = CreateConVar("ck_chat_enable", "1", "(1 / 0) Enable or disable ckSurfs chat processing.", FCVAR_NOTIFY);
 	g_benableChatProcessing = GetConVarBool(g_henableChatProcessing);
 	HookConVarChange(g_henableChatProcessing, OnSettingChanged);
+
+	g_hMultiServerMapcycle = CreateConVar("ck_multi_server_mapcycle", "0", "0 = Use mapcycle.txt to load servers maps, 1 = use configs/ckSurf/multi_server_mapcycle.txt to load maps", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_bMultiServerMapcycle = GetConVarBool(g_hMultiServerMapcycle);
+	HookConVarChange(g_hMultiServerMapcycle, OnSettingChanged);
 
 	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
 	g_bBonusBotTrailEnabled = GetConVarBool(g_hBonusBotTrail);

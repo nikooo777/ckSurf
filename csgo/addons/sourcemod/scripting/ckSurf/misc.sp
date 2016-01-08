@@ -342,6 +342,63 @@ public int getZoneID(int zoneGrp, int stage)
 	return -1;
 }
 
+public void readMultiServerMapcycle()
+{	
+	char sPath[PLATFORM_MAX_PATH];
+	char line[128];
+	
+	ClearArray(g_MapList);
+
+
+	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", MULTI_SERVER_MAPCYCLE);
+
+	Handle fileHandle = OpenFile(sPath, "r");
+	while (!IsEndOfFile(fileHandle) && ReadFileLine(fileHandle, line, sizeof(line)))
+	{
+		TrimString(line); // Only take the map name
+		if (StrContains(line, "//", true) == -1) // Escape comments
+		{
+			PushArrayString(g_MapList, line);
+ 		}
+	}
+	if (fileHandle != null)
+		CloseHandle(fileHandle);
+	
+	return;
+}
+
+public void readMapycycle()
+{
+	char map[128];
+	char map2[128];
+	int mapListSerial = -1;
+	g_pr_MapCount = 0;
+	if (ReadMapList(g_MapList, 
+			mapListSerial, 
+			"mapcyclefile", 
+			MAPLIST_FLAG_CLEARARRAY | MAPLIST_FLAG_NO_DEFAULT)
+		 == null)
+	{
+		if (mapListSerial == -1)
+		{
+			SetFailState("[ckSurf] mapcycle.txt is empty or does not exists.");
+		}
+	}
+	for (int i = 0; i < GetArraySize(g_MapList); i++)
+	{
+		GetArrayString(g_MapList, i, map, sizeof(map));
+		if (!StrEqual(map, "", false))
+		{
+			//fix workshop map name			
+			char mapPieces[6][128];
+			int lastPiece = ExplodeString(map, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
+			Format(map2, sizeof(map2), "%s", mapPieces[lastPiece - 1]);
+			SetArrayString(g_MapList, i, map2);
+			g_pr_MapCount++;
+		}
+	}
+}
+
 public bool loadHiddenChatCommands()
 {
 	char sPath[PLATFORM_MAX_PATH];
@@ -1014,9 +1071,10 @@ public void refreshTrailClient(int client)
 		return;
 	
 	int ent = GetPlayerWeaponSlot(client, 2);
+
 	if (!IsValidEntity(ent))
-		return;
-	
+		ent = client;
+
 	g_bTrailApplied[client] = true;
 	
 	if (!IsFakeClient(client))
@@ -1064,14 +1122,12 @@ public void refreshTrailBot(int bot)
 	
 	int ent = GetPlayerWeaponSlot(bot, 2);
 	if (!IsValidEntity(ent))
-		return;
-	
-	
+		ent = bot;
+
 	if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
 	{
 		if (bot == g_BonusBot)
 		{
-			//PrintToServer("TRAILING: BONUS BOT");
 			TE_SetupBeamFollow(ent, 
 				g_BeamSprite, 
 				0, 
@@ -1084,7 +1140,6 @@ public void refreshTrailBot(int bot)
 		}
 		else if (bot == g_RecordBot)
 		{
-			//PrintToServer("TRAILING: RECORD BOT");
 			TE_SetupBeamFollow(ent, 
 				g_BeamSprite, 
 				0, 
