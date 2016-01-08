@@ -203,6 +203,9 @@ public Action CKTimer2(Handle timer)
 		if (!IsValidClient(i) || i == g_InfoBot)
 			continue;
 		
+		//overlay check
+		if (g_bOverlay[i] && GetGameTime() - g_fLastOverlay[i] > 5.0)
+			g_bOverlay[i] = false;
 		
 		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
 		if (g_hRecording[i] != null && g_fCurrentRunTime[i] > 6720.0)
@@ -486,6 +489,7 @@ public Action CenterMsgTimer(Handle timer, any client)
 	{
 		if (g_bRestorePositionMsg[client])
 		{
+			g_fLastOverlay[client] = GetGameTime();
 			g_bOverlay[client] = true;
 			PrintHintText(client, "%t", "PositionRestored");
 		}

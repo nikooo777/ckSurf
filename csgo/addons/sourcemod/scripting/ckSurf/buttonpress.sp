@@ -156,6 +156,7 @@ public void CL_OnEndTimerPress(int client)
 	FormatTimeFloat(client, g_fFinalTime[client], 3, szTime, sizeof(szTime));
 	Format(g_szFinalTime[client], 32, "%s", szTime);
 	g_bOverlay[client] = true;
+	g_fLastOverlay[client] = GetGameTime();
 	PrintHintText(client, "%t", "TimerStopped", g_szFinalTime[client]);
 	
 	char szDiff[54];

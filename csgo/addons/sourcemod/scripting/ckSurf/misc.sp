@@ -1217,7 +1217,6 @@ public void SetClientDefaults(int client)
 	g_bMapRankToChat[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;
-	//g_bBonusTimer[client] = false;
 	g_bChallenge_Request[client] = false;
 	g_bClientOwnReason[client] = false;
 	g_AdminMenuLastPage[client] = 0;
@@ -2572,12 +2571,12 @@ public void CreateNavFiles()
 	int mapListSerial = -1;
 	if (ReadMapList(g_MapList, mapListSerial, "mapcyclefile", MAPLIST_FLAG_CLEARARRAY | MAPLIST_FLAG_NO_DEFAULT) == null)
 		if (mapListSerial == -1)
-		return;
+			return;
 	
 	for (int i = 0; i < GetArraySize(g_MapList); i++)
 	{
 		GetArrayString(g_MapList, i, map, sizeof(map));
-		if (!StrEqual(map, "", false))
+		if (map[0])
 		{
 			Format(DestFile, sizeof(DestFile), "maps/%s.nav", map);
 			if (!FileExists(DestFile))

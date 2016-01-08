@@ -645,6 +645,8 @@ char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
 char g_szSkillGroups[9][32];									// Skill group names loaded from config
 char g_BlockedChatText[256][256];								// Blocked chat commands
+float g_fLastOverlay[MAXPLAYERS + 1];							// Last time an overlay was displayed
+
 
 /*----------  Player location restoring  ----------*/
 bool g_bPositionRestored[MAXPLAYERS + 1]; 						// Clients location was restored this run
