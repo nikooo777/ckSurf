@@ -1945,72 +1945,28 @@ public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[
 		if (challengeswon < 0)
 		Format(szChallengesWinRatio, 32, "%i", challengeswon);
 	
+
 	if (finishedmapspro > g_pr_MapCount)
 		finishedmapspro = g_pr_MapCount;
-	
-	if (points < g_pr_rank_Percentage[1])
+
+
+	int index = GetSkillgroupFromPoints(points), RankValue[SkillGroup];
+	GetArrayArray(g_hSkillGroups, index, RankValue[0]);
+
+	Format(szSkillGroup, 32, "%s", RankValue[RankName]);
+
+	if (index == (GetArraySize(g_hSkillGroups)-1))
 	{
-		Format(szSkillGroup, 32, "%s", g_szSkillGroups[0]);
-		RankDifference = g_pr_rank_Percentage[1] - points;
-		Format(szNextRank, 32, " (%s)", g_szSkillGroups[1]);
+		RankDifference = 0;
+		Format(szNextRank, 32, " ");
+		master = true;
 	}
 	else
-		if (g_pr_rank_Percentage[1] <= points && points < g_pr_rank_Percentage[2])
-		{
-			Format(szSkillGroup, 32, "%s", g_szSkillGroups[1]);
-			RankDifference = g_pr_rank_Percentage[2] - points;
-			Format(szNextRank, 32, " (%s)", g_szSkillGroups[2]);
-		}
-		else
-			if (g_pr_rank_Percentage[2] <= points && points < g_pr_rank_Percentage[3])
-			{
-				Format(szSkillGroup, 32, "%s", g_szSkillGroups[2]);
-				RankDifference = g_pr_rank_Percentage[3] - points;
-				Format(szNextRank, 32, " (%s)", g_szSkillGroups[3]);
-			}
-			else
-				if (g_pr_rank_Percentage[3] <= points && points < g_pr_rank_Percentage[4])
-				{
-					Format(szSkillGroup, 32, "%s", g_szSkillGroups[3]);
-					RankDifference = g_pr_rank_Percentage[4] - points;
-					Format(szNextRank, 32, " (%s)", g_szSkillGroups[4]);
-				}
-				else
-					if (g_pr_rank_Percentage[4] <= points && points < g_pr_rank_Percentage[5])
-					{
-						Format(szSkillGroup, 32, "%s", g_szSkillGroups[4]);
-						RankDifference = g_pr_rank_Percentage[5] - points;
-						Format(szNextRank, 32, " (%s)", g_szSkillGroups[5]);
-					}
-					else
-						if (g_pr_rank_Percentage[5] <= points && points < g_pr_rank_Percentage[6])
-						{
-							Format(szSkillGroup, 32, "%s", g_szSkillGroups[5]);
-							RankDifference = g_pr_rank_Percentage[6] - points;
-							Format(szNextRank, 32, " (%s)", g_szSkillGroups[6]);
-						}
-						else
-							if (g_pr_rank_Percentage[6] <= points && points < g_pr_rank_Percentage[7])
-							{
-								Format(szSkillGroup, 32, "%s", g_szSkillGroups[6]);
-								RankDifference = g_pr_rank_Percentage[7] - points;
-								Format(szNextRank, 32, " (%s)", g_szSkillGroups[7]);
-							}
-							else
-								if (g_pr_rank_Percentage[7] <= points && points < g_pr_rank_Percentage[8])
-								{
-									Format(szSkillGroup, 32, "%s", g_szSkillGroups[7]);
-									RankDifference = g_pr_rank_Percentage[8] - points;
-									Format(szNextRank, 32, " (%s)", g_szSkillGroups[8]);
-								}
-								else
-									if (points >= g_pr_rank_Percentage[8])
-									{
-										Format(szSkillGroup, 32, "%s", g_szSkillGroups[8]);
-										RankDifference = 0;
-										Format(szNextRank, 32, "");
-										master = true;
-									}
+	{
+		GetArrayArray(g_hSkillGroups, (index+1), RankValue[0]);
+		RankDifference = RankValue[PointReq] - points;
+		Format(szNextRank, 32, " (%s)", RankValue[RankName]);
+	}
 	
 	char szRank[32];
 	if (rank > g_pr_RankedPlayers || points == 0)
@@ -2684,7 +2640,7 @@ public void db_resetPlayerMapRecord(int client, char steamid[128], char szMapNam
 	WritePackCell(pack, client);
 	WritePackString(pack, steamid);
 	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery, pack);
-	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery2, 1);
+	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery2, pack);
 	PrintToConsole(client, "map time of %s on %s cleared.", steamid, szMapName);
 	
 	if (StrEqual(szMapName, g_szMapName))

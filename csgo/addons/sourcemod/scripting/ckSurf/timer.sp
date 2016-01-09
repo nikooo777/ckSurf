@@ -418,7 +418,7 @@ public Action SetClanTag(Handle timer, any client)
 	//new rank
 	if (oldrank && g_bPointSystem)
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
-		CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
+			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
 	
 	return Plugin_Handled;
 }

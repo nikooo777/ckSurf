@@ -1716,10 +1716,24 @@ public Action Client_Help(int client, int args)
 public Action Client_Ranks(int client, int args)
 {
 	if (IsValidClient(client))
-		PrintToChat(client, "[%cCK%c] %c%s (0p)  %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)   %c%s%c (%ip)", 
-		MOSSGREEN, WHITE, WHITE, g_szSkillGroups[0], WHITE, g_szSkillGroups[1], WHITE, g_pr_rank_Percentage[1], GRAY, g_szSkillGroups[2], GRAY, g_pr_rank_Percentage[2], LIGHTBLUE, 
-		g_szSkillGroups[3], LIGHTBLUE, g_pr_rank_Percentage[3], BLUE, g_szSkillGroups[4], BLUE, g_pr_rank_Percentage[4], DARKBLUE, g_szSkillGroups[5], DARKBLUE, g_pr_rank_Percentage[5], 
-		PINK, g_szSkillGroups[6], PINK, g_pr_rank_Percentage[6], LIGHTRED, g_szSkillGroups[7], LIGHTRED, g_pr_rank_Percentage[7], DARKRED, g_szSkillGroups[8], DARKRED, g_pr_rank_Percentage[8]);
+	{
+		char ChatLine[512];
+		Format(ChatLine, 512, "[%cCK%c] ", MOSSGREEN, WHITE);
+		int i, RankValue[SkillGroup];
+		for (i = 0; i < GetArraySize(g_hSkillGroups); i++)
+		{
+			GetArrayArray(g_hSkillGroups, i, RankValue[0]);
+
+			if (i != 0 && i % 3 == 0)
+			{
+				PrintToChat(client, ChatLine);
+				Format(ChatLine, 512, " ", MOSSGREEN, WHITE);
+			}
+			Format(ChatLine, 512, "%s%s%c (%ip)   ", ChatLine, RankValue[RankNameColored], WHITE, RankValue[PointReq]);
+		}
+		if (i % 3 != 0)
+			PrintToChat(client, ChatLine);
+	}
 	return Plugin_Handled;
 }
 

@@ -236,21 +236,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		if (checkSpam(client))
 			return Plugin_Handled;
 		
-		ReplaceString(sText, 1024, "{darkred}", "", false);
-		ReplaceString(sText, 1024, "{green}", "", false);
-		ReplaceString(sText, 1024, "{lightgreen}", "", false);
-		ReplaceString(sText, 1024, "{blue}", "", false);
-		ReplaceString(sText, 1024, "{olive}", "", false);
-		ReplaceString(sText, 1024, "{lime}", "", false);
-		ReplaceString(sText, 1024, "{red}", "", false);
-		ReplaceString(sText, 1024, "{purple}", "", false);
-		ReplaceString(sText, 1024, "{grey}", "", false);
-		ReplaceString(sText, 1024, "{yellow}", "", false);
-		ReplaceString(sText, 1024, "{lightblue}", "", false);
-		ReplaceString(sText, 1024, "{steelblue}", "", false);
-		ReplaceString(sText, 1024, "{darkblue}", "", false);
-		ReplaceString(sText, 1024, "{pink}", "", false);
-		ReplaceString(sText, 1024, "{lightred}", "", false);
+		parseColorsFromString(sText, 1024);
 		
 		//empty message
 		if (StrEqual(sText, " ") || !sText[0])
@@ -298,74 +284,10 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		
 		char szName[64];
 		GetClientName(client, szName, 64);
-		ReplaceString(szName, 64, "{darkred}", "", false);
-		ReplaceString(szName, 64, "{green}", "", false);
-		ReplaceString(szName, 64, "{lightgreen}", "", false);
-		ReplaceString(szName, 64, "{blue}", "", false);
-		ReplaceString(szName, 64, "{olive}", "", false);
-		ReplaceString(szName, 64, "{lime}", "", false);
-		ReplaceString(szName, 64, "{red}", "", false);
-		ReplaceString(szName, 64, "{purple}", "", false);
-		ReplaceString(szName, 64, "{grey}", "", false);
-		ReplaceString(szName, 64, "{yellow}", "", false);
-		ReplaceString(szName, 64, "{lightblue}", "", false);
-		ReplaceString(szName, 64, "{steelblue}", "", false);
-		ReplaceString(szName, 64, "{darkblue}", "", false);
-		ReplaceString(szName, 64, "{pink}", "", false);
-		ReplaceString(szName, 64, "{lightred}", "", false);
-		
-		////////////////
-		//say stuff
-		//
-		//SPEC
-		
-		/*#define WHITE 0x01
-		#define DARKRED 0x02
-		#define PURPLE 0x03
-		#define GREEN 0x04
-		#define MOSSGREEN 0x05
-		#define LIMEGREEN 0x06
-		#define RED 0x07
-		#define GRAY 0x08
-		#define YELLOW 0x09
-		#define DARKGREY 0x0A
-		#define BLUE 0x0B
-		#define DARKBLUE 0x0C
-		#define LIGHTBLUE 0x0D
-		#define PINK 0x0E
-		#define LIGHTRED 0x0F
-		*/
+		parseColorsFromString(szName, 64);
 		
 		if (g_bPointSystem && g_bColoredNames)
-		{
-			switch (g_PlayerChatRank[client])
-			{
-				case 0: // 1st Rank
-				Format(szName, 64, "%c%s", WHITE, szName);
-				case 1:
-				Format(szName, 64, "%c%s", WHITE, szName);
-				case 2:
-				Format(szName, 64, "%c%s", GRAY, szName);
-				case 3:
-				Format(szName, 64, "%c%s", LIGHTBLUE, szName);
-				case 4:
-				Format(szName, 64, "%c%s", BLUE, szName);
-				case 5:
-				Format(szName, 64, "%c%s", DARKBLUE, szName);
-				case 6:
-				Format(szName, 64, "%c%s", PINK, szName);
-				case 7:
-				Format(szName, 64, "%c%s", LIGHTRED, szName);
-				case 8: // Highest rank
-				Format(szName, 64, "%c%s", DARKRED, szName);
-				/*	case 9: // Admin
-					Format(szName, 64, "%c%s", GREEN, szName);
-				case 10: // VIP
-					Format(szName, 64, "%c%s", MOSSGREEN, szName);
-				case 11: // Mapper
-					Format(szName, 64, "%c%s", YELLOW, szName);*/
-			}
-		}
+			setNameColor(szName, g_PlayerChatRank[client], 64);
 		
 		if (GetClientTeam(client) == 1)
 		{

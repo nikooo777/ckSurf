@@ -51,6 +51,7 @@
 #define MOSSGREEN 0x05
 #define LIMEGREEN 0x06
 #define RED 0x07
+#define ORANGE 0x10
 #define GRAY 0x08
 #define YELLOW 0x09
 #define DARKGREY 0x0A
@@ -88,6 +89,7 @@
 #define BLOCKED_LIST_PATH "configs/ckSurf/hidden_chat_commands.txt"
 #define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
 #define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
+#define SKILLGROUP_PATH "configs/ckSurf/skillgroups.cfg"
 #define PRO_FULL_SOUND_PATH "sound/quake/holyshit.mp3"
 #define PRO_RELATIVE_SOUND_PATH "*quake/holyshit.mp3"
 #define CP_FULL_SOUND_PATH "sound/quake/wickedsick.mp3"
@@ -106,6 +108,7 @@
 
 // Ranking definitions
 #define MAX_PR_PLAYERS 1066
+#define MAX_SKILLGROUPS 64
 
 // UI definitions
 #define HIDE_RADAR (1 << 12)
@@ -124,6 +127,8 @@
 
 // Title definitions
 #define TITLE_COUNT 23		// The amount of custom titles that can be configured in custom_chat_titles.txt
+
+
 
 
 /*====================================
@@ -173,8 +178,16 @@ enum MapZone
 	Float:PointB[3], 
 	String:zoneName[128], 
 	zoneGroup, 
-	Vis, 
-	Team, 
+	Vis,
+	Team
+}
+
+enum SkillGroup
+{
+	PointReq,				// Points required for next skillgroup
+	NameColor,				// Color to use for name if colored chatnames is turned on
+	String:RankName[32],	// Skillgroup name without colors
+	String:RankNameColored[32], // Skillgroup name with colors
 }
 
 
@@ -213,12 +226,12 @@ bool g_bGotSpawnLocation[MAXZONEGROUPS]; 						// Does zonegroup have a spawn lo
 bool g_bflagTitles[MAXPLAYERS + 1][TITLE_COUNT]; 				// Which titles have been given for client
 bool g_bflagTitles_orig[MAXPLAYERS + 1][TITLE_COUNT]; 			// Used to track which title the user gained / lost
 bool g_bHasTitle[MAXPLAYERS + 1]; 								// Does the client have any titles
-char g_szflagTitle_Colored[TITLE_COUNT][128]; 					// Titles with colors
-char g_szflagTitle[TITLE_COUNT][128]; 							// Titles loaded from config
+char g_szflagTitle_Colored[TITLE_COUNT][32]; 					// Titles with colors
+char g_szflagTitle[TITLE_COUNT][32]; 							// Titles loaded from config
 int g_iTitleInUse[MAXPLAYERS + 1]; 								// Which title the client is using
 int g_iCustomTitleCount; 										// How many custom titles are loaded
 // Chat Colors in String Format
-char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12];
+char szWHITE[12], szDARKRED[12], szPURPLE[12], szGREEN[12], szMOSSGREEN[12], szLIMEGREEN[12], szRED[12], szGRAY[12], szYELLOW[12], szDARKGREY[12], szBLUE[12], szDARKBLUE[12], szLIGHTBLUE[12], szPINK[12], szLIGHTRED[12], szORANGE[12];
 bool g_bAdminSelectedHasFlag[MAXPLAYERS + 1]; 					// Does the client the admin selected have titles?
 char g_szAdminSelectedSteamID[MAXPLAYERS + 1][32]; 				// SteamID of the user admin chose when giving title
 bool g_bAdminFlagTitlesTemp[MAXPLAYERS + 1][TITLE_COUNT]; 		// Which title admin chose to give in !givetitles
@@ -612,6 +625,7 @@ char g_szBonusTime[128]; 										// Replay bot time
 /*----------  Misc  ----------*/
 Handle g_MapList = null; 										// Used to load the mapcycle
 float g_fMapStartTime; 											// Used to check if a player just joined the server
+Handle g_hSkillGroups = null;									// Array that holds SkillGroup objects in it
 // Use !r twice to restart the run
 float g_fErrorMessage[MAXPLAYERS + 1]; 							// Used to limit error message spam too often
 float g_fClientRestarting[MAXPLAYERS + 1]; 						// Used to track the time the player took to write the second !r, if too long, reset the boolean
@@ -639,14 +653,13 @@ int g_LastButton[MAXPLAYERS + 1];								// Buttons the client is using, used to
 int g_MVPStars[MAXPLAYERS + 1]; 								// The amount of MVP's a client has  TODO: make sure this is used everywhere
 int g_PlayerChatRank[MAXPLAYERS + 1]; 							// What rank is displayed for the client in chat
 char g_pr_chat_coloredrank[MAXPLAYERS + 1][128]; 				// Clients rank, colored, used in chat
-char g_pr_rankname[MAXPLAYERS + 1][128]; 						// Client's rank, non-colored, used in clantag
+char g_pr_rankname[MAXPLAYERS + 1][32]; 						// Client's rank, non-colored, used in clantag
 char g_szMapPrefix[2][32]; 										// Map's prefix, used to execute prefix cfg's
 char g_szMapName[128]; 											// Current map's name
 char g_szPlayerPanelText[MAXPLAYERS + 1][512];					// Info panel text when spectating
 char g_szCountry[MAXPLAYERS + 1][100];							// Country codes
 char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
-char g_szSkillGroups[9][32];									// Skill group names loaded from config
 char g_BlockedChatText[256][256];								// Blocked chat commands
 float g_fLastOverlay[MAXPLAYERS + 1];							// Last time an overlay was displayed
 
@@ -709,7 +722,6 @@ int g_pr_Recalc_AdminID = -1;									// ClientID that started the recalculation
 int g_pr_AllPlayers; 											// Ranked player count on server
 int g_pr_RankedPlayers; 										// Player count with points
 int g_pr_MapCount;												// Total map count in mapcycle
-int g_pr_rank_Percentage[9];									// The amount of points required for each rank
 int g_pr_TableRowCount; 										// The amount of clients that get recalculated in a full recalculation
 int g_pr_points[MAX_PR_PLAYERS + 1]; 							// Clients points
 int g_pr_oldpoints[MAX_PR_PLAYERS + 1];							// Clients points before recalculation
@@ -991,6 +1003,8 @@ public void OnMapEnd()
 	g_RecordBot = -1;
 	g_BonusBot = -1;
 	db_Cleanup();
+	if (g_hSkillGroups != null)
+		CloseHandle(g_hSkillGroups);
 	
 	Format(g_szMapName, sizeof(g_szMapName), "");
 }
@@ -1391,7 +1405,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 				{
-					Format(g_pr_rankname[i], 32, "");
+					Format(g_pr_rankname[i], 128, "");
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 				}
 		}
@@ -2138,13 +2152,13 @@ public void OnPluginStart()
 		g_ZoneMenuFlag = FlagToBit(bufferFlag);
 		
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
-	
+
 	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bServerVipCommand = GetConVarBool(g_hServerVipCommand);
 	HookConVarChange(g_hServerVipCommand, OnSettingChanged);
 
 	db_setupDatabase();
-	
+
 	//client commands
 	RegConsoleCmd("sm_usp", Client_Usp, "[ckSurf] spawns a usp silencer");
 	RegConsoleCmd("sm_avg", Client_Avg, "[ckSurf] prints in chat the average time of the current map");
@@ -2363,7 +2377,7 @@ public void OnPluginStart()
 	
 	Format(szWHITE, 12, "%c", WHITE);
 	Format(szDARKRED, 12, "%c", DARKRED);
-	Format(szPURPLE, 12, "%c", PURPLE);
+	Format(szPURPLE, 12, "\x01%c", PURPLE);
 	Format(szGREEN, 12, "%c", GREEN);
 	Format(szMOSSGREEN, 12, "%c", MOSSGREEN);
 	Format(szLIMEGREEN, 12, "%c", LIMEGREEN);
@@ -2376,6 +2390,7 @@ public void OnPluginStart()
 	Format(szLIGHTBLUE, 12, "%c", LIGHTBLUE);
 	Format(szPINK, 12, "%c", PINK);
 	Format(szLIGHTRED, 12, "%c", LIGHTRED);
+	Format(szORANGE, 12, "\x01%c", ORANGE);
 } 
 
 /*=====  End of Events  ======*/

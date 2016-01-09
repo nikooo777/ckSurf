@@ -469,47 +469,147 @@ public bool loadCustomTitles()
 		else
 			g_iCustomTitleCount++;
 		
-		//Array_Copy(g_szflagTitle_Colored[i], g_szflagTitle[i], 128);
-		
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{default}", szWHITE, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{darkred}", szDARKRED, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{green}", szGREEN, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{lightgreen}", szLIMEGREEN, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{blue}", szBLUE, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{olive}", szMOSSGREEN, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{lime}", szLIMEGREEN, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{red}", szRED, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{purple}", szPURPLE, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{grey}", szGRAY, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{yellow}", szYELLOW, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{lightblue}", szLIGHTBLUE, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{steelblue}", "", false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{darkblue}", szDARKBLUE, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{pink}", szPINK, false);
-		ReplaceString(g_szflagTitle_Colored[i], 128, "{lightred}", szLIGHTRED, false);
-		
-		ReplaceString(g_szflagTitle[i], 128, "{default}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{darkred}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{green}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{lightgreen}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{blue}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{olive}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{lime}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{red}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{purple}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{grey}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{yellow}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{lightblue}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{steelblue}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{darkblue}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{pink}", "", false);
-		ReplaceString(g_szflagTitle[i], 128, "{lightred}", "", false);
-		
+		addColorToString(g_szflagTitle_Colored[i], 32);
+		parseColorsFromString(g_szflagTitle[i], 32);
+
 		if (!KvGotoNextKey(kv))
 			break;
 	}
 	CloseHandle(kv);
 	return true;
+}
+
+public void addColorToString(char[] StringToAdd, int size)
+{
+	ReplaceString(StringToAdd, size, "{default}", szWHITE, false);
+	ReplaceString(StringToAdd, size, "{white}", szWHITE, false);
+	ReplaceString(StringToAdd, size, "{darkred}", szDARKRED, false);
+	ReplaceString(StringToAdd, size, "{green}", szGREEN, false);
+	ReplaceString(StringToAdd, size, "{lime}", szLIMEGREEN, false);
+	ReplaceString(StringToAdd, size, "{blue}", szBLUE, false);
+	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
+	ReplaceString(StringToAdd, size, "{red}", szRED, false);
+	ReplaceString(StringToAdd, size, "{grey}", szGRAY, false);
+	ReplaceString(StringToAdd, size, "{gray}", szGRAY, false);
+	ReplaceString(StringToAdd, size, "{yellow}", szYELLOW, false);
+	ReplaceString(StringToAdd, size, "{lightblue}", szLIGHTBLUE, false);
+	ReplaceString(StringToAdd, size, "{darkblue}", szDARKBLUE, false);
+	ReplaceString(StringToAdd, size, "{pink}", szPINK, false);
+	ReplaceString(StringToAdd, size, "{lightred}", szLIGHTRED, false);
+	ReplaceString(StringToAdd, size, "{purple}", szPURPLE, false);
+	ReplaceString(StringToAdd, size, "{darkgrey}", szDARKGREY, false);
+	ReplaceString(StringToAdd, size, "{darkgray}", szDARKGREY, false);
+	ReplaceString(StringToAdd, size, "{limegreen}", szLIMEGREEN, false);
+	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
+	ReplaceString(StringToAdd, size, "{darkblue}", szDARKBLUE, false);
+	ReplaceString(StringToAdd, size, "{lime}", szLIMEGREEN, false);
+	ReplaceString(StringToAdd, size, "{orange}", szORANGE, false);
+}
+
+public int getFirstColor(char[] StringToSearch)
+{
+	if (StrContains(StringToSearch, "{default}", false) != -1 || StrContains(StringToSearch, "{white}", false) != -1)
+		return 0;
+	else if (StrContains(StringToSearch, "{darkred}", false) != -1)
+		return 1;
+	else if (StrContains(StringToSearch, "{green}", false) != -1)
+		return 2;
+	else if (StrContains(StringToSearch, "{lightgreen}", false) != -1 || StrContains(StringToSearch, "{limegreen}", false) != -1 || StrContains(StringToSearch, "{lime}", false) != -1)
+		return 3;
+	else if (StrContains(StringToSearch, "{blue}", false) != -1)
+		return 4;
+	else if (StrContains(StringToSearch, "{olive}", false) != -1 || StrContains(StringToSearch, "{mossgreen}", false) != -1)
+		return 5;
+	else if (StrContains(StringToSearch, "{red}", false) != -1)
+		return 6;
+	else if (StrContains(StringToSearch, "{grey}", false) != -1)
+		return 7;
+	else if (StrContains(StringToSearch, "{yellow}", false) != -1)
+		return 8;
+	else if (StrContains(StringToSearch, "{lightblue}", false) != -1)
+		return 9;
+	else if (StrContains(StringToSearch, "{steelblue}", false) != -1 || StrContains(StringToSearch, "{darkblue}", false) != -1)
+		return 10;
+	else if (StrContains(StringToSearch, "{pink}", false) != -1)
+		return 11;
+	else if (StrContains(StringToSearch, "{lightred}", false) != -1)
+		return 12;
+	else if (StrContains(StringToSearch, "{purple}", false) != -1)
+		return 13;
+	else if (StrContains(StringToSearch, "{darkgrey}", false) != -1 || StrContains(StringToSearch, "{darkgray}", false) != -1)
+		return 14;
+	else if (StrContains(StringToSearch, "{orange}", false) != -1)
+		return 15;
+	else 
+		return 0;
+}
+
+public void setNameColor(char[] ClientName, int index, int size)
+{
+	switch (index)
+	{
+		case 0: // 1st Rank
+			Format(ClientName, size, "%c%s", WHITE, ClientName);
+		case 1:
+			Format(ClientName, size, "%c%s", DARKRED, ClientName);
+		case 2:
+			Format(ClientName, size, "%c%s", GREEN, ClientName);
+		case 3:
+			Format(ClientName, size, "%c%s", LIMEGREEN, ClientName);
+		case 4:
+			Format(ClientName, size, "%c%s", BLUE, ClientName);
+		case 5:
+			Format(ClientName, size, "%c%s", MOSSGREEN, ClientName);
+		case 6:
+			Format(ClientName, size, "%c%s", RED, ClientName);
+		case 7:
+			Format(ClientName, size, "%c%s", GRAY, ClientName);
+		case 8: 
+			Format(ClientName, size, "%c%s", YELLOW, ClientName);
+		case 9: 
+			Format(ClientName, size, "%c%s", LIGHTBLUE, ClientName);
+		case 10: 
+			Format(ClientName, size, "%c%s", DARKBLUE, ClientName);
+		case 11: 
+			Format(ClientName, size, "%c%s", PINK, ClientName);
+		case 12: 
+			Format(ClientName, size, "%c%s", LIGHTRED, ClientName);
+		case 13: 
+			Format(ClientName, size, "%c%s", PURPLE, ClientName);
+		case 14: 
+			Format(ClientName, size, "%c%s", DARKGREY, ClientName);
+		case 15:
+			Format(ClientName, size, "%c%s", ORANGE, ClientName);
+		default:
+			Format(ClientName, size, "%c%s", WHITE, ClientName);
+	}
+}
+
+public void parseColorsFromString(char[] ParseString, int size)
+{
+	ReplaceString(ParseString, size, "{default}", "", false);
+	ReplaceString(ParseString, size, "{white}", "", false);
+	ReplaceString(ParseString, size, "{darkred}", "", false);
+	ReplaceString(ParseString, size, "{green}", "", false);
+	ReplaceString(ParseString, size, "{lime}", "", false);
+	ReplaceString(ParseString, size, "{blue}", "", false);
+	ReplaceString(ParseString, size, "{mossgreen}", "", false);
+	ReplaceString(ParseString, size, "{red}", "", false);
+	ReplaceString(ParseString, size, "{grey}", "", false);
+	ReplaceString(ParseString, size, "{gray}", "", false);
+	ReplaceString(ParseString, size, "{yellow}", "", false);
+	ReplaceString(ParseString, size, "{lightblue}", "", false);
+	ReplaceString(ParseString, size, "{darkblue}", "", false);
+	ReplaceString(ParseString, size, "{pink}", "", false);
+	ReplaceString(ParseString, size, "{lightred}", "", false);
+	ReplaceString(ParseString, size, "{purple}", "", false);
+	ReplaceString(ParseString, size, "{darkgrey}", "", false);
+	ReplaceString(ParseString, size, "{darkgray}", "", false);
+	ReplaceString(ParseString, size, "{limegreen}", "", false);
+	ReplaceString(ParseString, size, "{mossgreen}", "", false);
+	ReplaceString(ParseString, size, "{darkblue}", "", false);
+	ReplaceString(ParseString, size, "{lime}", "", false);
+	ReplaceString(ParseString, size, "{orange}", "", false);
 }
 
 public void checkChangesInTitle(int client)
@@ -763,47 +863,6 @@ stock bool IsValidClient(int client)
 	return false;
 }
 
-public void SetSkillGroups()
-{
-	//Map Points	
-	int mapcount;
-	if (g_pr_MapCount < 1)
-		mapcount = 1;
-	else
-		mapcount = g_pr_MapCount;
-	
-	g_pr_PointUnit = 1;
-	float MaxPoints = (float(mapcount) * 700.0) + (float(g_totalBonusCount) * 150.0);
-	int g_RankCount = 0;
-	
-	char sPath[PLATFORM_MAX_PATH], sBuffer[32];
-	BuildPath(Path_SM, sPath, sizeof(sPath), "configs/ckSurf/skillgroups.cfg");
-	
-	if (FileExists(sPath))
-	{
-		Handle hKeyValues = CreateKeyValues("ckSurf.SkillGroups");
-		if (FileToKeyValues(hKeyValues, sPath) && KvGotoFirstSubKey(hKeyValues))
-		{
-			do
-			{
-				if (g_RankCount <= 8)
-				{
-					KvGetString(hKeyValues, "name", g_szSkillGroups[g_RankCount], 32);
-					KvGetString(hKeyValues, "percentage", sBuffer, 32);
-					if (g_RankCount != 0)
-						g_pr_rank_Percentage[g_RankCount] = RoundToCeil(MaxPoints * StringToFloat(sBuffer));
-				}
-				g_RankCount++;
-			}
-			while (KvGotoNextKey(hKeyValues));
-		}
-		if (hKeyValues != null)
-			CloseHandle(hKeyValues);
-	}
-	else
-		SetFailState("<ckSurf> addons/sourcemod/configs/ckSurf/skillgroups.cfg not found.");
-}
-
 public void SetServerTags()
 {
 	Handle CvarHandle;
@@ -872,10 +931,27 @@ public void PrintConsoleInfo(int client)
 	PrintToConsole(client, "Get back to normal mode with !n / !normal");
 	PrintToConsole(client, "");
 	PrintToConsole(client, "Skill groups:");
-	PrintToConsole(client, "%s (%ip), %s (%ip), %s (%ip), %s (%ip)", g_szSkillGroups[1], g_pr_rank_Percentage[1], g_szSkillGroups[2], g_pr_rank_Percentage[2], g_szSkillGroups[3], g_pr_rank_Percentage[3], g_szSkillGroups[4], g_pr_rank_Percentage[4]);
-	PrintToConsole(client, "%s (%ip), %s (%ip), %s (%ip), %s (%ip)", g_szSkillGroups[5], g_pr_rank_Percentage[5], g_szSkillGroups[6], g_pr_rank_Percentage[6], g_szSkillGroups[7], g_pr_rank_Percentage[7], g_szSkillGroups[8], g_pr_rank_Percentage[8]);
+	char ChatLine[512];
+	int i, RankValue[SkillGroup];
+	for (i = 0; i < GetArraySize(g_hSkillGroups); i++)
+	{
+		GetArrayArray(g_hSkillGroups, i, RankValue[0]);
+
+		if (i != 0 && i % 5 == 0)
+		{
+			PrintToConsole(client, ChatLine);
+			Format(ChatLine, 512, "");	
+		}
+
+		Format(ChatLine, 512, "%s%s (%ip)   ", ChatLine, RankValue[RankName], RankValue[PointReq]);
+	}
+	if (i % 5 != 0)
+		PrintToConsole(client, ChatLine);
+
+	PrintToConsole(client, "");
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
 	PrintToConsole(client, " ");
+	return;
 }
 stock void FakePrecacheSound(const char[] szPath)
 {
@@ -1926,114 +2002,103 @@ public void FormatTimeFloat(int client, float time, int type, char[] string, int
 	}
 }
 
+public void SetSkillGroups()
+{
+	//Map Points	
+	int mapcount;
+	if (g_pr_MapCount < 1)
+		mapcount = 1;
+	else
+		mapcount = g_pr_MapCount;
+
+	g_pr_PointUnit = 1;
+	float MaxPoints = (float(mapcount) * 700.0) + (float(g_totalBonusCount) * 400.0);
+	
+	// Load rank cfg
+	char sPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, sPath, sizeof(sPath), SKILLGROUP_PATH);
+	if (FileExists(sPath))
+	{
+		Handle hKeyValues = CreateKeyValues("ckSurf.SkillGroups");
+		if (FileToKeyValues(hKeyValues, sPath) && KvGotoFirstSubKey(hKeyValues))
+		{
+			int RankValue[SkillGroup];
+
+			if (g_hSkillGroups == null)
+				g_hSkillGroups = CreateArray(sizeof(RankValue));
+			else
+				ClearArray(g_hSkillGroups);
+
+			char sRankName[128], sRankNameColored[128];
+			float fPercentage;
+			int points;
+			do
+			{
+				// Get section as Rankname
+				KvGetString(hKeyValues, "name", sRankName, 128);
+				KvGetString(hKeyValues, "name", sRankNameColored, 128);
+
+				// Get percentage
+				fPercentage = KvGetFloat(hKeyValues, "percentage");
+
+				// Calculate required points for the rank
+				if (fPercentage < 0.0)
+					points = 0;
+				else
+					points = RoundToCeil(MaxPoints * fPercentage);
+
+				RankValue[PointReq] = points;
+
+				// Replace colors on name
+				addColorToString(sRankNameColored, 128);
+				
+				// Get player name color
+				RankValue[NameColor] = getFirstColor(sRankName);
+
+				// Remove colors from rank name
+				parseColorsFromString(sRankName, 128);
+
+				Format(RankValue[RankName], 128, "%s", sRankName);
+
+				Format(RankValue[RankNameColored], 128, "%s", sRankNameColored);
+				PrintToServer("%i, %s", RankValue[PointReq], RankValue[RankName]);
+				PushArrayArray(g_hSkillGroups, RankValue[0]);
+
+			} while (KvGotoNextKey(hKeyValues));
+		}
+		if (hKeyValues != null)
+			CloseHandle(hKeyValues);
+	}
+	else
+		SetFailState("[ckSurf] %s not found.", SKILLGROUP_PATH);
+}
+
 public void SetPlayerRank(int client)
 {
 	if (IsFakeClient(client))
 		return;
 	
+	int RankValue[SkillGroup];
+	int index = GetSkillgroupFromPoints(g_pr_points[client]);
+
 	if (g_iTitleInUse[client] == -1)
 	{
+		// Player is not using a title
 		if (g_bPointSystem)
 		{
-			if (g_pr_points[client] < g_pr_rank_Percentage[1])
-			{
-				Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[0]);
-				Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", WHITE, g_szSkillGroups[0], WHITE);
-				g_PlayerChatRank[client] = 0;
-			}
-			else
-				if (g_pr_rank_Percentage[1] <= g_pr_points[client] < g_pr_rank_Percentage[2])
-				{
-					Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[1]);
-					Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", WHITE, g_szSkillGroups[1], WHITE);
-					g_PlayerChatRank[client] = 1;
-				}
-				else
-					if (g_pr_rank_Percentage[2] <= g_pr_points[client] < g_pr_rank_Percentage[3])
-					{
-						Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[2]);
-						Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", GRAY, g_szSkillGroups[2], WHITE);
-						g_PlayerChatRank[client] = 2;
-					}
-					else
-						if (g_pr_rank_Percentage[3] <= g_pr_points[client] < g_pr_rank_Percentage[4])
-						{
-							Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[3]);
-							Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", LIGHTBLUE, g_szSkillGroups[3], WHITE);
-							g_PlayerChatRank[client] = 3;
-						}
-						else
-							if (g_pr_rank_Percentage[4] <= g_pr_points[client] < g_pr_rank_Percentage[5])
-							{
-								Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[4]);
-								Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", BLUE, g_szSkillGroups[4], WHITE);
-								g_PlayerChatRank[client] = 4;
-							}
-							else
-								if (g_pr_rank_Percentage[5] <= g_pr_points[client] < g_pr_rank_Percentage[6])
-								{
-									Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[5]);
-									Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", DARKBLUE, g_szSkillGroups[5], WHITE);
-									g_PlayerChatRank[client] = 5;
-								}
-								else
-									if (g_pr_rank_Percentage[6] <= g_pr_points[client] < g_pr_rank_Percentage[7])
-									{
-										Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[6]);
-										Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", PINK, g_szSkillGroups[6], WHITE);
-										g_PlayerChatRank[client] = 6;
-									}
-									else
-										if (g_pr_rank_Percentage[7] <= g_pr_points[client] < g_pr_rank_Percentage[8])
-										{
-											Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[7]);
-											Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", LIGHTRED, g_szSkillGroups[7], WHITE);
-											g_PlayerChatRank[client] = 7;
-										}
-										else
-											if (g_pr_points[client] >= g_pr_rank_Percentage[8])
-											{
-												Format(g_pr_rankname[client], 128, "[%s]", g_szSkillGroups[8]);
-												Format(g_pr_chat_coloredrank[client], 128, "[%c%s%c]", DARKRED, g_szSkillGroups[8], WHITE);
-												g_PlayerChatRank[client] = 8;
-											}
-		}
-		else
-		{
-			Format(g_pr_rankname[client], 128, "");
-			g_PlayerChatRank[client] = -1;
+			GetArrayArray(g_hSkillGroups, index, RankValue[0]);
+
+			Format(g_pr_rankname[client], 128, "[%s]", RankValue[RankName]);
+			Format(g_pr_chat_coloredrank[client], 128, "[%s%c]", RankValue[RankNameColored], WHITE);
+			g_PlayerChatRank[client] = RankValue[NameColor];
 		}
 	}
 	else
 	{
-		if (g_bColoredNames)
+		// Player is using a title
+		if (g_bPointSystem)
 		{
-			if (g_pr_points[client] < g_pr_rank_Percentage[1])
-				g_PlayerChatRank[client] = 0;
-			else
-				if (g_pr_rank_Percentage[1] <= g_pr_points[client] < g_pr_rank_Percentage[2])
-					g_PlayerChatRank[client] = 1;
-				else
-					if (g_pr_rank_Percentage[2] <= g_pr_points[client] < g_pr_rank_Percentage[3])
-						g_PlayerChatRank[client] = 2;
-					else
-						if (g_pr_rank_Percentage[3] <= g_pr_points[client] < g_pr_rank_Percentage[4])
-							g_PlayerChatRank[client] = 3;
-						else
-							if (g_pr_rank_Percentage[4] <= g_pr_points[client] < g_pr_rank_Percentage[5])
-								g_PlayerChatRank[client] = 4;
-							else
-								if (g_pr_rank_Percentage[5] <= g_pr_points[client] < g_pr_rank_Percentage[6])
-									g_PlayerChatRank[client] = 5;
-								else
-									if (g_pr_rank_Percentage[6] <= g_pr_points[client] < g_pr_rank_Percentage[7])
-										g_PlayerChatRank[client] = 6;
-									else
-										if (g_pr_rank_Percentage[7] <= g_pr_points[client] < g_pr_rank_Percentage[8])
-											g_PlayerChatRank[client] = 7;
-										else
-											if (g_pr_points[client] >= g_pr_rank_Percentage[8])
-												g_PlayerChatRank[client] = 8;
+			g_PlayerChatRank[client] = RankValue[NameColor];
 		}
 		Format(g_pr_rankname[client], 128, "[%s]", g_szflagTitle[g_iTitleInUse[client]]);
 		Format(g_pr_chat_coloredrank[client], 128, "[%s%c]", g_szflagTitle_Colored[g_iTitleInUse[client]], WHITE);
@@ -2050,81 +2115,61 @@ public void SetPlayerRank(int client)
 	}
 }
 
+public int GetSkillgroupFromPoints(int points)
+{
+	int size = GetArraySize(g_hSkillGroups);
+	for (int i = 0; i < size; i++)
+	{
+		int RankValue[SkillGroup];
+		GetArrayArray(g_hSkillGroups, i, RankValue[0]);
+
+		if (i == (size-1)) // Last rank
+		{
+			if (points >= RankValue[PointReq])
+			{
+				return i;
+			}
+		}
+		else if (i == 0) // First rank
+		{
+			if (points <= RankValue[PointReq])
+			{
+				return i;
+			}
+		}
+		else // Mid ranks
+		{
+			int RankValueNext[SkillGroup];
+			GetArrayArray(g_hSkillGroups, (i+1), RankValueNext[0]);
+			if (points > RankValue[PointReq] && points <= RankValueNext[PointReq])
+			{
+				return i;
+			}
+		}
+	}
+	// Return 0 if not found
+	return 0;
+}
+
 stock Action PrintSpecMessageAll(int client)
 {
 	char szName[64];
 	GetClientName(client, szName, sizeof(szName));
-	ReplaceString(szName, 64, "{darkred}", "", false);
-	ReplaceString(szName, 64, "{green}", "", false);
-	ReplaceString(szName, 64, "{lightgreen}", "", false);
-	ReplaceString(szName, 64, "{blue}", "", false);
-	ReplaceString(szName, 64, "{olive}", "", false);
-	ReplaceString(szName, 64, "{lime}", "", false);
-	ReplaceString(szName, 64, "{red}", "", false);
-	ReplaceString(szName, 64, "{purple}", "", false);
-	ReplaceString(szName, 64, "{grey}", "", false);
-	ReplaceString(szName, 64, "{yellow}", "", false);
-	ReplaceString(szName, 64, "{lightblue}", "", false);
-	ReplaceString(szName, 64, "{steelblue}", "", false);
-	ReplaceString(szName, 64, "{darkblue}", "", false);
-	ReplaceString(szName, 64, "{pink}", "", false);
-	ReplaceString(szName, 64, "{lightred}", "", false);
+	parseColorsFromString(szName, 64);
+
 	char szTextToAll[1024];
 	GetCmdArgString(szTextToAll, sizeof(szTextToAll));
 	StripQuotes(szTextToAll);
 	if (StrEqual(szTextToAll, "") || StrEqual(szTextToAll, " ") || StrEqual(szTextToAll, "  "))
 		return Plugin_Handled;
 	
-	ReplaceString(szTextToAll, 1024, "{darkred}", "", false);
-	ReplaceString(szTextToAll, 1024, "{green}", "", false);
-	ReplaceString(szTextToAll, 1024, "{lightgreen}", "", false);
-	ReplaceString(szTextToAll, 1024, "{blue}", "", false);
-	ReplaceString(szTextToAll, 1024, "{olive}", "", false);
-	ReplaceString(szTextToAll, 1024, "{lime}", "", false);
-	ReplaceString(szTextToAll, 1024, "{red}", "", false);
-	ReplaceString(szTextToAll, 1024, "{purple}", "", false);
-	ReplaceString(szTextToAll, 1024, "{grey}", "", false);
-	ReplaceString(szTextToAll, 1024, "{yellow}", "", false);
-	ReplaceString(szTextToAll, 1024, "{lightblue}", "", false);
-	ReplaceString(szTextToAll, 1024, "{steelblue}", "", false);
-	ReplaceString(szTextToAll, 1024, "{darkblue}", "", false);
-	ReplaceString(szTextToAll, 1024, "{pink}", "", false);
-	ReplaceString(szTextToAll, 1024, "{lightred}", "", false);
-	
+	parseColorsFromString(szTextToAll, 1024);
 	char szChatRank[64];
 	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
 	
 	if (g_bPointSystem && g_bColoredNames)
-	{
-		switch (g_PlayerChatRank[client])
-		{
-			case 0: // 1st Rank
-			Format(szName, 64, "%c%s", WHITE, szName);
-			case 1:
-			Format(szName, 64, "%c%s", WHITE, szName);
-			case 2:
-			Format(szName, 64, "%c%s", GRAY, szName);
-			case 3:
-			Format(szName, 64, "%c%s", LIGHTBLUE, szName);
-			case 4:
-			Format(szName, 64, "%c%s", BLUE, szName);
-			case 5:
-			Format(szName, 64, "%c%s", DARKBLUE, szName);
-			case 6:
-			Format(szName, 64, "%c%s", PINK, szName);
-			case 7:
-			Format(szName, 64, "%c%s", LIGHTRED, szName);
-			case 8: // Highest rank
-			Format(szName, 64, "%c%s", DARKRED, szName);
-			/*	case 9: // Admin
-				Format(szName, 64, "%c%s", GREEN, szName);
-			case 10: // VIP
-				Format(szName, 64, "%c%s", MOSSGREEN, szName);
-			case 11: // Mapper
-				Format(szName, 64, "%c%s", YELLOW, szName);*/
-		}
-	}
-	
+		setNameColor(szName, g_PlayerChatRank[client], 64);	
+
 	if (g_bCountry && (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag)))
 		CPrintToChatAll("{green}%s{default} %s *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, szTextToAll);
 	else
@@ -2592,7 +2637,7 @@ public void LoadInfoBot()
 	}
 	if (IsValidClient(g_InfoBot))
 	{
-		Format(g_pr_rankname[g_InfoBot], 16, "BOT");
+		Format(g_pr_rankname[g_InfoBot], 128, "BOT");
 		CS_SetClientClanTag(g_InfoBot, "");
 		SetEntProp(g_InfoBot, Prop_Send, "m_iAddonBits", 0);
 		SetEntProp(g_InfoBot, Prop_Send, "m_iPrimaryAddon", 0);
