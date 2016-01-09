@@ -458,7 +458,6 @@ public bool loadCustomTitles()
 	{
 		KvGetString(kv, "title_name", g_szflagTitle_Colored[i], 128);
 		KvGetString(kv, "title_name", g_szflagTitle[i], 128);
-		PrintToServer("Title %i: %s", i, g_szflagTitle[i]);
 		if (!g_szflagTitle[i][0])
 		{
 			// Disable unused titles from all players
@@ -1625,24 +1624,26 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 		count = g_MapTimesCount;
 		rank = g_MapRank[client];
 		
-		if (rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0)
+		// Check that ck_chat_record_type matches and ck_min_rank_announce matches	
+		if ((g_iAnnounceRecord == 0 || (g_iAnnounceRecord == 1 && g_Time_Type[client] == 3 || g_Time_Type[client] == 1) || g_iAnnounceRecord == 2 && g_bnewRecord[client])
+			 && (rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0))
 		{
 			for (int i = 1; i <= GetMaxClients(); i++)
 			if (IsValidClient(i) && !IsFakeClient(i))
 			{
-				if (g_Time_Type[client] == 1)
+				if (g_Time_Type[client] == 1) // 1st time finishing
 				{
 					PrintToChat(i, "%t", "MapFinished1", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, WHITE, LIMEGREEN, rank, WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 					PrintToConsole(i, "%s finished the map with a time of (%s). [rank #%i/%i | record %s]", szName, g_szFinalTime[client], rank, count, g_szRecordMapTime);
 				}
 				else
-					if (g_Time_Type[client] == 3)
+					if (g_Time_Type[client] == 3) // Own record
 					{
 						PrintToChat(i, "%t", "MapFinished3", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, GREEN, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, rank, WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 						PrintToConsole(i, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], rank, count, g_szRecordMapTime);
 					}
 					else
-						if (g_Time_Type[client] == 5)
+						if (g_Time_Type[client] == 5) // Missed time
 						{
 							PrintToChat(i, "%t", "MapFinished5", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, RED, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, rank, WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 							PrintToConsole(i, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], rank, count, g_szRecordMapTime);
@@ -1654,7 +1655,7 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 					PrintToConsole(i, "[CK] %s scored a new MAP RECORD", szName);
 				}
 			}
-		} else {
+		} else { // Print to own chat only
 			if (IsValidClient(client) && !IsFakeClient(client))
 			{
 				if (g_Time_Type[client] == 1)
@@ -1674,12 +1675,6 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 							PrintToChat(client, "%t", "MapFinished5", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, RED, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, rank, WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 							PrintToConsole(client, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], rank, count, g_szRecordMapTime);
 						}
-					
-				if (g_bnewRecord[client])
-				{
-					PrintToChat(client, "%t", "NewMapRecord", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE);
-					PrintToConsole(client, "[CK] %s scored a new MAP RECORD", szName);
-				}
 			}
 		}
 		
@@ -1721,42 +1716,81 @@ public void MapFinishedMsgs(int client, int rankThisRun)
 
 public void PrintChatBonus(int client, int zGroup)
 {
+	if (!IsValidClient(client))
+		return;
+
 	float RecordDiff;
 	char szRecordDiff[54], szName[MAX_NAME_LENGTH];
 	
 	GetClientName(client, szName, MAX_NAME_LENGTH);
-	
-	if (g_bBonusSRVRecord[client])
+	if ((g_iAnnounceRecord == 0 || (g_iAnnounceRecord == 1 && g_bBonusSRVRecord[client] || g_bBonusPBRecord[client]) || g_iAnnounceRecord == 2 && g_bBonusSRVRecord[client])
+		 && (g_MapRankBonus[zGroup][client] <= g_AnnounceRank || g_AnnounceRank == 0))
 	{
-		RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
-		FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
-		Format(szRecordDiff, 54, "-%s", szRecordDiff);
+		if (g_bBonusSRVRecord[client])
+		{
+			RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
+			FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
+			Format(szRecordDiff, 54, "-%s", szRecordDiff);
+		}
+		if (g_bBonusFirstRecord[client] && g_bBonusSRVRecord[client])
+		{
+			PlayRecordSound(1);
+			PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			if (g_tmpBonusCount[zGroup] == 0)
+				PrintToChatAll("%t", "BonusFinished3", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, WHITE, LIMEGREEN, g_szFinalTime[client], WHITE);
+			else
+				PrintToChatAll("%t", "BonusFinished4", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
+		}
+		if (g_bBonusPBRecord[client] && g_bBonusSRVRecord[client])
+		{
+			PlayRecordSound(1);
+			PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			PrintToChatAll("%t", "BonusFinished5", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
+		}
+		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
+		{
+			PlayUnstoppableSound(client);
+			PrintToChatAll("%t", "BonusFinished6", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_szBonusTimeDifference[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
+		}
+		if (g_bBonusFirstRecord[client] && !g_bBonusSRVRecord[client])
+		{
+			PrintToChatAll("%t", "BonusFinished7", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
+		}
 	}
-	if (g_bBonusFirstRecord[client] && g_bBonusSRVRecord[client])
+	else
 	{
-		PlayRecordSound(1);
-		PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
-		if (g_tmpBonusCount[zGroup] == 0)
-			PrintToChatAll("%t", "BonusFinished3", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, WHITE, LIMEGREEN, g_szFinalTime[client], WHITE);
-		else
-			PrintToChatAll("%t", "BonusFinished4", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
+		if (g_bBonusSRVRecord[client])
+		{
+			RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
+			FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
+			Format(szRecordDiff, 54, "-%s", szRecordDiff);
+		}
+		if (g_bBonusFirstRecord[client] && g_bBonusSRVRecord[client])
+		{
+			PlayRecordSound(1);
+			PrintToChat(client, "%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			if (g_tmpBonusCount[zGroup] == 0)
+				PrintToChat(client, "%t", "BonusFinished3", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, WHITE, LIMEGREEN, g_szFinalTime[client], WHITE);
+			else
+				PrintToChat(client, "%t", "BonusFinished4", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
+		}
+		if (g_bBonusPBRecord[client] && g_bBonusSRVRecord[client])
+		{
+			PlayRecordSound(1);
+			PrintToChat(client, "%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			PrintToChat(client, "%t", "BonusFinished5", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
+		}
+		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
+		{
+			PlayUnstoppableSound(client);
+			PrintToChat(client, "%t", "BonusFinished6", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_szBonusTimeDifference[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
+		}
+		if (g_bBonusFirstRecord[client] && !g_bBonusSRVRecord[client])
+		{
+			PrintToChat(client, "%t", "BonusFinished7", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
+		}
 	}
-	if (g_bBonusPBRecord[client] && g_bBonusSRVRecord[client])
-	{
-		PlayRecordSound(1);
-		PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
-		PrintToChatAll("%t", "BonusFinished5", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
-	}
-	if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
-	{
-		PlayUnstoppableSound(client);
-		PrintToChatAll("%t", "BonusFinished6", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_szBonusTimeDifference[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
-	}
-	if (g_bBonusFirstRecord[client] && !g_bBonusSRVRecord[client])
-	{
-		PrintToChatAll("%t", "BonusFinished7", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
-	}
-	
+		
 	/* Start function call */
 	Call_StartForward(g_BonusFinishForward);
 	
@@ -2060,7 +2094,7 @@ public void SetSkillGroups()
 				Format(RankValue[RankName], 128, "%s", sRankName);
 
 				Format(RankValue[RankNameColored], 128, "%s", sRankNameColored);
-				PrintToServer("%i, %s", RankValue[PointReq], RankValue[RankName]);
+
 				PushArrayArray(g_hSkillGroups, RankValue[0]);
 
 			} while (KvGotoNextKey(hKeyValues));

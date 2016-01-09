@@ -401,6 +401,8 @@ char g_szzoneCheckerColor[24];
 int g_zoneStopColor[4];
 ConVar g_hzoneStopColor = null;
 char g_szzoneStopColor[24];
+ConVar g_hAnnounceRecord;										// Announce rank type: 0 announce all, 1 announce only PB's, 3 announce only SR's
+int g_iAnnounceRecord;
 ConVar g_hCommandToEnd; 										// !end Enable / Disable
 bool g_bCommandToEnd;
 ConVar g_hWelcomeMsg = null;
@@ -1715,6 +1717,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar == g_hAnnounceRank) {
 		g_AnnounceRank = StringToInt(newValue[0]);
 	}
+	else if (convar == g_hAnnounceRecord) {
+		g_iAnnounceRecord = StringToInt(newValue[0]);
+	}
 	else if (convar == g_hForceCT) {
 		g_bForceCT = view_as<bool>(StringToInt(newValue[0]));
 	}
@@ -2072,11 +2077,15 @@ public void OnPluginStart()
 	GetConVarString(g_hSoundPath, sSoundPath, sizeof(sSoundPath));
 	HookConVarChange(g_hSoundPath, OnSettingChanged);
 	
-	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0.0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.", FCVAR_NOTIFY, true, 0.0);
+	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.", FCVAR_NOTIFY, true, 0.0);
 	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
 	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
 	
-	g_hForceCT = CreateConVar("ck_force_players_ct", "0.0", "Forces all players to join the CT team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hAnnounceRecord = CreateConVar("ck_chat_record_type", "0", "0: Announce all times to chat, 1: Only announce PB's to chat, 2: Only announce SR's to chat", FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_iAnnounceRecord = GetConVarInt(g_hAnnounceRecord);
+	HookConVarChange(g_hAnnounceRecord, OnSettingChanged);
+	
+	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_bForceCT = GetConVarBool(g_hForceCT);
 	HookConVarChange(g_hForceCT, OnSettingChanged);
 	
