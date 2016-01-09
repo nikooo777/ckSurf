@@ -945,8 +945,7 @@ public void PrintConsoleInfo(int client)
 
 		Format(ChatLine, 512, "%s%s (%ip)   ", ChatLine, RankValue[RankName], RankValue[PointReq]);
 	}
-	if (i % 5 != 0)
-		PrintToConsole(client, ChatLine);
+	PrintToConsole(client, ChatLine);
 
 	PrintToConsole(client, "");
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");

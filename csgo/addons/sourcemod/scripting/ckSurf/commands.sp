@@ -1731,8 +1731,7 @@ public Action Client_Ranks(int client, int args)
 			}
 			Format(ChatLine, 512, "%s%s%c (%ip)   ", ChatLine, RankValue[RankNameColored], WHITE, RankValue[PointReq]);
 		}
-		if (i % 3 != 0)
-			PrintToChat(client, ChatLine);
+		PrintToChat(client, ChatLine);
 	}
 	return Plugin_Handled;
 }
