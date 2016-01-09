@@ -1005,6 +1005,8 @@ public void OnMapEnd()
 	db_Cleanup();
 	if (g_hSkillGroups != null)
 		CloseHandle(g_hSkillGroups);
+
+	g_hSkillGroups = null;
 	
 	Format(g_szMapName, sizeof(g_szMapName), "");
 }
