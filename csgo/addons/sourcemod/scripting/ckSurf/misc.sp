@@ -347,6 +347,7 @@ public void readMultiServerMapcycle()
 	char sPath[PLATFORM_MAX_PATH];
 	char line[128];
 	
+	g_pr_MapCount = 0;
 	ClearArray(g_MapList);
 
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", MULTI_SERVER_MAPCYCLE);
@@ -359,6 +360,7 @@ public void readMultiServerMapcycle()
 			TrimString(line); // Only take the map name
 			if (StrContains(line, "//", true) == -1) // Escape comments
 			{
+				g_pr_MapCount++;
 				PushArrayString(g_MapList, line);
 	 		}
 		}
