@@ -40,26 +40,18 @@ public void CreateZoneEntity(int zoneIndex)
 			TeleportEntity(iEnt, fMiddle, NULL_VECTOR, NULL_VECTOR);
 			
 			// Have the mins always be negative
-			fMins[0] = fMins[0] - fMiddle[0];
-			if (fMins[0] > 0.0)
-				fMins[0] *= -1.0;
-			fMins[1] = fMins[1] - fMiddle[1];
-			if (fMins[1] > 0.0)
-				fMins[1] *= -1.0;
-			fMins[2] = fMins[2] - fMiddle[2];
-			if (fMins[2] > 0.0)
-				fMins[2] *= -1.0;
+			for(int i = 0; i < 3; i++){
+				fMins[i] = fMins[i] - fMiddle[i];
+				if(fMins[i] > 0.0)
+					fMins[i] *= -1.0;
+			}
 			
 			// And the maxs always be positive
-			fMaxs[0] = fMaxs[0] - fMiddle[0];
-			if (fMaxs[0] < 0.0)
-				fMaxs[0] *= -1.0;
-			fMaxs[1] = fMaxs[1] - fMiddle[1];
-			if (fMaxs[1] < 0.0)
-				fMaxs[1] *= -1.0;
-			fMaxs[2] = fMaxs[2] - fMiddle[2];
-			if (fMaxs[2] < 0.0)
-				fMaxs[2] *= -1.0;
+			for(int i = 0; i < 3; i++){
+				fMaxs[i] = fMaxs[i] - fMiddle[i];
+				if(fMaxs[i] < 0.0)
+					fMaxs[i] *= -1.0;
+			}
 			
 			SetEntPropVector(iEnt, Prop_Send, "m_vecMins", fMins);
 			SetEntPropVector(iEnt, Prop_Send, "m_vecMaxs", fMaxs);
