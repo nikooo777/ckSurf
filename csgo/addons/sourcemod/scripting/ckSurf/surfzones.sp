@@ -1544,7 +1544,7 @@ public int MenuHandler_Editor(Handle tMenu, MenuAction action, int client, int i
 					// Delete
 					if (g_ClientSelectedZone[client] != -1)
 					{
-						db_deleteZone(g_mapZones[g_ClientSelectedZone[client]][zoneId]);
+						db_deleteZone(client, g_mapZones[g_ClientSelectedZone[client]][zoneId]);
 					}
 					resetSelection(client);
 					ZoneMenu(client);

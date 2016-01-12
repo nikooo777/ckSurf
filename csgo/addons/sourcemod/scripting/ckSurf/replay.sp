@@ -162,7 +162,7 @@ public void WriteRecordToDisk(const char[] sPath, iFileHeader[FILE_HEADER_LENGTH
 
 public void LoadReplays()
 {
-	if (!g_bReplayBot && !g_bBonusBot)
+	if (!g_bReplayBot && !g_bBonusReplay)
 		return;
 	ClearTrie(g_hLoadedRecordsAdditionalTeleport);
 	
@@ -739,7 +739,7 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 		{
 			CL_OnStartTimerPress(client);
 			
-			if (((client == g_BonusBot) && g_bBonusBotTrailEnabled) || ((client == g_RecordBot) && g_bRecordBotTrailEnabled))
+			if (((client == g_BonusBot) && g_bBonusReplayTrailEnabled) || ((client == g_RecordBot) && g_bRecordBotTrailEnabled))
 				refreshTrailBot(client);
 			
 			g_bValidTeleportCall[client] = true;

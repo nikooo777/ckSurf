@@ -423,7 +423,7 @@ ConVar g_hReplayBot = null; 									// Replay bot?
 bool g_bMapReplay; // Why two bools?
 bool g_bReplayBot;
 ConVar g_hBonusBot = null; 										// Bonus bot?
-bool g_bBonusBot; // Why two bools?
+bool g_bBonusReplay; // Why two bools?
 bool g_bMapBonusReplay;
 ConVar g_hColoredNames = null; 									// Colored names in chat?
 bool g_bColoredNames;
@@ -485,7 +485,7 @@ int g_ReplayBotColor[3];
 ConVar g_hBonusBotColor = null; 								// Bonus bot color
 int g_BonusBotColor[3];
 ConVar g_hBonusBotTrail = null; 								// Bonus bot trail?
-bool g_bBonusBotTrailEnabled;
+bool g_bBonusReplayTrailEnabled;
 ConVar g_hRecordBotTrail = null; 								// Record bot trail?
 bool g_bRecordBotTrailEnabled;
 ConVar g_hReplayBotTrailColor = null; 							// Replay bot trail color
@@ -578,7 +578,9 @@ float g_fPauseTime[MAXPLAYERS + 1]; 							// Time spent in !pause this run
 float g_fStartPauseTime[MAXPLAYERS + 1]; 						// Time when !pause started
 float g_fCurrentRunTime[MAXPLAYERS + 1]; 						// Current runtime
 bool g_bMissedMapBest[MAXPLAYERS + 1]; 							// Missed personal record time?
-bool g_bMapRankToChat[MAXPLAYERS + 1]; 							// Will finish message be announced to chat?
+bool g_bMapFirstRecord[MAXPLAYERS + 1];							// Was players run his first time finishing the map?
+bool g_bMapPBRecord[MAXPLAYERS + 1];							// Was players run his personal best?
+bool g_bMapSRVRecord[MAXPLAYERS + 1];							// Was players run the new server record?
 char g_szTimeDifference[MAXPLAYERS + 1][32]; 					// Used to print the client's new times difference to record
 float g_fRecordMapTime; 										// Record map time in seconds
 char g_szRecordMapTime[64]; 									// Record map time in 00:00:00 format
@@ -591,7 +593,6 @@ int g_MapTimesCount; 											// How many times the map has been beaten
 int g_MapRank[MAXPLAYERS + 1]; 									// Clients rank in current map
 int g_OldMapRank[MAXPLAYERS + 1];								// Clients old rank
 int g_Time_Type[MAXPLAYERS + 1]; 								// Did the client improve his time? New Server record? etc.
-int g_Sound_Type[MAXPLAYERS + 1];								// Which quake sound to play
 char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's name
 
 /*----------  Replay Variables  ----------*/
@@ -634,7 +635,6 @@ float g_fClientRestarting[MAXPLAYERS + 1]; 						// Used to track the time the p
 bool g_bClientRestarting[MAXPLAYERS + 1]; 						// Client wanted to restart run
 float g_fLastTimeNoClipUsed[MAXPLAYERS + 1]; 					// Last time the client used noclip
 bool g_bRespawnPosition[MAXPLAYERS + 1]; 						// Does client have a respawn location in memory?
-float g_fLastTimeButtonSound[MAXPLAYERS + 1]; 					// Last time start beep was player, used to prevent spam
 float g_fLastSpeed[MAXPLAYERS + 1]; 							// Client's last speed, used in panels
 bool g_bLateLoaded = false; 									// Was plugin loaded late?
 bool g_bMapChooser; 											// Known mapchooser loaded? Used to update info bot
@@ -653,7 +653,7 @@ int g_Server_Tickrate; 											// Server tickrate
 int g_SpecTarget[MAXPLAYERS + 1];								// Who the client is spectating?
 int g_LastButton[MAXPLAYERS + 1];								// Buttons the client is using, used to show them when specating
 int g_MVPStars[MAXPLAYERS + 1]; 								// The amount of MVP's a client has  TODO: make sure this is used everywhere
-int g_PlayerChatRank[MAXPLAYERS + 1]; 							// What rank is displayed for the client in chat
+int g_PlayerChatRank[MAXPLAYERS + 1]; 							// What color is client's name in chat (based on rank)
 char g_pr_chat_coloredrank[MAXPLAYERS + 1][128]; 				// Clients rank, colored, used in chat
 char g_pr_rankname[MAXPLAYERS + 1][32]; 						// Client's rank, non-colored, used in clantag
 char g_szMapPrefix[2][32]; 										// Map's prefix, used to execute prefix cfg's
@@ -1259,15 +1259,15 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					}
 					else
 					{
-						if (!g_bBonusBot) // if both bots are off, no need to record
+						if (!g_bBonusReplay) // if both bots are off, no need to record
 							if (g_hRecording[i] != null)
 								StopRecording(i);
 					}
 				}
-			if (g_bInfoBot && g_bBonusBot)
+			if (g_bInfoBot && g_bBonusReplay)
 				ServerCommand("bot_quota 2");
 			else
-				if (g_bInfoBot || g_bBonusBot)
+				if (g_bInfoBot || g_bBonusReplay)
 					ServerCommand("bot_quota 1");
 				else
 					ServerCommand("bot_quota 0");
@@ -1275,8 +1275,8 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hBonusBot)
 	{
-		g_bBonusBot = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bBonusBot)
+		g_bBonusReplay = view_as<bool>(StringToInt(newValue[0]));
+		if (g_bBonusReplay)
 		{
 			LoadReplays();
 		}
@@ -1737,7 +1737,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		g_bRecordBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hBonusBotTrail) {
-		g_bBonusBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
+		g_bBonusReplayTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hTriggerPushFixEnable) {
 		g_bTriggerPushFixEnable = view_as<bool>(StringToInt(newValue));
@@ -1846,7 +1846,7 @@ public void OnPluginStart()
 	HookConVarChange(g_hReplayBot, OnSettingChanged);
 	
 	g_hBonusBot = CreateConVar("ck_bonus_bot", "1", "on/off - Bots mimic the local bonus record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bBonusBot = GetConVarBool(g_hBonusBot);
+	g_bBonusReplay = GetConVarBool(g_hBonusBot);
 	HookConVarChange(g_hBonusBot, OnSettingChanged);
 	
 	g_hInfoBot = CreateConVar("ck_info_bot", "0", "on/off - provides information about nextmap and timeleft in his player name", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -2102,7 +2102,7 @@ public void OnPluginStart()
 	HookConVarChange(g_hMultiServerMapcycle, OnSettingChanged);
 
 	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
-	g_bBonusBotTrailEnabled = GetConVarBool(g_hBonusBotTrail);
+	g_bBonusReplayTrailEnabled = GetConVarBool(g_hBonusBotTrail);
 	HookConVarChange(g_hBonusBotTrail, OnSettingChanged);
 	
 	g_hRecordBotTrail = CreateConVar("ck_record_bot_trail", "1", "(1 / 0) Enables a trail on the record bot.", FCVAR_NOTIFY);
@@ -2388,7 +2388,7 @@ public void OnPluginStart()
 	
 	Format(szWHITE, 12, "%c", WHITE);
 	Format(szDARKRED, 12, "%c", DARKRED);
-	Format(szPURPLE, 12, "\x01%c", PURPLE);
+	Format(szPURPLE, 12, "%c", PURPLE);
 	Format(szGREEN, 12, "%c", GREEN);
 	Format(szMOSSGREEN, 12, "%c", MOSSGREEN);
 	Format(szLIMEGREEN, 12, "%c", LIMEGREEN);
@@ -2401,7 +2401,7 @@ public void OnPluginStart()
 	Format(szLIGHTBLUE, 12, "%c", LIGHTBLUE);
 	Format(szPINK, 12, "%c", PINK);
 	Format(szLIGHTRED, 12, "%c", LIGHTRED);
-	Format(szORANGE, 12, "\x01%c", ORANGE);
+	Format(szORANGE, 12, "%c", ORANGE);
 } 
 
 /*=====  End of Events  ======*/

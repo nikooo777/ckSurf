@@ -1,9 +1,17 @@
-
-public Action afterStageCheckpoint(Handle timer, any client)
+public Action reloadRank(Handle timer, any client)
 {
-	Command_createPlayerCheckpoint(client, 1);
+	if (IsValidClient(client))
+		SetPlayerRank(client);
 	return Plugin_Handled;
 }
+
+public Action reloadConsoleInfo(Handle timer, any client)
+{
+	if (IsValidClient(client))
+		PrintConsoleInfo(client);
+	return Plugin_Handled;
+}
+
 
 public Action AnnounceMap(Handle timer, any client)
 {
