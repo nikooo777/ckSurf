@@ -2212,9 +2212,6 @@ public void OnPluginStart()
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");
 	RegConsoleCmd("sm_nc", Command_ckNoClip, "[ckSurf] Player noclip on/off");
-	RegConsoleCmd("sm_noclip", Command_ckNoClip, "[ckSurf] Player noclip on/off");
-
-
 	
 	// Teleportation commands
 	RegConsoleCmd("sm_stages", Command_SelectStage, "[ckSurf] Opens up the stage selector");

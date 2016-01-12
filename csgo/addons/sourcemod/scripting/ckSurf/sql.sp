@@ -718,17 +718,7 @@ public void sql_disableTitleFromAllbyIndex(int index)
 			}
 		}
 	}
-	SQL_ExecuteTransaction(g_hDb, h_disableUnusedTitles, SQLTxn_disablingTitlesSuccess, SQLTxn_disablingTitlesFailed);
-}
-
-public void SQLTxn_disablingTitlesFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
-{
-	PrintToServer("ERROR DISABLING TITLES: %s", error);
-}
-
-public void SQLTxn_disablingTitlesSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
-{
-	PrintToServer("Succesfully disabled titles. Num of queries: %i", numQueries);
+	SQL_ExecuteTransaction(g_hDb, h_disableUnusedTitles, _, _);
 }
 
 
@@ -3063,7 +3053,24 @@ public void db_currentRunRank(int client)
 	
 	char szQuery[512];
 	Format(szQuery, 512, "SELECT count(runtimepro) FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
-	SQL_TQuery(g_hDb, SQL_UpdateRecordProCallback2, szQuery, client, DBPrio_Low);
+	SQL_TQuery(g_hDb, SQL_CurrentRunRankCallback, szQuery, client, DBPrio_Low);
+}
+
+public void SQL_CurrentRunRankCallback(Handle owner, Handle hndl, const char[] error, any data)
+{
+	if (hndl == null)
+	{
+		LogError("[ckSurf] SQL Error (SQL_CurrentRunRankCallback): %s", error);
+		return;
+	}
+	// Get players rank, 9999999 = error
+	int rank;
+	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		rank = (SQL_FetchInt(hndl, 0)+1);
+	}
+
+	MapFinishedMsgs(data, rank);
 }
 
 //

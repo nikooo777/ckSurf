@@ -112,7 +112,7 @@ public Action StartTouchTrigger(int caller, int activator)
 			StartTouch(activator, action);
 		}
 		else
-			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 0)
+			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 0) // Allow MISC zones regardless of zonegroup
 				StartTouch(activator, action);
 	}
 	
@@ -231,7 +231,7 @@ public void StartTouch(int client, int action[3])
 		}
 		else if (action[0] == 6) // TeleToStart Zone
 		{
-			Command_Restart(client, 1);
+			teleportClient(client, g_iClientInZone[client][2], 1, true);
 		}
 		else if (action[0] == 7) // Validator Zone
 		{
