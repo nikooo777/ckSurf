@@ -1,9 +1,17 @@
-
-public Action afterStageCheckpoint(Handle timer, any client)
+public Action reloadRank(Handle timer, any client)
 {
-	Command_createPlayerCheckpoint(client, 1);
+	if (IsValidClient(client))
+		SetPlayerRank(client);
 	return Plugin_Handled;
 }
+
+public Action reloadConsoleInfo(Handle timer, any client)
+{
+	if (IsValidClient(client))
+		PrintConsoleInfo(client);
+	return Plugin_Handled;
+}
+
 
 public Action AnnounceMap(Handle timer, any client)
 {
@@ -206,7 +214,6 @@ public Action CKTimer2(Handle timer)
 		//overlay check
 		if (g_bOverlay[i] && GetGameTime() - g_fLastOverlay[i] > 5.0)
 			g_bOverlay[i] = false;
-		
 		
 		//stop replay to prevent server crashes because of a massive recording array (max. 2h)
 		if (g_hRecording[i] != null && g_fCurrentRunTime[i] > 6720.0)
@@ -419,7 +426,7 @@ public Action SetClanTag(Handle timer, any client)
 	//new rank
 	if (oldrank && g_bPointSystem)
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
-		CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
+			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
 	
 	return Plugin_Handled;
 }
@@ -479,11 +486,6 @@ public Action StartMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
-		
-		/* No other languages yet, so dont advert.
-		if (!g_bLanguageSelected[client])
-			PrintToChat(client, "%t", "LanguageSwitch", MOSSGREEN,WHITE,GRAY,WHITE);
-		*/
 		PrintMapRecords(client);
 	}
 	return Plugin_Handled;
@@ -495,8 +497,8 @@ public Action CenterMsgTimer(Handle timer, any client)
 	{
 		if (g_bRestorePositionMsg[client])
 		{
-			g_bOverlay[client] = true;
 			g_fLastOverlay[client] = GetGameTime();
+			g_bOverlay[client] = true;
 			PrintHintText(client, "%t", "PositionRestored");
 		}
 		g_bRestorePositionMsg[client] = false;

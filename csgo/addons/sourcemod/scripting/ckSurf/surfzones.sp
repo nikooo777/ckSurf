@@ -16,7 +16,7 @@ public void CreateZoneEntity(int zoneIndex)
 	int iEnt = CreateEntityByName("trigger_multiple");
 	
 	if (iEnt > 0 && IsValidEntity(iEnt)) {
-		SetEntityModel(iEnt, g_sModel);
+		SetEntityModel(iEnt, ZONE_MODEL);
 		// Spawnflags:	1 - only a player can trigger this by touch, makes it so a NPC cannot fire a trigger_multiple
 		// 2 - Won't fire unless triggering ent's view angles are within 45 degrees of trigger's angles (in addition to any other conditions), so if you want the player to only be able to fire the entity at a 90 degree angle you would do ",angles,0 90 0," into your spawnstring.
 		// 4 - Won't fire unless player is in it and pressing use button (in addition to any other conditions), you must make a bounding box,(max\mins) for this to work.
@@ -40,26 +40,18 @@ public void CreateZoneEntity(int zoneIndex)
 			TeleportEntity(iEnt, fMiddle, NULL_VECTOR, NULL_VECTOR);
 			
 			// Have the mins always be negative
-			fMins[0] = fMins[0] - fMiddle[0];
-			if (fMins[0] > 0.0)
-				fMins[0] *= -1.0;
-			fMins[1] = fMins[1] - fMiddle[1];
-			if (fMins[1] > 0.0)
-				fMins[1] *= -1.0;
-			fMins[2] = fMins[2] - fMiddle[2];
-			if (fMins[2] > 0.0)
-				fMins[2] *= -1.0;
+			for(int i = 0; i < 3; i++){
+				fMins[i] = fMins[i] - fMiddle[i];
+				if(fMins[i] > 0.0)
+					fMins[i] *= -1.0;
+			}
 			
 			// And the maxs always be positive
-			fMaxs[0] = fMaxs[0] - fMiddle[0];
-			if (fMaxs[0] < 0.0)
-				fMaxs[0] *= -1.0;
-			fMaxs[1] = fMaxs[1] - fMiddle[1];
-			if (fMaxs[1] < 0.0)
-				fMaxs[1] *= -1.0;
-			fMaxs[2] = fMaxs[2] - fMiddle[2];
-			if (fMaxs[2] < 0.0)
-				fMaxs[2] *= -1.0;
+			for(int i = 0; i < 3; i++){
+				fMaxs[i] = fMaxs[i] - fMiddle[i];
+				if(fMaxs[i] < 0.0)
+					fMaxs[i] *= -1.0;
+			}
 			
 			SetEntPropVector(iEnt, Prop_Send, "m_vecMins", fMins);
 			SetEntPropVector(iEnt, Prop_Send, "m_vecMaxs", fMaxs);
@@ -110,7 +102,7 @@ public Action StartTouchTrigger(int caller, int activator)
 	}
 	else
 	{
-		if (action[0] == 1 || action[0] == 5) // Ignore other than start zones in other zonegroups
+		if (action[0] == 1 || action[0] == 5) // Ignore other than start and misc zones in other zonegroups
 		{
 			// Set client location 
 			g_iClientInZone[activator][0] = action[0];
@@ -119,6 +111,9 @@ public Action StartTouchTrigger(int caller, int activator)
 			g_iClientInZone[activator][3] = id;
 			StartTouch(activator, action);
 		}
+		else
+			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 0) // Allow MISC zones regardless of zonegroup
+				StartTouch(activator, action);
 	}
 	
 	return Plugin_Handled;
@@ -154,19 +149,9 @@ public Action EndTouchTrigger(int caller, int activator)
 	// End touch
 	EndTouch(activator, action);
 	
-	// Refresh trail
-	if (!IsFakeClient(activator))
-	{
-		if (g_bTrailOn[activator])
-		{
-			refreshTrail(activator);
-		}
-	}
-	else
-	{
-		if ((g_bBonusBotTrailEnabled && g_bBonusBot) || (g_bRecordBotTrailEnabled && g_bReplayBot))
-			refreshTrail(activator);
-	}
+	// Refresh bot trail
+	if (IsFakeClient(activator))
+		refreshTrailBot(activator);
 	
 	return Plugin_Handled;
 }
@@ -246,7 +231,7 @@ public void StartTouch(int client, int action[3])
 		}
 		else if (action[0] == 6) // TeleToStart Zone
 		{
-			Command_Restart(client, 1);
+			teleportClient(client, g_iClientInZone[client][2], 1, true);
 		}
 		else if (action[0] == 7) // Validator Zone
 		{
@@ -283,7 +268,6 @@ public void EndTouch(int client, int action[3])
 					{
 						PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
-						return;
 					}
 					else
 						CL_OnStartTimerPress(client);
@@ -1560,7 +1544,7 @@ public int MenuHandler_Editor(Handle tMenu, MenuAction action, int client, int i
 					// Delete
 					if (g_ClientSelectedZone[client] != -1)
 					{
-						db_deleteZone(g_mapZones[g_ClientSelectedZone[client]][zoneId]);
+						db_deleteZone(client, g_mapZones[g_ClientSelectedZone[client]][zoneId]);
 					}
 					resetSelection(client);
 					ZoneMenu(client);

@@ -1,0 +1,2 @@
+// If you want to use the same records on many servers,
+// add your combined mapcycle here and set ck_multi_server_mapcycle to 1

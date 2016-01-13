@@ -56,7 +56,6 @@ public void StopRecording(int client)
 	g_hRecordingAdditionalTeleport[client] = null;
 	g_RecordedTicks[client] = 0;
 	g_RecordPreviousWeapon[client] = 0;
-	g_szReplay_PlayerName[client][0] = 0;
 	g_CurrentAdditionalTeleportIndex[client] = 0;
 	g_OriginSnapshotInterval[client] = 0;
 }
@@ -163,7 +162,7 @@ public void WriteRecordToDisk(const char[] sPath, iFileHeader[FILE_HEADER_LENGTH
 
 public void LoadReplays()
 {
-	if (!g_bReplayBot && !g_bBonusBot)
+	if (!g_bReplayBot && !g_bBonusReplay)
 		return;
 	ClearTrie(g_hLoadedRecordsAdditionalTeleport);
 	
@@ -740,8 +739,8 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 		{
 			CL_OnStartTimerPress(client);
 			
-			if (((client == g_BonusBot) && g_bBonusBotTrailEnabled) || ((client == g_RecordBot) && g_bRecordBotTrailEnabled))
-				refreshTrail(client);
+			if (((client == g_BonusBot) && g_bBonusReplayTrailEnabled) || ((client == g_RecordBot) && g_bRecordBotTrailEnabled))
+				refreshTrailBot(client);
 			
 			g_bValidTeleportCall[client] = true;
 			TeleportEntity(client, g_fInitialPosition[client], g_fInitialAngles[client], fAcutalVelocity);
