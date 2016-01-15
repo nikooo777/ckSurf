@@ -172,10 +172,7 @@ public void CL_OnEndTimerPress(int client)
 
 	// Get Zonegroup
 	int zGroup = g_iClientInZone[client][2];
-	if (g_bReplayBot)
-		PrintToChatAll("TRUE");
-	else
-		PrintToChatAll("FALSE");
+
 	/*==========================================
 	=            Handling map times            =
 	==========================================*/

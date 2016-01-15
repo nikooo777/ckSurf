@@ -1556,12 +1556,6 @@ public void InitPrecache()
 	FakePrecacheSound(PRO_RELATIVE_SOUND_PATH);
 	AddFileToDownloadsTable(CP_FULL_SOUND_PATH);
 	FakePrecacheSound(CP_RELATIVE_SOUND_PATH);
-	AddFileToDownloadsTable("materials/sprites/bluelaser1.vmt");
-	AddFileToDownloadsTable("materials/sprites/bluelaser1.vtf");
-	AddFileToDownloadsTable("materials/sprites/laser.vmt");
-	AddFileToDownloadsTable("materials/sprites/laser.vtf");
-	AddFileToDownloadsTable("materials/sprites/halo01.vmt");
-	AddFileToDownloadsTable("materials/sprites/halo01.vtf");
 	AddFileToDownloadsTable(g_sArmModel);
 	AddFileToDownloadsTable(g_sPlayerModel);
 	AddFileToDownloadsTable(g_sReplayBotArmModel);
@@ -1632,9 +1626,9 @@ stock void MapFinishedMsgs(int client, int rankThisRun = -1)
 
 		// Check that ck_chat_record_type matches and ck_min_rank_announce matches	
 		if ((g_iAnnounceRecord == 0 || 
-			(g_iAnnounceRecord == 1 && g_bMapPBRecord[client] || g_bMapSRVRecord[client]) ||
-			(g_iAnnounceRecord == 2 && g_bMapSRVRecord[client]))
-			&& (rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0))
+			(g_iAnnounceRecord == 1 && g_bMapPBRecord[client] || g_bMapSRVRecord[client] || g_bMapFirstRecord[client]) ||
+			(g_iAnnounceRecord == 2 && g_bMapSRVRecord[client])) &&
+			(rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0))
 		{
 			for (int i = 1; i <= GetMaxClients(); i++)
 			{
@@ -1737,7 +1731,7 @@ stock void PrintChatBonus(int client, int zGroup, int rank = -1)
 	
 	GetClientName(client, szName, MAX_NAME_LENGTH);
 	if ((g_iAnnounceRecord == 0 ||
-		(g_iAnnounceRecord == 1 && g_bBonusSRVRecord[client] || g_bBonusPBRecord[client]) ||
+		(g_iAnnounceRecord == 1 && g_bBonusSRVRecord[client] || g_bBonusPBRecord[client] || g_bBonusFirstRecord[client]) ||
 		(g_iAnnounceRecord == 2 && g_bBonusSRVRecord[client])) &&
 		(rank <= g_AnnounceRank || g_AnnounceRank == 0))
 	{
