@@ -3053,11 +3053,12 @@ public void db_currentRunRank(int client)
 		return;
 	
 	char szQuery[512];
-	Format(szQuery, 512, "SELECT count(runtimepro) FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
+	Format(szQuery, 512, "SELECT count(runtimepro)+1 FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
+	PrintToServer(szQuery);
 	SQL_TQuery(g_hDb, SQL_CurrentRunRankCallback, szQuery, client, DBPrio_Low);
 }
 
-public void SQL_CurrentRunRankCallback(Handle owner, Handle hndl, const char[] error, any data)
+public void SQL_CurrentRunRankCallback(Handle owner, Handle hndl, const char[] error, any client)
 {
 	if (hndl == null)
 	{
@@ -3068,10 +3069,10 @@ public void SQL_CurrentRunRankCallback(Handle owner, Handle hndl, const char[] e
 	int rank;
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		rank = (SQL_FetchInt(hndl, 0)+1);
+		rank = SQL_FetchInt(hndl, 0);
 	}
 
-	MapFinishedMsgs(data, rank);
+	MapFinishedMsgs(client, rank);
 }
 
 //
@@ -4179,7 +4180,8 @@ public void db_currentBonusRunRank(int client, int zGroup)
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackCell(pack, zGroup);
-	Format(szQuery, 512, "SELECT count(runtime) FROM ck_bonus WHERE mapname = '%s' AND zonegroup = '%s' AND runtime < %f", g_szMapName, zGroup, g_fFinalTime[client]);
+	Format(szQuery, 512, "SELECT count(runtime)+1 FROM ck_bonus WHERE mapname = '%s' AND zonegroup = '%i' AND runtime < %f", g_szMapName, zGroup, g_fFinalTime[client]);
+	PrintToServer(szQuery);
 	SQL_TQuery(g_hDb, db_viewBonusRunRank, szQuery, pack, DBPrio_Low);
 }
 
@@ -4198,11 +4200,10 @@ public void db_viewBonusRunRank(Handle owner, Handle hndl, const char[] error, a
 	int rank;
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
 	{
-		rank = (SQL_FetchInt(hndl, 0) + 1);
+		rank = SQL_FetchInt(hndl, 0);
 	}
 
 	PrintChatBonus(client, zGroup, rank);
-
 }
 
 public void db_viewMapRankBonus(int client, int zgroup, int type)
