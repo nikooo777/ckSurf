@@ -635,9 +635,21 @@ public Action Client_HideChat(int client, int args)
 public void HideChat(int client)
 {
 	if (!g_bHideChat[client])
-		SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT);
+	{
+		// Hiding
+		if (g_bViewModel[client])
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
+		else
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT);
+	}
 	else
-		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+	{
+		// Displaying
+		if (g_bViewModel[client])
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CROSSHAIR);
+		else
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+	}
 	
 	g_bHideChat[client] = !g_bHideChat[client];
 }
@@ -683,8 +695,28 @@ public Action Client_HideWeapon(int client, int args)
 public void HideViewModel(int client)
 {
 	Client_SetDrawViewModel(client, !g_bViewModel[client]);
+	if (!g_bViewModel[client])
+	{
+		// Display
+		if (!g_bHideChat[client])
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+		else
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT);
+
+	}
+	else
+	{
+		// Hiding
+		if (!g_bHideChat[client])
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CROSSHAIR);
+		else
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
+	}
+
+	
 	g_bViewModel[client] = !g_bViewModel[client];
 }
+
 public Action Client_Wr(int client, int args)
 {
 	if (IsValidClient(client))

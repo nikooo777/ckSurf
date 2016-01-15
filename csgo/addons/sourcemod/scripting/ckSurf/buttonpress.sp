@@ -218,7 +218,7 @@ public void CL_OnEndTimerPress(int client)
 					g_bCheckpointRecordFound[zGroup] = true;
 				}
 				
-				if (g_bMapReplay && !g_bPositionRestored[client])
+				if (g_bReplayBot && !g_bPositionRestored[client])
 				{
 					g_bNewReplay[client] = true;
 					CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -227,7 +227,7 @@ public void CL_OnEndTimerPress(int client)
 		}
 		else
 		{  // Has to be the new record, since it is the first completion
-			if (g_bMapReplay && !g_bPositionRestored[client])
+			if (g_bReplayBot && !g_bPositionRestored[client])
 			{
 				g_bNewReplay[client] = true;
 				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);

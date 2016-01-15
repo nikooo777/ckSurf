@@ -61,6 +61,15 @@ native bool:ckSurf_ClientIsVIP(client);
  */
 native ckSurf_GetServerRank(client);
 
+/**
+ * Sets client for a a safe teleport.
+ * Ignores end touch if client is in a zone.
+ *
+ * @param client     Client's id
+ * @return           1 on Success / 0 on Fail
+ */
+native ckSurf_SetSafeTeleport(client);
+
 /*
 		FORWARDS
 						*/

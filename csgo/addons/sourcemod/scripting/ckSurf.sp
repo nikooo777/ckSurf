@@ -113,6 +113,7 @@
 // UI definitions
 #define HIDE_RADAR (1 << 12)
 #define HIDE_CHAT ( 1<<7 )
+#define HIDE_CROSSHAIR 1<<8
 
 // Replay definitions
 #define BM_MAGIC 0xBAADF00D
@@ -592,7 +593,6 @@ bool g_bPause[MAXPLAYERS + 1]; 									// Client has timer paused
 int g_MapTimesCount; 											// How many times the map has been beaten
 int g_MapRank[MAXPLAYERS + 1]; 									// Clients rank in current map
 int g_OldMapRank[MAXPLAYERS + 1];								// Clients old rank
-int g_Time_Type[MAXPLAYERS + 1]; 								// Did the client improve his time? New Server record? etc.
 char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's name
 
 /*----------  Replay Variables  ----------*/
@@ -731,7 +731,6 @@ int g_pr_multiplier[MAX_PR_PLAYERS + 1]; 						// How many times has the client 
 int g_pr_finishedmaps[MAX_PR_PLAYERS + 1]; 						// How many maps a client has finished
 int g_PlayerRank[MAXPLAYERS + 1]; 								// Players server rank
 int g_MapRecordCount[MAXPLAYERS + 1];							// SR's the client has
-bool g_bnewRecord[MAXPLAYERS + 1]; 								// Was client's run a new record?
 char g_pr_szName[MAX_PR_PLAYERS + 1][64];						// Used to update client's name in database
 char g_pr_szSteamID[MAX_PR_PLAYERS + 1][32];					// steamid of client being recalculated
 
@@ -2443,6 +2442,17 @@ public int Native_GetServerRank(Handle plugin, int numParams)
 	return g_PlayerRank[GetNativeCell(1)];
 }
 
+public int Native_SetSafeTeleport(Handle plugin, int numParams)
+{
+	if (IsValidClient(GetNativeCell(1)) && g_iClientInZone[GetNativeCell(1)][0] != -1)
+	{
+		g_bIgnoreZone[GetNativeCell(1)] = true;
+		return 1;
+	}
+	else
+		return 0;
+}
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	RegPluginLibrary("ckSurf");
@@ -2453,7 +2463,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
 	CreateNative("ckSurf_ClientIsVIP", Native_ClientIsVIP);
 	CreateNative("ckSurf_GetServerRank", Native_GetServerRank);
-
+	CreateNative("ckSurf_SetSafeTeleport", Native_SetSafeTeleport);
 	g_bLateLoaded = late;
 	return APLRes_Success;
 }
