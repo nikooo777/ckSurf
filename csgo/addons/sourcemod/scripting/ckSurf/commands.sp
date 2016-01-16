@@ -2490,22 +2490,19 @@ public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param
 {
 	if (action == MenuAction_Select)
 	{
-		if (g_bAutoBhop)
+		switch (param2)
 		{
-			switch (param2)
-			{
-				case 0:HideMethod(param1);
-				case 1:QuakeSounds(param1);
-				case 2:ShowTime(param1);
-				case 3:HideSpecs(param1);
-				case 4:InfoPanel(param1);
-				case 5:SwitchStartWeapon(param1);
-				case 6:DisableGoTo(param1);
-				case 7:AutoBhop(param1);
-				case 8:HideChat(param1);
-				case 9:HideViewModel(param1);
-				case 10:ToggleCheckpoints(param1, 1);
-			}
+			case 0:HideMethod(param1);
+			case 1:QuakeSounds(param1);
+			case 2:ShowTime(param1);
+			case 3:HideSpecs(param1);
+			case 4:InfoPanel(param1);
+			case 5:SwitchStartWeapon(param1);
+			case 6:DisableGoTo(param1);
+			case 7:AutoBhop(param1);
+			case 8:HideChat(param1);
+			case 9:HideViewModel(param1);
+			case 10:ToggleCheckpoints(param1, 1);
 		}
 		g_OptionsMenuLastPage[param1] = param2;
 		OptionMenu(param1);
