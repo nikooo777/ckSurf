@@ -1308,6 +1308,8 @@ public void SetClientDefaults(int client)
 	g_fClientRestarting[client] = GetGameTime();
 	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
+	
+	g_bLoadingSettings[client] = false;
 	g_bSettingsLoaded[client] = false;
 	
 	// Set client location 

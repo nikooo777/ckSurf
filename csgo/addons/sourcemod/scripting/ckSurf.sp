@@ -878,7 +878,7 @@ public void OnMapStart()
 {
 	//get mapname
 	GetCurrentMap(g_szMapName, 128);
-	
+
 	if (!g_bRenaming && !g_bInTransactionChain)
 	{
 		checkSpawnPoints();
@@ -900,7 +900,7 @@ public void OnMapStart()
 	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
 	* -> loadAllClientSettings
 	*/
-	if (!g_bRenaming && !g_bInTransactionChain)
+	if (!g_bRenaming && !g_bInTransactionChain && IsServerProcessing())
 		db_selectMapZones();
 	
 	//workshop fix

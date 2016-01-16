@@ -5,7 +5,27 @@ public void CL_OnStartTimerPress(int client)
 	{
 		if (IsValidClient(client))
 		{
-			if (!g_bServerDataLoaded || !g_bSettingsLoaded[client])
+			if (!g_bServerDataLoaded)
+			{
+				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+				{
+					PrintToChat(client, "[%cCK%c] The server hasn't finished loading it's settings, please wait.", MOSSGREEN, WHITE);
+					ClientCommand(client, "play buttons\\button10.wav");
+					g_fErrorMessage[client] = GetGameTime();
+				}
+				return;
+			}
+			else if (g_bLoadingSettings[client])
+			{
+				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+				{
+					PrintToChat(client, "[%cCK%c] Your settings are currently being loaded, please wait.", MOSSGREEN, WHITE);
+					ClientCommand(client, "play buttons\\button10.wav");
+					g_fErrorMessage[client] = GetGameTime();
+				}
+				return;
+			}
+			else if (!g_bSettingsLoaded[client])
 			{
 				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 				{
