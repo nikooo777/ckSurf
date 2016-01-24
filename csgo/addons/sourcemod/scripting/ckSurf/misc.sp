@@ -1288,6 +1288,8 @@ public void SetClientDefaults(int client)
 	g_fClientRestarting[client] = GetGameTime();
 	g_fErrorMessage[client] = GetGameTime();
 	g_bPushing[client] = false;
+	
+	g_bLoadingSettings[client] = false;
 	g_bSettingsLoaded[client] = false;
 	
 	// Set client location 
@@ -1439,22 +1441,6 @@ public void clearPlayerCheckPoints(int client)
 public void GetcurrentRunTime(int client)
 {
 	g_fCurrentRunTime[client] = GetGameTime() - g_fStartTime[client] - g_fPauseTime[client];
-	/*if (g_bPause[client])
-		Format(g_szTimerTitle[client], 255, "%s\nTimer on Hold", g_szPlayerPanelText[client]);
-	else
-	{
-		char szTime[32];
-		FormatTimeFloat(client, g_fCurrentRunTime[client], 1,szTime,sizeof(szTime));
-		if(g_bShowTime[client])
-		{	
-			if(StrEqual(g_szPlayerPanelText[client],""))		
-				Format(g_szTimerTitle[client], 255, "%s", szTime);
-			else
-				Format(g_szTimerTitle[client], 255, "%s\n%s", g_szPlayerPanelText[client],szTime);
-		}
-		else
-			Format(g_szTimerTitle[client], 255, "%s",g_szPlayerPanelText[client]);
-	}*/
 }
 
 public float GetSpeed(int client)
@@ -2856,7 +2842,6 @@ public void CenterHudAlive(int client)
 		
 		if (g_bTimeractivated[client] && !g_bPause[client])
 		{
-			GetcurrentRunTime(client);
 			FormatTimeFloat(client, g_fCurrentRunTime[client], 3, pAika, 128);
 			if (g_bMissedMapBest[client] && g_fPersonalRecord[client] > 0.0) // missed best personal time
 			{

@@ -134,6 +134,7 @@ public Action CKTimer1(Handle timer)
 					CreateTimer(10.0, WelcomeMsgTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 					CreateTimer(70.0, HelpMsgTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 				}
+				GetcurrentRunTime(client);
 				CenterHudAlive(client);
 				MovementCheck(client);
 			}

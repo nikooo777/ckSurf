@@ -876,13 +876,19 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnMapStart()
 {
-	//get mapname
+	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
-	
+
+	// Load spawns
 	if (!g_bRenaming && !g_bInTransactionChain)
-	{
 		checkSpawnPoints();
-	}
+
+	// Workshop fix
+	char mapPieces[6][128];
+	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
+	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece - 1]);
+
+
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
 	* 2. Get map record time (db_GetMapRecord_Pro)
@@ -900,15 +906,14 @@ public void OnMapStart()
 	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
 	* -> loadAllClientSettings
 	*/
-	if (!g_bRenaming && !g_bInTransactionChain)
+	if (!g_bRenaming && !g_bInTransactionChain && IsServerProcessing())
 		db_selectMapZones();
 	
-	//workshop fix
-	char mapPieces[6][128];
-	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
-	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece - 1]);
+
+
 	//get map tag
 	ExplodeString(g_szMapName, "_", g_szMapPrefix, 2, 32);
+
 	//sv_pure 1 could lead to problems with the ckSurf models
 	ServerCommand("sv_pure 0");
 	

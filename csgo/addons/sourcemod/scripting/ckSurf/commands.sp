@@ -2406,51 +2406,69 @@ public void OptionMenu(int client)
 {
 	Menu optionmenu = CreateMenu(OptionMenuHandler);
 	SetMenuTitle(optionmenu, "ckSurf - Options Menu");
+	// #0
 	if (g_bHide[client])
 		AddMenuItem(optionmenu, "Hide Players  -  Enabled", "Hide other players  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Hide Players  -  Disabled", "Hide other players  -  Disabled");
+	// #1
 	if (g_bEnableQuakeSounds[client])
 		AddMenuItem(optionmenu, "Quake sounds - Enabled", "Quake sounds - Enabled");
 	else
 		AddMenuItem(optionmenu, "Quake sounds - Disabled", "Quake sounds - Disabled");
+	// #2
 	if (g_bShowTime[client])
 		AddMenuItem(optionmenu, "Show Timer  -  Enabled", "Show timer text  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Show Timer  -  Disabled", "Show timer text  -  Disabled");
+	// #3
 	if (g_bShowSpecs[client])
 		AddMenuItem(optionmenu, "Spectator list  -  Enabled", "Spectator list  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Spectator list  -  Disabled", "Spectator list  -  Disabled");
+	// #4
 	if (g_bInfoPanel[client])
 		AddMenuItem(optionmenu, "Speed/Stage panel  -  Enabled", "Speed/Stage panel  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Speed/Stage panel  -  Disabled", "Speed/Stage panel  -  Disabled");
+	// #5
 	if (g_bStartWithUsp[client])
 		AddMenuItem(optionmenu, "Active start weapon  -  Usp", "Start weapon  -  USP");
 	else
 		AddMenuItem(optionmenu, "Active start weapon  -  Knife", "Start weapon  -  Knife");
+	// #6
 	if (g_bGoToClient[client])
 		AddMenuItem(optionmenu, "Goto  -  Enabled", "Goto me  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Goto  -  Disabled", "Goto me  -  Disabled");
+
 	if (g_bAutoBhop)
 	{
+		// #7
 		if (g_bAutoBhopClient[client])
 			AddMenuItem(optionmenu, "AutoBhop  -  Enabled", "AutoBhop  -  Enabled");
 		else
 			AddMenuItem(optionmenu, "AutoBhop  -  Disabled", "AutoBhop  -  Disabled");
 	}
+	else
+	{
+		// #7
+		if (g_bAutoBhopClient[client])
+			AddMenuItem(optionmenu, "AutoBhop  -  Enabled", "AutoBhop  -  Enabled", ITEMDRAW_DISABLED);
+		else
+			AddMenuItem(optionmenu, "AutoBhop  -  Disabled", "AutoBhop  -  Disabled", ITEMDRAW_DISABLED);
+	}
+	// #8
 	if (g_bHideChat[client])
 		AddMenuItem(optionmenu, "Hide Chat - Hidden", "Hide Chat - Hidden");
 	else
 		AddMenuItem(optionmenu, "Hide Chat - Visible", "Hide Chat - Visible");
-	
+	// #9
 	if (g_bViewModel[client])
 		AddMenuItem(optionmenu, "Hide Weapon - Visible", "Hide Weapon - Visible");
 	else
 		AddMenuItem(optionmenu, "Hide Weapon - Hidden", "Hide Weapon - Hidden");
-	
+	// #10
 	if (g_bCheckpointsEnabled[client])
 		AddMenuItem(optionmenu, "Checkpoints - Enabled", "Checkpoints - Enabled");
 	else
@@ -2466,6 +2484,36 @@ public void OptionMenu(int client)
 			if (g_OptionsMenuLastPage[client] < 18)
 				DisplayMenuAtItem(optionmenu, client, 12, MENU_TIME_FOREVER);
 }
+
+
+public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		switch (param2)
+		{
+			case 0:HideMethod(param1);
+			case 1:QuakeSounds(param1);
+			case 2:ShowTime(param1);
+			case 3:HideSpecs(param1);
+			case 4:InfoPanel(param1);
+			case 5:SwitchStartWeapon(param1);
+			case 6:DisableGoTo(param1);
+			case 7:AutoBhop(param1);
+			case 8:HideChat(param1);
+			case 9:HideViewModel(param1);
+			case 10:ToggleCheckpoints(param1, 1);
+		}
+		g_OptionsMenuLastPage[param1] = param2;
+		OptionMenu(param1);
+	}
+	else
+		if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
+} 
+
 
 
 public void SwitchStartWeapon(int client)
@@ -2504,31 +2552,3 @@ public void InfoPanel(int client)
 	g_bInfoPanel[client] = !g_bInfoPanel[client];
 }
 
-
-public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param2)
-{
-	if (action == MenuAction_Select)
-	{
-		switch (param2)
-		{
-			case 0:HideMethod(param1);
-			case 1:QuakeSounds(param1);
-			case 2:ShowTime(param1);
-			case 3:HideSpecs(param1);
-			case 4:InfoPanel(param1);
-			case 5:SwitchStartWeapon(param1);
-			case 6:DisableGoTo(param1);
-			case 7:AutoBhop(param1);
-			case 8:HideChat(param1);
-			case 9:HideViewModel(param1);
-			case 10:ToggleCheckpoints(param1, 1);
-		}
-		g_OptionsMenuLastPage[param1] = param2;
-		OptionMenu(param1);
-	}
-	else
-		if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
-} 
