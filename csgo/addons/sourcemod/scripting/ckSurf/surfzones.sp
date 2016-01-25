@@ -142,16 +142,12 @@ public Action EndTouchTrigger(int caller, int activator)
 	action[0] = g_mapZones[id][zoneType];
 	action[1] = g_mapZones[id][zoneTypeId];
 	action[2] = g_mapZones[id][zoneGroup];
-	
+
 	if (action[2] != g_iClientInZone[activator][2] || action[0] == 6 || action[0] == 8 || action[0] != g_iClientInZone[activator][0]) // Ignore end touches in other zonegroups, zones that teleports away or multiple zones on top of each other 
 		return Plugin_Handled;
 
 	// End touch
 	EndTouch(activator, action);
-	
-	// Refresh bot trail
-	if (IsFakeClient(activator))
-		refreshTrailBot(activator);
 	
 	return Plugin_Handled;
 }
@@ -351,50 +347,35 @@ public Action BeamBox(Handle timer, any client)
 
 public Action BeamBoxAll(Handle timer, any data)
 {
-	float posA[3], posB[3];
-	int zColor[4], tzColor[4], beamTeam, beamVis, zType, zGrp;
+	int zColor[4], tzColor[4];
 	bool draw;
 	
-	if (g_zoneDisplayType < 1)
-	{
+	if (GetConVarInt(g_hZoneDisplayType) < 1)
 		return Plugin_Handled;
-	}
 	
 	for (int i = 0; i < g_mapZonesCount; ++i)
 	{
-		posA[0] = g_mapZones[i][PointA][0];
-		posA[1] = g_mapZones[i][PointA][1];
-		posA[2] = g_mapZones[i][PointA][2];
-		posB[0] = g_mapZones[i][PointB][0];
-		posB[1] = g_mapZones[i][PointB][1];
-		posB[2] = g_mapZones[i][PointB][2];
-		zType = g_mapZones[i][zoneType];
-		beamVis = g_mapZones[i][Vis];
-		beamTeam = g_mapZones[i][Team];
-		zGrp = g_mapZones[i][zoneGroup];
-		
 		draw = false;
-		
 		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-		if (0 < beamVis < 4)
+		if (0 < g_mapZones[i][Vis] < 4)
 		{
 			draw = true;
 		}
 		else
 		{
-			if (g_zonesToDisplay == 1 && ((0 < zType < 3) || zType == 5))
+			if (GetConVarInt(g_hZonesToDisplay) == 1 && ((0 < g_mapZones[i][zoneType] < 3) || g_mapZones[i][zoneType] == 5))
 			{
 				draw = true;
 			}
 			else
 			{
-				if (g_zonesToDisplay == 2 && ((0 < zType < 4) || zType == 5))
+				if (GetConVarInt(g_hZonesToDisplay) == 2 && ((0 < g_mapZones[i][zoneType] < 4) || g_mapZones[i][zoneType] == 5))
 				{
 					draw = true;
 				}
 				else
 				{
-					if (g_zonesToDisplay == 3)
+					if (GetConVarInt(g_hZonesToDisplay) == 3)
 					{
 						draw = true;
 					}
@@ -404,23 +385,37 @@ public Action BeamBoxAll(Handle timer, any data)
 		
 		if (draw)
 		{
-			getZoneDisplayColor(zType, zColor, zGrp);
-			getZoneTeamColor(beamTeam, tzColor);
+			getZoneDisplayColor(g_mapZones[i][zoneType], zColor, g_mapZones[i][zoneGroup]);
+			getZoneTeamColor(g_mapZones[i][Team], tzColor);
 			for (int p = 1; p <= MaxClients; p++)
 			{
 				if (IsValidClient(p))
 				{
-					if (beamVis == 2 || beamVis == 3)
+					if ( g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
 					{
-						if (GetClientTeam(p) == beamVis && g_ClientSelectedZone[p] != i)
+						if (GetClientTeam(p) ==  g_mapZones[i][Vis] && g_ClientSelectedZone[p] != i)
 						{
-							TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite, 0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, tzColor, 0, 0);
+							float buffer_a[3], buffer_b[3];
+							for (int x = 0; x < 3; x++)
+							{
+								buffer_a[x] = g_mapZones[i][PointA][x];
+								buffer_b[x] = g_mapZones[i][PointB][x];
+							}
+							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 5.0, 5.0, 2, 1.0, tzColor, 0, 0, i);
 						}
 					}
 					else
 					{
 						if (g_ClientSelectedZone[p] != i)
-							TE_SendBeamBoxToClient(p, posA, posB, g_BeamSprite, g_HaloSprite, 0, 30, g_fChecker, 5.0, 5.0, 2, 1.0, zColor, 0, 0);
+						{
+							float buffer_a[3], buffer_b[3];
+							for (int x = 0; x < 3; x++)
+							{
+								buffer_a[x] = g_mapZones[i][PointA][x];
+								buffer_b[x] = g_mapZones[i][PointB][x];
+							}
+							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 5.0, 5.0, 2, 1.0, zColor, 0, 0, i);
+						}
 					}
 				}
 			}
@@ -437,36 +432,36 @@ public void getZoneDisplayColor(int type, int zColor[4], int zGrp)
 		case 1: {
 			
 			if (zGrp > 0)
-				zColor = g_zoneBonusStartColor;
+				zColor = g_iZoneColors[3];
 			else
-				zColor = g_zoneStartColor;
+				zColor = g_iZoneColors[1];
 		}
 		case 2: {
 			if (zGrp > 0)
-				zColor = g_zoneBonusEndColor;
+				zColor = g_iZoneColors[4];
 			else
-				zColor = g_zoneEndColor;
+				zColor = g_iZoneColors[2];
 		}
 		case 3: {
-			zColor = g_zoneStageColor;
+			zColor = g_iZoneColors[5];
 		}
 		case 4: {
-			zColor = g_zoneCheckpointColor;
+			zColor = g_iZoneColors[6];
 		}
 		case 5: {
-			zColor = g_zoneSpeedColor;
+			zColor = g_iZoneColors[7];
 		}
 		case 6: {
-			zColor = g_zoneTeleToStartColor;
+			zColor = g_iZoneColors[8];
 		}
 		case 7: {
-			zColor = g_zoneValidatorColor;
+			zColor = g_iZoneColors[9];
 		}
 		case 8: {
-			zColor = g_zoneCheckerColor;
+			zColor = g_iZoneColors[10];
 		}
 		case 0: {
-			zColor = g_zoneStopColor;
+			zColor = g_iZoneColors[0];
 		}
 		default:zColor = beamColorT;
 	}
@@ -508,105 +503,118 @@ public void BeamBox_OnPlayerRunCmd(int client)
 	}
 }
 
-stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type)
+stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type, int zoneid = -1)
 {
 	//0 = Do not display zones, 1 = Display the lower edges of zones, 2 = Display whole zone
-	if (!IsValidClient(client) || g_zoneDisplayType < 1)
+	if (!IsValidClient(client) || GetConVarInt(g_hZoneDisplayType) < 1)
 		return;
 	
-	if (g_zoneDisplayType > 1 || type == 1)
+	if (GetConVarInt(g_hZoneDisplayType) > 1 || type == 1) // All sides
 	{
-		// Create the additional corners of the box
-		float tc1[3];
-		AddVectors(tc1, uppercorner, tc1);
-		tc1[0] = bottomcorner[0];
-		
-		float tc2[3];
-		AddVectors(tc2, uppercorner, tc2);
-		tc2[1] = bottomcorner[1];
-		
-		float tc3[3];
-		AddVectors(tc3, uppercorner, tc3);
-		tc3[2] = bottomcorner[2];
-		
-		float tc4[3];
-		AddVectors(tc4, bottomcorner, tc4);
-		tc4[0] = uppercorner[0];
-		
-		float tc5[3];
-		AddVectors(tc5, bottomcorner, tc5);
-		tc5[1] = uppercorner[1];
-		
-		float tc6[3];
-		AddVectors(tc6, bottomcorner, tc6);
-		tc6[2] = uppercorner[2];
-		
-		// Draw all the edges
-		TE_SetupBeamPoints(uppercorner, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(uppercorner, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(uppercorner, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc6, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc6, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc6, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc4, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc5, bottomcorner, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc5, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc5, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc4, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(tc4, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
+		float corners[8][3];
+		if (zoneid == -1)
+		{
+			Array_Copy(uppercorner, corners[0], 3);
+			Array_Copy(bottomcorner, corners[7], 3);
+
+			// Count ponts from coordinates provided
+			for(int i = 1; i < 7; i++)
+			{
+				for(int j = 0; j < 3; j++)
+				{
+					corners[i][j] = corners[((i >> (2-j)) & 1) * 7][j];
+				}
+			}
+		}
+		else
+		{
+			// Get values that are already counted
+			for (int i = 0; i < 8; i++)
+				for (int k = 0; k < 3; k++)
+					corners[i][k] = g_fZoneCorners[zoneid][i][k];
+		}
+
+		// Send beams to client
+		// https://forums.alliedmods.net/showpost.php?p=2006539&postcount=8
+		for (int i = 0, i2 = 3; i2 >= 0; i+=i2--)
+	    {
+	        for(int j = 1; j <= 7; j += (j / 2) + 1)
+	        {
+	            if(j != 7-i)
+	            {
+					TE_SetupBeamPoints(corners[i], corners[j], ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+					TE_SendToClient(client);
+				}
+			}
+		}
 	}
 	else
-		if (g_zoneDisplayType == 1)
 	{
-		float corner1[3], corner2[3], corner3[3], corner4[3], extraCorner[3];
-		
-		if (bottomcorner[2] < uppercorner[2]) {  //  Get the corner, that has the lowest y-value
-			Array_Copy(bottomcorner, corner1, 3);
-			Array_Copy(uppercorner, extraCorner, 3);
+		if (GetConVarInt(g_hZoneDisplayType) == 1 && zoneid != -1) // Only bottom corners
+		{
+			float corners[4][3], fTop[3];
+
+			if (g_mapZones[zoneid][PointA][2] > g_mapZones[zoneid][PointB][2]) // Make sure bottom corner is always the lowest 
+			{
+				for(int i = 0; i < 3; i++)
+				{
+					corners[0][i] = g_mapZones[zoneid][PointB][i];
+					fTop[i] = g_mapZones[zoneid][PointA][i];
+				}
+			}
+			else
+			{
+				for(int i = 0; i < 3; i++)
+				{
+					corners[0][i] = g_mapZones[zoneid][PointA][i];
+					fTop[i] = g_mapZones[zoneid][PointB][i];
+				}		
+			}
+
+			bool foundOther = false;
+			// Get other corners
+			for (int i = 0, count = 0, k = 2; i < 8; i++)
+			{
+				if (g_fZoneCorners[zoneid][i][2] != fTop[2]) // Get the lowest corner
+				{
+					if (!foundOther && g_fZoneCorners[zoneid][i][0] == fTop[0] && g_fZoneCorners[zoneid][i][1] == fTop[1]) // Other corner
+					{
+						count++;
+						for (int x = 0; x < 3; x++)
+							corners[1][x] = g_fZoneCorners[zoneid][i][x];
+
+						foundOther = true;
+					}
+					else
+					{
+						if (k < 4 && (g_fZoneCorners[zoneid][i][0] != corners[0][0] || g_fZoneCorners[zoneid][i][1] != corners[0][1])) // Other two corners
+						{
+							for (int x = 0; x < 3; x++)
+								corners[k][x] = g_fZoneCorners[zoneid][i][x];
+
+							count++;
+							k++;
+						}
+					}
+				}
+				if (count == 3)
+					break;
+			}
+
+			// lift a bit higher, so not under ground
+			corners[0][2] += 5.0;
+			corners[1][2] += 5.0;
+			corners[2][2] += 5.0;
+			corners[3][2] += 5.0;
+			
+			for (int i = 0; i < 2; i++) // Connect main corners to the other corners
+			{
+				TE_SetupBeamPoints(corners[i], corners[2], ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+				TE_SendToClient(client);
+				TE_SetupBeamPoints(corners[i], corners[3], ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+				TE_SendToClient(client);
+			}
 		}
-		else {
-			Array_Copy(uppercorner, corner1, 3);
-			Array_Copy(bottomcorner, extraCorner, 3);
-		}
-		
-		// Get the point on the other side of the square
-		Array_Copy(extraCorner, corner2, 3);
-		corner2[2] = corner1[2];
-		
-		// Move along the x-axis
-		Array_Copy(corner1, corner3, 3);
-		corner3[0] = extraCorner[0];
-		
-		// Move along the z-axis
-		Array_Copy(corner1, corner4, 3);
-		corner4[1] = extraCorner[1];
-		
-		// lift a bit higher, so not under ground
-		corner1[2] += 5.0;
-		corner2[2] += 5.0;
-		corner3[2] += 5.0;
-		corner4[2] += 5.0;
-		
-		TE_SetupBeamPoints(corner1, corner3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(corner1, corner4, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(corner3, corner2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
-		TE_SetupBeamPoints(corner4, corner2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-		TE_SendToClient(client);
 	}
 }
 
@@ -898,6 +906,7 @@ public int Handler_listBonusZones(Handle tMenu, MenuAction action, int client, i
 			char aID[64];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_ClientSelectedZone[client] = StringToInt(aID);
+			g_CurrentZoneType[client] = g_mapZones[g_ClientSelectedZone[client]][zoneType]; 
 			DrawBeamBox(client);
 			g_Editing[client] = 2;
 			if (g_ClientSelectedZone[client] != -1)
@@ -1203,28 +1212,24 @@ public void ZoneSettings(int client)
 {
 	Menu ZoneSettingMenu = new Menu(Handle_ZoneSettingMenu);
 	ZoneSettingMenu.SetTitle("Global Zone Settings");
-	if (g_zoneDisplayType > 1)
-	{
-		ZoneSettingMenu.AddItem("1", "Visible: All sides");
-	}
-	else
-		if (g_zoneDisplayType == 1)
-		{
+	switch (GetConVarInt(g_hZoneDisplayType))
+	{	
+		case 0:
+			ZoneSettingMenu.AddItem("1", "Visible: Nothing");
+		case 1:
 			ZoneSettingMenu.AddItem("1", "Visible: Lower edges");
-		}
-		else
-			if (g_zoneDisplayType < 1)
-			{
-				ZoneSettingMenu.AddItem("1", "Visible: Nothing");
-			}
-	switch (g_zonesToDisplay)
+		case 2:
+			ZoneSettingMenu.AddItem("1", "Visible: All sides");
+	}
+
+	switch (GetConVarInt(g_hZonesToDisplay))
 	{
 		case 1:
-		ZoneSettingMenu.AddItem("2", "Draw Zones: Start & End");
+			ZoneSettingMenu.AddItem("2", "Draw Zones: Start & End");
 		case 2:
-		ZoneSettingMenu.AddItem("2", "Draw Zones: Start, End, Stage, Bonus");
+			ZoneSettingMenu.AddItem("2", "Draw Zones: Start, End, Stage, Bonus");
 		case 3:
-		ZoneSettingMenu.AddItem("2", "DrawZones: All zones");
+			ZoneSettingMenu.AddItem("2", "Draw Zones: All zones");
 	}
 	ZoneSettingMenu.ExitButton = true;
 	ZoneSettingMenu.Display(client, MENU_TIME_FOREVER);
@@ -1241,17 +1246,21 @@ public int Handle_ZoneSettingMenu(Handle tMenu, MenuAction action, int client, i
 			{
 				case 0:
 				{
-					if (g_zoneDisplayType < 2)
-						g_zoneDisplayType++;
+					if (GetConVarInt(g_hZoneDisplayType) < 2)
+					{
+						SetConVarInt(g_hZoneDisplayType, (GetConVarInt(g_hZoneDisplayType) + 1));
+					}
 					else
-						g_zoneDisplayType = 0;
+						SetConVarInt(g_hZoneDisplayType, 0);
 				}
 				case 1:
 				{
-					if (g_zonesToDisplay < 3)
-						g_zonesToDisplay++;
+					if (GetConVarInt(g_hZonesToDisplay) < 3)
+					{
+						SetConVarInt(g_hZonesToDisplay, (GetConVarInt(g_hZonesToDisplay) + 1));
+					}
 					else
-						g_zonesToDisplay = 1;
+						SetConVarInt(g_hZonesToDisplay, 1);
 				}
 			}
 			CreateTimer(0.1, RefreshZoneSettings, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -1387,6 +1396,7 @@ public int MenuHandler_ZoneModify(Handle tMenu, MenuAction action, int client, i
 			char aID[64];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_ClientSelectedZone[client] = StringToInt(aID);
+			g_CurrentZoneType[client] = g_mapZones[g_ClientSelectedZone[client]][zoneType];
 			DrawBeamBox(client);
 			g_Editing[client] = 2;
 			if (g_ClientSelectedZone[client] != -1)
@@ -1429,7 +1439,7 @@ public void EditorMenu(int client)
 	Menu editMenu = new Menu(MenuHandler_Editor);
 	// If a zone is selected
 	if (g_ClientSelectedZone[client] != -1)
-		editMenu.SetTitle("Editing Zone: %s", g_mapZones[g_ClientSelectedZone[client]][zoneName]);
+		editMenu.SetTitle("Editing Zone: %s-%i", g_szZoneDefaultNames[g_CurrentZoneType[client]], g_mapZones[g_ClientSelectedZone[client]][zoneTypeId]);
 	else
 		editMenu.SetTitle("Creating a New %s Zone", g_szZoneDefaultNames[g_CurrentZoneType[client]]);
 	

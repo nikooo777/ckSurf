@@ -366,6 +366,11 @@
 		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}"
 		"en"        "[{1}CK REPLAY{2}] {3}{4}{5} finished with a time of ({6}{7}{8})."
 	}
+	"ReplayFinishingMsgBonus"
+	{
+		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c}"
+		"en"        "[{1}CK REPLAY{2}] {3}{4}{5} finished the {6}{7}{8} with a time of ({9}{10}{11})."
+	}
 	"MapFinished1"
 	{
 		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:c},{8:c},{9:s},{10:c},{11:c},{12:c},{13:i},{14:c},{15:i},{16:c},{17:s},{18:c}"

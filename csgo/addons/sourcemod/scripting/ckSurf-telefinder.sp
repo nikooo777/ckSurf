@@ -82,11 +82,11 @@ public Action TeleToInfo(int client, int args)
 	
 	if (IsValidEntity(iEnt))
 	{
-		ckSurf_SetSafeTeleport(client);
-		ckSurf_StopTimer(client);
 		float position[3];
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", position);
-		TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
+
+		ckSurf_SafeTeleport(client, position, NULL_VECTOR, NULL_VECTOR, true);
+
 		ReplyToCommand(client, "[CK] Teleporting to entity at %f, %f, %f", position[0], position[1], position[2]);
 	}
 	else

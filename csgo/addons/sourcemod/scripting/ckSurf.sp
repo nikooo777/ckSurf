@@ -123,7 +123,7 @@
 #define ADDITIONAL_FIELD_TELEPORTED_VELOCITY (1<<2)
 #define FRAME_INFO_SIZE 15
 #define AT_SIZE 10
-#define ORIGIN_SNAPSHOT_INTERVAL 150
+#define ORIGIN_SNAPSHOT_INTERVAL 500
 #define FILE_HEADER_LENGTH 74
 
 // Title definitions
@@ -177,6 +177,7 @@ enum MapZone
 	zoneTypeId, 			// ID of the same type eg. Start-1, Start-2, Start-3...
 	Float:PointA[3], 
 	Float:PointB[3], 
+	Float:CenterPoint[3],
 	String:zoneName[128], 
 	zoneGroup, 
 	Vis,
@@ -241,7 +242,7 @@ int g_iAdminEditingType[MAXPLAYERS + 1]; 						// What the admin is editing
 
 /*----------  VIP Variables  ----------*/
 // Enable VIP CVar
-bool g_bServerVipCommand;
+//bool g_bServerVipCommand;
 ConVar g_hServerVipCommand;
 // Trail variables
 bool g_bTrailOn[MAXPLAYERS + 1]; 								// Client is using a trail
@@ -257,9 +258,7 @@ ConVar g_hAutoVIPFlag = null;
 char g_szUsedVoteExtend[MAXPLAYERS+1][32]; 						// SteamID's which triggered extend vote
 int g_VoteExtends = 0; 											// How many extends have happened in current map
 ConVar g_hVoteExtendTime; 										// Extend time CVar
-float g_fVoteExtendTime;
 ConVar g_hMaxVoteExtends; 										// Extend max count CVar
-int g_MaxVoteExtends;
 
 /*----------  Bonus variables  ----------*/
 char g_szBonusFastest[MAXZONEGROUPS][MAX_NAME_LENGTH]; 			// Name of the #1 in the current maps bonus
@@ -310,6 +309,8 @@ int g_mapZones[MAXZONES][MapZone];								// Map Zone array
 int g_mapZonesCount;											// The total amount of zones in the map
 int g_mapZoneCountinGroup[MAXZONEGROUPS];						// Map zone count in zonegroups
 int g_mapZoneGroupCount;										// Zone group cound
+float g_fZoneCorners[MAXZONES][8][3];							// Additional zone corners, can't store multi dimensional arrays in enums..
+
 
 // Editing zones
 bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
@@ -328,7 +329,6 @@ int g_ClientSelectedScale[MAXPLAYERS + 1];						// Currently selected scale
 int g_ClientSelectedPoint[MAXPLAYERS + 1];						// Currently selected point
 int g_CurrentZoneTypeId[MAXPLAYERS + 1];						// Currently selected zone's type ID
 bool g_ClientRenamingZone[MAXPLAYERS + 1];						// Is client renaming zone?
-float g_fZonePositions[MAXZONES][3];							// Loaded zone positions in memory
 int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
 int beamColorCT[] =  { 0, 0, 255, 255 };				
 int beamColorN[] =  { 255, 255, 0, 255 };
@@ -340,17 +340,16 @@ int g_HaloSprite;
 /*----------  PushFix by Mev, George & Blacky  ----------*/
 /*----------  https://forums.alliedmods.net/showthread.php?t=267131  ----------*/
 ConVar g_hTriggerPushFixEnable;
-bool g_bTriggerPushFixEnable;
 bool g_bPushing[MAXPLAYERS + 1];
 
 /*----------  Slope Boost Fix by Mev & Blacky  ----------*/
 /*----------  https://forums.alliedmods.net/showthread.php?t=266888  ----------*/
 float g_vCurrent[MAXPLAYERS + 1][3];
 float g_vLast[MAXPLAYERS + 1][3];
-bool g_bOnGroundFix[MAXPLAYERS + 1];
+bool g_bOnGround[MAXPLAYERS + 1];
 bool g_bLastOnGround[MAXPLAYERS + 1];
+bool g_bFixingRamp[MAXPLAYERS + 1];
 ConVar g_hSlopeFixEnable;
-bool g_bSlopeFixEnable;
 
 /*----------  Forwards  ----------*/
 Handle g_MapFinishForward;
@@ -362,163 +361,94 @@ Handle g_PracticeFinishForward;
 int g_ZoneMenuFlag;
 ConVar g_hZoneMenuFlag = null;
 ConVar g_hZoneDisplayType = null;								 // How zones are displayed (lower edge, full)
-int g_zoneDisplayType;
 ConVar g_hZonesToDisplay = null; 								// Which zones are displayed
-int g_zonesToDisplay;
 ConVar g_hChecker; 												// Zone refresh rate
-float g_fChecker;
 Handle g_hZoneTimer = INVALID_HANDLE;
 //Zone Colors
-int g_zoneStartColor[4];
+int g_iZoneColors[ZONEAMOUNT+2][4];								// ZONE COLOR TYPES: Stop(0), Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), 
+char g_szZoneColors[ZONEAMOUNT+2][24];							// Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10)
 ConVar g_hzoneStartColor = null;
-char g_szzoneStartColor[24];
-int g_zoneEndColor[4];
 ConVar g_hzoneEndColor = null;
-char g_szzoneEndColor[24];
-int g_zoneBonusStartColor[4];
 ConVar g_hzoneBonusStartColor = null;
-char g_szzoneBonusStartColor[24];
-int g_zoneBonusEndColor[4];
 ConVar g_hzoneBonusEndColor = null;
-char g_szzoneBonusEndColor[24];
-int g_zoneStageColor[4];
 ConVar g_hzoneStageColor = null;
-char g_szzoneStageColor[24];
-int g_zoneCheckpointColor[4];
 ConVar g_hzoneCheckpointColor = null;
-char g_szzoneCheckpointColor[24];
-int g_zoneSpeedColor[4];
 ConVar g_hzoneSpeedColor = null;
-char g_szzoneSpeedColor[24];
-int g_zoneTeleToStartColor[4];
 ConVar g_hzoneTeleToStartColor = null;
-char g_szzoneTeleToStartColor[24];
-int g_zoneValidatorColor[4];
 ConVar g_hzoneValidatorColor = null;
-char g_szzoneValidatorColor[24];
-int g_zoneCheckerColor[4];
 ConVar g_hzoneCheckerColor = null;
-char g_szzoneCheckerColor[24];
-int g_zoneStopColor[4];
 ConVar g_hzoneStopColor = null;
-char g_szzoneStopColor[24];
 ConVar g_hAnnounceRecord;										// Announce rank type: 0 announce all, 1 announce only PB's, 3 announce only SR's
-int g_iAnnounceRecord;
 ConVar g_hCommandToEnd; 										// !end Enable / Disable
-bool g_bCommandToEnd;
 ConVar g_hWelcomeMsg = null;
-char g_sWelcomeMsg[512]; 										// Welcome message
 ConVar g_hReplayBotPlayerModel = null;
-char g_sReplayBotPlayerModel[256]; 								// Repalay bot player model
 ConVar g_hReplayBotArmModel = null; 							// Replay bot arm model
-char g_sReplayBotArmModel[256];
 ConVar g_hPlayerModel = null; 									// Player models
-char g_sPlayerModel[256];
 ConVar g_hArmModel = null; 										// Player arm models
-char g_sArmModel[256];
 ConVar g_hcvarRestore = null; 									// Restore player's runs?
-bool g_bRestore;
 ConVar g_hNoClipS = null; 										// Allow noclip?
-bool g_bNoClipS;
 ConVar g_hReplayBot = null; 									// Replay bot?
+ConVar g_hBakcupReplays = null;									// Back up replay bots?
+ConVar g_hReplaceReplayTime = null;								// Replace replay times, even if not SR
+ConVar g_hAllowVipMute = null;									// Allow VIP's to mute?
 bool g_bMapReplay; // Why two bools?
-bool g_bReplayBot;
 ConVar g_hBonusBot = null; 										// Bonus bot?
-bool g_bBonusReplay; // Why two bools?
-bool g_bMapBonusReplay;
+bool g_bMapBonusReplay[MAXZONEGROUPS];
 ConVar g_hColoredNames = null; 									// Colored names in chat?
-bool g_bColoredNames;
 ConVar g_hPauseServerside = null; 								// Allow !pause?
-bool g_bPauseServerside;
 ConVar g_hChallengePoints = null; 								// Allow betting points in challenges?
-bool g_bChallengePoints;
 ConVar g_hAutoBhopConVar = null; 								// Allow autobhop?
-bool g_bAutoBhopConVar; // Why two bools?
 bool g_bAutoBhop;
 ConVar g_hDynamicTimelimit = null; 								// Dynamic timelimit?
-bool g_bDynamicTimelimit;
 ConVar g_hAdminClantag = null;									// Admin clan tag?
-bool g_bAdminClantag;
 ConVar g_hConnectMsg = null; 									// Connect message?
-bool g_bConnectMsg;
 ConVar g_hDisconnectMsg = null; 								// Disconnect message?
-bool g_bDisconnectMsg;
 ConVar g_hRadioCommands = null; 								// Allow radio commands?
-bool g_bRadioCommands;
 ConVar g_hInfoBot = null; 										// Info bot?
-bool g_bInfoBot;
 ConVar g_hAttackSpamProtection = null; 							// Throttle shooting?
-bool g_bAttackSpamProtection;
 int g_AttackCounter[MAXPLAYERS + 1]; 							// Used to calculate player shots
 ConVar g_hGoToServer = null; 									// Allow !goto?
-bool g_bGoToServer;
 ConVar g_hAllowRoundEndCvar = null; 							// Allow round ending?
 bool g_bRoundEnd; // Why two bools?
-bool g_bAllowRoundEndCvar;
 ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
-bool g_bPlayerSkinChange;
 ConVar g_hCountry = null; 										// Display countries for players?
-bool g_bCountry;
 ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
-bool g_bAutoRespawn;
-ConVar g_hcvarNoBlock = null; 									// Allow player blocking?
-bool g_bNoBlock;
+ConVar g_hCvarNoBlock = null; 									// Allow player blocking?
 ConVar g_hPointSystem = null; 									// Use the point system?
-bool g_bPointSystem;
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
-bool g_bCleanWeapons;
 int g_ownerOffset; 												// Used to clear weapons from ground
-ConVar g_hcvargodmode = null;									// Enable god mode?
-bool g_bgodmode;
-bool g_bAutoTimer; 												// Start timer automatically? Kinda useless for ckSurf
+ConVar g_hCvarGodMode = null;									// Enable god mode?
 ConVar g_hAutoTimer = null;
 ConVar g_hMapEnd = null; 										// Allow map ending?
-bool g_bMapEnd;
 ConVar g_hAutohealing_Hp = null; 								// Automatically heal lost HP?
-int g_Autohealing_Hp;
 ConVar g_hExtraPoints = null; 									// How many extra points for improving times?
-int g_ExtraPoints;
 ConVar g_hExtraPoints2 = null; 									// How many extra points for finishing a map for the first time?
-int g_ExtraPoints2;
 // Bot Colors & effects:
 ConVar g_hReplayBotColor = null; 								// Replay bot color
 int g_ReplayBotColor[3];
 ConVar g_hBonusBotColor = null; 								// Bonus bot color
 int g_BonusBotColor[3];
 ConVar g_hBonusBotTrail = null; 								// Bonus bot trail?
-bool g_bBonusReplayTrailEnabled;
 ConVar g_hRecordBotTrail = null; 								// Record bot trail?
-bool g_bRecordBotTrailEnabled;
 ConVar g_hReplayBotTrailColor = null; 							// Replay bot trail color
 int g_ReplayBotTrailColor[4];
 ConVar g_hBonusBotTrailColor = null; 							// Bonus bot trail color
 int g_BonusBotTrailColor[4];
-ConVar g_hDoubleRestartCommand;
-bool g_bDoubleRestartCommand; 									// Doube !r on / off
+ConVar g_hDoubleRestartCommand;									// Double !r restart
 ConVar g_hStartPreSpeed = null; 								// Start zone speed cap
-float g_fStartPreSpeed;
 ConVar g_hSpeedPreSpeed = null; 								// Speed Start zone speed cap
-float g_fSpeedPreSpeed;
 ConVar g_hBonusPreSpeed = null; 								// Bonus start zone speed cap
-float g_fBonusPreSpeed;
 ConVar g_hSoundEnabled = null; 									// Enable timer start sound
-bool bSoundEnabled;
 ConVar g_hSoundPath = null;										// Define start sound
-char sSoundPath[64];
+//char sSoundPath[64];
 ConVar g_hSpawnToStartZone = null; 								// Teleport on spawn to start zone 
-bool bSpawnToStartZone;
 ConVar g_hAnnounceRank = null; 									// Min rank to announce in chat
-int g_AnnounceRank;
 ConVar g_hForceCT = null; 										// Force players CT
-bool g_bForceCT;
 ConVar g_hChatSpamFilter = null; 								// Chat spam limiter
-float g_fChatSpamFilter;
 float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
 int g_messages[MAXPLAYERS + 1]; 								// Spam message count
 ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
-bool g_benableChatProcessing;
 ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
-bool g_bMultiServerMapcycle;
 
 /*----------  SQL Variables  ----------*/
 Handle g_hDb = null; 											// SQL driver
@@ -533,6 +463,7 @@ char g_szRecordMapSteamID[MAX_NAME_LENGTH]; 					// SteamdID of #1 player in map
 
 /*----------  User Commands  ----------*/
 float g_flastClientUsp[MAXPLAYERS + 1]; 						// Throttle !usp command
+float g_fLastCommandBack[MAXPLAYERS + 1];						// Throttle !back to prevent desync on record bots
 bool g_insertingInformation; 									// Used to check if a admin is inserting zone or maptier information, don't allow many at the same time
 bool g_bNoClip[MAXPLAYERS + 1]; 								// Client is noclipping
 
@@ -603,6 +534,7 @@ Handle g_hRecording[MAXPLAYERS + 1]; 							// Client is beign recorded
 Handle g_hLoadedRecordsAdditionalTeleport = null;
 Handle g_hRecordingAdditionalTeleport[MAXPLAYERS + 1];
 Handle g_hBotMimicsRecord[MAXPLAYERS + 1] =  { null, ... }; 	// Is mimicing a record
+Handle g_hBotTrail[2] = { null, null };							// Timer to refresh bot trails
 float g_fInitialPosition[MAXPLAYERS + 1][3]; 					// Replay start position
 float g_fInitialAngles[MAXPLAYERS + 1][3]; 						// Replay start angle
 bool g_bValidTeleportCall[MAXPLAYERS + 1]; 						// Is teleport valid?
@@ -624,6 +556,10 @@ char g_szReplayName[128]; 										// Replay bot name
 char g_szReplayTime[128]; 										// Replay bot time
 char g_szBonusName[128]; 										// Replay bot name
 char g_szBonusTime[128]; 										// Replay bot time
+int g_BonusBotCount;
+int g_iCurrentBonusReplayIndex;
+int g_iBonusToReplay[MAXZONEGROUPS + 1];
+float g_fReplayTimes[MAXZONEGROUPS];
 
 /*----------  Misc  ----------*/
 Handle g_MapList = null; 										// Used to load the mapcycle
@@ -645,7 +581,6 @@ bool g_bSpectate[MAXPLAYERS + 1]; 								// Is client spectating
 bool g_bFirstTeamJoin[MAXPLAYERS + 1];							// First time client joined game, show start messages & start timers
 bool g_bFirstSpawn[MAXPLAYERS + 1]; 							// First time client spawned
 bool g_bSelectProfile[MAXPLAYERS + 1];
-bool g_bOnGround[MAXPLAYERS + 1]; 								// Is client touching the ground?
 bool g_specToStage[MAXPLAYERS + 1]; 							// Is client teleporting from spectate?
 float g_fTeleLocation[MAXPLAYERS + 1][3];						// Location where client is spawned from spectate
 int g_ragdolls = -1; 											// Used to clear ragdolls from ground
@@ -941,17 +876,10 @@ public void OnMapStart()
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
-	g_hZoneTimer = CreateTimer(g_fChecker, BeamBoxAll, _, TIMER_REPEAT);
-	
-	
-	if (g_bAutoRespawn)
-		ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
-	else
-		ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
-	ServerCommand("sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
-	
+	g_hZoneTimer = CreateTimer(GetConVarFloat(g_hChecker), BeamBoxAll, _, TIMER_REPEAT);
+		
 	//AutoBhop?
-	if (g_bAutoBhopConVar)
+	if (GetConVarBool(g_hAutoBhopConVar))
 		g_bAutoBhop = true;
 	else
 		g_bAutoBhop = false;
@@ -987,7 +915,7 @@ public void OnMapStart()
 		SDKHook(iEnt, SDKHook_Touch, OnTouchPushTrigger);
 	}
 	
-	OnConfigsExecuted();
+	//OnConfigsExecuted();
 		
 	// Set default values
 	g_insertingInformation = false;
@@ -1009,17 +937,25 @@ public void OnMapEnd()
 	g_RecordBot = -1;
 	g_BonusBot = -1;
 	db_Cleanup();
+
 	if (g_hSkillGroups != null)
 		CloseHandle(g_hSkillGroups);
-
 	g_hSkillGroups = null;
+
+	if (g_hBotTrail[0] != null)
+		CloseHandle(g_hBotTrail[0]);
+	g_hBotTrail[0] = null;
+
+	if (g_hBotTrail[1] != null)
+		CloseHandle(g_hBotTrail[1]);
+	g_hBotTrail[1] = null;
 	
 	Format(g_szMapName, sizeof(g_szMapName), "");
 }
 
 public void OnConfigsExecuted()
 {
-	if (!g_bMultiServerMapcycle)
+	if (!GetConVarBool(g_hMultiServerMapcycle))
 		readMapycycle();
 	else
 		readMultiServerMapcycle();
@@ -1029,6 +965,18 @@ public void OnConfigsExecuted()
 		db_selectBonusCount();
 	
 	ServerCommand("sv_pure 0");
+
+	if (GetConVarBool(g_hAllowRoundEndCvar))
+		ServerCommand("mp_ignore_round_win_conditions 0");
+	else
+		ServerCommand("mp_ignore_round_win_conditions 1;mp_maxrounds 1");
+
+	if (GetConVarBool(g_hAutoRespawn))
+		ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
+	else
+		ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
+
+	ServerCommand("sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
 }
 
 
@@ -1065,7 +1013,7 @@ public void OnClientPutInServer(int client)
 	//defaults
 	SetClientDefaults(client);
 	
-	//SDKHooks/Dhooks
+	//SDKHooks
 	SDKHook(client, SDKHook_SetTransmit, Hook_SetTransmit);
 	SDKHook(client, SDKHook_PostThinkPost, Hook_PostThinkPost);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
@@ -1097,7 +1045,7 @@ public void OnClientPutInServer(int client)
 	FixPlayerName(client);
 	
 	//position restoring
-	if (g_bRestore && !g_bRenaming && !g_bInTransactionChain)
+	if (GetConVarBool(g_hcvarRestore) && !g_bRenaming && !g_bInTransactionChain)
 		db_selectLastRun(client);
 	
 	//console info
@@ -1129,7 +1077,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientAuthorized(int client)
 {
-	if (g_bConnectMsg && !IsFakeClient(client))
+	if (GetConVarBool(g_hConnectMsg) && !IsFakeClient(client))
 	{
 		char s_Country[32], s_clientName[32], s_address[32];
 		GetClientIP(client, s_address, 32);
@@ -1171,8 +1119,12 @@ public void OnClientAuthorized(int client)
 public void OnClientDisconnect(int client)
 {
 	if (IsFakeClient(client) && g_hRecordingAdditionalTeleport[client] != null)
+	{
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
-	
+		g_hRecordingAdditionalTeleport[client] = null;
+	}
+
+
 	g_fPlayerLastTime[client] = -1.0;
 	if (g_fStartTime[client] != -1.0 && g_bTimeractivated[client])
 	{
@@ -1227,32 +1179,14 @@ public void OnClientDisconnect(int client)
 
 public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
 {
-	if (convar == g_hGoToServer)
+	if (convar == g_hReplayBot)
 	{
-		g_bGoToServer = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hCommandToEnd)
-	{
-		g_bCommandToEnd = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hChallengePoints)
-	{
-		g_bChallengePoints = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hNoClipS)
-	{
-		g_bNoClipS = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hReplayBot)
-	{
-		g_bReplayBot = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bReplayBot)
-		{
+		if (GetConVarBool(g_hReplayBot))
 			LoadReplays();
-		}
 		else
 		{
 			for (int i = 1; i <= MaxClients; i++)
+			{
 				if (IsValidClient(i))
 				{
 					if (i == g_RecordBot)
@@ -1263,30 +1197,33 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					}
 					else
 					{
-						if (!g_bBonusReplay) // if both bots are off, no need to record
+						if (!GetConVarBool(g_hBonusBot)) // if both bots are off, no need to record
 							if (g_hRecording[i] != null)
 								StopRecording(i);
 					}
 				}
-			if (g_bInfoBot && g_bBonusReplay)
+			}
+			if (GetConVarBool(g_hInfoBot) && GetConVarBool(g_hBonusBot))
 				ServerCommand("bot_quota 2");
 			else
-				if (g_bInfoBot || g_bBonusReplay)
+				if (GetConVarBool(g_hInfoBot) || GetConVarBool(g_hBonusBot))
 					ServerCommand("bot_quota 1");
 				else
 					ServerCommand("bot_quota 0");
+
+			if (g_hBotTrail[0] != null)
+				CloseHandle(g_hBotTrail[0]);
+			g_hBotTrail[0] = null;
 		}
 	}
 	else if (convar == g_hBonusBot)
 	{
-		g_bBonusReplay = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bBonusReplay)
-		{
+		if (GetConVarBool(g_hBonusBot))
 			LoadReplays();
-		}
 		else
 		{
 			for (int i = 1; i <= MaxClients; i++)
+			{
 				if (IsValidClient(i))
 				{
 					if (i == g_BonusBot)
@@ -1297,24 +1234,28 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					}
 					else
 					{
-						if (!g_bReplayBot) // if both bots are off
+						if (!GetConVarBool(g_hReplayBot)) // if both bots are off
 							if (g_hRecording[i] != null)
 							StopRecording(i);
 					}
 				}
-			if (g_bInfoBot && g_bReplayBot)
+			}
+			if (GetConVarBool(g_hInfoBot) && GetConVarBool(g_hReplayBot))
 				ServerCommand("bot_quota 2");
 			else
-				if (g_bInfoBot || g_bReplayBot)
+				if (GetConVarBool(g_hInfoBot) || GetConVarBool(g_hReplayBot))
 					ServerCommand("bot_quota 1");
 				else
 					ServerCommand("bot_quota 0");
+
+			if (g_hBotTrail[1] != null)
+				CloseHandle(g_hBotTrail[1]);
+			g_hBotTrail[1] = null;
 		}
 	}
 	else if (convar == g_hAdminClantag)
 	{
-		g_bAdminClantag = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bAdminClantag)
+		if (GetConVarBool(g_hAdminClantag))
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
@@ -1327,29 +1268,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-	else if (convar == g_hAutoTimer)
-	{
-		g_bAutoTimer = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hColoredNames)
-	{
-		g_bColoredNames = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hPauseServerside)
-	{
-		g_bPauseServerside = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hDynamicTimelimit)
-	{
-		g_bDynamicTimelimit = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hAutohealing_Hp)
-		g_Autohealing_Hp = StringToInt(newValue[0]);
-	
 	else if (convar == g_hAutoRespawn)
 	{
-		g_bAutoRespawn = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bAutoRespawn)
+		if (GetConVarBool(g_hAutoRespawn))
 		{
 			ServerCommand("mp_respawn_on_death_ct 1;mp_respawn_on_death_t 1;mp_respawnwavetime_ct 3.0;mp_respawnwavetime_t 3.0");
 		}
@@ -1358,51 +1279,38 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 			ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
 		}
 	}
-	else if (convar == g_hRadioCommands)
-	{
-		g_bRadioCommands = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hcvarRestore)
-	{
-		g_bRestore = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hMapEnd)
-	{
-		g_bMapEnd = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hConnectMsg)
-	{
-		g_bConnectMsg = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hDisconnectMsg)
-	{
-		g_bDisconnectMsg = view_as<bool>(StringToInt(newValue[0]));
-	}
 	else if (convar == g_hPlayerSkinChange)
 	{
-		g_bPlayerSkinChange = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bPlayerSkinChange)
+		if (GetConVarBool(g_hPlayerSkinChange))
 		{
+			char szBuffer[256];
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
 				{
-					if (i == g_RecordBot)
+					if (i == g_RecordBot || i == g_BonusBot)
 					{
-						SetEntPropString(i, Prop_Send, "m_szArmsModel", g_sReplayBotPlayerModel);
-						SetEntityModel(i, g_sReplayBotPlayerModel);
+						// Player Model
+						GetConVarString(g_hReplayBotPlayerModel, szBuffer, 256);
+						SetEntityModel(i, szBuffer);
+						// Arm Model
+						GetConVarString(g_hReplayBotArmModel, szBuffer, 256);
+						SetEntPropString(i, Prop_Send, "m_szArmsModel", szBuffer);
+						SetEntityModel(i, szBuffer);
 					}
 					else
 					{
-						SetEntPropString(i, Prop_Send, "m_szArmsModel", g_sArmModel);
-						SetEntityModel(i, g_sPlayerModel);
+						GetConVarString(g_hArmModel, szBuffer, 256);
+						SetEntPropString(i, Prop_Send, "m_szArmsModel", szBuffer);
+
+						GetConVarString(g_hPlayerModel, szBuffer, 256);
+						SetEntityModel(i, szBuffer);
 					}
 				}
 		}
 	}
 	else if (convar == g_hPointSystem)
 	{
-		g_bPointSystem = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bPointSystem)
+		if (GetConVarBool(g_hPointSystem))
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
@@ -1418,10 +1326,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				}
 		}
 	}
-	else if (convar == g_hcvarNoBlock)
+	else if (convar == g_hCvarNoBlock)
 	{
-		g_bNoBlock = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bNoBlock)
+		if (GetConVarBool(g_hCvarNoBlock))
 		{
 			for (int client = 1; client <= MAXPLAYERS; client++)
 				if (IsValidEntity(client))
@@ -1435,14 +1342,9 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
 	}
-	else if (convar == g_hAttackSpamProtection)
-	{
-		g_bAttackSpamProtection = view_as<bool>(StringToInt(newValue[0]));
-	}
 	else if (convar == g_hCleanWeapons)
 	{
-		g_bCleanWeapons = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bCleanWeapons)
+		if (GetConVarBool(g_hCleanWeapons))
 		{
 			char szclass[32];
 			for (int i = 1; i <= MaxClients; i++)
@@ -1468,58 +1370,33 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hAutoBhopConVar)
 	{
-		g_bAutoBhopConVar = view_as<bool>(StringToInt(newValue[0]));
 		g_bAutoBhop = view_as<bool>(StringToInt(newValue[0]));
 	}
 	else if (convar == g_hCountry)
 	{
-		g_bCountry = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bCountry)
+		if (GetConVarBool(g_hCountry))
 		{
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if (IsValidClient(i))
 				{
 					GetCountry(i);
-					if (g_bPointSystem)
+					if (GetConVarBool(g_hPointSystem))
 						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
 		else
 		{
-			if (g_bPointSystem)
+			if (GetConVarBool(g_hPointSystem))
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
 						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-	else if (convar == g_hExtraPoints)
-	{
-		g_ExtraPoints = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hExtraPoints2)
-	{
-		g_ExtraPoints2 = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hcvargodmode)
-	{
-		g_bgodmode = view_as<bool>(StringToInt(newValue[0]));
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (IsValidClient(i))
-			{
-				if (g_bgodmode)
-					SetEntProp(i, Prop_Data, "m_takedamage", 0, 1);
-				else
-					SetEntProp(i, Prop_Data, "m_takedamage", 2, 1);
-			}
-		}
-	}
 	else if (convar == g_hInfoBot)
 	{
-		g_bInfoBot = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bInfoBot)
+		if (GetConVarBool(g_hInfoBot))
 		{
 			LoadInfoBot();
 		}
@@ -1536,7 +1413,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 						char szBuffer[64];
 						if (g_bMapReplay)
 							count++;
-						if (g_bMapBonusReplay)
+						if (g_BonusBotCount > 0)
 							count++;
 						Format(szBuffer, sizeof(szBuffer), "bot_quota %i", count);
 						ServerCommand(szBuffer);
@@ -1546,45 +1423,56 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	else if (convar == g_hReplayBotPlayerModel)
 	{
-		Format(g_sReplayBotPlayerModel, 256, "%s", newValue[0]);
-		PrecacheModel(newValue[0], true);
-		AddFileToDownloadsTable(g_sReplayBotPlayerModel);
-		if (g_RecordBot != -1)
-			SetEntityModel(g_RecordBot, newValue[0]);
+		char szBuffer[256];
+		GetConVarString(g_hReplayBotPlayerModel, szBuffer, 256);
+		PrecacheModel(szBuffer, true);
+		AddFileToDownloadsTable(szBuffer);
+		if (IsValidClient(g_RecordBot))
+			SetEntityModel(g_RecordBot, szBuffer);
+		if (IsValidClient(g_BonusBot))
+			SetEntityModel(g_BonusBot, szBuffer);
 	}
 	else if (convar == g_hReplayBotArmModel)
 	{
-		Format(g_sReplayBotArmModel, 256, "%s", newValue[0]);
-		PrecacheModel(newValue[0], true);
-		AddFileToDownloadsTable(g_sReplayBotArmModel);
-		if (g_RecordBot != -1)
-			SetEntPropString(g_RecordBot, Prop_Send, "m_szArmsModel", newValue[0]);
+		char szBuffer[256];
+		GetConVarString(g_hReplayBotArmModel, szBuffer, 256);
+		PrecacheModel(szBuffer, true);
+		AddFileToDownloadsTable(szBuffer);
+		if (IsValidClient(g_RecordBot))
+			SetEntPropString(g_RecordBot, Prop_Send, "m_szArmsModel", szBuffer);
+		if (IsValidClient(g_BonusBot))
+			SetEntPropString(g_RecordBot, Prop_Send, "m_szArmsModel", szBuffer);
+
 	}
 	else if (convar == g_hPlayerModel)
 	{
-		Format(g_sPlayerModel, 256, "%s", newValue[0]);
-		PrecacheModel(newValue[0], true);
-		AddFileToDownloadsTable(g_sPlayerModel);
-		if (!g_bPlayerSkinChange)
+		char szBuffer[256];
+		GetConVarString(g_hPlayerModel, szBuffer, 256);
+
+		PrecacheModel(szBuffer, true);
+		AddFileToDownloadsTable(szBuffer);
+		if (!GetConVarBool(g_hPlayerSkinChange))
 			return;
 		for (int i = 1; i <= MaxClients; i++)
 			if (IsValidClient(i) && i != g_RecordBot)
-				SetEntityModel(i, newValue[0]);
+				SetEntityModel(i, szBuffer);
+			else if (IsValidClient(i) && i != g_BonusBot)
+				SetEntityModel(i, szBuffer);
 	}
 	else if (convar == g_hArmModel)
 	{
-		Format(g_sArmModel, 256, "%s", newValue[0]);
-		PrecacheModel(newValue[0], true);
-		AddFileToDownloadsTable(g_sArmModel);
-		if (!g_bPlayerSkinChange)
+		char szBuffer[256];
+		GetConVarString(g_hArmModel, szBuffer, 256);
+
+		PrecacheModel(szBuffer, true);
+		AddFileToDownloadsTable(szBuffer);
+		if (!GetConVarBool(g_hPlayerSkinChange))
 			return;
 		for (int i = 1; i <= MaxClients; i++)
 			if (IsValidClient(i) && i != g_RecordBot)
-				SetEntPropString(i, Prop_Send, "m_szArmsModel", newValue[0]);
-	}
-	else if (convar == g_hWelcomeMsg)
-	{
-		Format(g_sWelcomeMsg, 512, "%s", newValue[0]);
+				SetEntPropString(i, Prop_Send, "m_szArmsModel", szBuffer);
+			else if (IsValidClient(i) && i != g_BonusBot)
+				SetEntPropString(i, Prop_Send, "m_szArmsModel", szBuffer);
 	}
 	else if (convar == g_hReplayBotColor)
 	{
@@ -1610,144 +1498,95 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		Format(color, 24, "%s", newValue);
 		StringRGBtoInt(color, g_BonusBotTrailColor);
 	}
-	else if (convar == g_hAllowRoundEndCvar)
-	{
-		g_bAllowRoundEndCvar = view_as<bool>(StringToInt(newValue[0]));
-		if (g_bAllowRoundEndCvar)
-		{
-			ServerCommand("mp_ignore_round_win_conditions 0");
-		}
-		else
-		{
-			ServerCommand("mp_ignore_round_win_conditions 1;mp_maxrounds 1");
-		}
-	}
-	else if (convar == g_hChecker)
-	{
-		g_fChecker = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_hZoneDisplayType)
-	{
-		g_zoneDisplayType = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hZonesToDisplay)
-	{
-		g_zonesToDisplay = StringToInt(newValue[0]);
-	}
 	else if (convar == g_hzoneStartColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneStartColor);
+		StringRGBtoInt(color, g_iZoneColors[1]);
 	}
 	else if (convar == g_hzoneEndColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneEndColor);
+		StringRGBtoInt(color, g_iZoneColors[2]);
 	}
 	else if (convar == g_hzoneCheckerColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneCheckerColor);
+		StringRGBtoInt(color, g_iZoneColors[10]);
 	}
 	else if (convar == g_hzoneBonusStartColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneBonusStartColor);
+		StringRGBtoInt(color, g_iZoneColors[3]);
 	}
 	else if (convar == g_hzoneBonusEndColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneBonusEndColor);
+		StringRGBtoInt(color, g_iZoneColors[4]);
 	}
 	else if (convar == g_hzoneStageColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneStageColor);
+		StringRGBtoInt(color, g_iZoneColors[5]);
 	}
 	else if (convar == g_hzoneCheckpointColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneCheckpointColor);
+		StringRGBtoInt(color, g_iZoneColors[6]);
 	}
 	else if (convar == g_hzoneSpeedColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneSpeedColor);
+		StringRGBtoInt(color, g_iZoneColors[7]);
 	}
 	else if (convar == g_hzoneTeleToStartColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneTeleToStartColor);
+		StringRGBtoInt(color, g_iZoneColors[8]);
 	}
 	else if (convar == g_hzoneValidatorColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneValidatorColor);
+		StringRGBtoInt(color, g_iZoneColors[9]);
 	}
 	else if (convar == g_hzoneStopColor)
 	{
 		char color[24];
 		Format(color, 28, "%s", newValue[0]);
-		StringRGBtoInt(color, g_zoneStopColor);
-	}
-	else if (convar == g_hStartPreSpeed) {
-		g_fStartPreSpeed = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_hSpeedPreSpeed) {
-		g_fSpeedPreSpeed = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_hBonusPreSpeed) {
-		g_fBonusPreSpeed = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_hSpawnToStartZone) {
-		bSpawnToStartZone = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hSoundEnabled) {
-		bSoundEnabled = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hSoundPath) {
-		strcopy(sSoundPath, sizeof(sSoundPath), newValue);
-	}
-	else if (convar == g_hAnnounceRank) {
-		g_AnnounceRank = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hAnnounceRecord) {
-		g_iAnnounceRecord = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hForceCT) {
-		g_bForceCT = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hChatSpamFilter) {
-		g_fChatSpamFilter = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_henableChatProcessing) {
-		g_benableChatProcessing = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hMultiServerMapcycle)
-	{
-		g_bMultiServerMapcycle = view_as<bool>(StringToInt(newValue[0]));
+		StringRGBtoInt(color, g_iZoneColors[0]);
 	}
 	else if (convar == g_hRecordBotTrail) {
-		g_bRecordBotTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
+		if (GetConVarBool(g_hRecordBotTrail) && IsValidClient(g_RecordBot) && g_hBotTrail[0] == null)
+		{
+			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, g_RecordBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		}
+		else
+		{
+			if (g_hBotTrail[0] != null)
+				CloseHandle(g_hBotTrail[0]);
+			g_hBotTrail[0] = null;
+		}
 	}
 	else if (convar == g_hBonusBotTrail) {
-		g_bBonusReplayTrailEnabled = view_as<bool>(StringToInt(newValue[0]));
-	}
-	else if (convar == g_hTriggerPushFixEnable) {
-		g_bTriggerPushFixEnable = view_as<bool>(StringToInt(newValue));
-	}
-	else if (convar == g_hSlopeFixEnable) {
-		g_bSlopeFixEnable = view_as<bool>(StringToInt(newValue));
+		if (GetConVarBool(g_hBonusBotTrail) && IsValidClient(g_BonusBot) && g_hBotTrail[1] == null)
+		{
+			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, g_BonusBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		}
+		else
+		{
+			if (g_hBotTrail[1] != null)
+				CloseHandle(g_hBotTrail[1]);
+			g_hBotTrail[1] = null;
+		}
 	}
 	else if (convar == g_hAutoVIPFlag) {
 		AdminFlag flag;
@@ -1782,18 +1621,6 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		else
 			g_AdminMenuFlag = FlagToBit(flag);
 	}
-	else if (convar == g_hVoteExtendTime) {
-		g_fVoteExtendTime = StringToFloat(newValue[0]);
-	}
-	else if (convar == g_hMaxVoteExtends) {
-		g_MaxVoteExtends = StringToInt(newValue[0]);
-	}
-	else if (convar == g_hDoubleRestartCommand) {
-		g_bDoubleRestartCommand = view_as<bool>(StringToInt(newValue));
-	}
-	else if (convar == g_hServerVipCommand) {
-		g_bServerVipCommand = view_as<bool>(StringToInt(newValue));
-	}
 	
 	if (g_hZoneTimer != INVALID_HANDLE)
 	{
@@ -1802,7 +1629,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	}
 	
 	
-	g_hZoneTimer = CreateTimer(g_fChecker, BeamBoxAll, _, TIMER_REPEAT);
+	g_hZoneTimer = CreateTimer(GetConVarFloat(g_hChecker), BeamBoxAll, _, TIMER_REPEAT);
 	
 }
 
@@ -1826,152 +1653,93 @@ public void OnPluginStart()
 	CreateConVar("ckSurf_version", VERSION, "ckSurf Version.", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	
 	g_hConnectMsg = CreateConVar("ck_connect_msg", "1", "on/off - Enables a player connect message with country", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bConnectMsg = GetConVarBool(g_hConnectMsg);
-	HookConVarChange(g_hConnectMsg, OnSettingChanged);
-	
 	g_hAllowRoundEndCvar = CreateConVar("ck_round_end", "0", "on/off - Allows to end the current round", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAllowRoundEndCvar = GetConVarBool(g_hAllowRoundEndCvar);
-	HookConVarChange(g_hAllowRoundEndCvar, OnSettingChanged);
-	
 	g_hDisconnectMsg = CreateConVar("ck_disconnect_msg", "1", "on/off - Enables a player disconnect message in chat", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bDisconnectMsg = GetConVarBool(g_hDisconnectMsg);
-	HookConVarChange(g_hDisconnectMsg, OnSettingChanged);
-	
 	g_hMapEnd = CreateConVar("ck_map_end", "1", "on/off - Allows map changes after the timelimit has run out (mp_timelimit must be greater than 0)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bMapEnd = GetConVarBool(g_hMapEnd);
-	HookConVarChange(g_hMapEnd, OnSettingChanged);
-	
 	g_hColoredNames = CreateConVar("ck_colored_chatnames", "0", "on/off Colors players names based on their rank in chat.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bColoredNames = GetConVarBool(g_hColoredNames);
-	HookConVarChange(g_hColoredNames, OnSettingChanged);
-	
-	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bReplayBot = GetConVarBool(g_hReplayBot);
-	HookConVarChange(g_hReplayBot, OnSettingChanged);
-	
-	g_hBonusBot = CreateConVar("ck_bonus_bot", "1", "on/off - Bots mimic the local bonus record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bBonusReplay = GetConVarBool(g_hBonusBot);
-	HookConVarChange(g_hBonusBot, OnSettingChanged);
-	
-	g_hInfoBot = CreateConVar("ck_info_bot", "0", "on/off - provides information about nextmap and timeleft in his player name", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bInfoBot = GetConVarBool(g_hInfoBot);
-	HookConVarChange(g_hInfoBot, OnSettingChanged);
-	
 	g_hNoClipS = CreateConVar("ck_noclip", "1", "on/off - Allows players to use noclip", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bNoClipS = GetConVarBool(g_hNoClipS);
-	HookConVarChange(g_hNoClipS, OnSettingChanged);
-	
-	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAdminClantag = GetConVarBool(g_hAdminClantag);
-	HookConVarChange(g_hAdminClantag, OnSettingChanged);
-	
 	g_hAutoTimer = CreateConVar("ck_auto_timer", "0", "on/off - Timer automatically starts when a player joins a team, dies or uses !start/!r", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAutoTimer = GetConVarBool(g_hAutoTimer);
-	HookConVarChange(g_hAutoTimer, OnSettingChanged);
-	
 	g_hGoToServer = CreateConVar("ck_goto", "1", "on/off - Allows players to use the !goto command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bGoToServer = GetConVarBool(g_hGoToServer);
-	HookConVarChange(g_hGoToServer, OnSettingChanged);
-	
 	g_hCommandToEnd = CreateConVar("ck_end", "1", "on/off - Allows players to use the !end command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bCommandToEnd = GetConVarBool(g_hCommandToEnd);
-	HookConVarChange(g_hCommandToEnd, OnSettingChanged);
-	
-	g_hcvargodmode = CreateConVar("ck_godmode", "1", "on/off - unlimited hp", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bgodmode = GetConVarBool(g_hcvargodmode);
-	HookConVarChange(g_hcvargodmode, OnSettingChanged);
-	
+	g_hCvarGodMode = CreateConVar("ck_godmode", "1", "on/off - unlimited hp", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hPauseServerside = CreateConVar("ck_pause", "1", "on/off - Allows players to use the !pause command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bPauseServerside = GetConVarBool(g_hPauseServerside);
-	HookConVarChange(g_hPauseServerside, OnSettingChanged);
-	
 	g_hcvarRestore = CreateConVar("ck_restore", "1", "on/off - Restoring of time and last position after reconnect", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bRestore = GetConVarBool(g_hcvarRestore);
-	HookConVarChange(g_hcvarRestore, OnSettingChanged);
-	
-	g_hcvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bNoBlock = GetConVarBool(g_hcvarNoBlock);
-	HookConVarChange(g_hcvarNoBlock, OnSettingChanged);
-	
 	g_hAttackSpamProtection = CreateConVar("ck_attack_spam_protection", "1", "on/off - max 40 shots; +5 new/extra shots per minute; 1 he/flash counts like 9 shots", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAttackSpamProtection = GetConVarBool(g_hAttackSpamProtection);
-	HookConVarChange(g_hAttackSpamProtection, OnSettingChanged);
-	
-	g_hAutoRespawn = CreateConVar("ck_autorespawn", "1", "on/off - Auto respawn", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAutoRespawn = GetConVarBool(g_hAutoRespawn);
-	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
-	
 	g_hRadioCommands = CreateConVar("ck_use_radio", "0", "on/off - Allows players to use radio commands", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bRadioCommands = GetConVarBool(g_hRadioCommands);
-	HookConVarChange(g_hRadioCommands, OnSettingChanged);
-	
 	g_hAutohealing_Hp = CreateConVar("ck_autoheal", "50", "Sets HP amount for autohealing (requires ck_godmode 0)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_Autohealing_Hp = GetConVarInt(g_hAutohealing_Hp);
-	HookConVarChange(g_hAutohealing_Hp, OnSettingChanged);
-	
-	g_hCleanWeapons = CreateConVar("ck_clean_weapons", "1", "on/off - Removes all weapons on the ground", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bCleanWeapons = GetConVarBool(g_hCleanWeapons);
-	HookConVarChange(g_hCleanWeapons, OnSettingChanged);
-	
-	g_hCountry = CreateConVar("ck_country_tag", "1", "on/off - Country clan tag", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bCountry = GetConVarBool(g_hCountry);
-	HookConVarChange(g_hCountry, OnSettingChanged);
-	
 	g_hChallengePoints = CreateConVar("ck_challenge_points", "1", "on/off - Allows players to bet points on their challenges", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bChallengePoints = GetConVarBool(g_hChallengePoints);
-	HookConVarChange(g_hChallengePoints, OnSettingChanged);
-	
-	g_hAutoBhopConVar = CreateConVar("ck_auto_bhop", "1", "on/off - AutoBhop on surf_ maps", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bAutoBhopConVar = GetConVarBool(g_hAutoBhopConVar);
-	HookConVarChange(g_hAutoBhopConVar, OnSettingChanged);
-	
 	g_hDynamicTimelimit = CreateConVar("ck_dynamic_timelimit", "0", "on/off - Sets a suitable timelimit by calculating the average run time (This method requires ck_map_end 1, greater than 5 map times and a default timelimit in your server config for maps with less than 5 times", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bDynamicTimelimit = GetConVarBool(g_hDynamicTimelimit);
-	HookConVarChange(g_hDynamicTimelimit, OnSettingChanged);
-	
 	g_hExtraPoints = CreateConVar("ck_ranking_extra_points_improvements", "15.0", "Gives players x extra points for improving their time.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_ExtraPoints = GetConVarInt(g_hExtraPoints);
-	HookConVarChange(g_hExtraPoints, OnSettingChanged);
-	
 	g_hExtraPoints2 = CreateConVar("ck_ranking_extra_points_firsttime", "50.0", "Gives players x extra points for finishing a map for the first time.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_ExtraPoints2 = GetConVarInt(g_hExtraPoints2);
-	HookConVarChange(g_hExtraPoints2, OnSettingChanged);
-	
-	g_hPointSystem = CreateConVar("ck_point_system", "1", "on/off - Player point system", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bPointSystem = GetConVarBool(g_hPointSystem);
-	HookConVarChange(g_hPointSystem, OnSettingChanged);
-	
-	g_hPlayerSkinChange = CreateConVar("ck_custom_models", "1", "on/off - Allows ckSurf to change the models of players and bots", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bPlayerSkinChange = GetConVarBool(g_hPlayerSkinChange);
-	HookConVarChange(g_hPlayerSkinChange, OnSettingChanged);
-	
-	g_hReplayBotPlayerModel = CreateConVar("ck_replay_bot_skin", "models/player/tm_professional_var1.mdl", "Replay pro bot skin", FCVAR_NOTIFY);
-	GetConVarString(g_hReplayBotPlayerModel, g_sReplayBotPlayerModel, 256);
-	HookConVarChange(g_hReplayBotPlayerModel, OnSettingChanged);
-	
-	g_hReplayBotArmModel = CreateConVar("ck_replay_bot_arm_skin", "models/weapons/t_arms_professional.mdl", "Replay pro bot arm skin", FCVAR_NOTIFY);
-	GetConVarString(g_hReplayBotArmModel, g_sReplayBotArmModel, 256);
-	HookConVarChange(g_hReplayBotArmModel, OnSettingChanged);
-	
-	g_hPlayerModel = CreateConVar("ck_player_skin", "models/player/ctm_sas_varianta.mdl", "Player skin", FCVAR_NOTIFY);
-	GetConVarString(g_hPlayerModel, g_sPlayerModel, 256);
-	HookConVarChange(g_hPlayerModel, OnSettingChanged);
-	
-	g_hArmModel = CreateConVar("ck_player_arm_skin", "models/weapons/ct_arms_sas.mdl", "Player arm skin", FCVAR_NOTIFY);
-	GetConVarString(g_hArmModel, g_sArmModel, 256);
-	HookConVarChange(g_hArmModel, OnSettingChanged);
-	
-	
 	g_hWelcomeMsg = CreateConVar("ck_welcome_msg", " {yellow}>>{default} {grey}Welcome! This server is using {lime}ckSurf", "Welcome message (supported color tags: {default}, {darkred}, {green}, {lightgreen}, {blue} {olive}, {lime}, {red}, {purple}, {grey}, {yellow}, {lightblue}, {steelblue}, {darkblue}, {pink}, {lightred})", FCVAR_NOTIFY);
-	GetConVarString(g_hWelcomeMsg, g_sWelcomeMsg, 512);
-	HookConVarChange(g_hWelcomeMsg, OnSettingChanged);
-	
+	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_NOTIFY);
+	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_NOTIFY);
+	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_NOTIFY);
+	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
+	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
+	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
+	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_NOTIFY);
+	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.", FCVAR_NOTIFY, true, 0.0);
+	g_hAnnounceRecord = CreateConVar("ck_chat_record_type", "0", "0: Announce all times to chat, 1: Only announce PB's to chat, 2: Only announce SR's to chat", FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hChatSpamFilter = CreateConVar("ck_chat_spamprotection_time", "1.0", "The frequency in seconds that players are allowed to send chat messages. 0.0 = No chat cap.", FCVAR_NOTIFY, true, 0.0);
+	g_henableChatProcessing = CreateConVar("ck_chat_enable", "1", "(1 / 0) Enable or disable ckSurfs chat processing.", FCVAR_NOTIFY);
+	g_hMultiServerMapcycle = CreateConVar("ck_multi_server_mapcycle", "0", "0 = Use mapcycle.txt to load servers maps, 1 = use configs/ckSurf/multi_server_mapcycle.txt to load maps", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hTriggerPushFixEnable = CreateConVar("ck_triggerpushfix_enable", "1", "Enables trigger push fix.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hSlopeFixEnable = CreateConVar("ck_slopefix_enable", "1", "Enables slope fix.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
+	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
+	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "1", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hBakcupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hReplaceReplayTime = 	CreateConVar("ck_replay_replace_faster", "1", "(1 / 0) Replace record bots if a players time is faster than the bot, even if the time is not a server record.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hAllowVipMute = CreateConVar("ck_vip_mute", "1", "(1 / 0) Allows VIP's to mute players", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+
+	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
+	HookConVarChange(g_hBonusBotTrail, OnSettingChanged);
+	g_hRecordBotTrail = CreateConVar("ck_record_bot_trail", "1", "(1 / 0) Enables a trail on the record bot.", FCVAR_NOTIFY);
+	HookConVarChange(g_hRecordBotTrail, OnSettingChanged);
+	g_hPointSystem = CreateConVar("ck_point_system", "1", "on/off - Player point system", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hPointSystem, OnSettingChanged);
+	g_hPlayerSkinChange = CreateConVar("ck_custom_models", "1", "on/off - Allows ckSurf to change the models of players and bots", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hPlayerSkinChange, OnSettingChanged);
+	g_hReplayBotPlayerModel = CreateConVar("ck_replay_bot_skin", "models/player/tm_professional_var1.mdl", "Replay pro bot skin", FCVAR_NOTIFY);
+	HookConVarChange(g_hReplayBotPlayerModel, OnSettingChanged);
+	g_hReplayBotArmModel = CreateConVar("ck_replay_bot_arm_skin", "models/weapons/t_arms_professional.mdl", "Replay pro bot arm skin", FCVAR_NOTIFY);
+	HookConVarChange(g_hReplayBotArmModel, OnSettingChanged);
+	g_hPlayerModel = CreateConVar("ck_player_skin", "models/player/ctm_sas_varianta.mdl", "Player skin", FCVAR_NOTIFY);
+	HookConVarChange(g_hPlayerModel, OnSettingChanged);
+	g_hArmModel = CreateConVar("ck_player_arm_skin", "models/weapons/ct_arms_sas.mdl", "Player arm skin", FCVAR_NOTIFY);
+	HookConVarChange(g_hArmModel, OnSettingChanged);
+	g_hAutoBhopConVar = CreateConVar("ck_auto_bhop", "1", "on/off - AutoBhop on surf_ maps", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hAutoBhopConVar, OnSettingChanged);
+	g_hCleanWeapons = CreateConVar("ck_clean_weapons", "1", "on/off - Removes all weapons on the ground", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hCleanWeapons, OnSettingChanged);
+	g_hCountry = CreateConVar("ck_country_tag", "1", "on/off - Country clan tag", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hCountry, OnSettingChanged);
+	g_hAutoRespawn = CreateConVar("ck_autorespawn", "1", "on/off - Auto respawn", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
+	g_hCvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hCvarNoBlock, OnSettingChanged);
+	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hAdminClantag, OnSettingChanged);
+	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hReplayBot, OnSettingChanged);
+	g_hBonusBot = CreateConVar("ck_bonus_bot", "1", "on/off - Bots mimic the local bonus record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hBonusBot, OnSettingChanged);
+	g_hInfoBot = CreateConVar("ck_info_bot", "0", "on/off - provides information about nextmap and timeleft in his player name", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	HookConVarChange(g_hInfoBot, OnSettingChanged);
+
+
 	g_hReplayBotColor = CreateConVar("ck_replay_bot_color", "52 91 248", "The default replay bot color - Format: \"red green blue\" from 0 - 255.", FCVAR_NOTIFY);
 	HookConVarChange(g_hReplayBotColor, OnSettingChanged);
 	char szRBotColor[256];
 	GetConVarString(g_hReplayBotColor, szRBotColor, 256);
 	GetRGBColor(0, szRBotColor);
-	
+
 	g_hBonusBotColor = CreateConVar("ck_bonus_bot_color", "255 255 20", "The bonus replay bot color - Format: \"red green blue\" from 0 - 255.", FCVAR_NOTIFY);
 	HookConVarChange(g_hBonusBotColor, OnSettingChanged);
 	szRBotColor = "";
@@ -1989,137 +1757,63 @@ public void OnPluginStart()
 	szTrailColor = "";
 	GetConVarString(g_hBonusBotTrailColor, szTrailColor, 24);
 	StringRGBtoInt(szTrailColor, g_BonusBotTrailColor);
-	
-	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_NOTIFY);
-	g_fChecker = GetConVarFloat(g_hChecker);
-	HookConVarChange(g_hChecker, OnSettingChanged);
-	
-	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_NOTIFY);
-	g_zoneDisplayType = GetConVarInt(g_hZoneDisplayType);
-	HookConVarChange(g_hZoneDisplayType, OnSettingChanged);
-	
-	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_NOTIFY);
-	g_zonesToDisplay = GetConVarInt(g_hZonesToDisplay);
-	HookConVarChange(g_hZonesToDisplay, OnSettingChanged);
-	
+
 	g_hzoneStartColor = CreateConVar("ck_zone_startcolor", "000 255 000", "The color of START zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneStartColor, g_szzoneStartColor, 24);
-	StringRGBtoInt(g_szzoneStartColor, g_zoneStartColor);
+	GetConVarString(g_hzoneStartColor, g_szZoneColors[1], 24);
+	StringRGBtoInt(g_szZoneColors[1], g_iZoneColors[1]);
 	HookConVarChange(g_hzoneStartColor, OnSettingChanged);
 	
 	g_hzoneEndColor = CreateConVar("ck_zone_endcolor", "255 000 000", "The color of END zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneEndColor, g_szzoneEndColor, 24);
-	StringRGBtoInt(g_szzoneEndColor, g_zoneEndColor);
+	GetConVarString(g_hzoneEndColor, g_szZoneColors[2], 24);
+	StringRGBtoInt(g_szZoneColors[2], g_iZoneColors[2]);
 	HookConVarChange(g_hzoneEndColor, OnSettingChanged);
 	
 	g_hzoneCheckerColor = CreateConVar("ck_zone_checkercolor", "255 255 000", "The color of CHECKER zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneCheckerColor, g_szzoneCheckerColor, 24);
-	StringRGBtoInt(g_szzoneCheckerColor, g_zoneCheckerColor);
+	GetConVarString(g_hzoneCheckerColor, g_szZoneColors[10], 24);
+	StringRGBtoInt(g_szZoneColors[10], g_iZoneColors[10]);
 	HookConVarChange(g_hzoneCheckerColor, OnSettingChanged);
 	
 	g_hzoneBonusStartColor = CreateConVar("ck_zone_bonusstartcolor", "000 255 255", "The color of BONUS START zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneBonusStartColor, g_szzoneBonusStartColor, 24);
-	StringRGBtoInt(g_szzoneBonusStartColor, g_zoneBonusStartColor);
+	GetConVarString(g_hzoneBonusStartColor, g_szZoneColors[3], 24);
+	StringRGBtoInt(g_szZoneColors[3], g_iZoneColors[3]);
 	HookConVarChange(g_hzoneBonusStartColor, OnSettingChanged);
 	
 	g_hzoneBonusEndColor = CreateConVar("ck_zone_bonusendcolor", "255 000 255", "The color of BONUS END zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneBonusEndColor, g_szzoneBonusEndColor, 24);
-	StringRGBtoInt(g_szzoneBonusEndColor, g_zoneBonusEndColor);
+	GetConVarString(g_hzoneBonusEndColor, g_szZoneColors[4], 24);
+	StringRGBtoInt(g_szZoneColors[4], g_iZoneColors[4]);
 	HookConVarChange(g_hzoneBonusEndColor, OnSettingChanged);
 	
 	g_hzoneStageColor = CreateConVar("ck_zone_stagecolor", "000 000 255", "The color of STAGE zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneStageColor, g_szzoneStageColor, 24);
-	StringRGBtoInt(g_szzoneStageColor, g_zoneStageColor);
+	GetConVarString(g_hzoneStageColor, g_szZoneColors[5], 24);
+	StringRGBtoInt(g_szZoneColors[5], g_iZoneColors[5]);
 	HookConVarChange(g_hzoneStageColor, OnSettingChanged);
 	
 	g_hzoneCheckpointColor = CreateConVar("ck_zone_checkpointcolor", "000 000 255", "The color of CHECKPOINT zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneCheckpointColor, g_szzoneCheckpointColor, 24);
-	StringRGBtoInt(g_szzoneCheckpointColor, g_zoneCheckpointColor);
+	GetConVarString(g_hzoneCheckpointColor, g_szZoneColors[6], 24);
+	StringRGBtoInt(g_szZoneColors[6], g_iZoneColors[6]);
 	HookConVarChange(g_hzoneCheckpointColor, OnSettingChanged);
 	
 	g_hzoneSpeedColor = CreateConVar("ck_zone_speedcolor", "255 000 000", "The color of SPEED zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneSpeedColor, g_szzoneSpeedColor, 24);
-	StringRGBtoInt(g_szzoneSpeedColor, g_zoneSpeedColor);
+	GetConVarString(g_hzoneSpeedColor, g_szZoneColors[7], 24);
+	StringRGBtoInt(g_szZoneColors[7], g_iZoneColors[7]);
 	HookConVarChange(g_hzoneSpeedColor, OnSettingChanged);
 	
 	g_hzoneTeleToStartColor = CreateConVar("ck_zone_teletostartcolor", "255 255 000", "The color of TELETOSTART zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneTeleToStartColor, g_szzoneTeleToStartColor, 24);
-	StringRGBtoInt(g_szzoneTeleToStartColor, g_zoneTeleToStartColor);
+	GetConVarString(g_hzoneTeleToStartColor, g_szZoneColors[8], 24);
+	StringRGBtoInt(g_szZoneColors[8], g_iZoneColors[8]);
 	HookConVarChange(g_hzoneTeleToStartColor, OnSettingChanged);
 	
 	g_hzoneValidatorColor = CreateConVar("ck_zone_validatorcolor", "255 255 255", "The color of VALIDATOR zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneValidatorColor, g_szzoneValidatorColor, 24);
-	StringRGBtoInt(g_szzoneValidatorColor, g_zoneValidatorColor);
+	GetConVarString(g_hzoneValidatorColor, g_szZoneColors[9], 24);
+	StringRGBtoInt(g_szZoneColors[9], g_iZoneColors[9]);
 	HookConVarChange(g_hzoneValidatorColor, OnSettingChanged);
 	
 	g_hzoneStopColor = CreateConVar("ck_zone_stopcolor", "000 000 000", "The color of CHECKER zones \"red green blue\" from 0 - 255", FCVAR_NOTIFY);
-	GetConVarString(g_hzoneStopColor, g_szzoneStopColor, 24);
-	StringRGBtoInt(g_szzoneStopColor, g_zoneStopColor);
+	GetConVarString(g_hzoneStopColor, g_szZoneColors[0], 24);
+	StringRGBtoInt(g_szZoneColors[0], g_iZoneColors[0]);
 	HookConVarChange(g_hzoneStopColor, OnSettingChanged);
-	
-	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
-	g_fStartPreSpeed = GetConVarFloat(g_hStartPreSpeed);
-	HookConVarChange(g_hStartPreSpeed, OnSettingChanged);
-	
-	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
-	g_fSpeedPreSpeed = GetConVarFloat(g_hSpeedPreSpeed);
-	HookConVarChange(g_hSpeedPreSpeed, OnSettingChanged);
-	
-	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
-	g_fBonusPreSpeed = GetConVarFloat(g_hBonusPreSpeed);
-	HookConVarChange(g_hBonusPreSpeed, OnSettingChanged);
-	
-	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	bSpawnToStartZone = GetConVarBool(g_hSpawnToStartZone);
-	HookConVarChange(g_hSpawnToStartZone, OnSettingChanged);
-	
-	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	bSoundEnabled = GetConVarBool(g_hSoundEnabled);
-	HookConVarChange(g_hSoundEnabled, OnSettingChanged);
-	
-	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_NOTIFY);
-	GetConVarString(g_hSoundPath, sSoundPath, sizeof(sSoundPath));
-	HookConVarChange(g_hSoundPath, OnSettingChanged);
-	
-	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records.", FCVAR_NOTIFY, true, 0.0);
-	g_AnnounceRank = GetConVarInt(g_hAnnounceRank);
-	HookConVarChange(g_hAnnounceRank, OnSettingChanged);
-	
-	g_hAnnounceRecord = CreateConVar("ck_chat_record_type", "0", "0: Announce all times to chat, 1: Only announce PB's to chat, 2: Only announce SR's to chat", FCVAR_NOTIFY, true, 0.0, true, 2.0);
-	g_iAnnounceRecord = GetConVarInt(g_hAnnounceRecord);
-	HookConVarChange(g_hAnnounceRecord, OnSettingChanged);
-	
-	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bForceCT = GetConVarBool(g_hForceCT);
-	HookConVarChange(g_hForceCT, OnSettingChanged);
-	
-	g_hChatSpamFilter = CreateConVar("ck_chat_spamprotection_time", "1.0", "The frequency in seconds that players are allowed to send chat messages. 0.0 = No chat cap.", FCVAR_NOTIFY, true, 0.0);
-	g_fChatSpamFilter = GetConVarFloat(g_hChatSpamFilter);
-	HookConVarChange(g_hChatSpamFilter, OnSettingChanged);
-	
-	g_henableChatProcessing = CreateConVar("ck_chat_enable", "1", "(1 / 0) Enable or disable ckSurfs chat processing.", FCVAR_NOTIFY);
-	g_benableChatProcessing = GetConVarBool(g_henableChatProcessing);
-	HookConVarChange(g_henableChatProcessing, OnSettingChanged);
 
-	g_hMultiServerMapcycle = CreateConVar("ck_multi_server_mapcycle", "0", "0 = Use mapcycle.txt to load servers maps, 1 = use configs/ckSurf/multi_server_mapcycle.txt to load maps", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bMultiServerMapcycle = GetConVarBool(g_hMultiServerMapcycle);
-	HookConVarChange(g_hMultiServerMapcycle, OnSettingChanged);
 
-	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
-	g_bBonusReplayTrailEnabled = GetConVarBool(g_hBonusBotTrail);
-	HookConVarChange(g_hBonusBotTrail, OnSettingChanged);
-	
-	g_hRecordBotTrail = CreateConVar("ck_record_bot_trail", "1", "(1 / 0) Enables a trail on the record bot.", FCVAR_NOTIFY);
-	g_bRecordBotTrailEnabled = GetConVarBool(g_hRecordBotTrail);
-	HookConVarChange(g_hRecordBotTrail, OnSettingChanged);
-	
-	g_hTriggerPushFixEnable = CreateConVar("ck_triggerpushfix_enable", "1", "Enables trigger push fix.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bTriggerPushFixEnable = GetConVarBool(g_hTriggerPushFixEnable);
-	HookConVarChange(g_hTriggerPushFixEnable, OnSettingChanged);
-	
-	g_hSlopeFixEnable = CreateConVar("ck_slopefix_enable", "1", "Enables slope fix.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bSlopeFixEnable = GetConVarBool(g_hSlopeFixEnable);
-	HookConVarChange(g_hSlopeFixEnable, OnSettingChanged);
 	
 	g_hAutoVIPFlag = CreateConVar("ck_autovip_flag", "a", "Automatically give players with this admin flag the VIP title. Invalid or not set, disables auto VIP.", FCVAR_NOTIFY);
 	char szFlag[24];
@@ -2129,20 +1823,8 @@ public void OnPluginStart()
 	g_AutoVIPFlag = FlagToBit(bufferFlag);
 	HookConVarChange(g_hAutoVIPFlag, OnSettingChanged);
 
-	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
-	g_fVoteExtendTime = GetConVarFloat(g_hVoteExtendTime);
-	HookConVarChange(g_hVoteExtendTime, OnSettingChanged);
-
-	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
-	g_MaxVoteExtends = GetConVarInt(g_hMaxVoteExtends);
-	HookConVarChange(g_hMaxVoteExtends, OnSettingChanged);
-
-	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "1", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bDoubleRestartCommand = GetConVarBool(g_hDoubleRestartCommand);
-	HookConVarChange(g_hDoubleRestartCommand, OnSettingChanged);
-
 	bool validFlag;
-	g_hAdminMenuFlag = CreateConVar("ck_adminmenu_flag", "b", "Admin flag required to open the !ckadmin menu. Invalid or not set, requires flag b.", FCVAR_NOTIFY);
+	g_hAdminMenuFlag = CreateConVar("ck_adminmenu_flag", "b", "Admin flag required to open the !ckadmin menu. Invalid or not set, requires flag b. Requires a server restart.", FCVAR_NOTIFY);
 	GetConVarString(g_hAdminMenuFlag, szFlag, 24);
 	validFlag = FindFlagByChar(szFlag[0], bufferFlag);
 	if (!validFlag)
@@ -2154,8 +1836,7 @@ public void OnPluginStart()
 		g_AdminMenuFlag = FlagToBit(bufferFlag);
 	HookConVarChange(g_hAdminMenuFlag, OnSettingChanged);
 	
-	
-	g_hZoneMenuFlag = CreateConVar("ck_zonemenu_flag", "z", "Admin flag required to open the !zones menu. Invalid or not set, requires flag z.", FCVAR_NOTIFY);
+	g_hZoneMenuFlag = CreateConVar("ck_zonemenu_flag", "z", "Admin flag required to open the !zones menu. Invalid or not set, requires flag z. Requires a server restart.", FCVAR_NOTIFY);
 	GetConVarString(g_hZoneMenuFlag, szFlag, 24);
 	validFlag = FindFlagByChar(szFlag[0], bufferFlag);
 	if (!validFlag)
@@ -2165,12 +1846,9 @@ public void OnPluginStart()
 	}
 	else
 		g_ZoneMenuFlag = FlagToBit(bufferFlag);
-		
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
 
-	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_bServerVipCommand = GetConVarBool(g_hServerVipCommand);
-	HookConVarChange(g_hServerVipCommand, OnSettingChanged);
+
 
 	db_setupDatabase();
 
@@ -2233,7 +1911,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_title", Command_SetTitle, "[ckSurf] Displays player's titles");
 	RegConsoleCmd("sm_titles", Command_SetTitle, "[ckSurf] Displays player's titles");
 	
-	if(g_bServerVipCommand)
+	if(GetConVarBool(g_hServerVipCommand))
 	{
 		RegConsoleCmd("sm_vip", Command_Vip, "[ckSurf] VIP's commands and effects.");
 		RegConsoleCmd("sm_effects", Command_Vip, "[ckSurf] VIP's commands and effects.");
@@ -2252,6 +1930,8 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_bi", Command_bTier, "[ckSurf] Prints tier information on current map's bonuses");
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "[ckSurf] Vote to extend the map");
+	RegConsoleCmd("sm_vmute", Command_MutePlayer, "[ckSurf] Mute a player");
+
 
 	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
@@ -2449,15 +2129,22 @@ public int Native_GetServerRank(Handle plugin, int numParams)
 	return g_PlayerRank[GetNativeCell(1)];
 }
 
-public int Native_SetSafeTeleport(Handle plugin, int numParams)
+public int Native_SafeTeleport(Handle plugin, int numParams)
 {
-	if (IsValidClient(GetNativeCell(1)) && g_iClientInZone[GetNativeCell(1)][0] != -1)
+	int client = GetNativeCell(1);
+	if (IsValidClient(client))
 	{
-		g_bIgnoreZone[GetNativeCell(1)] = true;
-		return 1;
+		float fDestination[3], Angle[3], Vel[3];
+		GetNativeArray(2, fDestination, 3);
+		GetNativeArray(3, Angle, 3);
+		GetNativeArray(4, Vel, 3);
+
+		teleportEntitySafe(client, fDestination, Angle, Vel, GetNativeCell(5));
+
+		return true;
 	}
 	else
-		return 0;
+		return false;
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -2470,7 +2157,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ckSurf_GetCurrentTime", Native_GetCurrentTime);
 	CreateNative("ckSurf_ClientIsVIP", Native_ClientIsVIP);
 	CreateNative("ckSurf_GetServerRank", Native_GetServerRank);
-	CreateNative("ckSurf_SetSafeTeleport", Native_SetSafeTeleport);
+	CreateNative("ckSurf_SafeTeleport", Native_SafeTeleport);
 	g_bLateLoaded = late;
 	return APLRes_Success;
 }

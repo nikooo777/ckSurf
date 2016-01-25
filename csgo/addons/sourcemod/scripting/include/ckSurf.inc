@@ -62,13 +62,17 @@ native bool:ckSurf_ClientIsVIP(client);
 native ckSurf_GetServerRank(client);
 
 /**
- * Sets client for a a safe teleport.
- * Ignores end touch if client is in a zone.
+ * Safely teleports the client. Does not trigger end touches
+ * and sets client location correctly.
  *
- * @param client     Client's id
- * @return           1 on Success / 0 on Fail
+ * @param client    		Client's id
+ * @param fDestination 		Teleport location
+ * @param fAngle 			Teleport angle
+ * @param fVelocity 		Teleport velocity
+ * @param bStopTimer 		Stop the client's timer, default false
+ * @return           true on success / false on failure
  */
-native ckSurf_SetSafeTeleport(client);
+native bool:ckSurf_SafeTeleport(client, Float:fDestination[3], Float:fAngle[3], Float:fVelocity[3], bool:bStopTimer = false);
 
 /*
 		FORWARDS
@@ -119,4 +123,5 @@ public __pl_ckSurf_SetNTVOptional()
 	MarkNativeAsOptional("ckSurf_GetCurrentTime");
 	MarkNativeAsOptional("ckSurf_ClientIsVIP");
 	MarkNativeAsOptional("ckSurf_GetServerRank");
+	MarkNativeAsOptional("ckSurf_SafeTeleport");
 }

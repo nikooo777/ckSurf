@@ -1,3 +1,31 @@
+public Action ReplayTrailRefresh(Handle timer, int bot)
+{
+	if (g_bReplayAtEnd[bot])
+		return Plugin_Handled;
+
+	if (bot == g_BonusBot)
+	{
+		if (GetConVarBool(g_hBonusBotTrail))
+			refreshTrailBot(bot);
+		else
+		{
+			CloseHandle(g_hBotTrail[1]);
+			g_hBotTrail[1] = null;
+		}
+	}
+	else if (bot == g_RecordBot)
+	{
+		if (GetConVarBool(g_hRecordBotTrail))
+			refreshTrailBot(bot);
+		else
+		{
+			CloseHandle(g_hBotTrail[0]);
+			g_hBotTrail[0] = null;
+		}
+	}
+	return Plugin_Handled;
+}
+
 public Action reloadRank(Handle timer, any client)
 {
 	if (IsValidClient(client))
@@ -152,7 +180,7 @@ public Action DelayedStuff(Handle timer)
 		ServerCommand("exec sourcemod/ckSurf/main.cfg");
 	else
 		SetFailState("<ckSurf> cfg/sourcemod/ckSurf/main.cfg not found.");
-	
+
 	//Bots
 	LoadReplays();
 	LoadInfoBot();
@@ -165,7 +193,7 @@ public Action CKTimer2(Handle timer)
 	if (g_bRoundEnd)
 		return Plugin_Continue;
 	
-	if (g_bMapEnd)
+	if (GetConVarBool(g_hMapEnd))
 	{
 		Handle hTmp;
 		hTmp = FindConVar("mp_timelimit");
@@ -270,7 +298,7 @@ public Action CKTimer2(Handle timer)
 	int maxEntities;
 	maxEntities = GetMaxEntities();
 	char classx[20];
-	if (g_bCleanWeapons)
+	if (GetConVarBool(g_hCleanWeapons))
 	{
 		int j;
 		for (j = MaxClients + 1; j < maxEntities; j++)
@@ -315,10 +343,14 @@ public Action ReplayTimer(Handle timer, any client)
 	
 	return Plugin_Handled;
 }
-public Action BonusReplayTimer(Handle timer, any client)
+public Action BonusReplayTimer(Handle timer, Handle pack)
 {
+	ResetPack(pack);
+	int client = ReadPackCell(pack);
+	int zGrp = ReadPackCell(pack);
+
 	if (IsValidClient(client) && !IsFakeClient(client))
-		SaveRecording(client, 1);
+		SaveRecording(client, zGrp);
 	
 	return Plugin_Handled;
 }
@@ -381,7 +413,7 @@ public Action CheckChallenge(Handle timer, any client)
 
 public Action LoadReplaysTimer(Handle timer)
 {
-	if (g_bReplayBot)
+	if (GetConVarBool(g_hReplayBot))
 		LoadReplays();
 	
 	return Plugin_Handled;
@@ -396,7 +428,7 @@ public Action SetClanTag(Handle timer, any client)
 	if (CS_GetClientClanTag(client, buffer,MAX_NAME_LENGTH) > 0)
 		return Plugin_Handled;
 	*/
-	if (!g_bCountry && !g_bPointSystem && !g_bAdminClantag)
+	if (!GetConVarBool(g_hCountry) && !GetConVarBool(g_hPointSystem) && !GetConVarBool(g_hAdminClantag))
 	{
 		CS_SetClientClanTag(client, "");
 		return Plugin_Handled;
@@ -413,19 +445,19 @@ public Action SetClanTag(Handle timer, any client)
 	}
 	SetPlayerRank(client);
 	
-	if (g_bCountry)
+	if (GetConVarBool(g_hCountry))
 	{
 		Format(tag, 154, "%s | %s", g_szCountryCode[client], g_pr_rankname[client]);
 		CS_SetClientClanTag(client, tag);
 	}
 	else
 	{
-		if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
+		if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
 			CS_SetClientClanTag(client, g_pr_rankname[client]);
 	}
 	
 	//new rank
-	if (oldrank && g_bPointSystem)
+	if (oldrank && GetConVarBool(g_hPointSystem))
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
 			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
 	
@@ -440,8 +472,10 @@ public Action TerminateRoundTimer(Handle timer)
 
 public Action WelcomeMsgTimer(Handle timer, any client)
 {
-	if (IsValidClient(client) && !IsFakeClient(client) && !StrEqual(g_sWelcomeMsg, ""))
-		CPrintToChat(client, "%s", g_sWelcomeMsg);
+	char szBuffer[512];
+	GetConVarString(g_hWelcomeMsg, szBuffer, 512);
+	if (IsValidClient(client) && !IsFakeClient(client) && szBuffer[0])
+		CPrintToChat(client, "%s", szBuffer);
 	
 	return Plugin_Handled;
 }
@@ -520,12 +554,33 @@ public Action RemoveRagdoll(Handle timer, any victim)
 	return Plugin_Handled;
 }
 
-public Action HideRadar(Handle timer, any client)
+public Action HideHud(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_bSpotted", 0);
-		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+
+		// ViewModel
+		Client_SetDrawViewModel(client, g_bViewModel[client]);
+
+		// Crosshair and chat
+		if (g_bViewModel[client])
+		{
+			// Display
+			if (!g_bHideChat[client])
+				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+			else
+				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT);
+
+		}
+		else
+		{
+			// Hiding
+			if (!g_bHideChat[client])
+				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CROSSHAIR);
+			else
+				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
+		}
 	}
 	return Plugin_Handled;
 }

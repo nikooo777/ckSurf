@@ -1,23 +1,23 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.15.1
+-- version 3.4.11.1deb2+deb7u2
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: 24.11.2015 klo 00:28
--- Palvelimen versio: 5.5.44-MariaDB
--- PHP Version: 5.4.16
+-- Palvelin: db1.kapsi.fi
+-- Luontiaika: 25.01.2016 klo 21:52
+-- Palvelimen versio: 1.0.22
+-- PHP:n versio: 5.4.45-0+deb7u2
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
 
 --
--- Database: `cksurf`
+-- Tietokanta: `mukavajoni`
 --
 
 -- --------------------------------------------------------
@@ -28,18 +28,19 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `ck_maptier` (
   `mapname` varchar(54) NOT NULL,
-  `tier` int(12) DEFAULT NULL,
-  `btier1` int(12) DEFAULT NULL,
-  `btier2` int(12) DEFAULT NULL,
-  `btier3` int(12) DEFAULT NULL,
-  `btier4` int(12) DEFAULT NULL,
-  `btier5` int(12) DEFAULT NULL,
-  `btier6` int(12) DEFAULT NULL,
-  `btier7` int(12) DEFAULT NULL,
-  `btier8` int(12) DEFAULT NULL,
-  `btier9` int(12) DEFAULT NULL,
-  `btier10` int(12) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `tier` int(12) NOT NULL,
+  `btier1` int(11) DEFAULT NULL,
+  `btier2` int(11) DEFAULT NULL,
+  `btier3` int(11) DEFAULT NULL,
+  `btier4` int(11) DEFAULT NULL,
+  `btier5` int(11) DEFAULT NULL,
+  `btier6` int(11) DEFAULT NULL,
+  `btier7` int(11) DEFAULT NULL,
+  `btier8` int(11) DEFAULT NULL,
+  `btier9` int(11) DEFAULT NULL,
+  `btier10` int(11) DEFAULT NULL,
+  PRIMARY KEY (`mapname`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
 -- Vedos taulusta `ck_maptier`
@@ -374,7 +375,7 @@ INSERT INTO `ck_maptier` (`mapname`, `tier`, `btier1`, `btier2`, `btier3`, `btie
 ('surf_perforated_restored', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_pinkbash', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_pinky', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('surf_placid', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_placid', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_plaguelands_beta7a', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_plethora_fix', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_polygon', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
@@ -532,17 +533,21 @@ INSERT INTO `ck_maptier` (`mapname`, `tier`, `btier1`, `btier2`, `btier3`, `btie
 ('surf_yay', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_year3000', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('surf_y_rg', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('surf_zion_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `ck_maptier`
---
-ALTER TABLE `ck_maptier`
-  ADD PRIMARY KEY (`mapname`);
+('surf_zion_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_kitsune2_GO', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_ace', 2, 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_borderlands', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_cubic', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_elysium2', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_fathom', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_flatliners', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_iceworld', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_juturna', 2, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_mom', 1, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_the_gloaming_rat_gfl', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_milkyway', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_training', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('surf_rebel_scaz_csgo', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
