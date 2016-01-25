@@ -1,12 +1,12 @@
 bool IsValidZonegroup(int zGrp)
 {
-	if (0 < zGrp < g_mapZoneGroupCount)
+	if (-1 < zGrp < g_mapZoneGroupCount)
 		return true;
 	return false;
 }
 bool IsValidZone(int iZone)
 {
-	if (0 < iZone < g_mapZonesCount)
+	if (-1 < iZone < g_mapZonesCount)
 		return true;
 	return false;
 }
