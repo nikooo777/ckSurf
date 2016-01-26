@@ -4,12 +4,7 @@ bool IsValidZonegroup(int zGrp)
 		return true;
 	return false;
 }
-bool IsValidZone(int iZone)
-{
-	if (-1 < iZone < g_mapZonesCount)
-		return true;
-	return false;
-}
+
 /**
 *	Checks if coordinates are inside a zone
 * 	Return: zone id where location is in, or -1 if not inside a zone
@@ -78,12 +73,7 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 		return;
 	if (!IsValidZonegroup(zonegroup))
 	{
-		PrintToChat(client, "[%cCK%c] Invalid Zonegroup.", MOSSGREEN, WHITE);
-		return;
-	}
-	if (!IsValidZone(zone))
-	{
-		PrintToChat(client, "[%cCK%c] Invalid ZoneID.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%cCK%c] Zonegroup not found.", MOSSGREEN, WHITE);
 		return;
 	}
 
