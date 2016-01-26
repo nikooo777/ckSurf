@@ -104,5 +104,5 @@
 !addspawn
 !delspawn
 !clearassists
-!noclip
 !nc
+!vmute

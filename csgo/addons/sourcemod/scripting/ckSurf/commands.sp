@@ -22,7 +22,13 @@ public Action Command_Vip(int client, int args)
 	
 	Format(szMenuItem, 128, "Trail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
 	AddMenuItem(vipEffects, "", szMenuItem);
-	AddMenuItem(vipEffects, "", "Vote to extend map");
+	AddMenuItem(vipEffects, "", "Vote to extend map (!ve)");
+
+	if (GetConVarBool(g_hAllowVipMute))
+		AddMenuItem(vipEffects, "", "Mute a player (!vmute)");
+	else
+		AddMenuItem(vipEffects, "", "Mute a player (!vmute)", ITEMDRAW_DISABLED);
+
 	AddMenuItem(vipEffects, "", "More to come...", ITEMDRAW_DISABLED);
 	
 	SetMenuExitButton(vipEffects, true);
@@ -41,17 +47,134 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 				case 0:
 				{
 					toggleTrail(client);
+					CreateTimer(0.1, RefreshVIPMenu, client, TIMER_FLAG_NO_MAPCHANGE);
 				}
 				case 1:
 				{
+					CreateTimer(0.1, RefreshVIPMenu, client, TIMER_FLAG_NO_MAPCHANGE);
 					changeTrailColor(client);
 				}
 				case 2:
 				{
 					Command_VoteExtend(client, 0);
 				}
+				case 3:
+				{
+					Command_MutePlayer(client, 0);
+				}
 			}
-			CreateTimer(0.1, RefreshVIPMenu, client, TIMER_FLAG_NO_MAPCHANGE);
+		}
+		case MenuAction_End:
+		{
+			CloseHandle(tMenu);
+		}
+	}
+}
+
+public Action Command_MutePlayer (int client, int args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	if (!GetConVarBool(g_hAllowVipMute))
+	{
+		ReplyToCommand(client, "[%cCK%c] VIP muting has been disabled on this server.", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
+
+
+	if (!g_bflagTitles[client][0])
+	{
+		ReplyToCommand(client, "[%cCK%c] This command requires the VIP title.", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
+
+	if (args > 0)
+	{
+		char szName[MAX_NAME_LENGTH], szBuffer[MAX_NAME_LENGTH];
+		GetCmdArg(1, szName, MAX_NAME_LENGTH);
+
+		int target = Client_FindByName(szName, true, false);
+
+		if (target != -1)
+		{
+			if (BaseComm_IsClientMuted(target))
+			{
+				if (BaseComm_SetClientMute(target, false))
+					PrintToChatAll("[%cCK%c] %s was unmuted by a VIP.", MOSSGREEN, WHITE, szBuffer);
+			}
+			else
+			{
+				if (BaseComm_SetClientMute(target, true))
+					PrintToChatAll("[%cCK%c] %s was muted by a VIP.", MOSSGREEN, WHITE, szBuffer);
+			}
+			return Plugin_Handled;
+		}
+		else
+		{
+			PrintToChat(client, "[%cCK%c] Could not find a player with the name of %s.", MOSSGREEN, WHITE, szName);
+			return Plugin_Handled;
+		}
+	}
+
+	Menu mMutePlayers = CreateMenu(h_MutePlayers);
+	SetMenuTitle(mMutePlayers, "Select player to mute or unmute");
+	char szMenuItem[48], id[8], count;
+	for (int i = 0; i < MAXPLAYERS+1; i++)
+	{
+		if (IsValidClient(i) && !IsFakeClient(i) && client != i)
+		{
+			count++;
+			IntToString(i, id, 8);
+			if (BaseComm_IsClientMuted(i))
+			{
+				GetClientName(i, szMenuItem, 48);
+				Format(szMenuItem, 48, "[ON] %s", szMenuItem);
+			}
+			else
+			{
+				GetClientName(i, szMenuItem, 48);
+				Format(szMenuItem, 48, "[OFF] %s", szMenuItem);
+			}
+			AddMenuItem(mMutePlayers, id, szMenuItem);
+		}
+	}
+	if (count == 0)
+	{
+		ReplyToCommand(client, "[%cCK%c] No valid players found.", MOSSGREEN, WHITE);
+		CloseHandle(mMutePlayers);
+		return Plugin_Handled;
+	}
+	SetMenuExitButton(mMutePlayers, true);
+	DisplayMenu(mMutePlayers, client, MENU_TIME_FOREVER);
+	return Plugin_Handled;
+}
+
+public int h_MutePlayers(Menu tMenu, MenuAction action, int client, int item)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			char aID[8];
+			GetMenuItem(tMenu, item, aID, sizeof(aID));
+			int clientID = StringToInt(aID);			
+			if (IsValidClient(clientID))
+			{
+				char szName[MAX_NAME_LENGTH];
+				GetClientName(clientID, szName, MAX_NAME_LENGTH);
+				if (BaseComm_IsClientMuted(clientID))
+				{
+					if (BaseComm_SetClientMute(clientID, false))
+						PrintToChatAll("[%cCK%c] %s was unmuted by a VIP.", MOSSGREEN, WHITE, szName);
+				}
+				else
+				{
+					if (BaseComm_SetClientMute(clientID, true))
+						PrintToChatAll("[%cCK%c] %s was muted by a VIP.", MOSSGREEN, WHITE, szName);
+
+				}
+			}
 		}
 		case MenuAction_End:
 		{
@@ -142,7 +265,7 @@ public Action Command_VoteExtend(int client, int args)
 		return Plugin_Handled;
 	}
 
-	if (g_VoteExtends >= g_MaxVoteExtends)
+	if (g_VoteExtends >= GetConVarInt(g_hMaxVoteExtends))
 	{
 		ReplyToCommand(client, "[CK] There have been too many extends this map.");
 		return Plugin_Handled;
@@ -176,7 +299,7 @@ public void StartVoteExtend(int client)
 	char szMenuTitle[128];
 
 	char buffer[8];
-	IntToString(RoundToFloor(g_fVoteExtendTime), buffer, sizeof(buffer));
+	IntToString(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)), buffer, sizeof(buffer));
 
 	Format(szMenuTitle, sizeof(szMenuTitle), "Extend map for %s minutes?", buffer);
 	SetMenuTitle(voteExtend, szMenuTitle);
@@ -216,7 +339,7 @@ public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, cons
 	if (votesYes > votesNo) // A tie is a failure
 	{
 		CPrintToChatAll("[{olive}CK{default}] Vote to Extend succeeded - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
-		ExtendMapTimeLimit(RoundToFloor(g_fVoteExtendTime*60));
+		ExtendMapTimeLimit(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)*60));
 	} 
 	else
 	{
@@ -327,16 +450,15 @@ public Action Command_undoPlayerCheckpoint(int client, int args)
 
 public Action Command_Teleport(int client, int args)
 {
+	// Throttle using !back to fix errors with replays
+	if ((GetGameTime() - g_fLastCommandBack[client]) < 1.0)
+		return Plugin_Handled;
+	else
+		g_fLastCommandBack[client] = GetGameTime();
+
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
-		if (g_iClientInZone[client][2] == 0)
-		{
-			Command_Restart(client, 1);
-		}
-		else
-		{
-			Command_ToBonus(client, g_iClientInZone[client][2]);
-		}
+		teleportClient(client, g_iClientInZone[client][2], 1, false);
 		return Plugin_Handled;
 	}
 	
@@ -449,7 +571,7 @@ public Action Command_ToBonus(int client, int args)
 	// If not enough arguments, or there is more than one bonus
 	if (args < 1 && g_mapZoneGroupCount > 2) // Tell player to select specific bonus
 	{
-		PrintToChat(client, "[%cCK%c] Usage: !b <bonus number>", MOSSGREEN, WHITE);
+		/*PrintToChat(client, "[%cCK%c] Usage: !b <bonus number>", MOSSGREEN, WHITE);
 		if (g_mapZoneGroupCount > 1)
 		{
 			PrintToChat(client, "[%cCK%c] Available bonuses:", MOSSGREEN, WHITE);
@@ -457,7 +579,7 @@ public Action Command_ToBonus(int client, int args)
 			{
 				PrintToChat(client, "[%c%i.%c] %s", YELLOW, i, WHITE, g_szZoneGroupName[i]);
 			}
-		}
+		}*/
 		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
@@ -588,7 +710,7 @@ public Action Command_ToEnd(int client, int args)
 	if (!IsValidClient(client))
 		return Plugin_Handled;
 		
-	if (!g_bCommandToEnd)
+	if (!GetConVarBool(g_hCommandToEnd))
 	{
 		ReplyToCommand(client, "[%cCK%c] Teleportation to the end zone has been disabled on this server.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
@@ -600,7 +722,7 @@ public Action Command_ToEnd(int client, int args)
 public Action Command_Restart(int client, int args)
 {
 	
-	if (g_bDoubleRestartCommand)
+	if (GetConVarBool(g_hDoubleRestartCommand))
 	{
 		if (GetGameTime() - g_fClientRestarting[client] > 5.0)
 			g_bClientRestarting[client] = false;
@@ -702,7 +824,6 @@ public void HideViewModel(int client)
 			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
 		else
 			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT);
-
 	}
 	else
 	{
@@ -771,7 +892,7 @@ public Action Client_Avg(int client, int args)
 	FormatTimeFloat(client, g_favg_maptime, 3, szProTime, sizeof(szProTime));
 	
 	if (g_MapTimesCount == 0)
-		Format(szProTime, 32, "00:00:00");
+		Format(szProTime, 32, "N/A");
 	
 	PrintToChat(client, "%t", "AvgTime", MOSSGREEN, WHITE, GRAY, DARKBLUE, WHITE, szProTime, g_MapTimesCount);
 	
@@ -784,7 +905,7 @@ public Action Client_Avg(int client, int args)
 			FormatTimeFloat(client, g_fAvg_BonusTime[i], 3, szBonusTime, sizeof(szBonusTime));
 			
 			if (g_iBonusCount[i] == 0)
-				Format(szBonusTime, 32, "00:00:00");
+				Format(szBonusTime, 32, "N/A");
 			PrintToChat(client, "%t", "AvgTimeBonus", MOSSGREEN, WHITE, GRAY, YELLOW, WHITE, szBonusTime, g_iBonusCount[i]);
 		}
 	}
@@ -805,17 +926,17 @@ public Action Client_Challenge(int client, int args)
 	{
 		if (IsPlayerAlive(client))
 		{
-			if (g_bNoBlock)
+			if (GetConVarBool(g_hCvarNoBlock))
 			{
 				Menu menu2 = CreateMenu(ChallengeMenuHandler2);
 				char tmp[64];
-				if (g_bPointSystem)
+				if (GetConVarBool(g_hPointSystem))
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nYour Points: %i", g_pr_points[client]);
 				else
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nPlayer point system disabled", g_pr_points[client]);
 				SetMenuTitle(menu2, tmp);
 				AddMenuItem(menu2, "0", "No bet");
-				if (g_bPointSystem)
+				if (GetConVarBool(g_hPointSystem))
 				{
 					Format(tmp, 64, "%i", g_pr_PointUnit * 50);
 					if (g_pr_PointUnit * 5 <= g_pr_points[client])
@@ -1803,7 +1924,7 @@ public void PauseMethod(int client)
 	if (GetClientTeam(client) == 1)return;
 	if (g_bPause[client] == false && IsValidEntity(client))
 	{
-		if (g_bPauseServerside == false && client != g_RecordBot && client != g_BonusBot)
+		if (GetConVarBool(g_hPauseServerside) == false && client != g_RecordBot && client != g_BonusBot)
 		{
 			PrintToChat(client, "%t", "Pause1", MOSSGREEN, WHITE, RED, WHITE);
 			return;
@@ -1836,7 +1957,7 @@ public void PauseMethod(int client)
 		if (!g_bRoundEnd)
 			SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_NORMAL);
-		if (g_bNoBlock)
+		if (GetConVarBool(g_hCvarNoBlock))
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 		else
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 5, true);
@@ -1945,7 +2066,7 @@ public void GotoMethod(int client, int target)
 				float angles[3];
 				GetClientAbsOrigin(target, position);
 				GetClientEyeAngles(target, angles);
-				performTeleport(client, position, angles, view_as<float>( { 0.0, 0.0, -100.0 } ), g_iClientInZone[target][3], target);
+				teleportEntitySafe(client, position, angles, view_as<float>( { 0.0, 0.0, -100.0 } ), true);
 				//TeleportEntity(client, position, angles, Float:{0.0,0.0,-100.0});
 				char szClientName[MAX_NAME_LENGTH];
 				GetClientName(client, szClientName, MAX_NAME_LENGTH);
@@ -1969,10 +2090,10 @@ public void GotoMethod(int client, int target)
 
 public Action Client_GoTo(int client, int args)
 {
-	if (!g_bGoToServer)
+	if (!GetConVarBool(g_hGoToServer))
 		PrintToChat(client, "%t", "Goto1", MOSSGREEN, WHITE, RED, WHITE);
 	else
-		if (!g_bNoBlock)
+		if (!GetConVarBool(g_hCvarNoBlock))
 			PrintToChat(client, "%t", "Goto2", MOSSGREEN, WHITE);
 		else
 			if (g_bTimeractivated[client])
@@ -2071,7 +2192,7 @@ public Action Client_Stop(int client, int args)
 
 public void Action_NoClip(int client)
 {
-	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_bNoClipS)
+	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && GetConVarBool(g_hNoClipS))
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		int team = GetClientTeam(client);
@@ -2109,7 +2230,7 @@ public void Action_UnNoClip(int client)
 			{
 				SetEntityMoveType(client, MOVETYPE_WALK);
 				SetEntityRenderMode(client, RENDER_NORMAL);
-				if (g_bNoBlock)
+				if (GetConVarBool(g_hCvarNoBlock))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				else
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
@@ -2125,7 +2246,7 @@ public void ckTopMenu(int client)
 	g_MenuLevel[client] = -1;
 	Menu cktopmenu = CreateMenu(TopMenuHandler);
 	SetMenuTitle(cktopmenu, "ckSurf - Top Menu");
-	if (g_bPointSystem)
+	if (GetConVarBool(g_hPointSystem))
 		AddMenuItem(cktopmenu, "Top 100 Players", "Top 100 Players");
 	AddMenuItem(cktopmenu, "Top 5 Challengers", "Top 5 Challengers");
 	AddMenuItem(cktopmenu, "Map Top", "Map Top");
@@ -2140,7 +2261,7 @@ public int TopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
-		if (g_bPointSystem)
+		if (GetConVarBool(g_hPointSystem))
 		{
 			switch (param2)
 			{
@@ -2337,31 +2458,31 @@ public void ShowSrvSettings(int client)
 	PrintToConsole(client, "-----------------");
 	PrintToConsole(client, "ckSurf settings");
 	PrintToConsole(client, "-----------------");
-	PrintToConsole(client, "ck_admin_clantag %b", g_bAdminClantag);
-	PrintToConsole(client, "ck_attack_spam_protection %b", g_bAttackSpamProtection);
-	PrintToConsole(client, "ck_auto_bhop %i (bhop_ & surf_ maps)", g_bAutoBhopConVar);
-	PrintToConsole(client, "ck_auto_timer %i", g_bAutoTimer);
-	PrintToConsole(client, "ck_autoheal %i (requires ck_godmode 0)", g_Autohealing_Hp);
-	PrintToConsole(client, "ck_autorespawn %b", g_bAutoRespawn);
-	PrintToConsole(client, "ck_challenge_points %b", g_bChallengePoints);
-	PrintToConsole(client, "ck_clean_weapons %b", g_bCleanWeapons);
-	PrintToConsole(client, "ck_connect_msg %b", g_bConnectMsg);
-	PrintToConsole(client, "ck_country_tag %b", g_bCountry);
-	PrintToConsole(client, "ck_custom_models %b", g_bPlayerSkinChange);
-	PrintToConsole(client, "ck_dynamic_timelimit %b (requires ck_map_end 1)", g_bDynamicTimelimit);
-	PrintToConsole(client, "ck_godmode %b", g_bgodmode);
-	PrintToConsole(client, "ck_goto %b", g_bGoToServer);
-	PrintToConsole(client, "ck_info_bot %b", g_bInfoBot);
-	PrintToConsole(client, "ck_noclip %b", g_bNoClipS);
-	PrintToConsole(client, "ck_map_end %b", g_bMapEnd);
-	PrintToConsole(client, "ck_noblock %b", g_bNoBlock);
-	PrintToConsole(client, "ck_pause %b", g_bPauseServerside);
-	PrintToConsole(client, "ck_point_system %b", g_bPointSystem);
-	PrintToConsole(client, "ck_ranking_extra_points_firsttime %i", g_ExtraPoints2);
-	PrintToConsole(client, "ck_ranking_extra_points_improvements %i", g_ExtraPoints);
-	PrintToConsole(client, "ck_replay_bot %b", g_bReplayBot);
-	PrintToConsole(client, "ck_restore %b", g_bRestore);
-	PrintToConsole(client, "ck_use_radio %b", g_bRadioCommands);
+	PrintToConsole(client, "ck_admin_clantag %b", GetConVarBool(g_hAdminClantag));
+	PrintToConsole(client, "ck_attack_spam_protection %b", GetConVarBool(g_hAttackSpamProtection));
+	PrintToConsole(client, "ck_auto_bhop %i (bhop_ & surf_ maps)", GetConVarBool(g_hAutoBhopConVar));
+	PrintToConsole(client, "ck_auto_timer %i", GetConVarBool(g_hAutoTimer));
+	PrintToConsole(client, "ck_autoheal %i (requires ck_godmode 0)", GetConVarInt(g_hAutohealing_Hp));
+	PrintToConsole(client, "ck_autorespawn %b", GetConVarBool(g_hAutoRespawn));
+	PrintToConsole(client, "ck_challenge_points %b", GetConVarBool(g_hChallengePoints));
+	PrintToConsole(client, "ck_clean_weapons %b", GetConVarBool(g_hCleanWeapons));
+	PrintToConsole(client, "ck_connect_msg %b", GetConVarBool(g_hConnectMsg));
+	PrintToConsole(client, "ck_country_tag %b", GetConVarBool(g_hCountry));
+	PrintToConsole(client, "ck_custom_models %b", GetConVarBool(g_hPlayerSkinChange));
+	PrintToConsole(client, "ck_dynamic_timelimit %b (requires ck_map_end 1)", GetConVarBool(g_hDynamicTimelimit));
+	PrintToConsole(client, "ck_godmode %b", GetConVarBool(g_hCvarGodMode));
+	PrintToConsole(client, "ck_goto %b", GetConVarBool(g_hGoToServer));
+	PrintToConsole(client, "ck_info_bot %b", GetConVarBool(g_hInfoBot));
+	PrintToConsole(client, "ck_noclip %b", GetConVarBool(g_hNoClipS));
+	PrintToConsole(client, "ck_map_end %b", GetConVarBool(g_hMapEnd));
+	PrintToConsole(client, "ck_noblock %b", GetConVarBool(g_hCvarNoBlock));
+	PrintToConsole(client, "ck_pause %b", GetConVarBool(g_hPauseServerside));
+	PrintToConsole(client, "ck_point_system %b", GetConVarBool(g_hPointSystem));
+	PrintToConsole(client, "ck_ranking_extra_points_firsttime %i", GetConVarInt(g_hExtraPoints2));
+	PrintToConsole(client, "ck_ranking_extra_points_improvements %i", GetConVarInt(g_hExtraPoints));
+	PrintToConsole(client, "ck_replay_bot %b", GetConVarBool(g_hReplayBot));
+	PrintToConsole(client, "ck_restore %b", GetConVarBool(g_hcvarRestore));
+	PrintToConsole(client, "ck_use_radio %b", GetConVarBool(g_hRadioCommands));
 	PrintToConsole(client, "---------------");
 	PrintToConsole(client, "Server settings");
 	PrintToConsole(client, "---------------");

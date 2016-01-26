@@ -1,3 +1,35 @@
+bool IsValidZonegroup(int zGrp)
+{
+	if (-1 < zGrp < g_mapZoneGroupCount)
+		return true;
+	return false;
+}
+
+/**
+*	Checks if coordinates are inside a zone
+* 	Return: zone id where location is in, or -1 if not inside a zone
+**/
+int IsInsideZone (float location[3], float extraSize = 0.0)
+{
+	location[2] += 5.0;
+	int iChecker;
+
+	for (int i = 0; i < g_mapZonesCount; i++)
+	{
+		iChecker = 0;
+		for(int x = 0; x < 3; x++)
+		{
+			if((g_fZoneCorners[i][7][x] >= g_fZoneCorners[i][0][x] && (location[x] <= (g_fZoneCorners[i][7][x] + extraSize) && location[x] >= (g_fZoneCorners[i][0][x] - extraSize))) || 
+			(g_fZoneCorners[i][0][x] >= g_fZoneCorners[i][7][x] && (location[x] <= (g_fZoneCorners[i][0][x] + extraSize) && location[x] >= (g_fZoneCorners[i][7][x] - extraSize))))
+				iChecker++;
+		}
+		if(iChecker == 3)
+			return i;
+	}
+
+	return -1;
+}
+
 public void loadAllClientSettings()
 {
 	for (int i = 1; i < MAXPLAYERS + 1; i++)
@@ -23,7 +55,7 @@ public void getSteamIDFromClient(int client, char[] buffer, int length)
 	}
 	else // Get steamid - Normal point increase
 	{
-		if (!g_bPointSystem || !IsValidClient(client))
+		if (!GetConVarBool(g_hPointSystem) || !IsValidClient(client))
 			return;
 		GetClientAuthId(client, AuthId_Steam2, buffer, length, true);
 	}
@@ -39,7 +71,12 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 {
 	if (!IsValidClient(client))
 		return;
-	
+	if (!IsValidZonegroup(zonegroup))
+	{
+		PrintToChat(client, "[%cCK%c] Zonegroup not found.", MOSSGREEN, WHITE);
+		return;
+	}
+
 	if (g_bPracticeMode[client])
 		Command_normalMode(client, 1);
 	
@@ -48,7 +85,6 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 	{
 		if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0)
 		{
-			
 			if (stopTime)
 				Client_Stop(client, 0);
 			
@@ -63,11 +99,9 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 		else
 		{
 			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, -100.0 } ));
-			if (stopTime)
-				performTeleport(client, g_fSpawnLocation[zonegroup], g_fSpawnAngle[zonegroup], view_as<float>( { 0.0, 0.0, -100.0 } ), getZoneID(zonegroup, 1));
-			else
-				TeleportEntity(client, g_fSpawnLocation[zonegroup], g_fSpawnAngle[zonegroup], view_as<float>( { 0.0, 0.0, -100.0 } ));
-			
+
+			teleportEntitySafe(client, g_fSpawnLocation[zonegroup], g_fSpawnAngle[zonegroup], view_as<float>( { 0.0, 0.0, -100.0 } ), stopTime);
+
 			return;
 		}
 	}
@@ -91,7 +125,7 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 					
 					
 					// Set spawn location to the destination zone:
-					Array_Copy(g_fZonePositions[destinationZoneId], g_fTeleLocation[client], 3);
+					Array_Copy(g_mapZones[destinationZoneId][CenterPoint], g_fTeleLocation[client], 3);
 					
 					// Set specToStage flag
 					g_bRespawnPosition[client] = false;
@@ -104,12 +138,12 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 				{
 					// Set client speed to 0
 					SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, -100.0 } ));
+
+					float fLocation[3];
+					Array_Copy(g_mapZones[destinationZoneId][CenterPoint], fLocation, 3); 
 					
 					// Teleport
-					if (stopTime)
-						performTeleport(client, g_fZonePositions[destinationZoneId], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ), destinationZoneId);
-					else
-						TeleportEntity(client, g_fZonePositions[destinationZoneId], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ));
+					teleportEntitySafe(client, fLocation, NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ), stopTime);
 				}
 			}
 			else
@@ -121,23 +155,54 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 	return;
 }
 
-stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
+void teleportEntitySafe(int client, float fDestination[3], float fAngles[3], float fVelocity[3], bool stopTimer)
 {
-	char name[MAX_NAME_LENGTH], steamid[32], teamName[10];
-	
-	GetClientName(client, name, MAX_NAME_LENGTH);
-	GetTeamName(GetClientTeam(client), teamName, sizeof(teamName));
-	GetClientAuthId(client, AuthId_Steam2, steamid, 32, true);
-	LogToGame("\"%s<%i><%s><%s>\" %s \"%s\"", name, GetClientUserId(client), steamid, teamName, sayOrSayTeam, msg);
+	if (stopTimer)
+		Client_Stop(client, 1);
+
+	int zId = setClientLocation(client, fDestination); // Set new location
+
+	if (zId > -1 && g_bTimeractivated[client] && g_mapZones[zId][zoneType] == 2) // If teleporting to the end zone, stop timer
+		Client_Stop(client, 0);
+
+	// Teleport
+	TeleportEntity(client, fDestination, fAngles, fVelocity);
 }
 
-void performTeleport(int client, float pos[3], float ang[3], float vel[3], int destinationZoneId, int targetClient = -1)
+int setClientLocation(int client, float fDestination[3])
+{
+	int zId = IsInsideZone(fDestination);
+
+	if (zId != g_iClientInZone[client][3]) // Ignore location changes, if teleporting to the same zone they are already in
+	{
+		if (g_iClientInZone[client][0] != -1) // Ignore end touch if teleporting from within a zone
+			g_bIgnoreZone[client] = true;
+
+		if (zId > -1)
+		{
+			g_iClientInZone[client][0] = g_mapZones[zId][zoneType];
+			g_iClientInZone[client][1] = g_mapZones[zId][zoneTypeId];
+			g_iClientInZone[client][2] = g_mapZones[zId][zoneGroup];
+			g_iClientInZone[client][3] = zId;
+		}
+		else
+		{
+			g_iClientInZone[client][0] = -1;
+			g_iClientInZone[client][1] = -1;
+			g_iClientInZone[client][3] = -1;
+		}
+	}
+	return zId;
+}
+
+/*
+void performTeleport(int client, float pos[3], float ang[3], float vel[3])
 {
 	Client_Stop(client, 1);
 	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 	if (destinationZoneId != g_iClientInZone[client][3])
 	{
-		// If teleporting to another zone group or a zone that is not a start zone, ignore the next end touch trigger
+		// If teleporting from inside a zone, ignore the end touch
 		if (g_iClientInZone[client][0] != -1)
 			g_bIgnoreZone[client] = true;
 		
@@ -158,6 +223,17 @@ void performTeleport(int client, float pos[3], float ang[3], float vel[3], int d
 			}
 	}
 	TeleportEntity(client, pos, ang, vel);
+}*/
+
+
+stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
+{
+	char name[MAX_NAME_LENGTH], steamid[32], teamName[10];
+	
+	GetClientName(client, name, MAX_NAME_LENGTH);
+	GetTeamName(GetClientTeam(client), teamName, sizeof(teamName));
+	GetClientAuthId(client, AuthId_Steam2, steamid, 32, true);
+	LogToGame("\"%s<%i><%s><%s>\" %s \"%s\"", name, GetClientUserId(client), steamid, teamName, sayOrSayTeam, msg);
 }
 
 // PushFix by Mev, George, & Blacky
@@ -283,7 +359,7 @@ bool DoesClientPassFilter(int entity, int client)
 //https://forums.alliedmods.net/showthread.php?t=206308
 void TeamChangeActual(int client, int toteam)
 {
-	if (g_bForceCT) {
+	if (GetConVarBool(g_hForceCT)) {
 		if (toteam == 0 || toteam == 2) {
 			toteam = 3;
 		}
@@ -299,7 +375,10 @@ void TeamChangeActual(int client, int toteam)
 			g_fPauseTime[client] = GetGameTime() - g_fStartPauseTime[client];
 		g_bSpectate[client] = false;
 	}
+
 	ChangeClientTeam(client, toteam);
+	if (!IsPlayerAlive(client))
+		CS_RespawnPlayer(client);
 	return;
 }
 
@@ -365,7 +444,7 @@ public void readMultiServerMapcycle()
 		}
 	}
 	else
-		SetFailState("[ckSurf] %s is empty or does not exists.", MULTI_SERVER_MAPCYCLE);
+		SetFailState("[ckSurf] %s is empty or does not exist.", MULTI_SERVER_MAPCYCLE);
 
 	if (fileHandle != null)
 		CloseHandle(fileHandle);
@@ -387,7 +466,7 @@ public void readMapycycle()
 	{
 		if (mapListSerial == -1)
 		{
-			SetFailState("[ckSurf] mapcycle.txt is empty or does not exists.");
+			SetFailState("[ckSurf] mapcycle.txt is empty or does not exist.");
 		}
 	}
 	for (int i = 0; i < GetArraySize(g_MapList); i++)
@@ -418,15 +497,21 @@ public bool loadHiddenChatCommands()
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", BLOCKED_LIST_PATH);
 	int count = 0;
 	Handle fileHandle = OpenFile(sPath, "r");
-	while (!IsEndOfFile(fileHandle) && ReadFileLine(fileHandle, line, sizeof(line)))
+	if (fileHandle != null)
 	{
-		TrimString(line);
-		if ((StrContains(line, "//", true) == -1) && count < 256)
+		while (!IsEndOfFile(fileHandle) && ReadFileLine(fileHandle, line, sizeof(line)))
 		{
-			Format(g_BlockedChatText[count], sizeof(g_BlockedChatText), "%s", line);
-			count++;
+			TrimString(line);
+			if ((StrContains(line, "//", true) == -1) && count < 256)
+			{
+				Format(g_BlockedChatText[count], sizeof(g_BlockedChatText), "%s", line);
+				count++;
+			}
 		}
 	}
+	else
+		LogError("[ckSurf] %s is empty or does not exist.", BLOCKED_LIST_PATH);
+		
 	if (fileHandle != null)
 		CloseHandle(fileHandle);
 	
@@ -826,7 +911,7 @@ public Action CallAdmin_OnDrawOwnReason(int client)
 public bool checkSpam(int client)
 {
 	float time = GetGameTime();
-	if (g_fChatSpamFilter == 0.0)
+	if (GetConVarFloat(g_hChatSpamFilter) == 0.0)
 		return false;
 	
 	if (!IsValidClient(client) || (GetUserFlagBits(client) & ADMFLAG_ROOT) || (GetUserFlagBits(client) & ADMFLAG_GENERIC))
@@ -834,7 +919,7 @@ public bool checkSpam(int client)
 	
 	bool result = false;
 	
-	if (time - g_fLastChatMessage[client] < g_fChatSpamFilter)
+	if (time - g_fLastChatMessage[client] < GetConVarFloat(g_hChatSpamFilter))
 	{
 		result = true;
 		g_messages[client]++;
@@ -946,7 +1031,7 @@ stock void FakePrecacheSound(const char[] szPath)
 
 public Action BlockRadio(int client, const char[] command, int args)
 {
-	if (!g_bRadioCommands && IsValidClient(client))
+	if (!GetConVarBool(g_hRadioCommands) && IsValidClient(client))
 	{
 		PrintToChat(client, "%t", "RadioCommandsDisabled", LIMEGREEN, WHITE);
 		return Plugin_Handled;
@@ -1031,14 +1116,15 @@ public void MovementCheck(int client)
 
 public void PlayButtonSound(int client)
 {
-	if (!bSoundEnabled)
+	if (!GetConVarBool(g_hSoundEnabled))
 		return;
 		
 	// Players button sound
 	if (!IsFakeClient(client))
 	{
 		char buffer[255];
-		Format(buffer, sizeof(buffer), "play %s", sSoundPath);
+		GetConVarString(g_hSoundPath, buffer, 255);
+		Format(buffer, sizeof(buffer), "play %s", buffer);
 		ClientCommand(client, buffer);
 	}
 	
@@ -1054,7 +1140,8 @@ public void PlayButtonSound(int client)
 				if (Target == client)
 				{
 					char szsound[255];
-					Format(szsound, sizeof(szsound), "play %s", sSoundPath);
+					GetConVarString(g_hSoundPath, szsound, 256);
+					Format(szsound, sizeof(szsound), "play %s", szsound);
 					ClientCommand(i, szsound);
 				}
 			}
@@ -1086,17 +1173,17 @@ public void LimitSpeed(int client)
 	float speedCap = 0.0, CurVelVec[3];
 	
 	if (g_iClientInZone[client][0] == 1 && g_iClientInZone[client][2] > 0)
-		speedCap = g_fBonusPreSpeed;
+		speedCap = GetConVarFloat(g_hBonusPreSpeed);
 	else
 		if (g_iClientInZone[client][0] == 1)
-			speedCap = g_fStartPreSpeed;
+			speedCap = GetConVarFloat(g_hStartPreSpeed);
 		else
 			if (g_iClientInZone[client][0] == 5)
 			{
 				if (!g_bNoClipUsed[client])
-					speedCap = g_fSpeedPreSpeed;
+					speedCap = GetConVarFloat(g_hSpeedPreSpeed);
 				else
-					speedCap = g_fStartPreSpeed; // If noclipping, top speed at normal start zone speed
+					speedCap = GetConVarFloat(g_hStartPreSpeed); // If noclipping, top speed at normal start zone speed
 			}
 	
 	if (speedCap == 0.0)
@@ -1183,40 +1270,50 @@ public void refreshTrailClient(int client)
 	}
 }
 
-public void refreshTrailBot(int bot)
+void refreshTrailBot(int bot)
 {
+
 	if (!IsValidClient(bot))
 		return;
-	
+
 	int ent = GetPlayerWeaponSlot(bot, 2);
 	if (!IsValidEntity(ent))
 		ent = bot;
 
-	if ((g_bBonusReplayTrailEnabled && g_bBonusReplay) || (g_bRecordBotTrailEnabled && g_bReplayBot))
+	if ((GetConVarBool(g_hBonusBotTrail) && GetConVarBool(g_hBonusBot)) && bot == g_BonusBot)
 	{
-		if (bot == g_BonusBot)
+		for (int i = 1; i < MAXPLAYERS+1; i++)
 		{
-			TE_SetupBeamFollow(ent, 
-				g_BeamSprite, 
-				0, 
-				BEAMLIFE, 
-				4.0, 
-				1.0, 
-				1, 
-				g_BonusBotTrailColor);
-			TE_SendToAll();
+			if (IsValidClient(i) && ((g_iClientInZone[i][2] == g_iClientInZone[bot][2] && g_Stage[g_iClientInZone[i][2]][i] == g_Stage[g_iClientInZone[bot][2]][bot]) || g_bSpectate[i]))
+			{
+				TE_SetupBeamFollow(ent, 
+					g_BeamSprite, 
+					0, 
+					BEAMLIFE, 
+					4.0, 
+					1.0, 
+					1, 
+					g_BonusBotTrailColor);
+   				TE_SendToClient(i);
+			}
 		}
-		else if (bot == g_RecordBot)
+	}
+	else if ((GetConVarBool(g_hRecordBotTrail) && GetConVarBool(g_hReplayBot)) && bot == g_RecordBot)
+	{
+		for (int i = 1; i < MAXPLAYERS+1; i++)
 		{
-			TE_SetupBeamFollow(ent, 
-				g_BeamSprite, 
-				0, 
-				BEAMLIFE, 
-				4.0, 
-				1.0, 
-				1, 
-				g_ReplayBotTrailColor);
-			TE_SendToAll();
+			if (IsValidClient(i) && ((g_iClientInZone[i][2] == g_iClientInZone[bot][2] && g_Stage[g_iClientInZone[i][2]][i] == g_Stage[g_iClientInZone[bot][2]][bot]) || g_bSpectate[i]))
+			{
+				TE_SetupBeamFollow(ent, 
+					g_BeamSprite, 
+					0, 
+					BEAMLIFE, 
+					4.0, 
+					1.0, 
+					1, 
+					g_ReplayBotTrailColor);
+   				TE_SendToClient(i);
+			}
 		}
 	}
 }
@@ -1260,13 +1357,13 @@ public void checkTrailStatus(int client, float speed)
 			g_bNoClipUsed[client] = false;
 			if (!g_bClientStopped[client]) // Get start time
 			{
-				g_fClientLastMovement[client] = GetEngineTime();
+				g_fClientLastMovement[client] = GetGameTime();
 				g_bClientStopped[client] = true;
 			}
-			else if (GetEngineTime() - g_fClientLastMovement[client] >= BEAMLIFE) // Trail has died, refresh
+			else if (GetGameTime() - g_fClientLastMovement[client] >= BEAMLIFE) // Trail has died, refresh
 			{
 				g_bTrailApplied[client] = false;
-				g_fClientLastMovement[client] = GetEngineTime();
+				g_fClientLastMovement[client] = GetGameTime();
 				refreshTrailClient(client);
 			}
 		}
@@ -1280,44 +1377,29 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
-
+	float GameTime = GetGameTime();
+	g_fLastCommandBack[client] = GameTime;
 	g_ClientSelectedZone[client] = -1;
 	g_Editing[client] = 0;
 	
 	g_bClientRestarting[client] = false;
-	g_fClientRestarting[client] = GetGameTime();
-	g_fErrorMessage[client] = GetGameTime();
+	g_fClientRestarting[client] = GameTime;
+	g_fErrorMessage[client] = GameTime;
 	g_bPushing[client] = false;
 	
 	g_bLoadingSettings[client] = false;
-	g_bSettingsLoaded[client] = false;
-	
-	// Set client location 
-	if (bSpawnToStartZone)
-	{
-		g_iClientInZone[client][0] = 1;
-		g_iClientInZone[client][1] = 0;
-		g_iClientInZone[client][3] = getZoneID(0, 1);
-	}
-	else
-	{
-		g_iClientInZone[client][0] = -1;
-		g_iClientInZone[client][1] = -1;
-		g_iClientInZone[client][3] = -1;
-	}
-	g_iClientInZone[client][2] = 0;
-	
+	g_bSettingsLoaded[client] = false;	
 	
 	g_bClientStopped[client] = false;
 	g_bTrailApplied[client] = false;
-	g_fClientLastMovement[client] = GetEngineTime();
+	g_fClientLastMovement[client] = GameTime;
 	g_fLastDifferenceTime[client] = 0.0;
 	g_bTrailOn[client] = false;
 	
 	g_bHasTitle[client] = false;
 	g_iTitleInUse[client] = -1;
 	
-	g_flastClientUsp[client] = GetGameTime();
+	g_flastClientUsp[client] = GameTime;
 	
 	g_ClientRenamingZone[client] = false;
 	g_iClientInZone[client][2] = 0;
@@ -1335,8 +1417,8 @@ public void SetClientDefaults(int client)
 	g_bRecalcRankInProgess[client] = false;
 	g_bPause[client] = false;
 	g_bPositionRestored[client] = false;
-	g_bRestorePosition[client] = false;
 	g_bRestorePositionMsg[client] = false;
+	g_bRestorePosition[client] = false;
 	g_bRespawnPosition[client] = false;
 	g_bNoClip[client] = false;
 	g_bChallenge[client] = false;
@@ -1359,7 +1441,7 @@ public void SetClientDefaults(int client)
 	g_MapRank[client] = 99999;
 	g_OldMapRank[client] = 99999;
 	g_PlayerRank[client] = 99999;
-	g_fProfileMenuLastQuery[client] = GetGameTime();
+	g_fProfileMenuLastQuery[client] = GameTime;
 	Format(g_szPlayerPanelText[client], 512, "");
 	Format(g_pr_rankname[client], 128, "");
 	g_PlayerChatRank[client] = -1;
@@ -1402,7 +1484,7 @@ public void SetClientDefaults(int client)
 		g_bflagTitles_orig[client][i] = false;
 	}
 	
-	g_fLastPlayerCheckpoint[client] = GetGameTime();
+	g_fLastPlayerCheckpoint[client] = GameTime;
 	g_bCreatedTeleport[client] = false;
 	g_bPracticeMode[client] = false;
 	
@@ -1522,14 +1604,24 @@ public void InitPrecache()
 	FakePrecacheSound(PRO_RELATIVE_SOUND_PATH);
 	AddFileToDownloadsTable(CP_FULL_SOUND_PATH);
 	FakePrecacheSound(CP_RELATIVE_SOUND_PATH);
-	AddFileToDownloadsTable(g_sArmModel);
-	AddFileToDownloadsTable(g_sPlayerModel);
-	AddFileToDownloadsTable(g_sReplayBotArmModel);
-	AddFileToDownloadsTable(g_sReplayBotPlayerModel);
-	PrecacheModel(g_sReplayBotArmModel, true);
-	PrecacheModel(g_sReplayBotPlayerModel, true);
-	PrecacheModel(g_sArmModel, true);
-	PrecacheModel(g_sPlayerModel, true);
+
+	char szBuffer[256];
+	// Replay Player Model
+	GetConVarString(g_hReplayBotPlayerModel, szBuffer, 256);
+	AddFileToDownloadsTable(szBuffer);
+	PrecacheModel(szBuffer, true);
+	// Replay Arm Model
+	GetConVarString(g_hReplayBotArmModel, szBuffer, 256);
+	AddFileToDownloadsTable(szBuffer);
+	PrecacheModel(szBuffer, true);
+	// Player Arm Model
+	GetConVarString(g_hArmModel, szBuffer, 256);
+	AddFileToDownloadsTable(szBuffer);
+	PrecacheModel(szBuffer, true);
+	// Player Model
+	GetConVarString(g_hPlayerModel, szBuffer, 256);
+	AddFileToDownloadsTable(szBuffer);
+	PrecacheModel(szBuffer, true);
 	
 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
@@ -1591,10 +1683,10 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 			rankThisRun = g_MapRank[client];
 
 		// Check that ck_chat_record_type matches and ck_min_rank_announce matches	
-		if ((g_iAnnounceRecord == 0 || 
-			(g_iAnnounceRecord == 1 && g_bMapPBRecord[client] || g_bMapSRVRecord[client] || g_bMapFirstRecord[client]) ||
-			(g_iAnnounceRecord == 2 && g_bMapSRVRecord[client])) &&
-			(rankThisRun <= g_AnnounceRank || g_AnnounceRank == 0))
+		if ((GetConVarInt(g_hAnnounceRecord) == 0 || 
+			(GetConVarInt(g_hAnnounceRecord) == 1 && g_bMapPBRecord[client] || g_bMapSRVRecord[client] || g_bMapFirstRecord[client]) ||
+			(GetConVarInt(g_hAnnounceRecord) == 2 && g_bMapSRVRecord[client])) &&
+			(rankThisRun <= GetConVarInt(g_hAnnounceRank) || GetConVarInt(g_hAnnounceRank) == 0))
 		{
 			for (int i = 1; i <= GetMaxClients(); i++)
 			{
@@ -1696,10 +1788,10 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		rank = g_MapRankBonus[zGroup][client];
 	
 	GetClientName(client, szName, MAX_NAME_LENGTH);
-	if ((g_iAnnounceRecord == 0 ||
-		(g_iAnnounceRecord == 1 && g_bBonusSRVRecord[client] || g_bBonusPBRecord[client] || g_bBonusFirstRecord[client]) ||
-		(g_iAnnounceRecord == 2 && g_bBonusSRVRecord[client])) &&
-		(rank <= g_AnnounceRank || g_AnnounceRank == 0))
+	if ((GetConVarInt(g_hAnnounceRecord) == 0 ||
+		(GetConVarInt(g_hAnnounceRecord) == 1 && g_bBonusSRVRecord[client] || g_bBonusPBRecord[client] || g_bBonusFirstRecord[client]) ||
+		(GetConVarInt(g_hAnnounceRecord) == 2 && g_bBonusSRVRecord[client])) &&
+		(rank <= GetConVarInt(g_hAnnounceRank) || GetConVarInt(g_hAnnounceRank) == 0))
 	{
 		if (g_bBonusSRVRecord[client])
 		{
@@ -2108,7 +2200,7 @@ public void SetPlayerRank(int client)
 	if (g_iTitleInUse[client] == -1)
 	{
 		// Player is not using a title
-		if (g_bPointSystem)
+		if (GetConVarBool(g_hPointSystem))
 		{
 			GetArrayArray(g_hSkillGroups, index, RankValue[0]);
 
@@ -2120,7 +2212,7 @@ public void SetPlayerRank(int client)
 	else
 	{
 		// Player is using a title
-		if (g_bPointSystem)
+		if (GetConVarBool(g_hPointSystem))
 		{
 			g_PlayerChatRank[client] = RankValue[NameColor];
 		}
@@ -2129,7 +2221,7 @@ public void SetPlayerRank(int client)
 	}
 	
 	// Admin Clantag
-	if (g_bAdminClantag)
+	if (GetConVarBool(g_hAdminClantag))
 	{ if (GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_GENERIC)
 		{
 			Format(g_pr_chat_coloredrank[client], 128, "%s %cADMIN%c", g_pr_chat_coloredrank[client], LIMEGREEN, WHITE);
@@ -2191,16 +2283,16 @@ stock Action PrintSpecMessageAll(int client)
 	char szChatRank[64];
 	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
 	
-	if (g_bPointSystem && g_bColoredNames)
+	if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
 		setNameColor(szName, g_PlayerChatRank[client], 64);	
 
-	if (g_bCountry && (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag)))
+	if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
 		CPrintToChatAll("{green}%s{default} %s *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, szTextToAll);
 	else
-		if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
+		if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
 			CPrintToChatAll("%s *SPEC* {grey}%s{default}: %s", szChatRank, szName, szTextToAll);
 		else
-			if (g_bCountry)
+			if (GetConVarBool(g_hCountry))
 				CPrintToChatAll("[{green}%s{default}] *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szName, szTextToAll);
 			else
 				CPrintToChatAll("*SPEC* {grey}%s{default}: %s", szName, szTextToAll);
@@ -2208,13 +2300,13 @@ stock Action PrintSpecMessageAll(int client)
 	for (int i = 1; i <= MaxClients; i++)
 		if (IsValidClient(i))
 		{
-			if (g_bCountry && (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag)))
+			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
 				PrintToConsole(i, "%s [%s] *SPEC* %s: %s", g_szCountryCode[client], g_pr_rankname[client], szName, szTextToAll);
 			else
-				if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
+				if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
 					PrintToConsole(i, "[%s] *SPEC* %s: %s", g_szCountryCode[client], szName, szTextToAll);
 				else
-					if (g_bPointSystem)
+					if (GetConVarBool(g_hPointSystem))
 						PrintToConsole(i, "[%s] *SPEC* %s: %s", g_pr_rankname[client], szName, szTextToAll);
 					else
 						PrintToConsole(i, "*SPEC* %s: %s", szName, szTextToAll);
@@ -2360,7 +2452,7 @@ public void PlayQuakeSound_Spec(int client, char[] buffer)
 
 public void AttackProtection(int client, int &buttons)
 {
-	if (g_bAttackSpamProtection)
+	if (GetConVarBool(g_hAttackSpamProtection))
 	{
 		char classnamex[64];
 		GetClientWeapon(client, classnamex, 64);
@@ -2487,7 +2579,7 @@ public void SpecListMenuDead(int client) // What Spectators see
 			}
 			
 			//rank
-			if (g_bPointSystem)
+			if (GetConVarBool(g_hPointSystem))
 			{
 				if (g_pr_points[ObservedUser] != 0)
 				{
@@ -2542,7 +2634,7 @@ public void SpecListMenuDead(int client) // What Spectators see
 								Format(g_szPlayerPanelText[client], 512, "[Map Record Replay]\n%s\nTickrate: %s\nSpecs: %i\n\nStage: %s\n", szTime, szTick, count, szStage);
 							else
 								if (ObservedUser == g_BonusBot)
-								Format(g_szPlayerPanelText[client], 512, "[Bonus Record Replay]\n%s\nTickrate: %s\nSpecs: %i\n\nStage: %s\n", szTime, szTick, count, szStage);
+									Format(g_szPlayerPanelText[client], 512, "[%s Record Replay]\n%s\nTickrate: %s\nSpecs: %i\n\nStage: %s\n", g_szZoneGroupName[g_iClientInZone[g_BonusBot][2]], szTime, szTick, count, szStage);
 							
 						}
 					}
@@ -2552,7 +2644,7 @@ public void SpecListMenuDead(int client) // What Spectators see
 							Format(g_szPlayerPanelText[client], 512, "[Map Record Replay]\nTime: PAUSED\nTickrate: %s\nSpecs: %i\n\nStage: %s\n", szTick, count, szStage);
 						else
 							if (ObservedUser == g_BonusBot)
-							Format(g_szPlayerPanelText[client], 512, "[Bonus Record Replay]\nTime: PAUSED\nTickrate: %s\nSpecs: %i\n\nStage: Bonus\n", szTick, count);
+								Format(g_szPlayerPanelText[client], 512, "[%s Record Replay]\nTime: PAUSED\nTickrate: %s\nSpecs: %i\n\nStage: Bonus\n", g_szZoneGroupName[g_iClientInZone[g_BonusBot][2]], szTick, count);
 					}
 				}
 				else
@@ -2648,7 +2740,7 @@ public void SpecListMenuAlive(int client) // What player sees
 
 public void LoadInfoBot()
 {
-	if (!g_bInfoBot)
+	if (!GetConVarBool(g_hInfoBot))
 		return;
 	
 	g_InfoBot = -1;
@@ -2674,9 +2766,9 @@ public void LoadInfoBot()
 		int count = 0;
 		if (g_bMapReplay)
 			count++;
-		if (g_bMapBonusReplay)
+		if (g_BonusBotCount > 0)
 			count++;
-		if (g_bInfoBot)
+		if (GetConVarBool(g_hInfoBot))
 			count++;
 		if (count == 0)
 			return;
@@ -2725,7 +2817,7 @@ public void SetInfoBotName(int ent)
 {
 	char szBuffer[64];
 	char sNextMap[128];
-	if (!IsValidClient(g_InfoBot) || !g_bInfoBot)
+	if (!IsValidClient(g_InfoBot) || !GetConVarBool(g_hInfoBot))
 		return;
 	if (g_bMapChooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 		Format(sNextMap, sizeof(sNextMap), "Pending Vote");
@@ -2746,7 +2838,7 @@ public void SetInfoBotName(int ent)
 	int iTimeLimit = GetConVarInt(hTmp);
 	if (hTmp != null)
 		CloseHandle(hTmp);
-	if (g_bMapEnd && iTimeLimit > 0)
+	if (GetConVarBool(g_hMapEnd) && iTimeLimit > 0)
 		Format(szBuffer, sizeof(szBuffer), "%s (in %s)", sNextMap, szTime);
 	else
 		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");

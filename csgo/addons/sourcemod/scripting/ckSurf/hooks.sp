@@ -24,7 +24,7 @@ public Action SayText2(UserMsg msg_id, Handle bf, int[] players, int playersNum,
 public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (client > 0 && IsClientInGame(client) && g_bAttackSpamProtection)
+	if (client > 0 && IsClientInGame(client) && GetConVarBool(g_hAttackSpamProtection))
 	{
 		char weapon[64];
 		GetEventString(event, "weapon", weapon, 64);
@@ -48,159 +48,158 @@ public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
 public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (client != 0)
+	if (IsValidClient(client))
 	{
-		PlayerSpawn(client);
+		g_SpecTarget[client] = -1;
+		g_bPause[client] = false;
+		g_bFirstTimerStart[client] = true;
+		SetEntityMoveType(client, MOVETYPE_WALK);
+		SetEntityRenderMode(client, RENDER_NORMAL);
+		
+		//strip weapons
+		if ((GetClientTeam(client) > 1) && IsValidClient(client))
+		{
+			StripAllWeapons(client);
+			if (!IsFakeClient(client))
+				GivePlayerItem(client, "weapon_usp_silencer");
+			if (!g_bStartWithUsp[client])
+			{
+				int weapon = GetPlayerWeaponSlot(client, 2);
+				if (weapon != -1 && !IsFakeClient(client))
+					SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
+			}
+		}
+		
+		// Hide blood
+		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
+
+		//NoBlock
+		if (GetConVarBool(g_hCvarNoBlock) || IsFakeClient(client))
+			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
+		else
+			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
+		
+		//botmimic2		
+		if (g_hBotMimicsRecord[client] != null && IsFakeClient(client))
+		{
+			g_BotMimicTick[client] = 0;
+			g_CurrentAdditionalTeleportIndex[client] = 0;
+		}
+		
+		if (IsFakeClient(client))
+		{
+			if (client == g_InfoBot)
+				CS_SetClientClanTag(client, "");
+			else if (client == g_RecordBot)
+				CS_SetClientClanTag(client, "MAP REPLAY");
+			else if (client == g_BonusBot)
+				CS_SetClientClanTag(client, "BONUS REPLAY");
+			return Plugin_Continue;
+		}
+		
+		//change player skin
+		if (GetConVarBool(g_hPlayerSkinChange) && (GetClientTeam(client) > 1))
+		{
+			char szBuffer[256];
+			GetConVarString(g_hArmModel, szBuffer, 256);
+			SetEntPropString(client, Prop_Send, "m_szArmsModel", szBuffer);
+
+			GetConVarString(g_hPlayerModel, szBuffer, 256);
+			SetEntityModel(client, szBuffer);
+		}
+		
+		//1st spawn & t/ct
+		if (g_bFirstSpawn[client] && (GetClientTeam(client) > 1))
+		{
+			float fLocation[3];
+			GetClientAbsOrigin(client, fLocation);
+			if (setClientLocation(client, fLocation) == -1)
+			{
+				g_iClientInZone[client][2] = 0;
+				g_bIgnoreZone[client] = false;
+			}
+
+
+			StartRecording(client);
+			CreateTimer(1.5, CenterMsgTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+			g_bFirstSpawn[client] = false;
+		}
+		
+		//get start pos for challenge
+		GetClientAbsOrigin(client, g_fSpawnPosition[client]);
+		
+		//restore position
+		if (!g_specToStage[client])
+		{
+			
+			if ((GetClientTeam(client) > 1))
+			{
+				if (g_bRestorePosition[client])
+				{
+					g_bPositionRestored[client] = true;
+					teleportEntitySafe(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					g_bRestorePosition[client] = false;
+				}
+				else
+				{
+					if (g_bRespawnPosition[client])
+					{
+						teleportEntitySafe(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+						g_bRespawnPosition[client] = false;
+					}
+					else
+					{
+						if (GetConVarBool(g_hAutoTimer))
+						{
+							if (GetConVarBool(g_hSpawnToStartZone))
+							{
+								Command_Restart(client, 1);
+							}
+							
+							CreateTimer(0.1, StartTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+						}
+						else
+						{
+							
+							g_bTimeractivated[client] = false;
+							g_fStartTime[client] = -1.0;
+							g_fCurrentRunTime[client] = -1.0;
+							
+							// Spawn client to the start zone.
+							if (GetConVarBool(g_hSpawnToStartZone))
+								Command_Restart(client, 1);	
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			Array_Copy(g_fTeleLocation[client], g_fPlayerCordsRestore[client], 3);
+			Array_Copy(NULL_VECTOR, g_fPlayerAnglesRestore[client], 3);
+			SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, -100.0 } ));
+			teleportEntitySafe(client, g_fTeleLocation[client], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ), false);
+			g_specToStage[client] = false;
+		}
+		
+		//hide radar
+		CreateTimer(0.0, HideHud, client, TIMER_FLAG_NO_MAPCHANGE);
+		
+		//set clantag
+		CreateTimer(1.5, SetClanTag, client, TIMER_FLAG_NO_MAPCHANGE);
+		
+		//set speclist
+		Format(g_szPlayerPanelText[client], 512, "");
+		
+		//get speed & origin
+		g_fLastSpeed[client] = GetSpeed(client);
 	}
 	return Plugin_Continue;
 }
 
 public void PlayerSpawn(int client)
-{
-	if (!IsValidClient(client))
-		return;
-	
-	g_SpecTarget[client] = -1;
-	g_bPause[client] = false;
-	g_bFirstTimerStart[client] = true;
-	SetEntityMoveType(client, MOVETYPE_WALK);
-	SetEntityRenderMode(client, RENDER_NORMAL);
-	
-	//strip weapons
-	if ((GetClientTeam(client) > 1) && IsValidClient(client))
-	{
-		StripAllWeapons(client);
-		if (!IsFakeClient(client))
-			GivePlayerItem(client, "weapon_usp_silencer");
-		if (!g_bStartWithUsp[client])
-		{
-			int weapon = GetPlayerWeaponSlot(client, 2);
-			if (weapon != -1 && !IsFakeClient(client))
-				SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-		}
-	}
-	
-	//godmode
-	if (g_bgodmode || IsFakeClient(client))
-		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-	else
-		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
-	
-	//NoBlock
-	if (g_bNoBlock || IsFakeClient(client))
-		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
-	else
-		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
-	
-	//botmimic2		
-	if (g_hBotMimicsRecord[client] != null && IsFakeClient(client))
-	{
-		g_BotMimicTick[client] = 0;
-		g_CurrentAdditionalTeleportIndex[client] = 0;
-	}
-	
-	if (IsFakeClient(client))
-	{
-		if (client == g_InfoBot)
-			CS_SetClientClanTag(client, "");
-		else
-			CS_SetClientClanTag(client, "LOCALHOST");
-		return;
-	}
-	
-	//change player skin
-	if (g_bPlayerSkinChange && (GetClientTeam(client) > 1))
-	{
-		SetEntPropString(client, Prop_Send, "m_szArmsModel", g_sArmModel);
-		SetEntityModel(client, g_sPlayerModel);
-	}
-	
-	//1st spawn & t/ct
-	if (g_bFirstSpawn[client] && (GetClientTeam(client) > 1))
-	{
-		StartRecording(client);
-		CreateTimer(1.5, CenterMsgTimer, client, TIMER_FLAG_NO_MAPCHANGE);
-		g_bFirstSpawn[client] = false;
-	}
-	
-	//get start pos for challenge
-	GetClientAbsOrigin(client, g_fSpawnPosition[client]);
-	
-	//restore position
-	if (!g_specToStage[client])
-	{
-		
-		if ((GetClientTeam(client) > 1))
-		{
-			if (g_bRestorePosition[client])
-			{
-				g_bPositionRestored[client] = true;
-				TeleportEntity(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR);
-				g_bRestorePosition[client] = false;
-			}
-			else
-			{
-				if (g_bRespawnPosition[client])
-				{
-					TeleportEntity(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR);
-					g_bRespawnPosition[client] = false;
-				}
-				else
-				{
-					if (g_bAutoTimer)
-					{
-						if (bSpawnToStartZone)
-						{
-							//int startZoneId = getZoneID(0, 1);
-							//TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});
-							Command_Restart(client, 1);
-						}
-						
-						CreateTimer(0.1, StartTimer, client, TIMER_FLAG_NO_MAPCHANGE);
-					}
-					else
-					{
-						
-						g_bTimeractivated[client] = false;
-						g_fStartTime[client] = -1.0;
-						g_fCurrentRunTime[client] = -1.0;
-						
-						// Spawn client to the start zone.
-						if (bSpawnToStartZone)
-						{
-							//int startZoneId = getZoneID(0, 1);
-							Command_Restart(client, 1);
-							//if (startZoneId > 0)
-							//	TeleportEntity(client, g_fZonePositions[startZoneId], NULL_VECTOR, Float:{0.0,0.0,-100.0});		
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		Array_Copy(g_fTeleLocation[client], g_fPlayerCordsRestore[client], 3);
-		Array_Copy(NULL_VECTOR, g_fPlayerAnglesRestore[client], 3);
-		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, -100.0 } ));
-		TeleportEntity(client, g_fTeleLocation[client], NULL_VECTOR, view_as<float>( { 0.0, 0.0, -100.0 } ));
-		g_specToStage[client] = false;
-	}
-	
-	//hide radar
-	CreateTimer(0.0, HideRadar, client, TIMER_FLAG_NO_MAPCHANGE);
-	
-	//set clantag
-	CreateTimer(1.5, SetClanTag, client, TIMER_FLAG_NO_MAPCHANGE);
-	
-	//set speclist
-	Format(g_szPlayerPanelText[client], 512, "");
-	
-	//get speed & origin
-	g_fLastSpeed[client] = GetSpeed(client);
+{	
 
-	// ViewModel
-	Client_SetDrawViewModel(client, g_bViewModel[client]);
 }
 
 public Action Say_Hook(int client, const char[] command, int argc)
@@ -224,7 +223,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		return Plugin_Handled;
 	}
 	
-	if (!g_benableChatProcessing)
+	if (!GetConVarBool(g_henableChatProcessing))
 		return Plugin_Continue;
 	
 	if (IsValidClient(client))
@@ -286,7 +285,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		GetClientName(client, szName, 64);
 		parseColorsFromString(szName, 64);
 		
-		if (g_bPointSystem && g_bColoredNames)
+		if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
 			setNameColor(szName, g_PlayerChatRank[client], 64);
 		
 		if (GetClientTeam(client) == 1)
@@ -299,7 +298,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 			char szChatRank[64];
 			Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
 			
-			if (g_bCountry && (g_bPointSystem || (StrEqual(g_pr_rankname[client], "ADMIN", false) && g_bAdminClantag)))
+			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || (StrEqual(g_pr_rankname[client], "ADMIN", false) && GetConVarBool(g_hAdminClantag))))
 			{
 				if (IsPlayerAlive(client))
 					CPrintToChatAllEx(client, "{green}%s{default} %s {teamcolor}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
@@ -309,7 +308,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 			}
 			else
 			{
-				if (g_bPointSystem || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && g_bAdminClantag))
+				if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
 				{
 					if (IsPlayerAlive(client))
 						CPrintToChatAllEx(client, "%s {teamcolor}%s{default}: %s", szChatRank, szName, sText);
@@ -318,7 +317,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 					return Plugin_Handled;
 				}
 				else
-					if (g_bCountry)
+					if (GetConVarBool(g_hCountry))
 				{
 					if (IsPlayerAlive(client))
 						CPrintToChatAllEx(client, "[{green}%s{default}] {teamcolor}%s{default}: %s", g_szCountryCode[client], szName, sText);
@@ -361,7 +360,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 
 public Action Event_PlayerDisconnect(Handle event, const char[] name, bool dontBroadcast)
 {
-	if (g_bDisconnectMsg)
+	if (GetConVarBool(g_hDisconnectMsg))
 	{
 		char szName[64];
 		char disconnectReason[64];
@@ -427,13 +426,12 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
 
 public Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason)
 {
-	if (g_bRoundEnd)
-		return Plugin_Continue;
+	if (reason == CSRoundEnd_GameStart)
+		return Plugin_Handled;
 	int timeleft;
 	GetMapTimeLeft(timeleft);
-	if (timeleft >= -1)
+	if (timeleft >= -1 && !GetConVarBool(g_hAllowRoundEndCvar))
 		return Plugin_Handled;
-	g_bRoundEnd = true;
 	return Plugin_Continue;
 }
 
@@ -480,7 +478,7 @@ public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroad
 // https://forums.alliedmods.net/showthread.php?t=267131
 public Action OnTouchPushTrigger(int entity, int other)
 {
-	if (IsValidClient(other) && g_bTriggerPushFixEnable == true)
+	if (IsValidClient(other) && GetConVarBool(g_hTriggerPushFixEnable) == true)
 	{
 		if (IsValidEntity(entity))
 		{
@@ -500,16 +498,16 @@ public Action OnTouchPushTrigger(int entity, int other)
 // PlayerHurt 
 public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 {
-	if (!g_bgodmode && g_Autohealing_Hp > 0)
+	if (!GetConVarBool(g_hCvarGodMode) && GetConVarInt(g_hAutohealing_Hp) > 0)
 	{
 		int client = GetClientOfUserId(GetEventInt(event, "userid"));
 		int remainingHeatlh = GetEventInt(event, "health");
 		if (remainingHeatlh > 0)
 		{
-			if ((remainingHeatlh + g_Autohealing_Hp) > 100)
+			if ((remainingHeatlh + GetConVarInt(g_hAutohealing_Hp)) > 100)
 				SetEntData(client, FindSendPropInfo("CBasePlayer", "m_iHealth"), 100);
 			else
-				SetEntData(client, FindSendPropInfo("CBasePlayer", "m_iHealth"), remainingHeatlh + g_Autohealing_Hp);
+				SetEntData(client, FindSendPropInfo("CBasePlayer", "m_iHealth"), remainingHeatlh + GetConVarInt(g_hAutohealing_Hp));
 		}
 	}
 	return Plugin_Continue;
@@ -518,8 +516,10 @@ public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroad
 // PlayerDamage (if godmode 0)
 public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
-	if (g_bgodmode)
+	if (GetConVarBool(g_hCvarGodMode))
+	{
 		return Plugin_Handled;
+	}
 	return Plugin_Continue;
 }
 
@@ -552,19 +552,124 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	
 	if (IsPlayerAlive(client))
 	{
-		RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
-		if (IsFakeClient(client))
-			PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
-		
+		g_bLastOnGround[client] = g_bOnGround[client];
+		if (GetEntityFlags(client) & FL_ONGROUND)
+			g_bOnGround[client] = true;
+		else
+			g_bOnGround[client] = false;
+
+		float newVelocity[3];
+		// Slope Boost Fix by Mev, & Blacky
+		// https://forums.alliedmods.net/showthread.php?t=266888
+		//if (GetConVarBool(g_hSlopeFixEnable) == true)
+		if (GetConVarBool(g_hSlopeFixEnable) == true && !IsFakeClient(client))
+		{			
+			g_vLast[client][0] = g_vCurrent[client][0];
+			g_vLast[client][1] = g_vCurrent[client][1];
+			g_vLast[client][2] = g_vCurrent[client][2];
+			g_vCurrent[client][0] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[0]");
+			g_vCurrent[client][1] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[1]");
+			g_vCurrent[client][2] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[2]");
+			
+			// Check if player landed on the ground
+			if (g_bOnGround[client] == true && g_bLastOnGround[client] == false)
+			{
+				// Set up and do tracehull to find out if the player landed on a slope
+				float vPos[3];
+				GetEntPropVector(client, Prop_Data, "m_vecOrigin", vPos);
+				
+				float vMins[3];
+				GetEntPropVector(client, Prop_Send, "m_vecMins", vMins);
+				
+				float vMaxs[3];
+				GetEntPropVector(client, Prop_Send, "m_vecMaxs", vMaxs);
+				
+				float vEndPos[3];
+				vEndPos[0] = vPos[0];
+				vEndPos[1] = vPos[1];
+				vEndPos[2] = vPos[2] - FindConVar("sv_maxvelocity").FloatValue;
+				
+				TR_TraceHullFilter(vPos, vEndPos, vMins, vMaxs, MASK_PLAYERSOLID_BRUSHONLY, TraceRayDontHitSelf, client);
+				
+				if (TR_DidHit())
+				{
+					// Gets the normal vector of the surface under the player
+					float vPlane[3], vLast[3];
+					TR_GetPlaneNormal(INVALID_HANDLE, vPlane);
+					
+					// Make sure it's not flat ground and not a surf ramp (1.0 = flat ground, < 0.7 = surf ramp)
+					if (0.7 <= vPlane[2] < 1.0)
+					{
+						/*
+						Copy the ClipVelocity function from sdk2013 
+						(https://mxr.alliedmods.net/hl2sdk-sdk2013/source/game/shared/gamemovement.cpp#3145)
+						With some minor changes to make it actually work
+						*/
+						vLast[0] = g_vLast[client][0];
+						vLast[1] = g_vLast[client][1];
+						vLast[2] = g_vLast[client][2];
+						vLast[2] -= (FindConVar("sv_gravity").FloatValue * GetTickInterval() * 0.5);
+						
+						float fBackOff = GetVectorDotProduct(vLast, vPlane);
+						
+						float change, vVel[3];
+						for (int i; i < 2; i++)
+						{
+							change = vPlane[i] * fBackOff;
+							vVel[i] = vLast[i] - change;
+						}
+						
+						float fAdjust = GetVectorDotProduct(vVel, vPlane);
+						if (fAdjust < 0.0)
+						{
+							for (int i; i < 2; i++)
+							{
+								vVel[i] -= (vPlane[i] * fAdjust);
+							}
+						}
+						
+						vVel[2] = 0.0;
+						vLast[2] = 0.0;
+						
+						// Make sure the player is going down a ramp by checking if they actually will gain speed from the boost
+						if (GetVectorLength(vVel) > GetVectorLength(vLast))
+						{
+							// Teleport the player, also adds basevelocity
+							if (GetEntityFlags(client) & FL_BASEVELOCITY)
+							{
+								float vBase[3];
+								GetEntPropVector(client, Prop_Data, "m_vecBaseVelocity", vBase);
+								
+								AddVectors(vVel, vBase, vVel);
+							}
+							g_bFixingRamp[client] = true;
+							Array_Copy(vVel, newVelocity, 3);
+							TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vVel);
+						}
+					}
+				}
+			}
+		}
+
+		if (newVelocity[0] == 0.0 && newVelocity[1] == 0.0 && newVelocity[2] == 0.0)
+		{
+			RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
+			if (IsFakeClient(client))
+				PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
+		}
+		else
+		{
+			RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, newVelocity);
+			if (IsFakeClient(client))
+				PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, newVelocity);
+		}
+
 		float speed, origin[3], ang[3];
 		GetClientAbsOrigin(client, origin);
 		GetClientEyeAngles(client, ang);
 		
 		speed = GetSpeed(client);
-		if (GetEntityFlags(client) & FL_ONGROUND)
-			g_bOnGround[client] = true;
-		else
-			g_bOnGround[client] = false;
+
 	
 		checkTrailStatus(client, speed);
 		
@@ -584,120 +689,29 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		BeamBox_OnPlayerRunCmd(client);
 	}
 	
-	// Slope Boost Fix by Mev, & Blacky
-	// https://forums.alliedmods.net/showthread.php?t=266888
-	if (g_bSlopeFixEnable == true)
-	{
-		g_bLastOnGround[client] = g_bOnGroundFix[client];
-		
-		if (GetEntityFlags(client) & FL_ONGROUND)
-			g_bOnGroundFix[client] = true;
-		else
-			g_bOnGroundFix[client] = false;
-		
-		g_vLast[client][0] = g_vCurrent[client][0];
-		g_vLast[client][1] = g_vCurrent[client][1];
-		g_vLast[client][2] = g_vCurrent[client][2];
-		g_vCurrent[client][0] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[0]");
-		g_vCurrent[client][1] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[1]");
-		g_vCurrent[client][2] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[2]");
-		
-		// Check if player landed on the ground
-		if (g_bOnGroundFix[client] == true && g_bLastOnGround[client] == false)
-		{
-			// Set up and do tracehull to find out if the player landed on a slope
-			float vPos[3];
-			GetEntPropVector(client, Prop_Data, "m_vecOrigin", vPos);
-			
-			float vMins[3];
-			GetEntPropVector(client, Prop_Send, "m_vecMins", vMins);
-			
-			float vMaxs[3];
-			GetEntPropVector(client, Prop_Send, "m_vecMaxs", vMaxs);
-			
-			float vEndPos[3];
-			vEndPos[0] = vPos[0];
-			vEndPos[1] = vPos[1];
-			vEndPos[2] = vPos[2] - FindConVar("sv_maxvelocity").FloatValue;
-			
-			TR_TraceHullFilter(vPos, vEndPos, vMins, vMaxs, MASK_PLAYERSOLID_BRUSHONLY, TraceRayDontHitSelf, client);
-			
-			if (TR_DidHit())
-			{
-				// Gets the normal vector of the surface under the player
-				float vPlane[3], vLast[3];
-				TR_GetPlaneNormal(INVALID_HANDLE, vPlane);
-				
-				// Make sure it's not flat ground and not a surf ramp (1.0 = flat ground, < 0.7 = surf ramp)
-				if (0.7 <= vPlane[2] < 1.0)
-				{
-					/*
-					Copy the ClipVelocity function from sdk2013 
-					(https://mxr.alliedmods.net/hl2sdk-sdk2013/source/game/shared/gamemovement.cpp#3145)
-					With some minor changes to make it actually work
-					*/
-					vLast[0] = g_vLast[client][0];
-					vLast[1] = g_vLast[client][1];
-					vLast[2] = g_vLast[client][2];
-					vLast[2] -= (FindConVar("sv_gravity").FloatValue * GetTickInterval() * 0.5);
-					
-					float fBackOff = GetVectorDotProduct(vLast, vPlane);
-					
-					float change, vVel[3];
-					for (int i; i < 2; i++)
-					{
-						change = vPlane[i] * fBackOff;
-						vVel[i] = vLast[i] - change;
-					}
-					
-					float fAdjust = GetVectorDotProduct(vVel, vPlane);
-					if (fAdjust < 0.0)
-					{
-						for (int i; i < 2; i++)
-						{
-							vVel[i] -= (vPlane[i] * fAdjust);
-						}
-					}
-					
-					vVel[2] = 0.0;
-					vLast[2] = 0.0;
-					
-					// Make sure the player is going down a ramp by checking if they actually will gain speed from the boost
-					if (GetVectorLength(vVel) > GetVectorLength(vLast))
-					{
-						// Teleport the player, also adds basevelocity
-						if (GetEntityFlags(client) & FL_BASEVELOCITY)
-						{
-							float vBase[3];
-							GetEntPropVector(client, Prop_Data, "m_vecBaseVelocity", vBase);
-							
-							AddVectors(vVel, vBase, vVel);
-						}
-						
-						TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vVel);
-					}
-				}
-			}
-		}
-	}
-	
 	return Plugin_Continue;
 }
 
 //dhooks
 public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 {
+
 	if (!IsValidClient(client))
-	{
 		return MRES_Ignored;
-	}
-	
+
 	if (g_bPushing[client])
 	{
 		g_bPushing[client] = false;
 		return MRES_Ignored;
 	}
-	
+
+	if (g_bFixingRamp[client])
+	{
+		g_bFixingRamp[client] = false;
+		return MRES_Ignored;
+	}
+
+
 	// This one is currently mimicing something.
 	if (g_hBotMimicsRecord[client] != null)
 	{
@@ -710,19 +724,16 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 	
 	// Don't care if he's not recording.
 	if (g_hRecording[client] == null)
-	{
 		return MRES_Ignored;
-	}
-	
-	float origin[3], angles[3], velocity[3];
+
 	bool bOriginNull = DHookIsNullParam(hParams, 1);
 	bool bAnglesNull = DHookIsNullParam(hParams, 2);
 	bool bVelocityNull = DHookIsNullParam(hParams, 3);
 	
+	float origin[3], angles[3], velocity[3];
+	
 	if (!bOriginNull)
-	{
 		DHookGetParamVector(hParams, 1, origin);
-	}
 	
 	if (!bAnglesNull)
 	{
@@ -731,29 +742,26 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 	}
 	
 	if (!bVelocityNull)
-	{
 		DHookGetParamVector(hParams, 3, velocity);
-	}
 	
 	if (bOriginNull && bAnglesNull && bVelocityNull)
-	{
 		return MRES_Ignored;
-	}
 	
 	int iAT[AT_SIZE];
-	Array_Copy(origin, iAT[view_as<int>(atOrigin)], 3);
-	Array_Copy(angles, iAT[view_as<int>(atAngles)], 3);
-	Array_Copy(velocity, iAT[view_as<int>(atVelocity)], 3);
+	Array_Copy(origin, iAT[atOrigin], 3);
+	Array_Copy(angles, iAT[atAngles], 3);
+	Array_Copy(velocity, iAT[atVelocity], 3);
 	
 	// Remember, 
 	if (!bOriginNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
+		iAT[atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
 	if (!bAnglesNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
+		iAT[atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
 	if (!bVelocityNull)
-		iAT[view_as<int>(atFlags)] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
-	
-	PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
+		iAT[atFlags] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
+		
+	if (g_hRecordingAdditionalTeleport[client] != null)
+		PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
 	
 	return MRES_Ignored;
 }

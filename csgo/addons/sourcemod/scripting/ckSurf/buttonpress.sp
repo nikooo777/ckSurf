@@ -91,7 +91,7 @@ public void CL_OnStartTimerPress(int client)
 	PlayButtonSound(client);
 	
 	// Start recording for record bot
-	if (!IsFakeClient(client) && g_bReplayBot || !IsFakeClient(client) && g_bBonusReplay)
+	if (!IsFakeClient(client) && GetConVarBool(g_hReplayBot) || !IsFakeClient(client) && GetConVarBool(g_hBonusBot))
 	{
 		if (!IsPlayerAlive(client) || GetClientTeam(client) == 1)
 		{
@@ -129,8 +129,7 @@ public void CL_OnEndTimerPress(int client)
 						if (Target == g_RecordBot)
 							PrintToChat(i, "%t", "ReplayFinishingMsg", MOSSGREEN, WHITE, LIMEGREEN, g_szReplayName, GRAY, LIMEGREEN, g_szReplayTime, GRAY);
 						if (Target == g_BonusBot)
-							PrintToChat(i, "%t", "ReplayFinishingMsg", MOSSGREEN, WHITE, LIMEGREEN, g_szReplayName, GRAY, LIMEGREEN, g_szBonusTime, GRAY);
-						
+							PrintToChat(i, "%t", "ReplayFinishingMsgBonus", MOSSGREEN, WHITE, LIMEGREEN, g_szBonusName, GRAY, YELLOW, g_szZoneGroupName[g_iClientInZone[g_BonusBot][2]], GRAY, LIMEGREEN, g_szBonusTime, GRAY);
 					}
 				}
 			}
@@ -198,6 +197,17 @@ public void CL_OnEndTimerPress(int client)
 	==========================================*/
 	if (zGroup == 0)
 	{
+		// Make a new record bot?
+		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[0] || g_fReplayTimes[0] == 0.0))
+		{
+			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client])
+			{
+				g_fReplayTimes[0] = g_fFinalTime[client];
+				g_bNewReplay[client] = true;
+				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+			}
+		}
+
 		char szDiff[54];
 		float diff;
 
@@ -238,16 +248,17 @@ public void CL_OnEndTimerPress(int client)
 					g_bCheckpointRecordFound[zGroup] = true;
 				}
 				
-				if (g_bReplayBot && !g_bPositionRestored[client])
+				if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
 				{
 					g_bNewReplay[client] = true;
+					g_fReplayTimes[0] = g_fFinalTime[client];
 					CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
 		else
 		{  // Has to be the new record, since it is the first completion
-			if (g_bReplayBot && !g_bPositionRestored[client])
+			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
 			{
 				g_bNewReplay[client] = true;
 				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -289,7 +300,7 @@ public void CL_OnEndTimerPress(int client)
 		else if (diff > 0.0)
 		{  // Client's new record
 			g_fPersonalRecord[client] = g_fFinalTime[client];
-			if (g_ExtraPoints > 0)
+			if (GetConVarInt(g_hExtraPoints) > 0)
 				g_pr_multiplier[client] += 1; // Improved time, increase multip
 			FormatTimeFloat(1, g_fPersonalRecord[client], 3, g_szPersonalRecord[client], 64);
 			
@@ -351,6 +362,18 @@ public void CL_OnEndTimerPress(int client)
 	=            Handle bonus            =
 	====================================*/
 	{
+		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[zGroup] || g_fReplayTimes[zGroup] == 0.0))
+		{
+			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client])
+			{
+				g_fReplayTimes[zGroup] = g_fFinalTime[client];
+				g_bNewBonus[client] = true;
+				Handle pack;
+				CreateDataTimer(3.0, BonusReplayTimer, pack);
+				WritePackCell(pack, client);
+				WritePackCell(pack, zGroup);				
+			}
+		}
 		char szDiff[54];
 		float diff;
 
@@ -392,19 +415,25 @@ public void CL_OnEndTimerPress(int client)
 				}
 				
 				g_bBonusSRVRecord[client] = true;
-				if (g_bBonusReplay && !g_bPositionRestored[client])
+				if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client] && !g_bNewBonus[client])
 				{
 					g_bNewBonus[client] = true;
-					CreateTimer(3.0, BonusReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+					Handle pack;
+					CreateDataTimer(3.0, BonusReplayTimer, pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, zGroup);
 				}
 			}
 		}
 		else
 		{  // Has to be the new record, since it is the first completion
-			if (g_bBonusReplay && !g_bPositionRestored[client])
+			if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client] && !g_bNewBonus[client])
 			{
 				g_bNewBonus[client] = true;
-				CreateTimer(3.0, BonusReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+				Handle pack;
+				CreateDataTimer(3.0, BonusReplayTimer, pack);
+				WritePackCell(pack, client);
+				WritePackCell(pack, zGroup);
 			}
 			
 			g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
@@ -454,7 +483,7 @@ public void CL_OnEndTimerPress(int client)
 		{
 			db_currentBonusRunRank(client, zGroup);
 			/*// Not any kind of a record
-			if (g_iAnnounceRecord == 0 && (g_MapRankBonus[zGroup][client] <= g_AnnounceRank || g_AnnounceRank == 0))
+			if (GetConVarInt(g_hAnnounceRecord) == 0 && (g_MapRankBonus[zGroup][client] <= GetConVarInt(g_hAnnounceRank) || GetConVarInt(g_hAnnounceRank) == 0))
 	 			PrintToChatAll("%t", "BonusFinished1", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, RED, szTime, GRAY, RED, szDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], GRAY);
 			else
 			{
