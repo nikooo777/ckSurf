@@ -260,6 +260,7 @@ public void CL_OnEndTimerPress(int client)
 		{  // Has to be the new record, since it is the first completion
 			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
 			{
+				g_fReplayTimes[0] = g_fFinalTime[client];
 				g_bNewReplay[client] = true;
 				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 			}
@@ -398,7 +399,6 @@ public void CL_OnEndTimerPress(int client)
 		{  // If the server already has a record
 			if (g_fFinalTime[client] < g_fBonusFastest[zGroup])
 			{  // New fastest time in current bonus
-				
 				g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
 				g_fBonusFastest[zGroup] = g_fFinalTime[client];
 				Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
@@ -418,6 +418,7 @@ public void CL_OnEndTimerPress(int client)
 				if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client] && !g_bNewBonus[client])
 				{
 					g_bNewBonus[client] = true;
+					g_fReplayTimes[zGroup] = g_fFinalTime[client];
 					Handle pack;
 					CreateDataTimer(3.0, BonusReplayTimer, pack);
 					WritePackCell(pack, client);
@@ -430,6 +431,7 @@ public void CL_OnEndTimerPress(int client)
 			if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client] && !g_bNewBonus[client])
 			{
 				g_bNewBonus[client] = true;
+				g_fReplayTimes[zGroup] = g_fFinalTime[client];
 				Handle pack;
 				CreateDataTimer(3.0, BonusReplayTimer, pack);
 				WritePackCell(pack, client);
