@@ -564,12 +564,12 @@ public void ckAdminMenu(int client)
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
 	
-	if (GetConVarBool(g_hAutoTimer))
+	/*if (GetConVarBool(g_hAutoTimer))
 		Format(szTmp, sizeof(szTmp), "[%i.] Timer starts at spawn  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Timer starts at spawn  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
-	menuItemNumber++;
+	menuItemNumber++;*/
 	
 	if (GetConVarBool(g_hReplayBot))
 		Format(szTmp, sizeof(szTmp), "[%i.] Replay bot  -  Enabled", menuItemNumber);
@@ -792,21 +792,13 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 			
 			case 11:
 			{
-				if (!GetConVarBool(g_hAutoTimer))
-					ServerCommand("ck_auto_timer 1");
-				else
-					ServerCommand("ck_auto_timer 0");
-			}
-			
-			case 12:
-			{
 				if (!GetConVarBool(g_hReplayBot))
 					ServerCommand("ck_replay_bot 1");
 				else
 					ServerCommand("ck_replay_bot 0");
 			}
 			
-			case 13:
+			case 12:
 			{
 				if (!GetConVarBool(g_hPointSystem))
 					ServerCommand("ck_point_system 1");
@@ -814,7 +806,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_point_system 0");
 			}
 			
-			case 14:
+			case 13:
 			{
 				if (!GetConVarBool(g_hCountry))
 					ServerCommand("ck_country_tag 1");
@@ -822,7 +814,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_country_tag 0");
 			}
 			
-			case 15:
+			case 14:
 			{
 				if (!GetConVarBool(g_hPlayerSkinChange))
 					ServerCommand("ck_custom_models 1");
@@ -830,7 +822,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_custom_models 0");
 			}
 			
-			case 16:
+			case 15:
 			{
 				if (!GetConVarBool(g_hNoClipS))
 					ServerCommand("ck_noclip 1");
@@ -838,7 +830,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_noclip 0");
 			}
 			
-			case 17:
+			case 16:
 			{
 				if (!GetConVarBool(g_hAutoBhopConVar))
 					ServerCommand("ck_auto_bhop 1");
@@ -846,7 +838,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_auto_bhop 0");
 			}
 			
-			case 18:
+			case 17:
 			{
 				if (!GetConVarBool(g_hAdminClantag))
 					ServerCommand("ck_admin_clantag 1");
@@ -854,7 +846,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_admin_clantag 0");
 			}
 			
-			case 19:
+			case 18:
 			{
 				if (!GetConVarBool(g_hMapEnd))
 					ServerCommand("ck_map_end 1");
@@ -862,7 +854,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_map_end 0");
 			}
 			
-			case 20:
+			case 19:
 			{
 				if (!GetConVarBool(g_hConnectMsg))
 					ServerCommand("ck_connect_msg 1");
@@ -870,7 +862,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_connect_msg 0");
 			}
 			
-			case 21:
+			case 20:
 			{
 				if (!GetConVarBool(g_hDisconnectMsg))
 					ServerCommand("ck_disconnect_msg 1");
@@ -878,7 +870,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_disconnect_msg 0");
 			}
 			
-			case 22:
+			case 21:
 			{
 				if (!GetConVarBool(g_hInfoBot))
 					ServerCommand("ck_info_bot 1");
@@ -886,7 +878,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_info_bot 0");
 			}
 			
-			case 23:
+			case 22:
 			{
 				if (!GetConVarBool(g_hAttackSpamProtection))
 					ServerCommand("ck_attack_spam_protection 1");
@@ -894,7 +886,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_attack_spam_protection 0");
 			}
 			
-			case 24:
+			case 23:
 			{
 				if (!GetConVarBool(g_hChallengePoints))
 					ServerCommand("ck_challenge_points 1");
@@ -902,7 +894,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_challenge_points 0");
 			}
 			
-			case 25:
+			case 24:
 			{
 				if (!GetConVarBool(g_hAllowRoundEndCvar))
 					ServerCommand("ck_round_end 1");

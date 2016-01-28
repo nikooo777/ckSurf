@@ -11,7 +11,9 @@ bool IsValidZonegroup(int zGrp)
 **/
 int IsInsideZone (float location[3], float extraSize = 0.0)
 {
-	location[2] += 5.0;
+	float tmpLocation[3];
+	Array_Copy(location, tmpLocation, 3);
+	tmpLocation[2] += 5.0;
 	int iChecker;
 
 	for (int i = 0; i < g_mapZonesCount; i++)
@@ -19,8 +21,8 @@ int IsInsideZone (float location[3], float extraSize = 0.0)
 		iChecker = 0;
 		for(int x = 0; x < 3; x++)
 		{
-			if((g_fZoneCorners[i][7][x] >= g_fZoneCorners[i][0][x] && (location[x] <= (g_fZoneCorners[i][7][x] + extraSize) && location[x] >= (g_fZoneCorners[i][0][x] - extraSize))) || 
-			(g_fZoneCorners[i][0][x] >= g_fZoneCorners[i][7][x] && (location[x] <= (g_fZoneCorners[i][0][x] + extraSize) && location[x] >= (g_fZoneCorners[i][7][x] - extraSize))))
+			if((g_fZoneCorners[i][7][x] >= g_fZoneCorners[i][0][x] && (tmpLocation[x] <= (g_fZoneCorners[i][7][x] + extraSize) && tmpLocation[x] >= (g_fZoneCorners[i][0][x] - extraSize))) || 
+			(g_fZoneCorners[i][0][x] >= g_fZoneCorners[i][7][x] && (tmpLocation[x] <= (g_fZoneCorners[i][0][x] + extraSize) && tmpLocation[x] >= (g_fZoneCorners[i][7][x] - extraSize))))
 				iChecker++;
 		}
 		if(iChecker == 3)
@@ -375,10 +377,12 @@ void TeamChangeActual(int client, int toteam)
 			g_fPauseTime[client] = GetGameTime() - g_fStartPauseTime[client];
 		g_bSpectate[client] = false;
 	}
+	
+	if (!IsPlayerAlive(client) && toteam > 1)
+		CS_RespawnPlayer(client);
 
 	ChangeClientTeam(client, toteam);
-	if (!IsPlayerAlive(client))
-		CS_RespawnPlayer(client);
+
 	return;
 }
 

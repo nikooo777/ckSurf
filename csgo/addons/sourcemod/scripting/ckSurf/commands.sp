@@ -721,8 +721,7 @@ public Action Command_ToEnd(int client, int args)
 
 public Action Command_Restart(int client, int args)
 {
-	
-	if (GetConVarBool(g_hDoubleRestartCommand))
+	if (GetConVarBool(g_hDoubleRestartCommand) && args == 0)
 	{
 		if (GetGameTime() - g_fClientRestarting[client] > 5.0)
 			g_bClientRestarting[client] = false;
@@ -1591,9 +1590,9 @@ public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else
 		if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+		{
+			CloseHandle(menu);
+		}
 }
 
 public void CompareMenu(int client, int args)
@@ -2461,7 +2460,7 @@ public void ShowSrvSettings(int client)
 	PrintToConsole(client, "ck_admin_clantag %b", GetConVarBool(g_hAdminClantag));
 	PrintToConsole(client, "ck_attack_spam_protection %b", GetConVarBool(g_hAttackSpamProtection));
 	PrintToConsole(client, "ck_auto_bhop %i (bhop_ & surf_ maps)", GetConVarBool(g_hAutoBhopConVar));
-	PrintToConsole(client, "ck_auto_timer %i", GetConVarBool(g_hAutoTimer));
+	//PrintToConsole(client, "ck_auto_timer %i", GetConVarBool(g_hAutoTimer));
 	PrintToConsole(client, "ck_autoheal %i (requires ck_godmode 0)", GetConVarInt(g_hAutohealing_Hp));
 	PrintToConsole(client, "ck_autorespawn %b", GetConVarBool(g_hAutoRespawn));
 	PrintToConsole(client, "ck_challenge_points %b", GetConVarBool(g_hChallengePoints));
