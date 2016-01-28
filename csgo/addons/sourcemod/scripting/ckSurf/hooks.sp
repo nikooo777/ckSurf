@@ -48,7 +48,7 @@ public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
 public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (IsValidClient(client))
+	if (client != 0)
 	{
 		g_SpecTarget[client] = -1;
 		g_bPause[client] = false;
@@ -69,9 +69,6 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 					SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 			}
 		}
-		
-		// Hide blood
-		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
 
 		//NoBlock
 		if (GetConVarBool(g_hCvarNoBlock) || IsFakeClient(client))
@@ -149,26 +146,13 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 					}
 					else
 					{
-						if (GetConVarBool(g_hAutoTimer))
-						{
-							if (GetConVarBool(g_hSpawnToStartZone))
-							{
-								Command_Restart(client, 1);
-							}
-							
-							CreateTimer(0.1, StartTimer, client, TIMER_FLAG_NO_MAPCHANGE);
-						}
-						else
-						{
-							
-							g_bTimeractivated[client] = false;
-							g_fStartTime[client] = -1.0;
-							g_fCurrentRunTime[client] = -1.0;
-							
-							// Spawn client to the start zone.
-							if (GetConVarBool(g_hSpawnToStartZone))
-								Command_Restart(client, 1);	
-						}
+						g_bTimeractivated[client] = false;
+						g_fStartTime[client] = -1.0;
+						g_fCurrentRunTime[client] = -1.0;
+						
+						// Spawn client to the start zone.
+						if (GetConVarBool(g_hSpawnToStartZone))
+							Command_Restart(client, 1);	
 					}
 				}
 			}
@@ -338,7 +322,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 		return Plugin_Continue;
 	int team = GetEventInt(event, "team");
 	if (team == 1)
-	{
+	{	
 		SpecListMenuDead(client);
 		if (!g_bFirstSpawn[client])
 		{
@@ -414,12 +398,12 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
 		}
 		else
 			if (g_hBotMimicsRecord[client] != null)
-		{
-			g_BotMimicTick[client] = 0;
-			g_CurrentAdditionalTeleportIndex[client] = 0;
-			if (GetClientTeam(client) >= CS_TEAM_T)
-				CreateTimer(1.0, RespawnBot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		}
+			{
+				g_BotMimicTick[client] = 0;
+				g_CurrentAdditionalTeleportIndex[client] = 0;
+				if (GetClientTeam(client) >= CS_TEAM_T)
+					CreateTimer(1.0, RespawnBot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
 	}
 	return Plugin_Continue;
 }

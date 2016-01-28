@@ -418,7 +418,7 @@ ConVar g_hPointSystem = null; 									// Use the point system?
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
 int g_ownerOffset; 												// Used to clear weapons from ground
 ConVar g_hCvarGodMode = null;									// Enable god mode?
-ConVar g_hAutoTimer = null;
+//ConVar g_hAutoTimer = null;
 ConVar g_hMapEnd = null; 										// Allow map ending?
 ConVar g_hAutohealing_Hp = null; 								// Automatically heal lost HP?
 ConVar g_hExtraPoints = null; 									// How many extra points for improving times?
@@ -1656,7 +1656,7 @@ public void OnPluginStart()
 	g_hMapEnd = CreateConVar("ck_map_end", "1", "on/off - Allows map changes after the timelimit has run out (mp_timelimit must be greater than 0)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hColoredNames = CreateConVar("ck_colored_chatnames", "0", "on/off Colors players names based on their rank in chat.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hNoClipS = CreateConVar("ck_noclip", "1", "on/off - Allows players to use noclip", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hAutoTimer = CreateConVar("ck_auto_timer", "0", "on/off - Timer automatically starts when a player joins a team, dies or uses !start/!r", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	//g_hAutoTimer = CreateConVar("ck_auto_timer", "0", "on/off - Timer automatically starts when a player joins a team, dies or uses !start/!r", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hGoToServer = CreateConVar("ck_goto", "1", "on/off - Allows players to use the !goto command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCommandToEnd = CreateConVar("ck_end", "1", "on/off - Allows players to use the !end command", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCvarGodMode = CreateConVar("ck_godmode", "1", "on/off - unlimited hp", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -2001,10 +2001,8 @@ public void OnPluginStart()
 	HookEvent("round_start", Event_OnRoundStart, EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_OnRoundEnd, EventHookMode_Pre);
 	HookEvent("player_hurt", Event_OnPlayerHurt);
-	//HookEvent("player_jump", Event_OnJump, EventHookMode_Pre);
 	HookEvent("weapon_fire", Event_OnFire, EventHookMode_Pre);
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Post);
-	//HookEvent("jointeam_failed", Event_JoinTeamFailed, EventHookMode_Pre);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 	
 	//mapcycle array

@@ -40,7 +40,7 @@ void setReplayTime(int zGrp)
 	else
 	{
 		if ((g_fBonusFastest[zGrp] - 0.01) < time < (g_fBonusFastest[zGrp]) + 0.01)
-			time = g_fRecordMapTime;
+			time = g_fBonusFastest[zGrp];
 	}
 
 	g_fReplayTimes[zGrp] = time;
