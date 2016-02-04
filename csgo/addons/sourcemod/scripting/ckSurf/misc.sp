@@ -1,3 +1,54 @@
+void disableServerHibernate()
+{
+	Handle hServerHibernate = FindConVar("sv_hibernate_when_empty");
+	g_iServerHibernationValue = GetConVarInt(hServerHibernate);
+	if (g_iServerHibernationValue > 0)
+	{
+		PrintToServer("[ckSurf] Disabling server hibernation.");
+		SetConVarInt(hServerHibernate, 0, false, false);
+	}
+	CloseHandle(hServerHibernate);
+	return;
+}
+
+void revertServerHibernateSettings()
+{
+	Handle hServerHibernate = FindConVar("sv_hibernate_when_empty");
+	if (GetConVarInt(hServerHibernate) != g_iServerHibernationValue)
+	{
+		PrintToServer("[ckSurf] Resetting Server Hibernation CVar");
+		SetConVarInt(hServerHibernate, g_iServerHibernationValue, false, false);
+	}
+	CloseHandle(hServerHibernate);
+	return;
+}
+void setBotQuota()
+{
+	// Get bot_quota value
+	ConVar hBotQuota = FindConVar("bot_quota");
+
+	// Initialize
+	SetConVarInt(hBotQuota, 0, false, false);
+
+	// Check how many bots are needed
+	int count = 0;
+	if (g_bMapReplay)
+		count++;
+	if (GetConVarBool(g_hInfoBot))
+		count++;
+	if (g_BonusBotCount > 0)
+		count++;
+
+	if (count == 0)
+		SetConVarInt(hBotQuota, 0, false, false);
+	else
+		SetConVarInt(hBotQuota, count, false, false);
+	
+	CloseHandle(hBotQuota);
+
+	return;
+}
+
 bool IsValidZonegroup(int zGrp)
 {
 	if (-1 < zGrp < g_mapZoneGroupCount)
@@ -85,7 +136,7 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 	// Check for spawn locations
 	if (zone == 1 && g_bGotSpawnLocation[zonegroup])
 	{
-		if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0)
+		if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0) // Spectating
 		{
 			if (stopTime)
 				Client_Stop(client, 0);
@@ -114,17 +165,16 @@ public void teleportClient(int client, int zonegroup, int zone, bool stopTime)
 		{
 			// Search for the zoneid we're teleporting to:
 			int destinationZoneId = getZoneID(zonegroup, zone);
-			
+
 			// Check if zone was found
 			if (destinationZoneId > -1)
 			{
 				// Check if client is spectating, or not chosen a team yet
-				if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0)
+				if (GetClientTeam(client) == 1 || GetClientTeam(client) == 0) 
 				{
 					
 					if (stopTime)
 						Client_Stop(client, 0);
-					
 					
 					// Set spawn location to the destination zone:
 					Array_Copy(g_mapZones[destinationZoneId][CenterPoint], g_fTeleLocation[client], 3);
@@ -378,8 +428,8 @@ void TeamChangeActual(int client, int toteam)
 		g_bSpectate[client] = false;
 	}
 	
-	if (!IsPlayerAlive(client) && toteam > 1)
-		CS_RespawnPlayer(client);
+//	if (!IsPlayerAlive(client) && toteam > 1)
+//		CS_RespawnPlayer(client);
 
 	ChangeClientTeam(client, toteam);
 
@@ -822,7 +872,6 @@ public void checkSpawnPoints()
 		
 		// Start creating new spawnpoints
 		int pointT, pointCT, count = 0;
-		PrintToServer("Creating spawn points in location: %f, %f, %f", f_spawnLocation[0], f_spawnLocation[1], f_spawnLocation[2]);
 		while (count < 64)
 		{
 			pointT = CreateEntityByName("info_player_terrorist");
@@ -1426,9 +1475,10 @@ public void SetClientDefaults(int client)
 	g_flastClientUsp[client] = GameTime;
 	
 	g_ClientRenamingZone[client] = false;
-	g_iClientInZone[client][2] = 0;
 	
 	g_bNewReplay[client] = false;
+	g_bNewBonus[client] = false;
+
 	g_bFirstTimerStart[client] = true;
 	g_pr_Calculating[client] = false;
 	
@@ -2787,18 +2837,7 @@ public void LoadInfoBot()
 	}
 	else
 	{
-		int count = 0;
-		if (g_bMapReplay)
-			count++;
-		if (g_BonusBotCount > 0)
-			count++;
-		if (GetConVarBool(g_hInfoBot))
-			count++;
-		if (count == 0)
-			return;
-		char szBuffer2[64];
-		Format(szBuffer2, sizeof(szBuffer2), "bot_quota %i", count);
-		ServerCommand(szBuffer2);
+		setBotQuota();
 		CreateTimer(0.5, RefreshInfoBot, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }

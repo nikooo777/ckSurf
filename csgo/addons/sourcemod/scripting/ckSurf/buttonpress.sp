@@ -36,7 +36,7 @@ public void CL_OnStartTimerPress(int client)
 				return;
 			}
 		}
-		if (g_bNewReplay[client] || g_bNewBonus[client]) // Don't allow starting the timer, if players record is beign saved
+		if (g_bNewReplay[client] || g_bNewBonus[client]) // Don't allow starting the timer, if players record is being saved
 			return;
 	}
 		
@@ -91,7 +91,7 @@ public void CL_OnStartTimerPress(int client)
 	PlayButtonSound(client);
 	
 	// Start recording for record bot
-	if (!IsFakeClient(client) && GetConVarBool(g_hReplayBot) || !IsFakeClient(client) && GetConVarBool(g_hBonusBot))
+	if ((!IsFakeClient(client) && GetConVarBool(g_hReplayBot)) || (!IsFakeClient(client) && GetConVarBool(g_hBonusBot)))
 	{
 		if (!IsPlayerAlive(client) || GetClientTeam(client) == 1)
 		{
@@ -204,7 +204,7 @@ public void CL_OnEndTimerPress(int client)
 			{
 				g_fReplayTimes[0] = g_fFinalTime[client];
 				g_bNewReplay[client] = true;
-				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 
@@ -252,7 +252,7 @@ public void CL_OnEndTimerPress(int client)
 				{
 					g_bNewReplay[client] = true;
 					g_fReplayTimes[0] = g_fFinalTime[client];
-					CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
@@ -262,7 +262,7 @@ public void CL_OnEndTimerPress(int client)
 			{
 				g_fReplayTimes[0] = g_fFinalTime[client];
 				g_bNewReplay[client] = true;
-				CreateTimer(3.0, ReplayTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 			g_bMapSRVRecord[client] = true;
 			g_fRecordMapTime = g_fFinalTime[client];
@@ -365,14 +365,14 @@ public void CL_OnEndTimerPress(int client)
 	{
 		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[zGroup] || g_fReplayTimes[zGroup] == 0.0))
 		{
-			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client])
+			if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client])
 			{
 				g_fReplayTimes[zGroup] = g_fFinalTime[client];
 				g_bNewBonus[client] = true;
 				Handle pack;
 				CreateDataTimer(3.0, BonusReplayTimer, pack);
-				WritePackCell(pack, client);
-				WritePackCell(pack, zGroup);				
+				WritePackCell(pack, GetClientUserId(client));
+				WritePackCell(pack, zGroup);
 			}
 		}
 		char szDiff[54];
@@ -421,7 +421,7 @@ public void CL_OnEndTimerPress(int client)
 					g_fReplayTimes[zGroup] = g_fFinalTime[client];
 					Handle pack;
 					CreateDataTimer(3.0, BonusReplayTimer, pack);
-					WritePackCell(pack, client);
+					WritePackCell(pack, GetClientUserId(client));
 					WritePackCell(pack, zGroup);
 				}
 			}
@@ -434,7 +434,7 @@ public void CL_OnEndTimerPress(int client)
 				g_fReplayTimes[zGroup] = g_fFinalTime[client];
 				Handle pack;
 				CreateDataTimer(3.0, BonusReplayTimer, pack);
-				WritePackCell(pack, client);
+				WritePackCell(pack, GetClientUserId(client));
 				WritePackCell(pack, zGroup);
 			}
 			

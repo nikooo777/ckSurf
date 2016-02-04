@@ -185,7 +185,8 @@ public void db_setupDatabase()
 	// TO BE DONE TO THE DATABASE //
 	////////////////////////////////
 	g_bRenaming = false;
-	
+	g_bInTransactionChain = false;
+
 	// If coming from KZTimer or a really old version, rename and edit tables to new format
 	if (SQL_FastQuery(g_hDb, "SELECT steamid FROM playerrank LIMIT 1") && !SQL_FastQuery(g_hDb, "SELECT steamid FROM ck_playerrank LIMIT 1"))
 	{
@@ -238,9 +239,11 @@ void txn_addExtraCheckpoints()
 	if (!SQL_FastQuery(g_hDb, "SELECT cp35 FROM ck_checkpoints;"))
 	{
 		PrintToServer("---------------------------------------------------------------------------");
+		disableServerHibernate();
 		PrintToServer("[ckSurf] Started to make changes to database. Updating from 1.17 -> 1.18.");
 		PrintToServer("[ckSurf] WARNING: DO NOT CONNECT TO THE SERVER, OR CHANGE MAP!");
 		PrintToServer("[ckSurf] Adding extra checkpoints... (1 / 6)");
+
 		g_bInTransactionChain = true;
 		Transaction h_checkpoint = SQL_CreateTransaction();
 		
@@ -379,6 +382,8 @@ public void SQLTxn_Success(Handle db, any data, int numQueries, Handle[] results
 		}
 		case 6: {
 			g_bInTransactionChain = false;
+					
+			revertServerHibernateSettings();
 			PrintToServer("[ckSurf] All changes succesfully done! Changing map!");
 			ForceChangeLevel(g_szMapName, "[ckSurf] Changing level after changes to the database have been done");
 		}
@@ -419,7 +424,7 @@ public void SQLTxn_TXNFailed(Handle db, any data, int numQueries, const char[] e
 	}
 	else
 	{
-		g_bInTransactionChain = false;
+		revertServerHibernateSettings();
 		PrintToServer("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
 		PrintToServer("[ckSurf]: Revert back to database backup.");
 		LogError("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
@@ -464,6 +469,8 @@ public void SQLTxn_CreateDatabaseFailed(Handle db, any data, int numQueries, con
 
 public void db_renameTables()
 {
+	disableServerHibernate();
+
 	g_bRenaming = true;
 	Transaction hndl = SQL_CreateTransaction();
 	
@@ -538,14 +545,15 @@ public void db_renameTables()
 public void SQLTxn_RenameSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	g_bRenaming = false;
+	revertServerHibernateSettings();
 	PrintToChatAll("[%cCK%c] Database changes done succesfully, reloading the map...");
-	
 	ForceChangeLevel(g_szMapName, "Database Renaming Done. Restarting Map.");
 }
 
 public void SQLTxn_RenameFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	g_bRenaming = false;
+	revertServerHibernateSettings();
 	SetFailState("[ckSurf] Database changes failed! (Renaming) Error: %s", error);
 }
 
@@ -972,7 +980,6 @@ public void db_updatePlayerTitleInUse(int inUse, char szSteamId[32])
 {
 	char szQuery[512];
 	Format(szQuery, 512, sql_updatePlayerFlagsInUse, inUse, szSteamId);
-	PrintToServer(szQuery);
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, -1, DBPrio_Low);
 }
 
@@ -2610,11 +2617,13 @@ public void db_resetPlayerMapRecord(int client, char steamid[128], char szMapNam
 	SQL_EscapeString(g_hDb, steamid, szsteamid, 128 * 2 + 1);
 	Format(szQuery, 255, sql_resetRecordPro, szsteamid, szMapName);
 	Format(szQuery2, 255, sql_resetCheckpoints, szsteamid, szMapName);
+
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackString(pack, steamid);
+
 	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery, pack);
-	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery2, pack);
+	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery2, 1);
 	PrintToConsole(client, "map time of %s on %s cleared.", steamid, szMapName);
 	
 	if (StrEqual(szMapName, g_szMapName))
@@ -3055,7 +3064,6 @@ public void db_currentRunRank(int client)
 	
 	char szQuery[512];
 	Format(szQuery, 512, "SELECT count(runtimepro)+1 FROM `ck_playertimes` WHERE `mapname` = '%s' AND `runtimepro` < %f;", g_szMapName, g_fFinalTime[client]);
-	PrintToServer(szQuery);
 	SQL_TQuery(g_hDb, SQL_CurrentRunRankCallback, szQuery, client, DBPrio_Low);
 }
 
@@ -3889,7 +3897,9 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 	{
 		g_bSettingsLoaded[client] = true;
 		g_bLoadingSettings[client] = false;
-		
+		if (GetConVarBool(g_hTeleToStartWhenSettingsLoaded))
+			Command_Restart(client, 1);	
+			
 		// Seach for next client to load
 		for (int i = 1; i < MAXPLAYERS + 1; i++)
 		{
@@ -4182,7 +4192,6 @@ public void db_currentBonusRunRank(int client, int zGroup)
 	WritePackCell(pack, client);
 	WritePackCell(pack, zGroup);
 	Format(szQuery, 512, "SELECT count(runtime)+1 FROM ck_bonus WHERE mapname = '%s' AND zonegroup = '%i' AND runtime < %f", g_szMapName, zGroup, g_fFinalTime[client]);
-	PrintToServer(szQuery);
 	SQL_TQuery(g_hDb, db_viewBonusRunRank, szQuery, pack, DBPrio_Low);
 }
 
