@@ -388,9 +388,10 @@ ConVar g_hArmModel = null; 										// Player arm models
 ConVar g_hcvarRestore = null; 									// Restore player's runs?
 ConVar g_hNoClipS = null; 										// Allow noclip?
 ConVar g_hReplayBot = null; 									// Replay bot?
-ConVar g_hBakcupReplays = null;									// Back up replay bots?
+ConVar g_hBackupReplays = null;									// Back up replay bots?
 ConVar g_hReplaceReplayTime = null;								// Replace replay times, even if not SR
 ConVar g_hAllowVipMute = null;									// Allow VIP's to mute?
+ConVar g_hTeleToStartWhenSettingsLoaded = null;
 bool g_bMapReplay; // Why two bools?
 ConVar g_hBonusBot = null; 										// Bonus bot?
 bool g_bMapBonusReplay[MAXZONEGROUPS];
@@ -460,7 +461,7 @@ bool g_bSettingsLoaded[MAXPLAYERS + 1]; 						// Used to track if a players sett
 bool g_bLoadingSettings[MAXPLAYERS + 1]; 						// Used to track if players settings are being loaded
 bool g_bServerDataLoaded; 										// Are the servers settings loaded
 char g_szRecordMapSteamID[MAX_NAME_LENGTH]; 					// SteamdID of #1 player in map, used to fetch checkpoint times
-
+int g_iServerHibernationValue;
 /*----------  User Commands  ----------*/
 float g_flastClientUsp[MAXPLAYERS + 1]; 						// Throttle !usp command
 float g_fLastCommandBack[MAXPLAYERS + 1];						// Throttle !back to prevent desync on record bots
@@ -690,7 +691,6 @@ char EntityList[][] =  // Disable entities that often break maps
 	"logic_timer",
 	"team_round_timer",
 	"logic_relay",
-	"trigger_hurt" 
 };
 
 char RadioCMDS[][] =  // Disable radio commands
@@ -870,7 +870,7 @@ public void OnMapStart()
 	//precache
 	InitPrecache();
 	SetCashState();
-	
+
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
@@ -885,14 +885,12 @@ public void OnMapStart()
 		g_bAutoBhop = false;
 	
 	
-	//main cfg
+	//main.cfg & replays
 	CreateTimer(1.0, DelayedStuff, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	
 	
 	if (g_bLateLoaded)
-	{
 		OnAutoConfigsBuffered();
-	}
 	
 	g_Advert = 0;
 	CreateTimer(180.0, AdvertTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
@@ -1234,7 +1232,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					{
 						if (!GetConVarBool(g_hReplayBot)) // if both bots are off
 							if (g_hRecording[i] != null)
-							StopRecording(i);
+								StopRecording(i);
 					}
 				}
 			}
@@ -1691,10 +1689,10 @@ public void OnPluginStart()
 	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
 	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
 	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "0", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_hBakcupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hBackupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hReplaceReplayTime = 	CreateConVar("ck_replay_replace_faster", "1", "(1 / 0) Replace record bots if a players time is faster than the bot, even if the time is not a server record.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAllowVipMute = CreateConVar("ck_vip_mute", "1", "(1 / 0) Allows VIP's to mute players", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-
+	g_hTeleToStartWhenSettingsLoaded = CreateConVar("ck_teleportclientstostart", "1", "(1 / 0) Teleport players automatically back to the start zone, when their settings have been loaded.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hBonusBotTrail = CreateConVar("ck_bonus_bot_trail", "1", "(1 / 0) Enables a trail on the bonus bot.", FCVAR_NOTIFY);
 	HookConVarChange(g_hBonusBotTrail, OnSettingChanged);
@@ -1846,9 +1844,9 @@ public void OnPluginStart()
 		g_ZoneMenuFlag = FlagToBit(bufferFlag);
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
 
-
-
 	db_setupDatabase();
+
+	//RegConsoleCmd("sm_rtimes", Command_rTimes, "[ckSurf] spawns a usp silencer");
 
 	//client commands
 	RegConsoleCmd("sm_usp", Client_Usp, "[ckSurf] spawns a usp silencer");

@@ -3,19 +3,6 @@
 // Botmimic2 - modified by 1NutWunDeR
 // http://forums.alliedmods.net/showthread.php?t=164148
 //
-
-bool DoesReplayExist(char[] sPath)
-{
-	Handle hFilex = OpenFile(sPath, "r");
-	if (hFilex != null)
-	{
-		CloseHandle(hFilex);
-		return true;
-	}
-	else
-		return false;
-}
-
 void setReplayTime(int zGrp)
 {
 	char sPath[256], sTime[54], sBuffer[4][54];
@@ -106,30 +93,39 @@ public void SaveRecording(int client, int zgroup)
 {
 	if (!IsValidClient(client) || g_hRecording[client] == null)
 		return;
+	else
+	{
+		g_bNewReplay[client] = false;
+		g_bNewBonus[client] = false;
+	}
 	
 	char sPath2[256];
 	// Check if the default record folder exists?
 	BuildPath(Path_SM, sPath2, sizeof(sPath2), "%s", CK_REPLAY_PATH);
 	if (!DirExists(sPath2))
+	{
 		CreateDirectory(sPath2, 511);
+	}
+	
 	if (zgroup == 0) // replay bot
 	{
 		BuildPath(Path_SM, sPath2, sizeof(sPath2), "%s%s.rec", CK_REPLAY_PATH, g_szMapName);
 	}
 	else
+	{
 		if (zgroup > 0) // bonus bot
 		{
 			BuildPath(Path_SM, sPath2, sizeof(sPath2), "%s%s_bonus_%i.rec", CK_REPLAY_PATH, g_szMapName, zgroup);
 		}
+	}
 
-	if (DoesReplayExist(sPath2) && GetConVarBool(g_hBakcupReplays))
+	if (FileExists(sPath2) && GetConVarBool(g_hBackupReplays))
 	{
 		char newPath[256];
 		Format(newPath, 256, "%s.bak", sPath2);
 		RenameFile(newPath, sPath2);
 	}
 	
-	// Add to our loaded record list
 	char szName[MAX_NAME_LENGTH];
 	GetClientName(client, szName, MAX_NAME_LENGTH);
 	
@@ -150,11 +146,12 @@ public void SaveRecording(int client, int zgroup)
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
 		g_hRecordingAdditionalTeleport[client] = null;
 	}
-	
+
 	WriteRecordToDisk(sPath2, iHeader);
+
 	g_bNewReplay[client] = false;
 	g_bNewBonus[client] = false;
-	
+
 	if (g_hRecording[client] != null)
 		StopRecording(client);
 }
@@ -164,7 +161,6 @@ public void LoadReplays()
 {
 	if (!GetConVarBool(g_hReplayBot) && !GetConVarBool(g_hBonusBot))
 		return;
-
 	// Init variables:
 	g_bMapReplay = false;
 	for (int i = 0; i < MAXZONEGROUPS; i++)
@@ -182,25 +178,22 @@ public void LoadReplays()
 	// Check that map replay exists
 	char sPath[256];
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s%s.rec", CK_REPLAY_PATH, g_szMapName);
-	if (DoesReplayExist(sPath))
+	if (FileExists(sPath))
 	{
 		setReplayTime(0);
 		g_bMapReplay = true;
-		LoadRecordReplay();
 	}
 	else// Check if backup exists
 	{
 		char sPathBack[256];
 		BuildPath(Path_SM, sPathBack, sizeof(sPathBack), "%s%s.rec.bak", CK_REPLAY_PATH, g_szMapName);
-		if (DoesReplayExist(sPathBack))
+		if (FileExists(sPathBack))
 		{
 			RenameFile(sPath, sPathBack);
 			setReplayTime(0);
 			g_bMapReplay = true;
-			LoadRecordReplay();
 		}
 	} 
-
 
 	// Try to fix old bonus replays
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s%s_Bonus.rec", CK_REPLAY_PATH, g_szMapName);
@@ -225,10 +218,10 @@ public void LoadReplays()
 	hFilex = null;
 
 	// Check if bonus replays exists
-	for (int i = 0; i < g_mapZoneGroupCount; i++)
+	for (int i = 1; i < g_mapZoneGroupCount; i++)
 	{
 		BuildPath(Path_SM, sPath, sizeof(sPath), "%s%s_bonus_%i.rec", CK_REPLAY_PATH, g_szMapName, i);
-		if (DoesReplayExist(sPath))
+		if (FileExists(sPath))
 		{
 			setReplayTime(i);
 			g_iBonusToReplay[g_BonusBotCount] = i;
@@ -239,7 +232,7 @@ public void LoadReplays()
 		{
 			char sPathBack[256];
 			BuildPath(Path_SM, sPathBack, sizeof(sPathBack), "%s%s_bonus_%i.rec.bak", CK_REPLAY_PATH, g_szMapName, i);
-			if (DoesReplayExist(sPathBack))
+			if (FileExists(sPathBack))
 			{
 				setReplayTime(i);
 				RenameFile(sPath, sPathBack);
@@ -249,15 +242,17 @@ public void LoadReplays()
 			}
 		} 
 	}
+	if (g_bMapReplay)
+		CreateTimer(1.0, RefreshBot, TIMER_FLAG_NO_MAPCHANGE);
+
 	if (g_BonusBotCount > 0)
-		LoadBonusReplay();
+		CreateTimer(1.0, RefreshBonusBot, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void PlayRecord(int client, int type)
 {
 	if (!IsValidClient(client))
 		return;
-	
 	char buffer[256];
 	char sPath[256];
 	if (type == 0)
@@ -439,6 +434,7 @@ public void LoadRecordFromFile(const char[] path, int headerInfo[FILE_HEADER_LEN
 
 public Action RefreshBot(Handle timer)
 {
+	setBotQuota();
 	LoadRecordReplay();
 	return Plugin_Handled;
 }
@@ -455,12 +451,10 @@ public void LoadRecordReplay()
 			CS_RespawnPlayer(i);
 			if (GetConVarBool(g_hForceCT))
 				TeamChangeActual(i, 2);
-			break;
 		}
 		
 		g_RecordBot = i;
 		g_fCurrentRunTime[g_RecordBot] = 0.0;
-		
 		break;
 	}
 	
@@ -468,9 +462,7 @@ public void LoadRecordReplay()
 	{
 		// Set trail
 		if (GetConVarBool(g_hRecordBotTrail) && g_hBotTrail[0] == null)
-		{
 			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, g_RecordBot, TIMER_REPEAT);
-		}
 			
 		char clantag[100];
 		CS_GetClientClanTag(g_RecordBot, clantag, sizeof(clantag));
@@ -492,25 +484,12 @@ public void LoadRecordReplay()
 	}
 	else
 	{
-		// Spawn bots using bot_quota
-		int count = 0;
-		if (g_bMapReplay)
-			count++;
-		if (GetConVarBool(g_hInfoBot))
-			count++;
-		if (g_BonusBotCount > 0)
-			count++;
-		if (count == 0)
-			return;
-		char szBuffer[64];
-		Format(szBuffer, sizeof(szBuffer), "bot_quota %i", count);
-		ServerCommand(szBuffer);
 		CreateTimer(1.0, RefreshBot, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
-
 public Action RefreshBonusBot(Handle timer)
 {
+	setBotQuota();
 	LoadBonusReplay();
 	return Plugin_Handled;
 }
@@ -529,19 +508,15 @@ public void LoadBonusReplay()
 			
 			if (GetConVarBool(g_hForceCT))
 				TeamChangeActual(i, 2);
-			
-			//break;
 		}
 		
 		g_BonusBot = i;
 		g_fCurrentRunTime[g_BonusBot] = 0.0;
-		
 		break;
 	}
 	
 	if (IsValidClient(g_BonusBot))
 	{
-		// Set trail
 		if (GetConVarBool(g_hBonusBotTrail) && g_hBotTrail[1] == null)
 		{
 			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, g_BonusBot, TIMER_REPEAT);
@@ -566,18 +541,7 @@ public void LoadBonusReplay()
 	}
 	else
 	{
-		int count = 0;
-		if (g_bMapReplay)
-			count++;
-		if (GetConVarBool(g_hInfoBot))
-			count++;
-		if (g_BonusBotCount > 0)
-			count++;
-		if (count == 0)
-			return;
-		char szBuffer[64];
-		Format(szBuffer, sizeof(szBuffer), "bot_quota %i", count);
-		ServerCommand(szBuffer);
+		// Make sure bot_quota is set correctly and try again
 		CreateTimer(1.0, RefreshBonusBot, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -617,14 +581,14 @@ void DeleteReplay(int client, int zonegroup, char[] map)
 	{
 		if (!DeleteFile(sPath))
 		{
-			PrintToConsole(client, "<ERROR> Failed to delete %s - Please try it manually!", sPath);
+			PrintToConsole(client, "<ERROR> Failed to delete %s - Please try to delete it manually!", sPath);
 			return;
 		}
 		
 		if (zonegroup > 0)
 		{
 			g_bMapBonusReplay[zonegroup] = false;
-			PrintToConsole(client, "Bonus Replay %s_Bonus.rec deleted.", map);
+			PrintToConsole(client, "Bonus Replay %s_bonus_%i.rec deleted.", map, zonegroup);
 		}
 		else
 		{
@@ -636,25 +600,13 @@ void DeleteReplay(int client, int zonegroup, char[] map)
 			if (zonegroup == 0 && IsValidClient(g_RecordBot))
 			{
 				KickClient(g_RecordBot);
-				if (GetConVarBool(g_hInfoBot) && g_BonusBotCount > 0)
-					ServerCommand("bot_quota 2");
-				else
-					if (GetConVarBool(g_hInfoBot) || g_BonusBotCount > 0)
-						ServerCommand("bot_quota 1");
-					else
-						ServerCommand("bot_quota 0");
+				setBotQuota();
 			}
 			else
 				if (zonegroup > 1 && IsValidClient(g_BonusBot))
 			{
 				KickClient(g_BonusBot);
-				if (GetConVarBool(g_hInfoBot) && g_bMapReplay)
-					ServerCommand("bot_quota 2");
-				else
-					if (GetConVarBool(g_hInfoBot) || g_bMapReplay)
-						ServerCommand("bot_quota 1");
-					else
-						ServerCommand("bot_quota 0");
+				setBotQuota();
 			}
 		}
 	}
@@ -785,8 +737,12 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 			g_CurrentAdditionalTeleportIndex[client] = 0;
 		}
 		
-		int iFrame[FrameInfo];
-		GetArrayArray(g_hBotMimicsRecord[client], g_BotMimicTick[client], iFrame[0], view_as<int>(FrameInfo));
+		int iFrame[15];
+		GetArrayArray(g_hBotMimicsRecord[client], 
+						g_BotMimicTick[client],
+						iFrame,
+						view_as<int>(FrameInfo)
+					);		
 
 		buttons = iFrame[playerButtons];
 		impulse = iFrame[playerImpulse];
@@ -802,7 +758,7 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 		// We're supposed to teleport stuff?
 		if (iFrame[additionalFields] & (ADDITIONAL_FIELD_TELEPORTED_ORIGIN | ADDITIONAL_FIELD_TELEPORTED_ANGLES | ADDITIONAL_FIELD_TELEPORTED_VELOCITY))
 		{
-			int iAT[AdditionalTeleport];
+			int iAT[10];
 			Handle hAdditionalTeleport;
 			char sPath[PLATFORM_MAX_PATH];
 			if (client == g_RecordBot)
@@ -815,7 +771,8 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 			if (g_hLoadedRecordsAdditionalTeleport != null)
 			{
 				GetTrieValue(g_hLoadedRecordsAdditionalTeleport, sPath, hAdditionalTeleport);
-				GetArrayArray(hAdditionalTeleport, g_CurrentAdditionalTeleportIndex[client], iAT[0], view_as<int>(AdditionalTeleport));
+				if (hAdditionalTeleport != null)
+					GetArrayArray(hAdditionalTeleport, g_CurrentAdditionalTeleportIndex[client], iAT, 10);
 				
 				float fOrigin[3], fAngles[3], fVelocity[3];
 				Array_Copy(iAT[atOrigin], fOrigin, 3);

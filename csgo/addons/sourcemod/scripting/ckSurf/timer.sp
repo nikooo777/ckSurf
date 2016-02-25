@@ -180,11 +180,9 @@ public Action DelayedStuff(Handle timer)
 		ServerCommand("exec sourcemod/ckSurf/main.cfg");
 	else
 		SetFailState("<ckSurf> cfg/sourcemod/ckSurf/main.cfg not found.");
-
-	//Bots
+		
 	LoadReplays();
 	LoadInfoBot();
-	
 	return Plugin_Handled;
 }
 
@@ -336,21 +334,28 @@ public Action Timer_Countdown(Handle timer, any client)
 	return Plugin_Continue;
 }
 
-public Action ReplayTimer(Handle timer, any client)
+public Action ReplayTimer(Handle timer, any userid)
 {
+	int client = GetClientOfUserId(userid);
 	if (IsValidClient(client) && !IsFakeClient(client))
 		SaveRecording(client, 0);
-	
+	else
+		g_bNewReplay[client] = false;
+
+
 	return Plugin_Handled;
 }
 public Action BonusReplayTimer(Handle timer, Handle pack)
 {
 	ResetPack(pack);
-	int client = ReadPackCell(pack);
+	int client = GetClientOfUserId(ReadPackCell(pack));
 	int zGrp = ReadPackCell(pack);
 
 	if (IsValidClient(client) && !IsFakeClient(client))
 		SaveRecording(client, zGrp);
+	else
+		g_bNewBonus[client] = false;
+
 	
 	return Plugin_Handled;
 }
@@ -409,14 +414,6 @@ public Action CheckChallenge(Handle timer, any client)
 		}
 	}
 	return Plugin_Continue;
-}
-
-public Action LoadReplaysTimer(Handle timer)
-{
-	if (GetConVarBool(g_hReplayBot))
-		LoadReplays();
-	
-	return Plugin_Handled;
 }
 
 public Action SetClanTag(Handle timer, any client)
