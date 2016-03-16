@@ -1257,6 +1257,9 @@ public void LimitSpeed(int client)
 					speedCap = GetConVarFloat(g_hSpeedPreSpeed);
 				else
 					speedCap = GetConVarFloat(g_hStartPreSpeed); // If noclipping, top speed at normal start zone speed
+			} else {
+				if (g_iClientInZone[client][0] == 3)
+					speedCap = GetConVarFloat(g_hStagePreSpeed);
 			}
 	
 	if (speedCap == 0.0)
