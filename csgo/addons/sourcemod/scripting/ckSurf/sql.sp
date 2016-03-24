@@ -19,7 +19,7 @@ char sql_deletePlayerFlags[] = "DELETE FROM ck_playertitles WHERE steamid = '%s'
 char sql_selectPlayerFlags[] = "SELECT vip, mapper, teacher, custom1, custom2, custom3, custom4, custom5, custom6, custom7, custom8, custom9, custom10, custom11, custom12, custom13, custom14, custom15, custom16, custom17, custom18, custom19, custom20, inuse FROM ck_playertitles WHERE steamid = '%s'";
 
 //TABLE CHALLENGE
-char sql_createChallenges[] = "CREATE TABLE IF NOT EXISTS ck_challenges (steamid VARCHAR(32), steamid2 VARCHAR(32), bet INT(12), map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,steamid2,date));";
+char sql_createChallenges[] = "CREATE TABLE IF NOT EXISTS ck_challenges (steamid VARCHAR(32), steamid2 VARCHAR(32), bet INT(12) unsigned, map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,steamid2,date));";
 char sql_insertChallenges[] = "INSERT INTO ck_challenges (steamid, steamid2, bet, map) VALUES('%s','%s','%i','%s');";
 char sql_selectChallenges2[] = "SELECT steamid, steamid2, bet, map, date FROM ck_challenges where steamid = '%s' OR steamid2 ='%s' ORDER BY date DESC";
 char sql_selectChallenges[] = "SELECT steamid, steamid2, bet, map FROM ck_challenges where steamid = '%s' OR steamid2 ='%s'";
@@ -84,7 +84,7 @@ char sql_selectPlayerOptions[] = "SELECT speedmeter, quake_sounds, autobhop, sho
 char sql_updatePlayerOptions[] = "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i' where steamid = '%s'";
 
 //TABLE PLAYERRANK
-char sql_createPlayerRank[] = "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12)  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
+char sql_createPlayerRank[] = "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12) unsigned  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) unsigned DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
 char sql_insertPlayerRank[] = "INSERT INTO ck_playerrank (steamid, name, country) VALUES('%s', '%s', '%s');";
 char sql_updatePlayerRankPoints[] = "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i' where steamid='%s'";
 char sql_updatePlayerRankPoints2[] = "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i', country ='%s' where steamid='%s'";
@@ -1242,7 +1242,7 @@ public void sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char
 		// Multiplier = The amount of times a player has improved on his time
 		g_pr_multiplier[client] = SQL_FetchInt(hndl, 0);
 		if (g_pr_multiplier[client] < 0)
-			g_pr_multiplier[client] = g_pr_multiplier[client] * -1;
+			g_pr_multiplier[client] *= -1;
 		
 		// Multiplier increases players points by the set amount in ck_ranking_extra_points_improvements
 		g_pr_points[client] += GetConVarInt(g_hExtraPoints) * g_pr_multiplier[client];
@@ -1316,6 +1316,7 @@ public void sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const ch
 			bet = SQL_FetchInt(hndl, 1);
 			if (StrEqual(szSteamIdChallenge, szSteamId)) // Won the challenge
 			{
+				//jesus christ. this is not a ratio. a ratio would be wins/losses -> always positive
 				g_Challenge_WinRatio[client]++;
 				g_Challenge_PointsRatio[client] += bet;
 			}
@@ -1572,12 +1573,12 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 		{
 			char szName[MAX_NAME_LENGTH];
 			GetClientName(data, szName, MAX_NAME_LENGTH);
-			int diff = g_pr_points[data] - g_pr_oldpoints[data];
-			if (diff > 0) // if player earned points -> Announce
+			int earnedPoints = g_pr_points[data] > g_pr_oldpoints[data];
+			if (earnedPoints > 0) // if player earned points -> Announce
 			{
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						PrintToChat(i, "%t", "EarnedPoints", MOSSGREEN, WHITE, PURPLE, szName, GRAY, PURPLE, diff, GRAY, PURPLE, g_pr_points[data], GRAY);
+						PrintToChat(i, "%t", "EarnedPoints", MOSSGREEN, WHITE, PURPLE, szName, GRAY, PURPLE, earnedPoints, GRAY, PURPLE, g_pr_points[data], GRAY);
 			}
 			g_pr_showmsg[data] = false;
 			db_CalculatePlayersCountGreater0();

@@ -38,11 +38,11 @@ void setBotQuota()
 		count++;
 	if (g_BonusBotCount > 0)
 		count++;
-
-	if (count == 0)
-		SetConVarInt(hBotQuota, 0, false, false);
-	else
-		SetConVarInt(hBotQuota, count, false, false);
+	//i got cancer by reading these 4 lines
+	//if (count == 0)
+	//	SetConVarInt(hBotQuota, 0, false, false);
+	//else
+	SetConVarInt(hBotQuota, count, false, false);
 	
 	CloseHandle(hBotQuota);
 
