@@ -681,6 +681,9 @@ float g_fLastPlayerCheckpoint[MAXPLAYERS + 1]; 					// Don't overwrite checkpoin
 bool g_bCreatedTeleport[MAXPLAYERS + 1];						// Client has created atleast one checkpoint
 bool g_bPracticeMode[MAXPLAYERS + 1]; 							// Client is in the practice mode
 
+/*------------ late load linux fix --------*/
+Handle g_cvar_sv_hibernate_when_empty = INVALID_HANDLE;
+bool g_useHibernate = false;
 
 /*=========================================
 =            Predefined arrays            =
@@ -1629,9 +1632,33 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	
 }
 
+public Action Event_ReloadMap(Handle Timer)
+{
+    char MapName[255];
+
+    if (g_useHibernate)
+        SetConVarInt(g_cvar_sv_hibernate_when_empty, 1);
+
+    GetCurrentMap(MapName, 255);
+    PrintToServer("[ckSurf fix] Restarting current map...");
+    ServerCommand("changelevel %s", MapName);
+}
+
 public void OnPluginStart()
 {
 	g_bServerDataLoaded = false;
+	
+	//linux late-loading fix
+	g_cvar_sv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty");
+
+	if (GetConVarInt(g_cvar_sv_hibernate_when_empty) == 1) 
+	{
+		SetConVarInt(g_cvar_sv_hibernate_when_empty, 0);
+		g_useHibernate = true;
+	}
+
+	CreateTimer(120.0, Event_ReloadMap);
+	
 	
 	//Get Server Tickate
 	float fltickrate = 1.0 / GetTickInterval();
