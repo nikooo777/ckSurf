@@ -244,7 +244,7 @@ int g_iAdminEditingType[MAXPLAYERS + 1]; 						// What the admin is editing
 // Enable VIP CVar
 //bool g_bServerVipCommand;
 ConVar g_hServerVipCommand;
-// Trail variables
+// Trail variablesb
 bool g_bTrailOn[MAXPLAYERS + 1]; 								// Client is using a trail
 bool g_bTrailApplied[MAXPLAYERS + 1]; 							// Client has been given a title
 bool g_bClientStopped[MAXPLAYERS + 1]; 							// Client is not moving
@@ -1677,7 +1677,7 @@ public void OnPluginStart()
 	g_hStartPreSpeed = CreateConVar("ck_pre_start_speed", "320.0", "The maximum prespeed for start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_hSpeedPreSpeed = CreateConVar("ck_pre_speed_speed", "3000.0", "The maximum prespeed for speed start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_hBonusPreSpeed = CreateConVar("ck_pre_bonus_speed", "320.0", "The maximum prespeed for bonus start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
-	g_hStagePreSpeed = CreateConVar("ck_pre_stage_speed", "3500.0", "The maximum prespeed for bonus start zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
+	g_hStagePreSpeed = CreateConVar("ck_pre_stage_speed", "3500.0", "The maximum prespeed for stage zones. 0.0 = No cap", FCVAR_NOTIFY, true, 0.0, true, 3500.0);
 	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone..", FCVAR_NOTIFY);
