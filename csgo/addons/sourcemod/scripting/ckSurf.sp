@@ -102,7 +102,7 @@
 
 // Zone definitions
 #define ZONE_MODEL "models/props/de_train/barrel.mdl"
-#define ZONEAMOUNT 9		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+#define ZONEAMOUNT 10		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
 #define MAXZONEGROUPS 11	// Maximum amount of zonegroups in a map
 #define MAXZONES 128		// Maximum amount of zones in a map
 
@@ -333,7 +333,7 @@ int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
 int beamColorCT[] =  { 0, 0, 255, 255 };				
 int beamColorN[] =  { 255, 255, 0, 255 };
 int beamColorM[] =  { 0, 255, 0, 255 };
-char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" }; // Default zone names
+char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker", "StageEnd" }; // Default zone names
 int g_BeamSprite;												// Zone sprites
 int g_HaloSprite;
 
@@ -366,7 +366,7 @@ ConVar g_hChecker; 												// Zone refresh rate
 Handle g_hZoneTimer = INVALID_HANDLE;
 //Zone Colors
 int g_iZoneColors[ZONEAMOUNT+2][4];								// ZONE COLOR TYPES: Stop(0), Start(1), End(2), BonusStart(3), BonusEnd(4), Stage(5), 
-char g_szZoneColors[ZONEAMOUNT+2][24];							// Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10)
+char g_szZoneColors[ZONEAMOUNT+2][24];							// Checkpoint(6), Speed(7), TeleToStart(8), Validator(9), Chekcer(10), StageEnd(11)
 ConVar g_hzoneStartColor = null;
 ConVar g_hzoneEndColor = null;
 ConVar g_hzoneBonusStartColor = null;

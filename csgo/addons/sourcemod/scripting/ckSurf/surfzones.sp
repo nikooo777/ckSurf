@@ -72,7 +72,7 @@ public void CreateZoneEntity(int zoneIndex)
 		}
 	}
 }
-// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0), StageEnd (9)
 
 public Action StartTouchTrigger(int caller, int activator)
 {
@@ -986,7 +986,7 @@ public void SelectZoneGroup(int client)
 	newZoneGroupMenu.AddItem("1", "Normal map zones");
 	newZoneGroupMenu.AddItem("2", "Bonus zones");
 	newZoneGroupMenu.AddItem("3", "Misc zones");
-	
+
 	newZoneGroupMenu.ExitButton = true;
 	newZoneGroupMenu.Display(client, MENU_TIME_FOREVER);
 }
@@ -1176,7 +1176,8 @@ public void SelectNormalZoneType(int client)
 		SelectNormalZoneMenu.AddItem("4", "Checkpoint");
 	
 	SelectNormalZoneMenu.AddItem("5", "Start Speed");
-	
+	SelectNormalZoneMenu.AddItem("9", "Stage End");
+
 	SelectNormalZoneMenu.ExitButton = true;
 	SelectNormalZoneMenu.Display(client, MENU_TIME_FOREVER);
 }

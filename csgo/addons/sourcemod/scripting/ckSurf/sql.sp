@@ -4844,7 +4844,7 @@ public void SQL_selectzoneTypeIdsCallback(Handle owner, Handle hndl, const char[
 		Menu TypeMenu = new Menu(Handle_EditZoneTypeId);
 		char MenuNum[24], MenuInfo[6], MenuItemName[24];
 		int x = 0;
-		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0), StageEnd(9)
 		switch (g_CurrentZoneType[data]) {
 			case 0:Format(MenuItemName, 24, "Stop");
 			case 1:Format(MenuItemName, 24, "Start");
@@ -4858,6 +4858,7 @@ public void SQL_selectzoneTypeIdsCallback(Handle owner, Handle hndl, const char[
 			case 6:Format(MenuItemName, 24, "TeleToStart");
 			case 7:Format(MenuItemName, 24, "Validator");
 			case 8:Format(MenuItemName, 24, "Checker");
+			case 9:Format(MenuItemName, 24, "StageEnd");
 			default:Format(MenuItemName, 24, "Unknown");
 		}
 		
