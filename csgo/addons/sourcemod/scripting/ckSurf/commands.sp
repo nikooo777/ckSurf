@@ -2188,9 +2188,11 @@ public void QuakeSounds(int client)
 
 public Action Client_Stop(int client, int args)
 {
-	if (g_bTimeractivated[client])
+	if (g_bTimeractivated[client] || g_stageTimerActivated[client])
 	{
 		//PlayerPanel(client);
+		g_stageTimerActivated[client] = false;
+        g_stageStartTime[client] = 0.0;
 		g_bTimeractivated[client] = false;
 		g_fStartTime[client] = -1.0;
 		g_fCurrentRunTime[client] = -1.0;
@@ -2209,7 +2211,7 @@ public void Action_NoClip(int client)
 			MoveType mt = GetEntityMoveType(client);
 			if (mt == MOVETYPE_WALK)
 			{
-				if (g_bTimeractivated[client])
+				if (g_bTimeractivated[client] || g_stageTimerActivated[client] == true)
 				{
 					Client_Stop(client, 1);
 					g_fStartTime[client] = -1.0;

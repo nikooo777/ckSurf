@@ -272,6 +272,26 @@ public void EndTouch(int client, int action[3])
 				}
 			}
 		}
+
+		if (action[0] == 3){
+		    if (!g_bPracticeMode[client]) {
+		        if (g_bNoClip[client] || (!g_bNoClip[client] && (GetGameTime() - g_fLastTimeNoClipUsed[client]) < 3.0))
+                {
+                    PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
+                    ClientCommand(client, "play buttons\\button10.wav");
+                } else {
+                    g_stageStartTime[client] = GetGameTime();
+                    g_stageFinalTime[client] = 0.0;
+                    g_stageTimerActivated[client] = true;
+                }
+            }
+		}
+
+		if (action[0] == 9){
+		    if (!g_bPracticeMode[client] && g_stageTimerActivated[client]){
+		        PrintToChat(client, "[%cCK%c] Terminaste la stage!", MOSSGREEN, WHITE);
+		    }
+		}
 		
 		// Set client location
 		g_iClientInZone[client][0] = -1;

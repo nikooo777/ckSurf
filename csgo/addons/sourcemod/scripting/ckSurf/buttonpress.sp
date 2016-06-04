@@ -1,3 +1,52 @@
+//Start stage record timer
+public void CL_OnStageTimerPress(int client){
+    if (!IsFakeClient(client))
+    {
+        if (IsValidClient(client))
+        {
+            if (!g_bServerDataLoaded)
+            {
+                if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+                {
+                    PrintToChat(client, "[%cCK%c] The server hasn't finished loading it's settings, please wait.", MOSSGREEN, WHITE);
+                    ClientCommand(client, "play buttons\\button10.wav");
+                    g_fErrorMessage[client] = GetGameTime();
+                }
+                return;
+            }
+            else if (g_bLoadingSettings[client])
+            {
+                if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+                {
+                    PrintToChat(client, "[%cCK%c] Your settings are currently being loaded, please wait.", MOSSGREEN, WHITE);
+                    ClientCommand(client, "play buttons\\button10.wav");
+                    g_fErrorMessage[client] = GetGameTime();
+                }
+                return;
+            }
+            else if (!g_bSettingsLoaded[client])
+            {
+                if (GetGameTime() - g_fErrorMessage[client] > 1.0)
+                {
+                    PrintToChat(client, "[%cCK%c] The server hasn't finished loading your settings, please wait.", MOSSGREEN, WHITE);
+                    ClientCommand(client, "play buttons\\button10.wav");
+                    g_fErrorMessage[client] = GetGameTime();
+                }
+                return;
+            }
+        }
+        if (g_bNewReplay[client] || g_bNewBonus[client]) // Don't allow starting the timer, if players record is being saved
+            return;
+    }
+
+    //Reset stage variables for client
+    g_stageStartTime[client] = GetGameTime();
+    g_stageFinalTime[client] = 0.0;
+    g_stageTimerActivated[client] = true;
+
+}
+
+
 // Start timer
 public void CL_OnStartTimerPress(int client)
 {
@@ -36,8 +85,9 @@ public void CL_OnStartTimerPress(int client)
 				return;
 			}
 		}
-		if (g_bNewReplay[client] || g_bNewBonus[client]) // Don't allow starting the timer, if players record is being saved
+		if (g_bNewReplay[client] || g_bNewBonus[client]) {// Don't allow starting the timer, if players record is being saved
 			return;
+        }
 	}
 		
 	if (!g_bSpectate[client] && !g_bNoClip[client] && ((GetGameTime() - g_fLastTimeNoClipUsed[client]) > 2.0))

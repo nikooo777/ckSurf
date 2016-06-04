@@ -528,6 +528,14 @@ int g_MapRank[MAXPLAYERS + 1]; 									// Clients rank in current map
 int g_OldMapRank[MAXPLAYERS + 1];								// Clients old rank
 char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's name
 
+/*----------  Stage Record Variables ----------*/
+float g_stageStartTime[MAXPLAYERS +1];                          // When the player started a stage
+float g_stageFinalTime[MAXPLAYERS +1];                          // When the player finished the stage
+bool g_stageTimerActivated[MAXPLAYERS +1];                     // Is client stage timer running
+
+
+
+
 /*----------  Replay Variables  ----------*/
 bool g_bNewRecordBot; 											// Checks if the bot is new, if so, set weapon
 bool g_bNewBonusBot; 											// Checks if the bot is new, if so, set weapon
