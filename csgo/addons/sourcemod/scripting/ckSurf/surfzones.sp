@@ -238,6 +238,17 @@ public void StartTouch(int client, int action[3])
 			if (!g_bValidRun[client])
 				Command_Teleport(client, 1);
 		}
+		if (action[0] == 9){
+            if (!g_bPracticeMode[client] && g_stageTimerActivated[client]){
+                // Get runtime and format it to a string
+                g_stageFinalTime[client] = GetGameTime() - g_stageStartTime[client];
+                FormatTimeFloat(client, g_stageFinalTime[client], 3, g_stageFinalTimeStr[client], 32);
+                PrintToChat(client, "[%cCK%c] Terminaste la stage en %s", MOSSGREEN, WHITE, g_stageFinalTimeStr[client]);
+                g_stageStartTime[client] = GetGameTime();
+                g_stageFinalTime[client] = 0.0;
+                g_stageTimerActivated[client] = true;
+            }
+        }
 	}
 }
 
@@ -255,10 +266,10 @@ public void EndTouch(int client, int action[3])
 			else
 			{
 				if (!g_bPracticeMode[client])
-				{	
+				{
 					g_Stage[g_iClientInZone[client][2]][client] = 1;
 					lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
-					
+
 					// NoClip check
 					if (g_bNoClip[client] || (!g_bNoClip[client] && (GetGameTime() - g_fLastTimeNoClipUsed[client]) < 3.0))
 					{
@@ -287,11 +298,7 @@ public void EndTouch(int client, int action[3])
             }
 		}
 
-		if (action[0] == 9){
-		    if (!g_bPracticeMode[client] && g_stageTimerActivated[client]){
-		        PrintToChat(client, "[%cCK%c] Terminaste la stage!", MOSSGREEN, WHITE);
-		    }
-		}
+
 		
 		// Set client location
 		g_iClientInZone[client][0] = -1;
