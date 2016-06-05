@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e24d0534-046f-4a2c-9a7d-2be2191c2207" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp" afterPath="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp" afterPath="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp" />
     </list>
     <ignored path="ckSurf.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,8 +27,8 @@
       <file leaf-file-name="ckSurf.sp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-23.481482">
-              <caret line="533" column="24" selection-start-line="533" selection-start-column="24" selection-end-line="533" selection-end-column="24" />
+            <state vertical-scroll-proportion="-9.592592">
+              <caret line="509" column="14" selection-start-line="509" selection-start-column="9" selection-end-line="509" selection-end-column="14" />
               <folding />
             </state>
           </provider>
@@ -37,8 +37,8 @@
       <file leaf-file-name="buttonpress.sp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/buttonpress.sp">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-11.259259">
-              <caret line="218" column="57" selection-start-line="218" selection-start-column="49" selection-end-line="218" selection-end-column="57" />
+            <state vertical-scroll-proportion="-12.925926">
+              <caret line="219" column="12" selection-start-line="219" selection-start-column="12" selection-end-line="219" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -48,27 +48,27 @@
         <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/timer.sp">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="259" column="24" selection-start-line="259" selection-start-column="16" selection-end-line="259" selection-end-column="24" />
+              <caret line="269" column="29" selection-start-line="269" selection-start-column="29" selection-end-line="269" selection-end-column="29" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="commands.sp" pinned="false" current-in-tab="false">
+      <file leaf-file-name="commands.sp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/commands.sp">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-9.592592">
-              <caret line="1913" column="69" selection-start-line="1913" selection-start-column="66" selection-end-line="1913" selection-end-column="69" />
+            <state vertical-scroll-proportion="0.17889318">
+              <caret line="2180" column="26" selection-start-line="2180" selection-start-column="26" selection-end-line="2180" selection-end-column="26" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="surfzones.sp" pinned="false" current-in-tab="true">
+      <file leaf-file-name="surfzones.sp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.44916344">
-              <caret line="234" column="9" selection-start-line="234" selection-start-column="9" selection-end-line="234" selection-end-column="9" />
+            <state vertical-scroll-proportion="-12.37037">
+              <caret line="233" column="22" selection-start-line="233" selection-start-column="22" selection-end-line="233" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -120,9 +120,9 @@
         <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/sql.sp" />
         <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/misc.sp" />
         <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/buttonpress.sp" />
-        <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp" />
         <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/commands.sp" />
         <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp" />
+        <option value="$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp" />
       </list>
     </option>
   </component>
@@ -747,7 +747,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11818000" />
+    <option name="totallyTimeSpent" value="11935000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
@@ -858,14 +858,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/sql.sp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="4860" column="55" selection-start-line="4860" selection-start-column="55" selection-end-line="4860" selection-end-column="55" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/misc.sp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -874,10 +866,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/commands.sp">
+    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-9.592592">
-          <caret line="1913" column="69" selection-start-line="1913" selection-start-column="66" selection-end-line="1913" selection-end-column="69" />
+          <caret line="509" column="14" selection-start-line="509" selection-start-column="9" selection-end-line="509" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/buttonpress.sp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.925926">
+          <caret line="219" column="12" selection-start-line="219" selection-start-column="12" selection-end-line="219" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.37037">
+          <caret line="233" column="22" selection-start-line="233" selection-start-column="22" selection-end-line="233" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/sql.sp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="4860" column="55" selection-start-line="4860" selection-start-column="55" selection-end-line="4860" selection-end-column="55" />
           <folding />
         </state>
       </provider>
@@ -885,31 +901,15 @@
     <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/timer.sp">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="259" column="24" selection-start-line="259" selection-start-column="16" selection-end-line="259" selection-end-column="24" />
+          <caret line="269" column="29" selection-start-line="269" selection-start-column="29" selection-end-line="269" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/buttonpress.sp">
+    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/commands.sp">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-11.259259">
-          <caret line="218" column="57" selection-start-line="218" selection-start-column="49" selection-end-line="218" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf.sp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-23.481482">
-          <caret line="533" column="24" selection-start-line="533" selection-start-column="24" selection-end-line="533" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/csgo/addons/sourcemod/scripting/ckSurf/surfzones.sp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.44916344">
-          <caret line="234" column="9" selection-start-line="234" selection-start-column="9" selection-end-line="234" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.17889318">
+          <caret line="2180" column="26" selection-start-line="2180" selection-start-column="26" selection-end-line="2180" selection-end-column="26" />
           <folding />
         </state>
       </provider>

@@ -532,7 +532,7 @@ char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's n
 float g_stageStartTime[MAXPLAYERS +1];                          // When the player started a stage
 float g_stageFinalTime[MAXPLAYERS +1];                          // When the player finished the stage
 bool g_stageTimerActivated[MAXPLAYERS +1];                     // Is client stage timer running
-
+char g_stageFinalTimeStr[MAXPLAYERS + 1][32]; 						// Total time the run took in 00:00:00 format
 
 
 
