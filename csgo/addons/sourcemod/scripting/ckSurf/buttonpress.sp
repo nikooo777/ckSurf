@@ -260,7 +260,6 @@ public void CL_OnEndTimerPress(int client)
 			g_bMapFirstRecord[client] = true;
 			g_pr_showmsg[client] = true;
 			db_UpdateCheckpoints(client, g_szSteamID[client], zGroup);
-
 			db_selectRecord(client);
 		}
 		else if (diff > 0.0)

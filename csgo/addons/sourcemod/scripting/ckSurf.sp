@@ -1657,7 +1657,7 @@ public void OnPluginStart()
 		g_useHibernate = true;
 	}
 
-	CreateTimer(600.0, Event_ReloadMap);
+	CreateTimer(60.0, Event_ReloadMap);
 	
 	
 	//Get Server Tickate
