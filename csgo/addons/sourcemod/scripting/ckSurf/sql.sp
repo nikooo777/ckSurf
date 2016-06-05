@@ -1533,7 +1533,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 		{
 			char szName[MAX_NAME_LENGTH];
 			GetClientName(data, szName, MAX_NAME_LENGTH);
-			int earnedPoints = g_pr_points[data] > g_pr_oldpoints[data];
+			int earnedPoints = g_pr_points[data] - g_pr_oldpoints[data];
 			if (earnedPoints > 0) // if player earned points -> Announce
 			{
 				for (int i = 1; i <= MaxClients; i++)

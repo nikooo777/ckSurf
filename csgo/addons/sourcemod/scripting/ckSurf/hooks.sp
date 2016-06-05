@@ -61,7 +61,15 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 		{
 			StripAllWeapons(client);
 			if (!IsFakeClient(client))
-				GivePlayerItem(client, "weapon_usp_silencer");
+			{
+				int weapon = GivePlayerItem(client, "weapon_glock");	//players wanted a glock as start gun
+				/*if (weapon != -1)
+				{
+					int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+					int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+					SetEntData(client, iAmmoTable+offset, 0, 4, true);  
+				}*/
+			}
 			if (!g_bStartWithUsp[client])
 			{
 				int weapon = GetPlayerWeaponSlot(client, 2);

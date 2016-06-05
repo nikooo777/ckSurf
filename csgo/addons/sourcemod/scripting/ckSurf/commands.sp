@@ -1169,7 +1169,15 @@ public Action Client_Usp(int client, int args)
 		InstantSwitch(client, weapon);
 	}
 	else
-		GivePlayerItem(client, "weapon_usp_silencer");
+	{
+		int weapon = GivePlayerItem(client, "weapon_glock");	//players wanted a glock as start gun
+		/*if (weapon != -1)
+		{
+			int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+	  		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+	  		SetEntData(client, iAmmoTable+offset, 0, 4, true);  
+  		}*/
+	}
 	return Plugin_Handled;
 }
 
