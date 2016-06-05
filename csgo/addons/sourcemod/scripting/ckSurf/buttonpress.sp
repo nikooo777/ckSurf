@@ -45,7 +45,7 @@ public void CL_OnStartTimerPress(int client)
 		if (g_bActivateCheckpointsOnStart[client])
 			g_bCheckpointsEnabled[client] = true;
 
-		// Reser run variables
+		// Reset run variables
 		tmpDiff[client] = 9999.0;
 		g_fPauseTime[client] = 0.0;
 		g_fStartPauseTime[client] = 0.0;
@@ -93,15 +93,12 @@ public void CL_OnStartTimerPress(int client)
 	// Start recording for record bot
 	if ((!IsFakeClient(client) && GetConVarBool(g_hReplayBot)) || (!IsFakeClient(client) && GetConVarBool(g_hBonusBot)))
 	{
-		if (!IsPlayerAlive(client) || GetClientTeam(client) == 1)
+		if (g_hRecording[client] != null)
 		{
-			if (g_hRecording[client] != null)
-				StopRecording(client);
+			StopRecording(client);
 		}
-		else
+		if (IsPlayerAlive(client) || GetClientTeam(client) > 1) // player must be alive and in a valid team (2 or 3)
 		{
-			if (g_hRecording[client] != null)
-				StopRecording(client);
 			StartRecording(client);
 		}
 	}
@@ -113,6 +110,9 @@ public void CL_OnEndTimerPress(int client)
 	if (!IsValidClient(client))
 		return;
 
+	float endTime = GetGameTime();
+	char clientName[MAX_NAME_LENGTH];
+	GetClientName(client, clientName, sizeof(clientName));
 	// Print bot finishing message to spectators
 	if (IsFakeClient(client) && g_bTimeractivated[client])
 	{
@@ -134,10 +134,8 @@ public void CL_OnEndTimerPress(int client)
 				}
 			}
 		}
-		
-		PlayButtonSound(client);
-		
 		g_bTimeractivated[client] = false;
+		PlayButtonSound(client);
 		return;
 	}
 	
@@ -147,17 +145,16 @@ public void CL_OnEndTimerPress(int client)
 		ClientCommand(client, "play buttons\\button10.wav");
 		return;
 	}
-	else
-	{
-		PlayButtonSound(client);
-	}
+	
+	PlayButtonSound(client);
 
 	// Get client name
-	char szName[MAX_NAME_LENGTH];
-	GetClientName(client, szName, MAX_NAME_LENGTH);
+	//char szName[MAX_NAME_LENGTH];
+	//GetClientName(client, szName, MAX_NAME_LENGTH);
 
 	// Get runtime and format it to a string
-	g_fFinalTime[client] = GetGameTime() - g_fStartTime[client] - g_fPauseTime[client];
+	g_fFinalTime[client] = endTime - g_fStartTime[client] - g_fPauseTime[client];
+
 	FormatTimeFloat(client, g_fFinalTime[client], 3, g_szFinalTime[client], 32);
 
 	/*============================================
@@ -166,9 +163,9 @@ public void CL_OnEndTimerPress(int client)
 	if (g_bPracticeMode[client])
 	{
 		if (g_iClientInZone[client][2] > 0)
-			PrintToChat(client, "[%cCK%c] %c%s %cfinished the bonus with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
+			PrintToChat(client, "[%cCK%c] %c%N %cfinished the bonus with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
 		else
-			PrintToChat(client, "[%cCK%c] %c%s %cfinished the map with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, szName, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
+			PrintToChat(client, "[%cCK%c] %c%N %cfinished the map with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
 		
 		/* Start function call */
 		Call_StartForward(g_PracticeFinishForward);
@@ -186,7 +183,7 @@ public void CL_OnEndTimerPress(int client)
 
 	// Set "Map Finished" overlay panel
 	g_bOverlay[client] = true;
-	g_fLastOverlay[client] = GetGameTime();
+	g_fLastOverlay[client] = endTime;
 	PrintHintText(client, "%t", "TimerStopped", g_szFinalTime[client]);
 
 	// Get Zonegroup
@@ -198,9 +195,9 @@ public void CL_OnEndTimerPress(int client)
 	if (zGroup == 0)
 	{
 		// Make a new record bot?
-		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[0] || g_fReplayTimes[0] == 0.0))
+		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[0] || g_fReplayTimes[0] <= 0.1)) //never compare floats
 		{
-			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client])
+			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client]) //if the replay bot is enabled and the client's position wasn't restored upon joining
 			{
 				g_fReplayTimes[0] = g_fFinalTime[client];
 				g_bNewReplay[client] = true;
@@ -225,53 +222,15 @@ public void CL_OnEndTimerPress(int client)
 		else
 			Format(g_szTimeDifference[client], sizeof(szDiff), "+%s", szDiff);
 				
-		// Check for SR
-		if (g_MapTimesCount > 0)
-		{  // If the server already has a record
-			if (g_fFinalTime[client] < g_fRecordMapTime)
-			{  // New fastest time in map
-				g_bMapSRVRecord[client] = true;
-				g_fRecordMapTime = g_fFinalTime[client];
-				Format(g_szRecordPlayer, MAX_NAME_LENGTH, "%s", szName);
-				FormatTimeFloat(1, g_fRecordMapTime, 3, g_szRecordMapTime, 64);
-	
-				// Insert latest record
-				db_InsertLatestRecords(g_szSteamID[client], szName, g_fFinalTime[client]);
-
-				// Update Checkpoints
-				if (!g_bPositionRestored[client])
-				{
-					for (int i = 0; i < CPLIMIT; i++)
-					{
-						g_fCheckpointServerRecord[zGroup][i] = g_fCheckpointTimesNew[zGroup][client][i];
-					}
-					g_bCheckpointRecordFound[zGroup] = true;
-				}
-				
-				if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
-				{
-					g_bNewReplay[client] = true;
-					g_fReplayTimes[0] = g_fFinalTime[client];
-					CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-				}
-			}
-		}
-		else
-		{  // Has to be the new record, since it is the first completion
-			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
-			{
-				g_fReplayTimes[0] = g_fFinalTime[client];
-				g_bNewReplay[client] = true;
-				CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
+		// Check for SR, even if there isn't one already
+		if (!g_MapTimesCount || g_fFinalTime[client] < g_fRecordMapTime)
+		{  // New fastest time in map
 			g_bMapSRVRecord[client] = true;
 			g_fRecordMapTime = g_fFinalTime[client];
-			Format(g_szRecordPlayer, MAX_NAME_LENGTH, "%s", szName);
+			Format(g_szRecordPlayer, MAX_NAME_LENGTH, "%N", client);
 			FormatTimeFloat(1, g_fRecordMapTime, 3, g_szRecordMapTime, 64);
-		
 			// Insert latest record
-			db_InsertLatestRecords(g_szSteamID[client], szName, g_fFinalTime[client]);
-
+			db_InsertLatestRecords(g_szSteamID[client], clientName, g_fFinalTime[client]);
 			// Update Checkpoints
 			if (g_bCheckpointsEnabled[client] && !g_bPositionRestored[client])
 			{
@@ -281,11 +240,17 @@ public void CL_OnEndTimerPress(int client)
 				}
 				g_bCheckpointRecordFound[zGroup] = true;
 			}
+	
+			if (GetConVarBool(g_hReplayBot) && !g_bPositionRestored[client] && !g_bNewReplay[client])
+			{
+				g_bNewReplay[client] = true;
+				g_fReplayTimes[0] = g_fFinalTime[client];
+				CreateTimer(3.0, ReplayTimer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
-
 		
 		// Check for personal record
-		if (g_fPersonalRecord[client] == 0.0)
+		if (g_fPersonalRecord[client] <= 0.1)
 		{  // Clients first record
 			g_fPersonalRecord[client] = g_fFinalTime[client];
 			g_pr_finishedmaps[client]++;
@@ -301,14 +266,15 @@ public void CL_OnEndTimerPress(int client)
 		else if (diff > 0.0)
 		{  // Client's new record
 			g_fPersonalRecord[client] = g_fFinalTime[client];
+			g_MapTimesCount++;
 			if (GetConVarInt(g_hExtraPoints) > 0)
-				g_pr_multiplier[client] += 1; // Improved time, increase multip
+				g_pr_multiplier[client] += 1; // Improved time, increase multip (how many times the player finished this map)
 			FormatTimeFloat(1, g_fPersonalRecord[client], 3, g_szPersonalRecord[client], 64);
 			
 			g_bMapPBRecord[client] = true;
 			g_pr_showmsg[client] = true;
 			db_UpdateCheckpoints(client, g_szSteamID[client], zGroup);
-
+			
 			db_selectRecord(client);
 
 		}
@@ -323,7 +289,7 @@ public void CL_OnEndTimerPress(int client)
 		//Challenge
 		if (g_bChallenge[client])
 		{
-			char szNameOpponent[MAX_NAME_LENGTH];
+			char opponentName[MAX_NAME_LENGTH];
 
 			SetEntityRenderColor(client, 255, 255, 255, 255);
 			for (int i = 1; i <= MaxClients; i++)
@@ -336,17 +302,17 @@ public void CL_OnEndTimerPress(int client)
 						g_bChallenge[i] = false;
 						SetEntityRenderColor(i, 255, 255, 255, 255);
 						db_insertPlayerChallenge(client);
-						GetClientName(i, szNameOpponent, MAX_NAME_LENGTH);
-						for (int k = 1; k <= MaxClients; k++)
-							if (IsValidClient(k))
-								PrintToChat(k, "%t", "ChallengeW", RED, WHITE, MOSSGREEN, szName, WHITE, MOSSGREEN, szNameOpponent, WHITE);
+						GetClientName(i, opponentName, MAX_NAME_LENGTH);
+						//for (int k = 1; k <= MaxClients; k++)
+						//	if (IsValidClient(k))
+						PrintToChatAll("%t", "ChallengeW", RED, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
 						
 						if (g_Challenge_Bet[client] > 0)
 						{
 							int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
-							for (int j = 1; j <= MaxClients; j++)
-								if (IsValidClient(j))
-									PrintToChat(j, "%t", "ChallengeL", MOSSGREEN, WHITE, PURPLE, szNameOpponent, GRAY, RED, lostpoints, GRAY);
+							//for (int j = 1; j <= MaxClients; j++)
+							//	if (IsValidClient(j))
+							PrintToChatAll("%t", "ChallengeL", MOSSGREEN, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
 							CreateTimer(0.5, UpdatePlayerProfile, i, TIMER_FLAG_NO_MAPCHANGE);
 							g_pr_showmsg[client] = true;
 						}
@@ -363,7 +329,7 @@ public void CL_OnEndTimerPress(int client)
 	=            Handle bonus            =
 	====================================*/
 	{
-		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[zGroup] || g_fReplayTimes[zGroup] == 0.0))
+		if (GetConVarBool(g_hReplaceReplayTime) && (g_fFinalTime[client] < g_fReplayTimes[zGroup] || g_fReplayTimes[zGroup] <= 0.1)) //never compare floats
 		{
 			if (GetConVarBool(g_hBonusBot) && !g_bPositionRestored[client])
 			{
@@ -401,7 +367,7 @@ public void CL_OnEndTimerPress(int client)
 			{  // New fastest time in current bonus
 				g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
 				g_fBonusFastest[zGroup] = g_fFinalTime[client];
-				Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+				Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%N", client);
 				FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 64);
 				
 				// Update Checkpoints
@@ -440,7 +406,7 @@ public void CL_OnEndTimerPress(int client)
 			
 			g_fOldBonusRecordTime[zGroup] = g_fBonusFastest[zGroup];
 			g_fBonusFastest[zGroup] = g_fFinalTime[client];
-			Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+			Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%N", client);
 			FormatTimeFloat(1, g_fBonusFastest[zGroup], 3, g_szBonusFastestTime[zGroup], 64);
 			
 			// Update Checkpoints
@@ -467,7 +433,7 @@ public void CL_OnEndTimerPress(int client)
 			g_bBonusFirstRecord[client] = true;
 			g_pr_showmsg[client] = true;
 			db_UpdateCheckpoints(client, g_szSteamID[client], zGroup);
-			db_insertBonus(client, g_szSteamID[client], szName, g_fFinalTime[client], zGroup);
+			db_insertBonus(client, g_szSteamID[client], clientName, g_fFinalTime[client], zGroup);
 		}
 		else if (diff > 0.0)
 		{  // client's new record
@@ -477,7 +443,7 @@ public void CL_OnEndTimerPress(int client)
 			g_bBonusPBRecord[client] = true;
 			g_pr_showmsg[client] = true;
 			db_UpdateCheckpoints(client, g_szSteamID[client], zGroup);
-			db_updateBonus(client, g_szSteamID[client], szName, g_fFinalTime[client], zGroup);
+			db_updateBonus(client, g_szSteamID[client], clientName, g_fFinalTime[client], zGroup);
 		}
 		
 		

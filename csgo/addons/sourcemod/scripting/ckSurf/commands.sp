@@ -1,12 +1,3 @@
-
-/*public Action Command_rTimes(int client, int args)
-{
-	for (int i = 0; i < MAXZONEGROUPS; i++)
-		PrintToChatAll("%i. %f",i, g_fReplayTimes[i]);
-	
-	return Plugin_Handled;
-}*/
-
 public Action Command_Vip(int client, int args)
 {
 	if (!IsValidClient(client))

@@ -1657,18 +1657,11 @@ public void OnPluginStart()
 		g_useHibernate = true;
 	}
 
-	CreateTimer(120.0, Event_ReloadMap);
+	CreateTimer(600.0, Event_ReloadMap);
 	
 	
 	//Get Server Tickate
-	float fltickrate = 1.0 / GetTickInterval();
-	if (fltickrate > 65)
-		if (fltickrate < 103)
-			g_Server_Tickrate = 102;
-		else
-			g_Server_Tickrate = 128;
-	else
-		g_Server_Tickrate = 64;
+	g_Server_Tickrate = view_as<int>(1 / GetTickInterval());
 	
 	//language file
 	LoadTranslations("ckSurf.phrases");
