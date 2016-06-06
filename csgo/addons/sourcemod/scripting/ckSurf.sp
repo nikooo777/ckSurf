@@ -275,6 +275,16 @@ int g_iBonusCount[MAXZONEGROUPS]; 								// Amount of players that have passed 
 int g_totalBonusCount; 											// How many total bonuses there are
 bool g_bhasBonus;												// Does map have a bonus?
 
+/*----------  Stage variables 		----------*/
+int g_OldMapRankStage[MAXZONEGROUPS][MAXPLAYERS + 1];			// Old rank in Stage
+int g_MapRankStage[MAXZONEGROUPS][MAXPLAYERS + 1];				// Clients personal Stage rank in the current map
+float g_fPersonalRecordStage[MAXZONEGROUPS][MAXPLAYERS + 1]; 	// Clients personal stage record in the current map
+int g_iStageCount[MAXZONEGROUPS]; 								// Amount of players that have passed the stage in current map
+float g_stageFastest[MAXZONEGROUPS]; 							// Fastest stage time in the current map
+char g_szStageFastestTime[MAXZONEGROUPS][64]; 					// Fastest stage time in 00:00:00:00 format
+char g_szStageFastest[MAXZONEGROUPS][MAX_NAME_LENGTH]; 			// Name of the #1 in the current maps stage
+float g_fOldStageRecordTime[MAXZONEGROUPS];						// Old record time, for prints + counting
+
 /*----------  Checkpoint variables  ----------*/
 float g_fCheckpointTimesRecord[MAXZONEGROUPS][MAXPLAYERS + 1][CPLIMIT]; // Clients best run's times
 float g_fCheckpointTimesNew[MAXZONEGROUPS][MAXPLAYERS + 1][CPLIMIT]; // Clients current run's times
@@ -505,6 +515,7 @@ bool g_bBonusFirstRecord[MAXPLAYERS + 1];						// First bonus time in map?
 bool g_bBonusPBRecord[MAXPLAYERS + 1];							// Personal best time in bonus
 bool g_bBonusSRVRecord[MAXPLAYERS + 1];							// New server record in bonus
 char g_szBonusTimeDifference[MAXPLAYERS + 1];					// How many seconds were improved / lost in that run
+char g_szStageTimeDifference[MAXPLAYERS + 1];					// How many seconds were improved / lost in that run
 float g_fStartTime[MAXPLAYERS + 1]; 							// Time when run was started
 float g_fFinalTime[MAXPLAYERS + 1]; 							// Total time the run took
 char g_szFinalTime[MAXPLAYERS + 1][32]; 						// Total time the run took in 00:00:00 format
@@ -531,8 +542,12 @@ char g_szRecordPlayer[MAX_NAME_LENGTH];							// Current map's record player's n
 /*----------  Stage Record Variables ----------*/
 float g_stageStartTime[MAXPLAYERS +1];                          // When the player started a stage
 float g_stageFinalTime[MAXPLAYERS +1];                          // When the player finished the stage
-bool g_stageTimerActivated[MAXPLAYERS +1];                     // Is client stage timer running
-char g_stageFinalTimeStr[MAXPLAYERS + 1][32]; 						// Total time the run took in 00:00:00 format
+bool g_stageTimerActivated[MAXPLAYERS +1];                     	// Is client stage timer running
+char g_stageFinalTimeStr[MAXPLAYERS + 1][32]; 					// Total time the run took in 00:00:00 format
+bool g_stagePBRecord[MAXPLAYERS + 1];							// Personal best time in bonus
+bool g_stageSRVRecord[MAXPLAYERS + 1];							// New server record in bonus
+bool g_stageFirstRecord[MAXPLAYERS + 1];						// First bonus time in map?
+int g_doingStage[MAXPLAYERS + 1];								// Which stage is the client doing
 
 
 

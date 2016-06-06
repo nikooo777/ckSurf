@@ -241,12 +241,10 @@ public void StartTouch(int client, int action[3])
 		if (action[0] == 9){
             if (!g_bPracticeMode[client] && g_stageTimerActivated[client]){
                 // Get runtime and format it to a string
-                g_stageFinalTime[client] = GetGameTime() - g_stageStartTime[client];
-                FormatTimeFloat(client, g_stageFinalTime[client], 3, g_stageFinalTimeStr[client], 32);
-                PrintToChat(client, "[%cCK%c] Terminaste la stage en %s", MOSSGREEN, WHITE, g_stageFinalTimeStr[client]);
+                CL_OnEndStageTimerPress(client);
                 g_stageStartTime[client] = GetGameTime();
                 g_stageFinalTime[client] = 0.0;
-                g_stageTimerActivated[client] = true;
+                g_stageTimerActivated[client] = false;
             }
         }
 	}
@@ -291,6 +289,7 @@ public void EndTouch(int client, int action[3])
                     PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
                     ClientCommand(client, "play buttons\\button10.wav");
                 } else {
+                	g_doingStage[client] = action[1] + 1;
                     g_stageStartTime[client] = GetGameTime();
                     g_stageFinalTime[client] = 0.0;
                     g_stageTimerActivated[client] = true;

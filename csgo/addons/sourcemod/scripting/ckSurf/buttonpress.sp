@@ -544,8 +544,138 @@ public void CL_OnEndTimerPress(int client)
 			}*/
 		}
 	}
-	Client_Stop(client, 1);
-	db_deleteTmp(client);
+
+	/*====================================
+	=            Handle Stage            =
+	====================================*/
+	//Record bools init
+	// if (g_stageTimerActivated[client]) {
+	// 	char szDiff[54];
+	// 	float diff;
+	// 	g_stageFirstRecord[client] = false;
+	// 	g_stagePBRecord[client] = false;
+	// 	g_stageSRVRecord[client] = false;
+	// 	g_OldMapRankStage[zGroup][client] = g_MapRankStage[zGroup][client];	
+
+	// 	diff = g_fPersonalRecordBonus[zGroup][client] - g_stageFinalTime[client];
+	// 	FormatTimeFloat(client, diff, 3, szDiff, sizeof(szDiff));
+	// 	if (diff > 0.0)	{
+	// 		Format(g_szStageTimeDifference[client], sizeof(szDiff), "-%s", szDiff);
+	// 	}
+	// 	else {
+	// 		Format(g_szStageTimeDifference[client], sizeof(szDiff), "+%s", szDiff);
+	// 	}
+
+	// 	if (g_iStageCount[zGroup] > 0)
+	// 	{  // If the server already has a stage record
+	// 		if (g_stageFinalTime[client] < g_stageFastest[zGroup])
+	// 		{  // New fastest time in current bonus
+	// 			g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+	// 			g_stageFastest[zGroup] = g_stageFinalTime[client];
+	// 			Format(g_szStageFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+	// 			FormatTimeFloat(1, g_stageFastest[zGroup], 3, g_szStageFastestTime[zGroup], 64);
+				
+	// 			g_stageSRVRecord[client] = true;
+	// 		}
+	// 	} else { // Has to be the new record, since it is the first completion
+	// 		g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+	// 		g_stageFastest[zGroup] = g_stageFinalTime[client];
+	// 		Format(g_szBonusFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+	// 		FormatTimeFloat(1, g_stageFastest[zGroup], 3, g_szStageFastestTime[zGroup], 64);
+ //            PrintToChat(client, "[%cCK%c] Terminaste la stage en %s", MOSSGREEN, WHITE, g_stageFinalTimeStr[client]);
+	// 		g_stageSRVRecord[client] = true;
+	// 		g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+	// 	}
+
+
+	}
+
+
+
+	//set mvp star
+	g_MVPStars[client] += 1;
+	CS_SetMVPCount(client, g_MVPStars[client]);
+} 
+
+
+
+
+// End timer
+public void CL_OnEndStageTimerPress(int client)
+{
+	if (!IsValidClient(client))
+		return;
+
+	if (!g_stageTimerActivated[client])
+	{
+		ClientCommand(client, "play buttons\\button10.wav");
+		return;
+	}
+	else
+	{
+		PlayButtonSound(client);
+	}
+
+	// Get client name
+	char szName[MAX_NAME_LENGTH];
+	GetClientName(client, szName, MAX_NAME_LENGTH);
+
+	// Get runtime and format it to a string
+	g_stageFinalTime[client] = GetGameTime() - g_stageStartTime[client];
+    FormatTimeFloat(client, g_stageFinalTime[client], 3, g_stageFinalTimeStr[client], 32);
+	
+
+	// Get Zonegroup (Ejemplo bonus 1, 2, 3, etc)
+	int zGroup = g_iClientInZone[client][2];
+
+	//LO QUE NECESITO ES ZONETYPEID +1 Y CONSIGO EN QUE STAGE ESTA :D
+
+	/*====================================
+	=            Handle Stage            =
+	====================================*/
+	//Record bools init
+	if (g_stageTimerActivated[client]) {
+		char szDiff[54];
+		float diff;
+		g_stageFirstRecord[client] = false;
+		g_stagePBRecord[client] = false;
+		g_stageSRVRecord[client] = false;
+		g_OldMapRankStage[zGroup][client] = g_MapRankStage[zGroup][client];	
+
+		diff = g_fPersonalRecordBonus[zGroup][client] - g_stageFinalTime[client];
+		FormatTimeFloat(client, diff, 3, szDiff, sizeof(szDiff));
+		if (diff > 0.0)	{
+			Format(g_szStageTimeDifference[client], sizeof(szDiff), "-%s", szDiff);
+		}
+		else {
+			Format(g_szStageTimeDifference[client], sizeof(szDiff), "+%s", szDiff);
+		}
+
+		if (g_iStageCount[zGroup] > 0)
+		{  // If the server already has a stage record
+			if (g_stageFinalTime[client] < g_stageFastest[zGroup])
+			{  // New fastest time in current bonus
+				g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+				g_stageFastest[zGroup] = g_stageFinalTime[client];
+				Format(g_szStageFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+				FormatTimeFloat(1, g_stageFastest[zGroup], 3, g_szStageFastestTime[zGroup], 64);
+				
+				g_stageSRVRecord[client] = true;
+			}
+		} else { // Has to be the new record, since it is the first completion
+			g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+			g_stageFastest[zGroup] = g_stageFinalTime[client];
+			Format(g_szStageFastest[zGroup], MAX_NAME_LENGTH, "%s", szName);
+			FormatTimeFloat(1, g_stageFastest[zGroup], 3, g_szStageFastestTime[zGroup], 64);
+            PrintToChat(client, "[%cCK%c] Terminaste la stage en %s, zonegroup %s", MOSSGREEN, WHITE, g_stageFinalTimeStr[client], g_doingStage[client]);
+			g_stageSRVRecord[client] = true;
+			g_fOldStageRecordTime[zGroup] = g_stageFastest[zGroup];
+		}
+
+
+	}
+
+
 
 	//set mvp star
 	g_MVPStars[client] += 1;

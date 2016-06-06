@@ -50,6 +50,21 @@ char sql_updatemaptier[] = "UPDATE ck_maptier SET tier = %i WHERE mapname ='%s'"
 char sql_updateBonusTier[] = "UPDATE ck_maptier SET btier%i = %i WHERE mapname ='%s'";
 char sql_insertBonusTier[] = "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');";
 
+//TABLE STAGE RECORDS
+char sql_createStageRecord[] = "CREATE TABLE IF NOT EXISTS ar_stage (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
+char sql_createStageRecordIndex[] = "CREATE INDEX stagerank ON ar_stage (mapname,runtime,zonegroup);";
+char sql_insertStageRecord[] = "INSERT INTO ar_stage (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";
+char sql_updateStageRecord[] = "UPDATE ar_stage SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
+char sql_selectStageRecordCount[] = "SELECT zonegroup, count(1) FROM ar_stage WHERE mapname = '%s' GROUP BY zonegroup";
+char sql_selectPersonalStageRecords[] = "SELECT runtime, zonegroup FROM ar_stage WHERE steamid = '%s' AND mapname = '%s' AND runtime > '0.0'";
+char sql_selectPlayerRankStage[] = "SELECT name FROM ar_stage WHERE runtime <= (SELECT runtime FROM ar_stage WHERE steamid = '%s' AND mapname= '%s' AND runtime > 0.0 AND zonegroup = %i) AND mapname = '%s' AND zonegroup = %i;";
+char sql_selectFastestStage[] = "SELECT name, MIN(runtime), zonegroup FROM ar_stage WHERE mapname = '%s' GROUP BY zonegroup;";
+char sql_deleteStageRecord[] = "DELETE FROM ar_stage WHERE mapname = '%s'";
+char sql_selectAllStageTimesInMap[] = "SELECT zonegroup, runtime from ar_stage WHERE mapname = '%s';";
+char sql_selectTopStageSurfers[] = "SELECT db2.steamid, db1.name, db2.runtime as overall, db1.steamid, db2.mapname FROM ar_stage as db2 INNER JOIN ck_playerrank as db1 on db2.steamid = db1.steamid WHERE db2.mapname LIKE '%c%s%c' AND db2.runtime > -1.0 AND zonegroup = %i ORDER BY overall ASC LIMIT 100;";
+
+
+
 //TABLE BONUS
 char sql_createBonus[] = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
 char sql_createBonusIndex[] = "CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup);";
@@ -202,6 +217,13 @@ public void db_setupDatabase()
 		return;
 	}
 	
+	//TODO Tengo que hacer que si no esta creada nomas que la cree, sino se rompe todo.
+	//Creo stageRecord table
+	// Transaction createTableTnx = SQL_CreateTransaction();
+	// SQL_AddQuery(createTableTnx, sql_createStageRecord);
+	// SQL_AddQuery(createTableTnx, sql_createStageRecordIndex);
+	
+	// SQL_ExecuteTransaction(g_hDb, createTableTnx, SQLTxn_CreateDatabaseSuccess, SQLTxn_CreateDatabaseFailed);
 	
 	// 1.17 Command to disable checkpoint messages
 	SQL_FastQuery(g_hDb, "ALTER TABLE ck_playeroptions ADD checkpoints INT DEFAULT 1;");
@@ -4519,9 +4541,86 @@ public void SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[]
 }
 
 
+////////////////////////////
+////   Stage Records   /////
+////////////////////////////
 
+public void db_insertStageRecord(int client, char szSteamId[32], char szUName[32], float FinalTime, int zoneGrp)
+{
+	char szQuery[1024];
+	char szName[MAX_NAME_LENGTH * 2 + 1];
+	SQL_EscapeString(g_hDb, szUName, szName, MAX_NAME_LENGTH * 2 + 1);
+	Handle pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackCell(pack, zoneGrp);
+	Format(szQuery, 1024, sql_insertStageRecord, szSteamId, szName, g_szMapName, FinalTime, zoneGrp);
+	SQL_TQuery(g_hDb, SQL_insertStageRecordCallback, szQuery, pack, DBPrio_Low);
+}
 
+public void SQL_insertStageRecordCallback(Handle owner, Handle hndl, const char[] error, any data)
+{
+	if (hndl == null)
+	{
+		LogError("[Argentina Surf] SQL Error (SQL_insertStageRecordCallback): %s", error);
+		return;
+	}
+	
+	ResetPack(data);
+	int client = ReadPackCell(data);
+	int zgroup = ReadPackCell(data);
+	CloseHandle(data);
+	
+	db_viewMapRankStageRecord(client, zgroup, 1);
+	// Change to update profile timer, if giving multiplier count or extra points for bonuses
+	CalculatePlayerRank(client);
+}
 
+public void db_viewMapRankStageRecord(int client, int zgroup, int type)
+{
+	char szQuery[1024];
+	Handle pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackCell(pack, zgroup);
+	WritePackCell(pack, type);
+	
+	Format(szQuery, 1024, sql_selectPlayerRankStage, g_szSteamID[client], g_szMapName, zgroup, g_szMapName, zgroup);
+	SQL_TQuery(g_hDb, db_viewMapRankStageRecordCallback, szQuery, pack, DBPrio_Low);
+}
+
+public void db_viewMapRankStageRecordCallback(Handle owner, Handle hndl, const char[] error, any data)
+{
+	if (hndl == null)
+	{
+		LogError("[Argentina Surf] SQL Error (db_viewMapRankStageCallback): %s", error);
+		return;
+	}
+	
+	ResetPack(data);
+	int client = ReadPackCell(data);
+	int zgroup = ReadPackCell(data);
+	int type = ReadPackCell(data);
+	CloseHandle(data);
+	
+	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		g_MapRankStage[zgroup][client] = SQL_GetRowCount(hndl);
+	}
+	else
+	{
+		g_MapRankStage[zgroup][client] = 9999999;
+	}
+	
+	switch (type)
+	{
+		case 1: {
+			g_iStageCount[zgroup]++;
+			PrintChatBonus(client, zgroup);
+		}
+		case 2: {
+			PrintChatBonus(client, zgroup);
+		}
+	}
+}
 
 
 
