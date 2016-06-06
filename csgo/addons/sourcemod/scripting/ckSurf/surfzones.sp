@@ -289,7 +289,7 @@ public void EndTouch(int client, int action[3])
                     PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
                     ClientCommand(client, "play buttons\\button10.wav");
                 } else {
-                	g_doingStage[client] = action[1] + 1;
+                	g_doingStage[client] = action[1] + 2;
                     g_stageStartTime[client] = GetGameTime();
                     g_stageFinalTime[client] = 0.0;
                     g_stageTimerActivated[client] = true;

@@ -4545,6 +4545,38 @@ public void SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[]
 ////   Stage Records   /////
 ////////////////////////////
 
+public void db_currentStageRunRank(int client, int zGroup)
+{
+	char szQuery[512];
+	Handle pack = CreateDataPack();
+	WritePackCell(pack, client);
+	WritePackCell(pack, zGroup);
+	Format(szQuery, 512, "SELECT count(runtime)+1 FROM ar_stage WHERE mapname = '%s' AND zonegroup = '%i' AND runtime < %f", g_szMapName, zGroup, g_fFinalTime[client]);
+	SQL_TQuery(g_hDb, db_viewStageRunRank, szQuery, pack, DBPrio_Low);
+}
+
+public void db_viewStageRunRank(Handle owner, Handle hndl, const char[] error, any pack)
+{
+	if (hndl == null)
+	{
+		LogError("[ckSurf] SQL Error (db_viewBonusRunRank): %s", error);
+		return;
+	}
+
+	ResetPack(pack);
+	int client = ReadPackCell(pack);
+	int zGroup = ReadPackCell(pack);
+	CloseHandle(pack);
+	int rank;
+	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
+	{
+		rank = SQL_FetchInt(hndl, 0);
+	}
+
+	PrintChatStage(client, zGroup, rank);
+}
+
+
 public void db_insertStageRecord(int client, char szSteamId[32], char szUName[32], float FinalTime, int zoneGrp)
 {
 	char szQuery[1024];

@@ -547,8 +547,8 @@ char g_stageFinalTimeStr[MAXPLAYERS + 1][32]; 					// Total time the run took in
 bool g_stagePBRecord[MAXPLAYERS + 1];							// Personal best time in bonus
 bool g_stageSRVRecord[MAXPLAYERS + 1];							// New server record in bonus
 bool g_stageFirstRecord[MAXPLAYERS + 1];						// First bonus time in map?
-int g_doingStage[MAXPLAYERS + 1];								// Which stage is the client doing
-
+int g_doingStage[MAXPLAYERS + 1];								// Is the player doing the stage
+char g_doingStageStr[MAXPLAYERS + 1][64]; 						//doingStage str
 
 
 /*----------  Replay Variables  ----------*/
