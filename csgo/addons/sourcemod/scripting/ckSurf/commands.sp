@@ -1,12 +1,3 @@
-
-/*public Action Command_rTimes(int client, int args)
-{
-	for (int i = 0; i < MAXZONEGROUPS; i++)
-		PrintToChatAll("%i. %f",i, g_fReplayTimes[i]);
-	
-	return Plugin_Handled;
-}*/
-
 public Action Command_Vip(int client, int args)
 {
 	if (!IsValidClient(client))
@@ -947,16 +938,16 @@ public Action Client_Challenge(int client, int args)
 				if (GetConVarBool(g_hPointSystem))
 				{
 					Format(tmp, 64, "%i", g_pr_PointUnit * 50);
-					if (g_pr_PointUnit * 5 <= g_pr_points[client])
+					if (g_pr_PointUnit * 50 <= g_pr_points[client])
 						AddMenuItem(menu2, tmp, tmp);
 					Format(tmp, 64, "%i", (g_pr_PointUnit * 100));
-					if ((g_pr_PointUnit * 10) <= g_pr_points[client])
+					if ((g_pr_PointUnit * 100) <= g_pr_points[client])
 						AddMenuItem(menu2, tmp, tmp);
 					Format(tmp, 64, "%i", (g_pr_PointUnit * 250));
-					if ((g_pr_PointUnit * 25) <= g_pr_points[client])
+					if ((g_pr_PointUnit * 250) <= g_pr_points[client])
 						AddMenuItem(menu2, tmp, tmp);
 					Format(tmp, 64, "%i", (g_pr_PointUnit * 500));
-					if ((g_pr_PointUnit * 50) <= g_pr_points[client])
+					if ((g_pr_PointUnit * 500) <= g_pr_points[client])
 						AddMenuItem(menu2, tmp, tmp);
 				}
 				SetMenuOptionFlags(menu2, MENUFLAG_BUTTON_EXIT);
@@ -1178,7 +1169,15 @@ public Action Client_Usp(int client, int args)
 		InstantSwitch(client, weapon);
 	}
 	else
-		GivePlayerItem(client, "weapon_usp_silencer");
+	{
+		int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
+		/*if (weapon != -1)
+		{
+			int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+	  		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+	  		SetEntData(client, iAmmoTable+offset, 0, 4, true);  
+  		}*/
+	}
 	return Plugin_Handled;
 }
 

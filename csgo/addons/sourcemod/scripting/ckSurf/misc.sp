@@ -38,11 +38,11 @@ void setBotQuota()
 		count++;
 	if (g_BonusBotCount > 0)
 		count++;
-
-	if (count == 0)
-		SetConVarInt(hBotQuota, 0, false, false);
-	else
-		SetConVarInt(hBotQuota, count, false, false);
+	//i got cancer by reading these 4 lines
+	//if (count == 0)
+	//	SetConVarInt(hBotQuota, 0, false, false);
+	//else
+	SetConVarInt(hBotQuota, count, false, false);
 	
 	CloseHandle(hBotQuota);
 
@@ -999,26 +999,6 @@ stock bool IsValidClient(int client)
 	if (client >= 1 && client <= MaxClients && IsValidEntity(client) && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
-}
-
-public void SetServerTags()
-{
-	Handle CvarHandle;
-	CvarHandle = FindConVar("sv_tags");
-	char szServerTags[2048];
-	GetConVarString(CvarHandle, szServerTags, 2048);
-	if (StrContains(szServerTags, "ckSurf", true) == -1)
-	{
-		Format(szServerTags, 2048, "%s, ckSurf", szServerTags);
-		SetConVarString(CvarHandle, szServerTags);
-	}
-	if (StrContains(szServerTags, "ckSurf 1.", true) == -1 && StrContains(szServerTags, "Tickrate", true) == -1)
-	{
-		Format(szServerTags, 2048, "%s, ckSurf %s, Tickrate %i", szServerTags, VERSION, g_Server_Tickrate);
-		SetConVarString(CvarHandle, szServerTags);
-	}
-	if (CvarHandle != null)
-		CloseHandle(CvarHandle);
 }
 
 public void PrintConsoleInfo(int client)
