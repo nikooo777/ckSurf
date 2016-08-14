@@ -62,7 +62,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 			StripAllWeapons(client);
 			if (!IsFakeClient(client))
 			{
-				int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
+				int weapon = GivePlayerItem(client, "weapon_usp_silenced"); //players wanted a glock as start gun
 				/*if (weapon != -1)
 				{
 					int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -77,7 +77,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 					SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 			}
 		}
-
+		
 		//NoBlock
 		if (GetConVarBool(g_hCvarNoBlock) || IsFakeClient(client))
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
@@ -108,7 +108,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 			char szBuffer[256];
 			GetConVarString(g_hArmModel, szBuffer, 256);
 			SetEntPropString(client, Prop_Send, "m_szArmsModel", szBuffer);
-
+			
 			GetConVarString(g_hPlayerModel, szBuffer, 256);
 			SetEntityModel(client, szBuffer);
 		}
@@ -123,8 +123,8 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 				g_iClientInZone[client][2] = 0;
 				g_bIgnoreZone[client] = false;
 			}
-
-
+			
+			
 			StartRecording(client);
 			CreateTimer(1.5, CenterMsgTimer, client, TIMER_FLAG_NO_MAPCHANGE);
 			g_bFirstSpawn[client] = false;
@@ -160,7 +160,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 						
 						// Spawn client to the start zone.
 						if (GetConVarBool(g_hSpawnToStartZone))
-							Command_Restart(client, 1);	
+							Command_Restart(client, 1);
 					}
 				}
 			}
@@ -190,8 +190,8 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 }
 
 public void PlayerSpawn(int client)
-{	
-
+{
+	
 }
 
 public Action Say_Hook(int client, const char[] command, int argc)
@@ -223,7 +223,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		if (client > 0)
 			if (BaseComm_IsClientGagged(client))
 			return Plugin_Handled;
-
+		
 		//blocked commands
 		for (int i = 0; i < sizeof(g_BlockedChatText); i++)
 		{
@@ -232,8 +232,8 @@ public Action Say_Hook(int client, const char[] command, int argc)
 				
 				return Plugin_Handled;
 			}
-		}		
-
+		}
+		
 		// !s and !stage commands
 		if (StrContains(sText, "!s", false) == 0 || StrContains(sText, "!stage", false) == 0)
 			return Plugin_Handled;
@@ -241,11 +241,11 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		// !b and !bonus commands
 		if (StrContains(sText, "!b", false) == 0 || StrContains(sText, "!bonus", false) == 0)
 			return Plugin_Handled;
-
+		
 		//empty message
 		if (StrEqual(sText, " ") || !sText[0])
 			return Plugin_Handled;
-
+		
 		if (checkSpam(client))
 			return Plugin_Handled;
 		
@@ -257,7 +257,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 			if (IsCharUpper(sText[1]))
 			{
 				for (int i = 0; i <= strlen(sText); ++i)
-					sText[i] = CharToLower(sText[i]);
+				sText[i] = CharToLower(sText[i]);
 				FakeClientCommand(client, "say %s", sText);
 				return Plugin_Handled;
 			}
@@ -268,14 +268,14 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		{
 			return Plugin_Continue;
 		}
-
+		
 		char szName[64];
 		GetClientName(client, szName, 64);
-
+		
 		//log the chat of the player to the server so that tools such as HLSW/HLSTATX see it and also it remains logged in the log file
 		WriteChatLog(client, "say", sText);
 		PrintToServer("%s: %s", szName, sText);
-
+		
 		parseColorsFromString(szName, 64);
 		
 		if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
@@ -309,8 +309,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 						CPrintToChatAllEx(client, "%s {teamcolor}*DEAD* %s{default}: %s", szChatRank, szName, sText);
 					return Plugin_Handled;
 				}
-				else
-					if (GetConVarBool(g_hCountry))
+				else if (GetConVarBool(g_hCountry))
 				{
 					if (IsPlayerAlive(client))
 						CPrintToChatAllEx(client, "[{green}%s{default}] {teamcolor}%s{default}: %s", g_szCountryCode[client], szName, sText);
@@ -331,7 +330,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 		return Plugin_Continue;
 	int team = GetEventInt(event, "team");
 	if (team == 1)
-	{	
+	{
 		SpecListMenuDead(client);
 		if (!g_bFirstSpawn[client])
 		{
@@ -364,8 +363,8 @@ public Action Event_PlayerDisconnect(Handle event, const char[] name, bool dontB
 		GetEventString(event, "name", szName, sizeof(szName));
 		GetEventString(event, "reason", disconnectReason, sizeof(disconnectReason));
 		for (int i = 1; i <= MaxClients; i++)
-			if (IsValidClient(i) && i != client && !IsFakeClient(i))
-				PrintToChat(i, "%t", "Disconnected1", WHITE, MOSSGREEN, szName, WHITE, disconnectReason);
+		if (IsValidClient(i) && i != client && !IsFakeClient(i))
+			PrintToChat(i, "%t", "Disconnected1", WHITE, MOSSGREEN, szName, WHITE, disconnectReason);
 		return Plugin_Handled;
 	}
 	else
@@ -384,12 +383,10 @@ public Action Hook_SetTransmit(int entity, int client)
 			if (!StrEqual(g_szSteamID[entity], g_szChallenge_OpponentID[client], false))
 				return Plugin_Handled;
 		}
-		else
-			if (g_bHide[client] && entity != g_SpecTarget[client])
-				return Plugin_Handled;
-			else
-				if (entity == g_InfoBot && entity != g_SpecTarget[client])
-					return Plugin_Handled;
+		else if (g_bHide[client] && entity != g_SpecTarget[client])
+			return Plugin_Handled;
+		else if (entity == g_InfoBot && entity != g_SpecTarget[client])
+			return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
@@ -405,14 +402,13 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
 				StopRecording(client);
 			CreateTimer(2.0, RemoveRagdoll, client);
 		}
-		else
-			if (g_hBotMimicsRecord[client] != null)
-			{
-				g_BotMimicTick[client] = 0;
-				g_CurrentAdditionalTeleportIndex[client] = 0;
-				if (GetClientTeam(client) >= CS_TEAM_T)
-					CreateTimer(1.0, RespawnBot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
+		else if (g_hBotMimicsRecord[client] != null)
+		{
+			g_BotMimicTick[client] = 0;
+			g_CurrentAdditionalTeleportIndex[client] = 0;
+			if (GetClientTeam(client) >= CS_TEAM_T)
+				CreateTimer(1.0, RespawnBot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		}
 	}
 	return Plugin_Continue;
 }
@@ -550,13 +546,13 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_bOnGround[client] = true;
 		else
 			g_bOnGround[client] = false;
-
+		
 		float newVelocity[3];
 		// Slope Boost Fix by Mev, & Blacky
 		// https://forums.alliedmods.net/showthread.php?t=266888
 		//if (GetConVarBool(g_hSlopeFixEnable) == true)
 		if (GetConVarBool(g_hSlopeFixEnable) == true && !IsFakeClient(client))
-		{			
+		{
 			g_vLast[client][0] = g_vCurrent[client][0];
 			g_vLast[client][1] = g_vCurrent[client][1];
 			g_vLast[client][2] = g_vCurrent[client][2];
@@ -643,7 +639,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				}
 			}
 		}
-
+		
 		if (newVelocity[0] == 0.0 && newVelocity[1] == 0.0 && newVelocity[2] == 0.0)
 		{
 			RecordReplay(client, buttons, subtype, seed, impulse, weapon, angles, vel);
@@ -656,14 +652,14 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			if (IsFakeClient(client))
 				PlayReplay(client, buttons, subtype, seed, impulse, weapon, angles, newVelocity);
 		}
-
+		
 		float speed, origin[3], ang[3];
 		GetClientAbsOrigin(client, origin);
 		GetClientEyeAngles(client, ang);
 		
 		speed = GetSpeed(client);
-
-	
+		
+		
 		checkTrailStatus(client, speed);
 		
 		//menu refreshing
@@ -688,23 +684,23 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 //dhooks
 public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 {
-
+	
 	if (!IsValidClient(client))
 		return MRES_Ignored;
-
+	
 	if (g_bPushing[client])
 	{
 		g_bPushing[client] = false;
 		return MRES_Ignored;
 	}
-
+	
 	if (g_bFixingRamp[client])
 	{
 		g_bFixingRamp[client] = false;
 		return MRES_Ignored;
 	}
-
-
+	
+	
 	// This one is currently mimicing something.
 	if (g_hBotMimicsRecord[client] != null)
 	{
@@ -718,7 +714,7 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 	// Don't care if he's not recording.
 	if (g_hRecording[client] == null)
 		return MRES_Ignored;
-
+	
 	bool bOriginNull = DHookIsNullParam(hParams, 1);
 	bool bAnglesNull = DHookIsNullParam(hParams, 2);
 	bool bVelocityNull = DHookIsNullParam(hParams, 3);
@@ -731,7 +727,7 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 	if (!bAnglesNull)
 	{
 		for (int i = 0; i < 3; i++)
-			angles[i] = DHookGetParamObjectPtrVar(hParams, 2, i * 4, ObjectValueType_Float);
+		angles[i] = DHookGetParamObjectPtrVar(hParams, 2, i * 4, ObjectValueType_Float);
 	}
 	
 	if (!bVelocityNull)
@@ -752,7 +748,7 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 		iAT[atFlags] |= ADDITIONAL_FIELD_TELEPORTED_ANGLES;
 	if (!bVelocityNull)
 		iAT[atFlags] |= ADDITIONAL_FIELD_TELEPORTED_VELOCITY;
-		
+	
 	if (g_hRecordingAdditionalTeleport[client] != null)
 		PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT, AT_SIZE);
 	
@@ -762,4 +758,4 @@ public MRESReturn DHooks_OnTeleport(int client, Handle hParams)
 public void Hook_PostThinkPost(int entity)
 {
 	SetEntProp(entity, Prop_Send, "m_bInBuyZone", 0);
-}
+} 

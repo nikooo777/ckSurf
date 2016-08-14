@@ -23,12 +23,12 @@ public Action Command_Vip(int client, int args)
 	Format(szMenuItem, 128, "Trail Color: %s", RGB_COLOR_NAMES[g_iTrailColor[client]]);
 	AddMenuItem(vipEffects, "", szMenuItem);
 	AddMenuItem(vipEffects, "", "Vote to extend map (!ve)");
-
+	
 	if (GetConVarBool(g_hAllowVipMute))
 		AddMenuItem(vipEffects, "", "Mute a player (!vmute)");
 	else
 		AddMenuItem(vipEffects, "", "Mute a player (!vmute)", ITEMDRAW_DISABLED);
-
+	
 	AddMenuItem(vipEffects, "", "More to come...", ITEMDRAW_DISABLED);
 	
 	SetMenuExitButton(vipEffects, true);
@@ -71,31 +71,31 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 	}
 }
 
-public Action Command_MutePlayer (int client, int args)
+public Action Command_MutePlayer(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-
+	
 	if (!GetConVarBool(g_hAllowVipMute))
 	{
 		ReplyToCommand(client, "[%cCK%c] VIP muting has been disabled on this server.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-
-
+	
+	
 	if (!g_bflagTitles[client][0])
 	{
 		ReplyToCommand(client, "[%cCK%c] This command requires the VIP title.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-
+	
 	if (args > 0)
 	{
 		char szName[MAX_NAME_LENGTH], szBuffer[MAX_NAME_LENGTH];
 		GetCmdArg(1, szName, MAX_NAME_LENGTH);
-
+		
 		int target = Client_FindByName(szName, true, false);
-
+		
 		if (target != -1)
 		{
 			if (BaseComm_IsClientMuted(target))
@@ -116,11 +116,11 @@ public Action Command_MutePlayer (int client, int args)
 			return Plugin_Handled;
 		}
 	}
-
+	
 	Menu mMutePlayers = CreateMenu(h_MutePlayers);
 	SetMenuTitle(mMutePlayers, "Select player to mute or unmute");
 	char szMenuItem[48], id[8], count;
-	for (int i = 0; i < MAXPLAYERS+1; i++)
+	for (int i = 0; i < MAXPLAYERS + 1; i++)
 	{
 		if (IsValidClient(i) && !IsFakeClient(i) && client != i)
 		{
@@ -158,7 +158,7 @@ public int h_MutePlayers(Menu tMenu, MenuAction action, int client, int item)
 		{
 			char aID[8];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
-			int clientID = StringToInt(aID);			
+			int clientID = StringToInt(aID);
 			if (IsValidClient(clientID))
 			{
 				char szName[MAX_NAME_LENGTH];
@@ -172,7 +172,7 @@ public int h_MutePlayers(Menu tMenu, MenuAction action, int client, int item)
 				{
 					if (BaseComm_SetClientMute(clientID, true))
 						PrintToChatAll("[%cCK%c] %s was muted by a VIP.", MOSSGREEN, WHITE, szName);
-
+					
 				}
 			}
 		}
@@ -250,7 +250,7 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 
 public Action Command_VoteExtend(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
 	
 	if (!g_bflagTitles[client][0])
@@ -264,13 +264,13 @@ public Action Command_VoteExtend(int client, int args)
 		ReplyToCommand(client, "[CK] Please wait until the current vote has finished.");
 		return Plugin_Handled;
 	}
-
+	
 	if (g_VoteExtends >= GetConVarInt(g_hMaxVoteExtends))
 	{
 		ReplyToCommand(client, "[CK] There have been too many extends this map.");
 		return Plugin_Handled;
 	}
-
+	
 	// Here we go through and make sure this user has not already voted. This persists throughout map.
 	for (int i = 0; i < g_VoteExtends; i++)
 	{
@@ -280,27 +280,27 @@ public Action Command_VoteExtend(int client, int args)
 			return Plugin_Handled;
 		}
 	}
-
+	
 	StartVoteExtend(client);
 	return Plugin_Handled;
 }
 
 public void StartVoteExtend(int client)
 {
-	char szPlayerName[MAX_NAME_LENGTH];	
+	char szPlayerName[MAX_NAME_LENGTH];
 	GetClientName(client, szPlayerName, MAX_NAME_LENGTH);
 	CPrintToChatAll("[{olive}CK{default}] Vote to Extend started by {green}%s{default}", szPlayerName);
-
-	g_szUsedVoteExtend[g_VoteExtends] = g_szSteamID[client];	// Add the user's steam ID to the list
-	g_VoteExtends++;	// Increment the total number of vote extends so far
-
+	
+	g_szUsedVoteExtend[g_VoteExtends] = g_szSteamID[client]; // Add the user's steam ID to the list
+	g_VoteExtends++; // Increment the total number of vote extends so far
+	
 	Menu voteExtend = CreateMenu(H_VoteExtend);
 	SetVoteResultCallback(voteExtend, H_VoteExtendCallback);
 	char szMenuTitle[128];
-
+	
 	char buffer[8];
 	IntToString(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)), buffer, sizeof(buffer));
-
+	
 	Format(szMenuTitle, sizeof(szMenuTitle), "Extend map for %s minutes?", buffer);
 	SetMenuTitle(voteExtend, szMenuTitle);
 	
@@ -322,25 +322,25 @@ public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, cons
 {
 	int votesYes = 0;
 	int votesNo = 0;
-
-	if (item_info[0][VOTEINFO_ITEM_INDEX] == 0) {	// If the winner is Yes
+	
+	if (item_info[0][VOTEINFO_ITEM_INDEX] == 0) {  // If the winner is Yes
 		votesYes = item_info[0][VOTEINFO_ITEM_VOTES];
 		if (num_items > 1) {
 			votesNo = item_info[1][VOTEINFO_ITEM_VOTES];
 		}
 	}
-	else {	// If the winner is No
+	else {  // If the winner is No
 		votesNo = item_info[0][VOTEINFO_ITEM_VOTES];
 		if (num_items > 1) {
 			votesYes = item_info[1][VOTEINFO_ITEM_VOTES];
 		}
 	}
-
+	
 	if (votesYes > votesNo) // A tie is a failure
 	{
 		CPrintToChatAll("[{olive}CK{default}] Vote to Extend succeeded - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
-		ExtendMapTimeLimit(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)*60));
-	} 
+		ExtendMapTimeLimit(RoundToFloor(GetConVarFloat(g_hVoteExtendTime) * 60));
+	}
 	else
 	{
 		CPrintToChatAll("[{olive}CK{default}] Vote to Extend failed - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
@@ -455,7 +455,7 @@ public Action Command_Teleport(int client, int args)
 		return Plugin_Handled;
 	else
 		g_fLastCommandBack[client] = GetGameTime();
-
+	
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
 		teleportClient(client, g_iClientInZone[client][2], 1, false);
@@ -709,7 +709,7 @@ public Action Command_ToEnd(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-		
+	
 	if (!GetConVarBool(g_hCommandToEnd))
 	{
 		ReplyToCommand(client, "[%cCK%c] Teleportation to the end zone has been disabled on this server.", MOSSGREEN, WHITE);
@@ -832,7 +832,7 @@ public void HideViewModel(int client)
 		else
 			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
 	}
-
+	
 	
 	g_bViewModel[client] = !g_bViewModel[client];
 }
@@ -974,17 +974,14 @@ public int ChallengeMenuHandler2(Menu menu, MenuAction action, int param1, int p
 		int value = StringToInt(info);
 		if (value == g_pr_PointUnit * 50)
 			g_Challenge_Bet[param1] = 50;
+		else if (value == (g_pr_PointUnit * 100))
+			g_Challenge_Bet[param1] = 100;
+		else if (value == (g_pr_PointUnit * 250))
+			g_Challenge_Bet[param1] = 250;
+		else if (value == (g_pr_PointUnit * 500))
+			g_Challenge_Bet[param1] = 500;
 		else
-			if (value == (g_pr_PointUnit * 100))
-				g_Challenge_Bet[param1] = 100;
-			else
-				if (value == (g_pr_PointUnit * 250))
-					g_Challenge_Bet[param1] = 250;
-				else
-					if (value == (g_pr_PointUnit * 500))
-						g_Challenge_Bet[param1] = 500;
-					else
-						g_Challenge_Bet[param1] = 0;
+			g_Challenge_Bet[param1] = 0;
 		char szPlayerName[MAX_NAME_LENGTH];
 		Menu menu2 = CreateMenu(ChallengeMenuHandler3);
 		SetMenuTitle(menu2, "ckSurf - Challenge: Select your Opponent");
@@ -1009,9 +1006,7 @@ public int ChallengeMenuHandler2(Menu menu, MenuAction action, int param1, int p
 		}
 		
 	}
-	else
-		
-	if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		CloseHandle(menu);
 	}
@@ -1170,7 +1165,7 @@ public Action Client_Usp(int client, int args)
 	}
 	else
 	{
-		int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
+		int weapon = GivePlayerItem(client, "weapon_usp_silenced"); //players wanted a glock as start gun
 		/*if (weapon != -1)
 		{
 			int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -1241,8 +1236,8 @@ public Action Client_Surrender(int client, int args)
 						PrintToChat(client, "%t", "Rc_PlayerRankStart", MOSSGREEN, WHITE, GRAY);
 						int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
 						for (int j = 1; j <= MaxClients; j++)
-							if (IsValidClient(j) && IsValidEntity(j))
-								PrintToChat(j, "[%cCK%c] %c%s%c has lost %c%i %cpoints!", MOSSGREEN, WHITE, PURPLE, szName, GRAY, RED, lostpoints, GRAY);
+						if (IsValidClient(j) && IsValidEntity(j))
+							PrintToChat(j, "[%cCK%c] %c%s%c has lost %c%i %cpoints!", MOSSGREEN, WHITE, PURPLE, szName, GRAY, RED, lostpoints, GRAY);
 					}
 					//db update
 					CreateTimer(0.0, UpdatePlayerProfile, i, TIMER_FLAG_NO_MAPCHANGE);
@@ -1298,10 +1293,10 @@ public Action UnNoClip(int client, int args)
 
 public Action Command_ckNoClip(int client, int args)
 {
-	if(!IsValidClient(client))
+	if (!IsValidClient(client))
 		return Plugin_Handled;
-
-	if(!IsPlayerAlive(client))
+	
+	if (!IsPlayerAlive(client))
 	{
 		ReplyToCommand(client, "[%cCK%c] You cannot use NoClip while you are dead", MOSSGREEN, WHITE);
 	}
@@ -1318,7 +1313,7 @@ public Action Command_ckNoClip(int client, int args)
 			Action_UnNoClip(client);
 		}
 	}
-		
+	
 	return Plugin_Handled;
 }
 
@@ -1596,11 +1591,10 @@ public int SpecMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			}
 		}
 	}
-	else
-		if (action == MenuAction_End)
-		{
-			CloseHandle(menu);
-		}
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public void CompareMenu(int client, int args)
@@ -1693,8 +1687,7 @@ public int CompareSelectMenuHandler(Menu menu, MenuAction action, int param1, in
 		}
 		CompareMenu(param1, 0);
 	}
-	else
-		if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		if (IsValidClient(param1))
 			g_bSelectProfile[param1] = false;
@@ -1810,8 +1803,7 @@ public int ProfileSelectMenuHandler(Menu menu, MenuAction action, int param1, in
 			}
 		}
 	}
-	else
-		if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		if (IsValidClient(param1))
 			g_bSelectProfile[param1] = false;
@@ -1883,7 +1875,7 @@ public Action Client_Ranks(int client, int args)
 		for (i = 0; i < GetArraySize(g_hSkillGroups); i++)
 		{
 			GetArrayArray(g_hSkillGroups, i, RankValue[0]);
-
+			
 			if (i != 0 && i % 3 == 0)
 			{
 				PrintToChat(client, ChatLine);
@@ -2030,8 +2022,7 @@ public int GoToMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			}
 		}
 	}
-	else
-		if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		CloseHandle(menu);
 	}
@@ -2099,74 +2090,72 @@ public Action Client_GoTo(int client, int args)
 {
 	if (!GetConVarBool(g_hGoToServer))
 		PrintToChat(client, "%t", "Goto1", MOSSGREEN, WHITE, RED, WHITE);
+	else if (!GetConVarBool(g_hCvarNoBlock))
+		PrintToChat(client, "%t", "Goto2", MOSSGREEN, WHITE);
+	else if (g_bTimeractivated[client])
+		PrintToChat(client, "%t", "Goto3", MOSSGREEN, WHITE, GREEN, WHITE);
 	else
-		if (!GetConVarBool(g_hCvarNoBlock))
-			PrintToChat(client, "%t", "Goto2", MOSSGREEN, WHITE);
-		else
-			if (g_bTimeractivated[client])
-				PrintToChat(client, "%t", "Goto3", MOSSGREEN, WHITE, GREEN, WHITE);
-			else
+	{
+		char szPlayerName[MAX_NAME_LENGTH];
+		char szOrgTargetName[MAX_NAME_LENGTH];
+		char szTargetName[MAX_NAME_LENGTH];
+		char szArg[MAX_NAME_LENGTH];
+		if (args == 0)
+		{
+			Menu menu = CreateMenu(GoToMenuHandler);
+			SetMenuTitle(menu, "ckSurf - Goto menu");
+			int playerCount = 0;
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				char szPlayerName[MAX_NAME_LENGTH];
-				char szOrgTargetName[MAX_NAME_LENGTH];
-				char szTargetName[MAX_NAME_LENGTH];
-				char szArg[MAX_NAME_LENGTH];
-				if (args == 0)
+				if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
 				{
-					Menu menu = CreateMenu(GoToMenuHandler);
-					SetMenuTitle(menu, "ckSurf - Goto menu");
-					int playerCount = 0;
-					for (int i = 1; i <= MaxClients; i++)
-					{
-						if (IsValidClient(i) && IsPlayerAlive(i) && i != client && !IsFakeClient(i))
-						{
-							GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
-							AddMenuItem(menu, szPlayerName, szPlayerName);
-							playerCount++;
-						}
-					}
-					if (playerCount > 0)
-					{
-						SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
-						DisplayMenu(menu, client, MENU_TIME_FOREVER);
-					}
-					else
-					{
-						CloseHandle(menu);
-						PrintToChat(client, "%t", "ChallengeFailed4", MOSSGREEN, WHITE);
-					}
-				}
-				else
-				{
-					for (int i = 1; i < 20; i++)
-					{
-						GetCmdArg(i, szArg, MAX_NAME_LENGTH);
-						if (!StrEqual(szArg, "", false))
-						{
-							if (i == 1)
-								Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg);
-							else
-								Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg);
-						}
-					}
-					Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName);
-					StringToUpper(szTargetName);
-					for (int i = 1; i <= MaxClients; i++)
-					{
-						if (IsValidClient(i) && IsPlayerAlive(i) && i != client)
-						{
-							GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
-							StringToUpper(szPlayerName);
-							if ((StrContains(szPlayerName, szTargetName) != -1))
-							{
-								GotoMethod(client, i);
-								return Plugin_Handled;
-							}
-						}
-					}
-					PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, WHITE, szOrgTargetName);
+					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+					AddMenuItem(menu, szPlayerName, szPlayerName);
+					playerCount++;
 				}
 			}
+			if (playerCount > 0)
+			{
+				SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
+				DisplayMenu(menu, client, MENU_TIME_FOREVER);
+			}
+			else
+			{
+				CloseHandle(menu);
+				PrintToChat(client, "%t", "ChallengeFailed4", MOSSGREEN, WHITE);
+			}
+		}
+		else
+		{
+			for (int i = 1; i < 20; i++)
+			{
+				GetCmdArg(i, szArg, MAX_NAME_LENGTH);
+				if (!StrEqual(szArg, "", false))
+				{
+					if (i == 1)
+						Format(szTargetName, MAX_NAME_LENGTH, "%s", szArg);
+					else
+						Format(szTargetName, MAX_NAME_LENGTH, "%s %s", szTargetName, szArg);
+				}
+			}
+			Format(szOrgTargetName, MAX_NAME_LENGTH, "%s", szTargetName);
+			StringToUpper(szTargetName);
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsValidClient(i) && IsPlayerAlive(i) && i != client)
+				{
+					GetClientName(i, szPlayerName, MAX_NAME_LENGTH);
+					StringToUpper(szPlayerName);
+					if ((StrContains(szPlayerName, szTargetName) != -1))
+					{
+						GotoMethod(client, i);
+						return Plugin_Handled;
+					}
+				}
+			}
+			PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, WHITE, szOrgTargetName);
+		}
+	}
 	return Plugin_Handled;
 }
 
@@ -2191,7 +2180,7 @@ public Action Client_Stop(int client, int args)
 	{
 		//PlayerPanel(client);
 		g_stageTimerActivated[client] = false;
-        g_stageStartTime[client] = 0.0;
+		g_stageStartTime[client] = 0.0;
 		g_bTimeractivated[client] = false;
 		g_fStartTime[client] = -1.0;
 		g_fCurrentRunTime[client] = -1.0;
@@ -2291,8 +2280,7 @@ public int TopMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			}
 		}
 	}
-	else
-		if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 		CloseHandle(menu);
 }
 
@@ -2395,8 +2383,7 @@ public int HelpPanel2Handler(Menu menu, MenuAction action, int param1, int param
 	{
 		if (param2 == 1)
 			HelpPanel(param1);
-		else
-			if (param2 == 2)
+		else if (param2 == 2)
 			HelpPanel3(param1);
 	}
 }
@@ -2429,8 +2416,7 @@ public int HelpPanel3Handler(Menu menu, MenuAction action, int param1, int param
 	{
 		if (param2 == 1)
 			HelpPanel2(param1);
-		else
-			if (param2 == 2)
+		else if (param2 == 2)
 			HelpPanel4(param1);
 	}
 }
@@ -2571,7 +2557,7 @@ public void OptionMenu(int client)
 		AddMenuItem(optionmenu, "Goto  -  Enabled", "Goto me  -  Enabled");
 	else
 		AddMenuItem(optionmenu, "Goto  -  Disabled", "Goto me  -  Disabled");
-
+	
 	if (g_bAutoBhop)
 	{
 		// #7
@@ -2607,12 +2593,10 @@ public void OptionMenu(int client)
 	SetMenuOptionFlags(optionmenu, MENUFLAG_BUTTON_EXIT);
 	if (g_OptionsMenuLastPage[client] < 6)
 		DisplayMenuAtItem(optionmenu, client, 0, MENU_TIME_FOREVER);
-	else
-		if (g_OptionsMenuLastPage[client] < 12)
-			DisplayMenuAtItem(optionmenu, client, 6, MENU_TIME_FOREVER);
-		else
-			if (g_OptionsMenuLastPage[client] < 18)
-				DisplayMenuAtItem(optionmenu, client, 12, MENU_TIME_FOREVER);
+	else if (g_OptionsMenuLastPage[client] < 12)
+		DisplayMenuAtItem(optionmenu, client, 6, MENU_TIME_FOREVER);
+	else if (g_OptionsMenuLastPage[client] < 18)
+		DisplayMenuAtItem(optionmenu, client, 12, MENU_TIME_FOREVER);
 }
 
 
@@ -2637,12 +2621,11 @@ public int OptionMenuHandler(Menu menu, MenuAction action, int param1, int param
 		g_OptionsMenuLastPage[param1] = param2;
 		OptionMenu(param1);
 	}
-	else
-		if (action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		CloseHandle(menu);
 	}
-} 
+}
 
 
 

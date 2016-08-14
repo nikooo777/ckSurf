@@ -14,7 +14,7 @@ public Action Admin_giveTitle(int client, int args)
 	Format(g_szAdminSelectedSteamID[client], 32, "");
 	
 	for (int i = 0; i < TITLE_COUNT; i++)
-		g_bAdminFlagTitlesTemp[client][i] = false;
+	g_bAdminFlagTitlesTemp[client][i] = false;
 	
 	if (args == 0)
 	{
@@ -152,7 +152,7 @@ public Action Admin_deleteTitles(int client, int args)
 	Format(g_szAdminSelectedSteamID[client], 32, "");
 	
 	for (int i = 0; i < TITLE_COUNT; i++)
-		g_bAdminFlagTitlesTemp[client][i] = false;
+	g_bAdminFlagTitlesTemp[client][i] = false;
 	
 	
 	if (args == 0)
@@ -233,7 +233,7 @@ public Action Admin_deleteTitle(int client, int args)
 	Format(g_szAdminSelectedSteamID[client], 32, "");
 	
 	for (int i = 0; i < TITLE_COUNT; i++)
-		g_bAdminFlagTitlesTemp[client][i] = false;
+	g_bAdminFlagTitlesTemp[client][i] = false;
 	
 	if (!IsValidClient(client))
 		return Plugin_Handled;
@@ -357,8 +357,7 @@ public int TopMenuHandler2(Handle topmenu, TopMenuAction action, TopMenuObject o
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "ckSurf");
 	
-	else
-		if (action == TopMenuAction_SelectOption)
+	else if (action == TopMenuAction_SelectOption)
 		Admin_ckPanel(param, 0);
 }
 
@@ -439,12 +438,12 @@ public Action Admin_deleteSpawnLocation(int client, int args)
 public Action Admin_ClearAssists(int client, int args)
 {
 	for (int i = 1; i <= MAXPLAYERS; i++)
-		if (IsValidClient(i))
-		{
-			CS_SetClientAssists(i, 0);
-			g_fMaxPercCompleted[0] = 0.0;
-			CS_SetMVPCount(i, 0);
-		}
+	if (IsValidClient(i))
+	{
+		CS_SetClientAssists(i, 0);
+		g_fMaxPercCompleted[0] = 0.0;
+		CS_SetMVPCount(i, 0);
+	}
 	
 	return Plugin_Handled;
 }
@@ -673,24 +672,18 @@ public void ckAdminMenu(int client)
 	SetMenuOptionFlags(adminmenu, MENUFLAG_BUTTON_EXIT);
 	if (g_AdminMenuLastPage[client] < 6)
 		DisplayMenuAtItem(adminmenu, client, 0, MENU_TIME_FOREVER);
-	else
-		if (g_AdminMenuLastPage[client] < 12)
-			DisplayMenuAtItem(adminmenu, client, 6, MENU_TIME_FOREVER);
-		else
-			if (g_AdminMenuLastPage[client] < 18)
-				DisplayMenuAtItem(adminmenu, client, 12, MENU_TIME_FOREVER);
-			else
-				if (g_AdminMenuLastPage[client] < 24)
-					DisplayMenuAtItem(adminmenu, client, 18, MENU_TIME_FOREVER);
-				else
-					if (g_AdminMenuLastPage[client] < 30)
-						DisplayMenuAtItem(adminmenu, client, 24, MENU_TIME_FOREVER);
-					else
-						if (g_AdminMenuLastPage[client] < 36)
-							DisplayMenuAtItem(adminmenu, client, 30, MENU_TIME_FOREVER);
-						else
-							if (g_AdminMenuLastPage[client] < 42)
-								DisplayMenuAtItem(adminmenu, client, 36, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 12)
+		DisplayMenuAtItem(adminmenu, client, 6, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 18)
+		DisplayMenuAtItem(adminmenu, client, 12, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 24)
+		DisplayMenuAtItem(adminmenu, client, 18, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 30)
+		DisplayMenuAtItem(adminmenu, client, 24, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 36)
+		DisplayMenuAtItem(adminmenu, client, 30, MENU_TIME_FOREVER);
+	else if (g_AdminMenuLastPage[client] < 42)
+		DisplayMenuAtItem(adminmenu, client, 36, MENU_TIME_FOREVER);
 }
 
 
@@ -713,7 +706,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 				{
 					for (int i = 66; i < MAX_PR_PLAYERS; i++)
-						g_bProfileRecalc[i] = false;
+					g_bProfileRecalc[i] = false;
 					g_bManualRecalc = false;
 					g_pr_RankingRecalc_InProgress = false;
 					PrintToChat(param1, "%t", "StopRecalculation", MOSSGREEN, WHITE);
@@ -1352,9 +1345,9 @@ public void sql_selectMutliplierCallback(Handle owner, Handle hndl, const char[]
 public Action Admin_DeleteCheckpoints(int client, int args)
 {
 	for (int i = 0; i < MAXPLAYERS + 1; i++)
-		for (int x = 0; x < MAXZONEGROUPS; x++)
-			for (int k = 0; k < CPLIMIT; k++)
-				g_fCheckpointTimesRecord[x][i][k] = 0.0;
+	for (int x = 0; x < MAXZONEGROUPS; x++)
+	for (int k = 0; k < CPLIMIT; k++)
+	g_fCheckpointTimesRecord[x][i][k] = 0.0;
 	
 	db_deleteCheckpoints();
 } 

@@ -2,7 +2,7 @@ public Action ReplayTrailRefresh(Handle timer, int bot)
 {
 	if (g_bReplayAtEnd[bot])
 		return Plugin_Handled;
-
+	
 	if (bot == g_BonusBot)
 	{
 		if (GetConVarBool(g_hBonusBotTrail))
@@ -83,7 +83,7 @@ public Action SetPlayerWeapons(Handle timer, any client)
 		StripAllWeapons(client);
 		if (!IsFakeClient(client))
 		{
-			int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
+			int weapon = GivePlayerItem(client, "weapon_usp_silenced"); //players wanted a glock as start gun
 			/*if (weapon != -1)
 			{
 				int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -188,7 +188,7 @@ public Action DelayedStuff(Handle timer)
 		ServerCommand("exec sourcemod/ckSurf/main.cfg");
 	else
 		SetFailState("<ckSurf> cfg/sourcemod/ckSurf/main.cfg not found.");
-		
+	
 	LoadReplays();
 	LoadInfoBot();
 	return Plugin_Handled;
@@ -349,8 +349,8 @@ public Action ReplayTimer(Handle timer, any userid)
 		SaveRecording(client, 0);
 	else
 		g_bNewReplay[client] = false;
-
-
+	
+	
 	return Plugin_Handled;
 }
 public Action BonusReplayTimer(Handle timer, Handle pack)
@@ -358,12 +358,12 @@ public Action BonusReplayTimer(Handle timer, Handle pack)
 	ResetPack(pack);
 	int client = GetClientOfUserId(ReadPackCell(pack));
 	int zGrp = ReadPackCell(pack);
-
+	
 	if (IsValidClient(client) && !IsFakeClient(client))
 		SaveRecording(client, zGrp);
 	else
 		g_bNewBonus[client] = false;
-
+	
 	
 	return Plugin_Handled;
 }
@@ -464,7 +464,7 @@ public Action SetClanTag(Handle timer, any client)
 	//new rank
 	if (oldrank && GetConVarBool(g_hPointSystem))
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
-			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
+		CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
 	
 	return Plugin_Handled;
 }
@@ -564,10 +564,10 @@ public Action HideHud(Handle timer, any client)
 	if (IsValidClient(client) && !IsFakeClient(client))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_bSpotted", 0);
-
+		
 		// ViewModel
 		Client_SetDrawViewModel(client, g_bViewModel[client]);
-
+		
 		// Crosshair and chat
 		if (g_bViewModel[client])
 		{
@@ -576,7 +576,7 @@ public Action HideHud(Handle timer, any client)
 				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
 			else
 				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT);
-
+			
 		}
 		else
 		{
