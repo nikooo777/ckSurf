@@ -1170,7 +1170,7 @@ public Action Client_Usp(int client, int args)
 	}
 	else
 	{
-		int weapon = GivePlayerItem(client, "weapon_glock");	//players wanted a glock as start gun
+		int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
 		/*if (weapon != -1)
 		{
 			int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
