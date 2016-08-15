@@ -62,7 +62,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 			StripAllWeapons(client);
 			if (!IsFakeClient(client))
 			{
-				int weapon = GivePlayerItem(client, "weapon_usp_silenced");	//players wanted a glock as start gun
+				int weapon = GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
 				/*if (weapon != -1)
 				{
 					int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -396,13 +396,16 @@ public Action Hook_SetTransmit(int entity, int client)
 
 public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
-	int client = GetEventInt(event, "userid");
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (IsValidClient(client))
 	{
 		if (!IsFakeClient(client))
 		{
 			if (g_hRecording[client] != null)
+			{
 				StopRecording(client);
+			}
+			Client_Surrender(client, 0);
 			CreateTimer(2.0, RemoveRagdoll, client);
 		}
 		else

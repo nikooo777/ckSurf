@@ -215,6 +215,8 @@ public Plugin myinfo =
 =            Variables            =
 =================================*/
 
+//used to fix the hibernation bug
+bool hasStarted = false;
 /*----------  Stages  ----------*/
 int g_Stage[MAXZONEGROUPS][MAXPLAYERS + 1];						// Which stage is the client in
 bool g_bhasStages; 												// Does the map have stages
@@ -683,7 +685,7 @@ bool g_bPracticeMode[MAXPLAYERS + 1]; 							// Client is in the practice mode
 
 /*------------ late load linux fix --------*/
 Handle g_cvar_sv_hibernate_when_empty = INVALID_HANDLE;
-bool g_useHibernate = false;
+//bool g_useHibernate = false;
 
 /*=========================================
 =            Predefined arrays            =
@@ -814,18 +816,17 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnMapStart()
 {
+	hasStarted = true;
+	
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
-
 	// Load spawns
 	if (!g_bRenaming && !g_bInTransactionChain)
 		checkSpawnPoints();
-
 	// Workshop fix
 	char mapPieces[6][128];
 	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
 	Format(g_szMapName, sizeof(g_szMapName), "%s", mapPieces[lastPiece - 1]);
-
 
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
@@ -844,9 +845,10 @@ public void OnMapStart()
 	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
 	* -> loadAllClientSettings
 	*/
-	if (!g_bRenaming && !g_bInTransactionChain && IsServerProcessing())
+	if (!g_bRenaming && !g_bInTransactionChain/* && IsServerProcessing()*/)
+	{
 		db_selectMapZones();
-	
+	}
 
 
 	//get map tag
@@ -1076,6 +1078,9 @@ public void OnClientPutInServer(int client)
 
 public void OnClientAuthorized(int client)
 {
+	if (!hasStarted)
+		OnMapStart();
+		
 	if (GetConVarBool(g_hConnectMsg) && !IsFakeClient(client))
 	{
 		char s_Country[32], s_clientName[32], s_address[32];
@@ -1631,7 +1636,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	g_hZoneTimer = CreateTimer(GetConVarFloat(g_hChecker), BeamBoxAll, _, TIMER_REPEAT);
 	
 }
-
+/*
 public Action Event_ReloadMap(Handle Timer)
 {
     char MapName[255];
@@ -1643,7 +1648,7 @@ public Action Event_ReloadMap(Handle Timer)
     PrintToServer("[ckSurf fix] Restarting current map...");
     ServerCommand("changelevel %s", MapName);
 }
-
+*/
 public void OnPluginStart()
 {
 	g_bServerDataLoaded = false;
@@ -1654,10 +1659,10 @@ public void OnPluginStart()
 	if (GetConVarInt(g_cvar_sv_hibernate_when_empty) == 1) 
 	{
 		SetConVarInt(g_cvar_sv_hibernate_when_empty, 0);
-		g_useHibernate = true;
+		//g_useHibernate = true;
 	}
 
-	CreateTimer(60.0, Event_ReloadMap);
+	//CreateTimer(60.0, Event_ReloadMap);
 	
 	
 	//Get Server Tickate
