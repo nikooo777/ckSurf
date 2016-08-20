@@ -249,7 +249,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		if (checkSpam(client))
 			return Plugin_Handled;
 		
-		parseColorsFromString(sText, 1024);
+		normalizeChatString(sText, 1024);
 		
 		//lowercase
 		if ((sText[0] == '/') || (sText[0] == '!'))
@@ -276,7 +276,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		WriteChatLog(client, "say", sText);
 		PrintToServer("%s: %s", szName, sText);
 
-		parseColorsFromString(szName, 64);
+		normalizeChatString(szName, 64);
 		
 		if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
 			setNameColor(szName, g_PlayerChatRank[client], 64);

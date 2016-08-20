@@ -609,7 +609,7 @@ public bool loadCustomTitles()
 			g_iCustomTitleCount++;
 		
 		addColorToString(g_szflagTitle_Colored[i], 32);
-		parseColorsFromString(g_szflagTitle[i], 32);
+		normalizeChatString(g_szflagTitle[i], 32);
 
 		if (!KvGotoNextKey(kv))
 			break;
@@ -618,6 +618,8 @@ public bool loadCustomTitles()
 	return true;
 }
 
+//what the hell is this
+//if you ever read this and want to recode a surf plugin, please don't do this.
 public void addColorToString(char[] StringToAdd, int size)
 {
 	ReplaceString(StringToAdd, size, "{default}", szWHITE, false);
@@ -724,31 +726,16 @@ public void setNameColor(char[] ClientName, int index, int size)
 	}
 }
 
-public void parseColorsFromString(char[] ParseString, int size)
+public void normalizeChatString(char[] ParseString, int size)
 {
-	ReplaceString(ParseString, size, "{default}", "", false);
-	ReplaceString(ParseString, size, "{white}", "", false);
-	ReplaceString(ParseString, size, "{darkred}", "", false);
-	ReplaceString(ParseString, size, "{green}", "", false);
-	ReplaceString(ParseString, size, "{lime}", "", false);
-	ReplaceString(ParseString, size, "{blue}", "", false);
-	ReplaceString(ParseString, size, "{mossgreen}", "", false);
-	ReplaceString(ParseString, size, "{red}", "", false);
-	ReplaceString(ParseString, size, "{grey}", "", false);
-	ReplaceString(ParseString, size, "{gray}", "", false);
-	ReplaceString(ParseString, size, "{yellow}", "", false);
-	ReplaceString(ParseString, size, "{lightblue}", "", false);
-	ReplaceString(ParseString, size, "{darkblue}", "", false);
-	ReplaceString(ParseString, size, "{pink}", "", false);
-	ReplaceString(ParseString, size, "{lightred}", "", false);
-	ReplaceString(ParseString, size, "{purple}", "", false);
-	ReplaceString(ParseString, size, "{darkgrey}", "", false);
-	ReplaceString(ParseString, size, "{darkgray}", "", false);
-	ReplaceString(ParseString, size, "{limegreen}", "", false);
-	ReplaceString(ParseString, size, "{mossgreen}", "", false);
-	ReplaceString(ParseString, size, "{darkblue}", "", false);
-	ReplaceString(ParseString, size, "{lime}", "", false);
-	ReplaceString(ParseString, size, "{orange}", "", false);
+	//players are using special ASCII chars to simulate 0x** colors
+	//this will prevent it by replacing ASCII characters outside of the normal range with a space
+	//CTag comes from colors.inc
+	for (int i = 0 ; i < MAX_COLORS ; i++)
+	{
+		ReplaceString(ParseString, size, CTag[i], "", false);
+		ReplaceString(ParseString, size, CTagCode[i],"",false);
+	}
 }
 
 public void checkChangesInTitle(int client)
@@ -2216,10 +2203,11 @@ public void SetSkillGroups()
 				addColorToString(sRankNameColored, 128);
 				
 				// Get player name color
+				//I cringe reading this...
 				RankValue[NameColor] = getFirstColor(sRankName);
 
 				// Remove colors from rank name
-				parseColorsFromString(sRankName, 128);
+				normalizeChatString(sRankName, 128);
 
 				Format(RankValue[RankName], 128, "%s", sRankName);
 
@@ -2325,7 +2313,7 @@ stock Action PrintSpecMessageAll(int client)
 {
 	char szName[64];
 	GetClientName(client, szName, sizeof(szName));
-	parseColorsFromString(szName, 64);
+	normalizeChatString(szName, 64);
 
 	char szTextToAll[1024];
 	GetCmdArgString(szTextToAll, sizeof(szTextToAll));
@@ -2333,7 +2321,7 @@ stock Action PrintSpecMessageAll(int client)
 	if (StrEqual(szTextToAll, "") || StrEqual(szTextToAll, " ") || StrEqual(szTextToAll, "  "))
 		return Plugin_Handled;
 	
-	parseColorsFromString(szTextToAll, 1024);
+	normalizeChatString(szTextToAll, 1024);
 	char szChatRank[64];
 	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
 	
