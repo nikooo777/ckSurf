@@ -148,10 +148,6 @@ public void CL_OnEndTimerPress(int client)
 	
 	PlayButtonSound(client);
 
-	// Get client name
-	//char szName[MAX_NAME_LENGTH];
-	//GetClientName(client, szName, MAX_NAME_LENGTH);
-
 	// Get runtime and format it to a string
 	g_fFinalTime[client] = endTime - g_fStartTime[client] - g_fPauseTime[client];
 
@@ -302,15 +298,11 @@ public void CL_OnEndTimerPress(int client)
 						SetEntityRenderColor(i, 255, 255, 255, 255);
 						db_insertPlayerChallenge(client);
 						GetClientName(i, opponentName, MAX_NAME_LENGTH);
-						//for (int k = 1; k <= MaxClients; k++)
-						//	if (IsValidClient(k))
 						PrintToChatAll("%t", "ChallengeW", RED, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
 						
 						if (g_Challenge_Bet[client] > 0)
 						{
 							int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
-							//for (int j = 1; j <= MaxClients; j++)
-							//	if (IsValidClient(j))
 							PrintToChatAll("%t", "ChallengeL", MOSSGREEN, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
 							CreateTimer(0.5, UpdatePlayerProfile, i, TIMER_FLAG_NO_MAPCHANGE);
 							g_pr_showmsg[client] = true;
@@ -449,14 +441,6 @@ public void CL_OnEndTimerPress(int client)
 		if (!g_bBonusSRVRecord[client] && !g_bBonusFirstRecord[client] && !g_bBonusPBRecord[client])
 		{
 			db_currentBonusRunRank(client, zGroup);
-			/*// Not any kind of a record
-			if (GetConVarInt(g_hAnnounceRecord) == 0 && (g_MapRankBonus[zGroup][client] <= GetConVarInt(g_hAnnounceRank) || GetConVarInt(g_hAnnounceRank) == 0))
-	 			PrintToChatAll("%t", "BonusFinished1", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, RED, szTime, GRAY, RED, szDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], GRAY);
-			else
-			{
-				if (IsValidClient(client))
-		 			PrintToChat(client, "%t", "BonusFinished1", MOSSGREEN, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, RED, szTime, GRAY, RED, szDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], GRAY);
-			}*/
 		}
 	}
 	Client_Stop(client, 1);

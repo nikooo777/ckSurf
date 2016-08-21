@@ -577,15 +577,6 @@ public Action Command_ToBonus(int client, int args)
 	// If not enough arguments, or there is more than one bonus
 	if (args < 1 && g_mapZoneGroupCount > 2) // Tell player to select specific bonus
 	{
-		/*PrintToChat(client, "[%cCK%c] Usage: !b <bonus number>", MOSSGREEN, WHITE);
-		if (g_mapZoneGroupCount > 1)
-		{
-			PrintToChat(client, "[%cCK%c] Available bonuses:", MOSSGREEN, WHITE);
-			for (int i = 1; i < g_mapZoneGroupCount; i++)
-			{
-				PrintToChat(client, "[%c%i.%c] %s", YELLOW, i, WHITE, g_szZoneGroupName[i]);
-			}
-		}*/
 		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
@@ -2686,4 +2677,3 @@ public void InfoPanel(int client)
 {
 	g_bInfoPanel[client] = !g_bInfoPanel[client];
 }
-

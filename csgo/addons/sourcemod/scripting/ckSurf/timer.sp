@@ -598,5 +598,3 @@ public Action LoadPlayerSettings(Handle timer)
 	}
 	return Plugin_Handled;
 }
-
-

@@ -643,12 +643,6 @@ public void RecordReplay (int client, int &buttons, int &subtype, int &seed, int
 			GetClientAbsOrigin(client, fBuffer);
 			Array_Copy(fBuffer, iAT[atOrigin], 3);
 
-			/*GetClientEyeAngles(client, fBuffer);
-			Array_Copy(fBuffer, iAT[atAngles], 3);
-
-			Entity_GetAbsVelocity(client, fBuffer);
-			Array_Copy(fBuffer, iAT[atVelocity], 3);*/
-			
 			iAT[atFlags] = ADDITIONAL_FIELD_TELEPORTED_ORIGIN;
 			PushArrayArray(g_hRecordingAdditionalTeleport[client], iAT[0], view_as<int>(AdditionalTeleport));
 			g_OriginSnapshotInterval[client] = 0;
@@ -898,4 +892,3 @@ public void PlayReplay(int client, int &buttons, int &subtype, int &seed, int &i
 		g_BotMimicTick[client]++;
 	}
 }
-

@@ -38,10 +38,7 @@ void setBotQuota()
 		count++;
 	if (g_BonusBotCount > 0)
 		count++;
-	//i got cancer by reading these 4 lines
-	//if (count == 0)
-	//	SetConVarInt(hBotQuota, 0, false, false);
-	//else
+
 	SetConVarInt(hBotQuota, count, false, false);
 	
 	CloseHandle(hBotQuota);
@@ -246,37 +243,6 @@ int setClientLocation(int client, float fDestination[3])
 	}
 	return zId;
 }
-
-/*
-void performTeleport(int client, float pos[3], float ang[3], float vel[3])
-{
-	Client_Stop(client, 1);
-	// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-	if (destinationZoneId != g_iClientInZone[client][3])
-	{
-		// If teleporting from inside a zone, ignore the end touch
-		if (g_iClientInZone[client][0] != -1)
-			g_bIgnoreZone[client] = true;
-		
-		if (destinationZoneId > -1)
-		{
-			g_iClientInZone[client][0] = g_mapZones[destinationZoneId][zoneType];
-			g_iClientInZone[client][1] = g_mapZones[destinationZoneId][zoneTypeId];
-			g_iClientInZone[client][2] = g_mapZones[destinationZoneId][zoneGroup];
-			g_iClientInZone[client][3] = destinationZoneId;
-		}
-		else
-			if (targetClient > -1)
-			{
-				g_iClientInZone[client][0] = -1;
-				g_iClientInZone[client][1] = -1;
-				g_iClientInZone[client][2] = g_iClientInZone[targetClient][2];
-				g_iClientInZone[client][3] = -1;
-			}
-	}
-	TeleportEntity(client, pos, ang, vel);
-}*/
-
 
 stock void WriteChatLog(int client, const char[] sayOrSayTeam, const char[] msg)
 {
@@ -617,111 +583,6 @@ public bool loadCustomTitles()
 	CloseHandle(kv);
 	return true;
 }
-
-//what the hell is this
-//if you ever read this and want to recode a surf plugin, please don't do this.
-/*public void addColorToString(char[] StringToAdd, int size)
-{
-	ReplaceString(StringToAdd, size, "{blue}", szBLUE, false);
-	ReplaceString(StringToAdd, size, "{darkblue}", szDARKBLUE, false);
-	ReplaceString(StringToAdd, size, "{darkgray}", szDARKGREY, false);
-	ReplaceString(StringToAdd, size, "{darkgrey}", szDARKGREY, false);
-	ReplaceString(StringToAdd, size, "{darkred}", szDARKRED, false);
-	ReplaceString(StringToAdd, size, "{default}", szWHITE, false);
-	ReplaceString(StringToAdd, size, "{gray}", szGRAY, false);
-	ReplaceString(StringToAdd, size, "{green}", szGREEN, false);
-	ReplaceString(StringToAdd, size, "{grey}", szGRAY, false);
-	ReplaceString(StringToAdd, size, "{lightblue}", szLIGHTBLUE, false);
-	ReplaceString(StringToAdd, size, "{lightred}", szLIGHTRED, false);
-	ReplaceString(StringToAdd, size, "{limegreen}", szLIMEGREEN, false);
-	ReplaceString(StringToAdd, size, "{lime}", szLIMEGREEN, false);
-	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
-	ReplaceString(StringToAdd, size, "{orange}", szORANGE, false);
-	ReplaceString(StringToAdd, size, "{pink}", szPINK, false);
-	ReplaceString(StringToAdd, size, "{purple}", szPURPLE, false);
-	ReplaceString(StringToAdd, size, "{red}", szRED, false);
-	ReplaceString(StringToAdd, size, "{white}", szWHITE, false);
-	ReplaceString(StringToAdd, size, "{yellow}", szYELLOW, false);
-}*/
-
-/*public int getFirstColor(char[] rankName)
-{
-	if (StrContains(rankName, "{default}", false) != -1 || StrContains(rankName, "{white}", false) != -1)
-		return 0;
-	else if (StrContains(rankName, "{darkred}", false) != -1)
-		return 1;
-	else if (StrContains(rankName, "{green}", false) != -1)
-		return 2;
-	else if (StrContains(rankName, "{lightgreen}", false) != -1 || StrContains(rankName, "{limegreen}", false) != -1 || StrContains(rankName, "{lime}", false) != -1)
-		return 3;
-	else if (StrContains(rankName, "{blue}", false) != -1)
-		return 4;
-	else if (StrContains(rankName, "{olive}", false) != -1 || StrContains(rankName, "{mossgreen}", false) != -1)
-		return 5;
-	else if (StrContains(rankName, "{red}", false) != -1)
-		return 6;
-	else if (StrContains(rankName, "{grey}", false) != -1)
-		return 7;
-	else if (StrContains(rankName, "{yellow}", false) != -1)
-		return 8;
-	else if (StrContains(rankName, "{lightblue}", false) != -1)
-		return 9;
-	else if (StrContains(rankName, "{steelblue}", false) != -1 || StrContains(rankName, "{darkblue}", false) != -1)
-		return 10;
-	else if (StrContains(rankName, "{pink}", false) != -1)
-		return 11;
-	else if (StrContains(rankName, "{lightred}", false) != -1)
-		return 12;
-	else if (StrContains(rankName, "{purple}", false) != -1)
-		return 13;
-	else if (StrContains(rankName, "{darkgrey}", false) != -1 || StrContains(rankName, "{darkgray}", false) != -1)
-		return 14;
-	else if (StrContains(rankName, "{orange}", false) != -1)
-		return 15;
-	else 
-		return 0;
-}*/
-
-/*public void setNameColor(char[] ClientName, int index, int size)
-{
-	switch (index)
-	{
-		case 0: // 1st Rank
-			Format(ClientName, size, "%c%s", WHITE, ClientName);
-		case 1:
-			Format(ClientName, size, "%c%s", DARKRED, ClientName);
-		case 2:
-			Format(ClientName, size, "%c%s", GREEN, ClientName);
-		case 3:
-			Format(ClientName, size, "%c%s", LIMEGREEN, ClientName);
-		case 4:
-			Format(ClientName, size, "%c%s", BLUE, ClientName);
-		case 5:
-			Format(ClientName, size, "%c%s", MOSSGREEN, ClientName);
-		case 6:
-			Format(ClientName, size, "%c%s", RED, ClientName);
-		case 7:
-			Format(ClientName, size, "%c%s", GRAY, ClientName);
-		case 8: 
-			Format(ClientName, size, "%c%s", YELLOW, ClientName);
-		case 9: 
-			Format(ClientName, size, "%c%s", LIGHTBLUE, ClientName);
-		case 10: 
-			Format(ClientName, size, "%c%s", DARKBLUE, ClientName);
-		case 11: 
-			Format(ClientName, size, "%c%s", PINK, ClientName);
-		case 12: 
-			Format(ClientName, size, "%c%s", LIGHTRED, ClientName);
-		case 13: 
-			Format(ClientName, size, "%c%s", PURPLE, ClientName);
-		case 14: 
-			Format(ClientName, size, "%c%s", DARKGREY, ClientName);
-		case 15:
-			Format(ClientName, size, "%c%s", ORANGE, ClientName);
-		default:
-			Format(ClientName, size, "%c%s", WHITE, ClientName);
-	}
-}*/
 
 public void normalizeChatString(char[] ParseString, int size)
 {
@@ -3149,13 +3010,6 @@ public void Checkpoint(int client, int zone, int zonegroup)
 				Format(g_szLastPBDifference[client], 64, "<font color='#99ff99'>%s</font>\t", szDiff_colorless);
 			else
 				Format(g_szLastPBDifference[client], 64, "<font color='#99ff99'>%s</font>\t", szDiff_colorless);
-			
-			/*
-			if (zonegroup > 0)
-				Format(g_szLastPBDifference[client], 64, "%s <font color='#99ff99' size='16'>%s</font>", g_szPersonalRecordBonus[zonegroup][client], szDiff_colorless);
-			else
-				Format(g_szLastPBDifference[client], 64, "%s <font color='#99ff99' size='16'>%s</font>", g_szPersonalRecord[client], szDiff_colorless);
-				*/
 		}
 		else
 		{
@@ -3165,12 +3019,6 @@ public void Checkpoint(int client, int zone, int zonegroup)
 				Format(g_szLastPBDifference[client], 64, "<font color='#FF9999'>%s</font>\t", szDiff_colorless);
 			else
 				Format(g_szLastPBDifference[client], 64, "<font color='#FF9999'>%s</font>\t", szDiff_colorless);
-			/*
-			if (zonegroup > 0)
-				Format(g_szLastPBDifference[client], 64, "%s <font color='#FF9999' size='16'>%s</font>", g_szPersonalRecordBonus[zonegroup][client], szDiff_colorless);
-			else
-				Format(g_szLastPBDifference[client], 64, "%s <font color='#FF9999' size='16'>%s</font>", g_szPersonalRecord[client], szDiff_colorless);
-				*/
 		}
 		g_fLastDifferenceTime[client] = GetGameTime();
 		
