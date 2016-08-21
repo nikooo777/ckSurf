@@ -353,8 +353,13 @@ public Action Command_normalMode(int client, int args)
 		return Plugin_Handled;
 	
 	Client_Stop(client, 1);
-	g_bPracticeMode[client] = false;
+	if (g_bPracticeMode[client])
+	{
+		g_bPracticeMode[client] = false;
+		g_fLastTimePracUsed[client] = GetGameTime();
+	}
 	Command_Restart(client, 1);
+	LimitSpeed(client);
 	
 	PrintToChat(client, "%t", "PracticeNormal", MOSSGREEN, WHITE, MOSSGREEN);
 	return Plugin_Handled;
@@ -405,6 +410,7 @@ public Action Command_goToPlayerCheckpoint(int client, int args)
 			PrintToChat(client, "%t", "PracticeStarted", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE);
 			PrintToChat(client, "%t", "PracticeStarted2", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE);
 			g_bPracticeMode[client] = true;
+			g_fLastTimePracUsed[client] = GetGameTime();
 		}
 		
 		SetEntPropVector(client, Prop_Data, "m_vecVelocity", view_as<float>( { 0.0, 0.0, 0.0 } ));
@@ -1170,7 +1176,7 @@ public Action Client_Usp(int client, int args)
 	}
 	else
 	{
-		int weapon = GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
+		/*int weapon = */GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
 		/*if (weapon != -1)
 		{
 			int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -2190,6 +2196,7 @@ public Action Client_Stop(int client, int args)
 	if (g_bTimeractivated[client])
 	{
 		//PlayerPanel(client);
+		LimitSpeed(client);
 		g_bTimeractivated[client] = false;
 		g_fStartTime[client] = -1.0;
 		g_fCurrentRunTime[client] = -1.0;

@@ -35,8 +35,8 @@
 #pragma semicolon 1
 
 // Plugin info
-#define VERSION "1.18"
-#define PLUGIN_VERSION 118
+#define VERSION "1.19"
+#define PLUGIN_VERSION 119
 
 // Database definitions
 #define MYSQL 0
@@ -187,9 +187,9 @@ enum MapZone
 enum SkillGroup
 {
 	PointReq,				// Points required for next skillgroup
-	NameColor,				// Color to use for name if colored chatnames is turned on
-	String:RankName[32],	// Skillgroup name without colors
-	String:RankNameColored[32], // Skillgroup name with colors
+	String:NameColor[32],				// Color to use for name if colored chatnames is turned on
+	String:RankName[128],	// Skillgroup name without colors
+	String:RankNameColored[128], // Skillgroup name with colors
 }
 
 
@@ -573,6 +573,7 @@ float g_fErrorMessage[MAXPLAYERS + 1]; 							// Used to limit error message spa
 float g_fClientRestarting[MAXPLAYERS + 1]; 						// Used to track the time the player took to write the second !r, if too long, reset the boolean
 bool g_bClientRestarting[MAXPLAYERS + 1]; 						// Client wanted to restart run
 float g_fLastTimeNoClipUsed[MAXPLAYERS + 1]; 					// Last time the client used noclip
+float g_fLastTimePracUsed[MAXPLAYERS + 1]; 						// Last time the client used practice mode
 bool g_bRespawnPosition[MAXPLAYERS + 1]; 						// Does client have a respawn location in memory?
 float g_fLastSpeed[MAXPLAYERS + 1]; 							// Client's last speed, used in panels
 bool g_bLateLoaded = false; 									// Was plugin loaded late?
@@ -594,6 +595,7 @@ int g_MVPStars[MAXPLAYERS + 1]; 								// The amount of MVP's a client has  TOD
 int g_PlayerChatRank[MAXPLAYERS + 1]; 							// What color is client's name in chat (based on rank)
 char g_pr_chat_coloredrank[MAXPLAYERS + 1][128]; 				// Clients rank, colored, used in chat
 char g_pr_rankname[MAXPLAYERS + 1][32]; 						// Client's rank, non-colored, used in clantag
+char g_pr_rankColor[MAXPLAYERS +1][32];
 char g_szMapPrefix[2][32]; 										// Map's prefix, used to execute prefix cfg's
 char g_szMapName[128]; 											// Current map's name
 char g_szPlayerPanelText[MAXPLAYERS + 1][512];					// Info panel text when spectating
@@ -1692,7 +1694,7 @@ public void OnPluginStart()
 	g_hDynamicTimelimit = CreateConVar("ck_dynamic_timelimit", "0", "on/off - Sets a suitable timelimit by calculating the average run time (This method requires ck_map_end 1, greater than 5 map times and a default timelimit in your server config for maps with less than 5 times", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hExtraPoints = CreateConVar("ck_ranking_extra_points_improvements", "15.0", "Gives players x extra points for improving their time.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	g_hExtraPoints2 = CreateConVar("ck_ranking_extra_points_firsttime", "50.0", "Gives players x extra points for finishing a map for the first time.", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_hWelcomeMsg = CreateConVar("ck_welcome_msg", " {yellow}>>{default} {grey}Welcome! This server is using {lime}ckSurf", "Welcome message (supported color tags: {default}, {darkred}, {green}, {lightgreen}, {blue} {olive}, {lime}, {red}, {purple}, {grey}, {yellow}, {lightblue}, {steelblue}, {darkblue}, {pink}, {lightred})", FCVAR_NOTIFY);
+	g_hWelcomeMsg = CreateConVar("ck_welcome_msg", " {yellow}>>{default} {grey}Welcome! This server is using {lime}ckSurf", "Welcome message (supported color tags: {default}, {darkred}, {green}, {lightgreen}, {orange}, {blue}, {olive}, {lime}, {red}, {purple}, {grey}, {yellow}, {lightblue}, {steelblue}, {darkblue}, {pink}, {lightred})", FCVAR_NOTIFY);
 	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed.", FCVAR_NOTIFY);
 	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_NOTIFY);
 	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones.", FCVAR_NOTIFY);

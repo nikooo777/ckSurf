@@ -166,7 +166,9 @@ public void StartTouch(int client, int action[3])
 		else if (action[0] == 1 || action[0] == 5) // Start Zone or Speed Start
 		{
 			if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // If practice mode is on
+			{
 				Command_goToPlayerCheckpoint(client, 1);
+			}
 			else
 			{
 				g_Stage[g_iClientInZone[client][2]][client] = 1;
@@ -179,7 +181,9 @@ public void StartTouch(int client, int action[3])
 		else if (action[0] == 2) // End Zone
 		{
 			if (g_iClientInZone[client][2] == action[2]) //  Cant end bonus timer in this zone && in the having the same timer on
+			{
 				CL_OnEndTimerPress(client);
+			}
 			else
 			{
 				Client_Stop(client, 1);
@@ -188,6 +192,7 @@ public void StartTouch(int client, int action[3])
 			{
 				Command_normalMode(client, 1);
 				clearPlayerCheckPoints(client);
+				g_fLastTimePracUsed[client] = GetGameTime();
 			}
 			// Resetting checkpoints
 			lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
@@ -196,12 +201,16 @@ public void StartTouch(int client, int action[3])
 		{
 			if (g_bPracticeMode[client]) // If practice mode is on
 			{
+				g_fLastTimePracUsed[client] = GetGameTime();
 				if (action[1] > lastCheckpoint[g_iClientInZone[client][2]][client] && g_iClientInZone[client][2] == action[2] || lastCheckpoint[g_iClientInZone[client][2]][client] == 999)
 				{
+					//This tempfix probably introduces the exploit that allows huge start speeds
 					Command_normalMode(client, 1); // Temp fix. Need to track stages checkpoints were made in.
 				}
-				else
+				else 
+				{
 					Command_goToPlayerCheckpoint(client, 1);
+				}
 			}
 			else
 			{  // Setting valid to false, in case of checkers
@@ -265,9 +274,15 @@ public void EndTouch(int client, int action[3])
 						PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
+					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
+					{
+						PrintToChat(client, "[%cCK%c] You have been using practice in the past few seconds, timer disabled.", MOSSGREEN, WHITE);
+						ClientCommand(client, "play buttons\\button10.wav");
+					}
 					else
+					{
 						CL_OnStartTimerPress(client);
-
+					}
 					g_bValidRun[client] = false;
 				}
 			}

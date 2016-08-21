@@ -83,7 +83,7 @@ public Action SetPlayerWeapons(Handle timer, any client)
 		StripAllWeapons(client);
 		if (!IsFakeClient(client))
 		{
-			int weapon = GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
+			/*int weapon = */GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
 			/*if (weapon != -1)
 			{
 				int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -93,8 +93,7 @@ public Action SetPlayerWeapons(Handle timer, any client)
 		}
 		if (!g_bStartWithUsp[client])
 		{
-			int weapon;
-			weapon = GetPlayerWeaponSlot(client, 2);
+			int weapon = GetPlayerWeaponSlot(client, 2);
 			if (weapon != -1 && !IsFakeClient(client))
 				SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}

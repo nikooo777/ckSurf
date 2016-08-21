@@ -62,7 +62,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 			StripAllWeapons(client);
 			if (!IsFakeClient(client))
 			{
-				int weapon = GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
+				/*int weapon = */GivePlayerItem(client, "weapon_usp_silencer");	//players wanted a glock as start gun
 				/*if (weapon != -1)
 				{
 					int offset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
@@ -264,13 +264,15 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		}
 		
 		//chat trigger?
-		if ((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' && (GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_GENERIC)))
+		if ((IsChatTrigger() && sText[0] == '/') || (sText[0] == '@' /*&& (GetUserFlagBits(client) & ADMFLAG_ROOT || GetUserFlagBits(client) & ADMFLAG_GENERIC)*/))
 		{
 			return Plugin_Continue;
 		}
 
 		char szName[64];
-		GetClientName(client, szName, 64);
+		Format(szName,sizeof(szName),"%N",client);
+
+		//GetClientName(client, szName, 64);
 
 		//log the chat of the player to the server so that tools such as HLSW/HLSTATX see it and also it remains logged in the log file
 		WriteChatLog(client, "say", sText);
@@ -279,7 +281,9 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		normalizeChatString(szName, 64);
 		
 		if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
-			setNameColor(szName, g_PlayerChatRank[client], 64);
+		{
+			Format(szName,sizeof(szName),"%s%s",g_pr_rankColor[client],szName);
+		}
 		
 		if (GetClientTeam(client) == 1)
 		{
@@ -309,8 +313,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 						CPrintToChatAllEx(client, "%s {teamcolor}*DEAD* %s{default}: %s", szChatRank, szName, sText);
 					return Plugin_Handled;
 				}
-				else
-					if (GetConVarBool(g_hCountry))
+				else if (GetConVarBool(g_hCountry))
 				{
 					if (IsPlayerAlive(client))
 						CPrintToChatAllEx(client, "[{green}%s{default}] {teamcolor}%s{default}: %s", g_szCountryCode[client], szName, sText);

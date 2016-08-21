@@ -608,7 +608,7 @@ public bool loadCustomTitles()
 		else
 			g_iCustomTitleCount++;
 		
-		addColorToString(g_szflagTitle_Colored[i], 32);
+		//addColorToString(g_szflagTitle_Colored[i], 32);
 		normalizeChatString(g_szflagTitle[i], 32);
 
 		if (!KvGotoNextKey(kv))
@@ -620,72 +620,69 @@ public bool loadCustomTitles()
 
 //what the hell is this
 //if you ever read this and want to recode a surf plugin, please don't do this.
-public void addColorToString(char[] StringToAdd, int size)
+/*public void addColorToString(char[] StringToAdd, int size)
 {
-	ReplaceString(StringToAdd, size, "{default}", szWHITE, false);
-	ReplaceString(StringToAdd, size, "{white}", szWHITE, false);
-	ReplaceString(StringToAdd, size, "{darkred}", szDARKRED, false);
-	ReplaceString(StringToAdd, size, "{green}", szGREEN, false);
-	ReplaceString(StringToAdd, size, "{lime}", szLIMEGREEN, false);
 	ReplaceString(StringToAdd, size, "{blue}", szBLUE, false);
-	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
-	ReplaceString(StringToAdd, size, "{red}", szRED, false);
-	ReplaceString(StringToAdd, size, "{grey}", szGRAY, false);
-	ReplaceString(StringToAdd, size, "{gray}", szGRAY, false);
-	ReplaceString(StringToAdd, size, "{yellow}", szYELLOW, false);
-	ReplaceString(StringToAdd, size, "{lightblue}", szLIGHTBLUE, false);
 	ReplaceString(StringToAdd, size, "{darkblue}", szDARKBLUE, false);
-	ReplaceString(StringToAdd, size, "{pink}", szPINK, false);
-	ReplaceString(StringToAdd, size, "{lightred}", szLIGHTRED, false);
-	ReplaceString(StringToAdd, size, "{purple}", szPURPLE, false);
-	ReplaceString(StringToAdd, size, "{darkgrey}", szDARKGREY, false);
 	ReplaceString(StringToAdd, size, "{darkgray}", szDARKGREY, false);
+	ReplaceString(StringToAdd, size, "{darkgrey}", szDARKGREY, false);
+	ReplaceString(StringToAdd, size, "{darkred}", szDARKRED, false);
+	ReplaceString(StringToAdd, size, "{default}", szWHITE, false);
+	ReplaceString(StringToAdd, size, "{gray}", szGRAY, false);
+	ReplaceString(StringToAdd, size, "{green}", szGREEN, false);
+	ReplaceString(StringToAdd, size, "{grey}", szGRAY, false);
+	ReplaceString(StringToAdd, size, "{lightblue}", szLIGHTBLUE, false);
+	ReplaceString(StringToAdd, size, "{lightred}", szLIGHTRED, false);
 	ReplaceString(StringToAdd, size, "{limegreen}", szLIMEGREEN, false);
-	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
-	ReplaceString(StringToAdd, size, "{darkblue}", szDARKBLUE, false);
 	ReplaceString(StringToAdd, size, "{lime}", szLIMEGREEN, false);
+	ReplaceString(StringToAdd, size, "{mossgreen}", szMOSSGREEN, false);
 	ReplaceString(StringToAdd, size, "{orange}", szORANGE, false);
-}
+	ReplaceString(StringToAdd, size, "{pink}", szPINK, false);
+	ReplaceString(StringToAdd, size, "{purple}", szPURPLE, false);
+	ReplaceString(StringToAdd, size, "{red}", szRED, false);
+	ReplaceString(StringToAdd, size, "{white}", szWHITE, false);
+	ReplaceString(StringToAdd, size, "{yellow}", szYELLOW, false);
+}*/
 
-public int getFirstColor(char[] StringToSearch)
+/*public int getFirstColor(char[] rankName)
 {
-	if (StrContains(StringToSearch, "{default}", false) != -1 || StrContains(StringToSearch, "{white}", false) != -1)
+	if (StrContains(rankName, "{default}", false) != -1 || StrContains(rankName, "{white}", false) != -1)
 		return 0;
-	else if (StrContains(StringToSearch, "{darkred}", false) != -1)
+	else if (StrContains(rankName, "{darkred}", false) != -1)
 		return 1;
-	else if (StrContains(StringToSearch, "{green}", false) != -1)
+	else if (StrContains(rankName, "{green}", false) != -1)
 		return 2;
-	else if (StrContains(StringToSearch, "{lightgreen}", false) != -1 || StrContains(StringToSearch, "{limegreen}", false) != -1 || StrContains(StringToSearch, "{lime}", false) != -1)
+	else if (StrContains(rankName, "{lightgreen}", false) != -1 || StrContains(rankName, "{limegreen}", false) != -1 || StrContains(rankName, "{lime}", false) != -1)
 		return 3;
-	else if (StrContains(StringToSearch, "{blue}", false) != -1)
+	else if (StrContains(rankName, "{blue}", false) != -1)
 		return 4;
-	else if (StrContains(StringToSearch, "{olive}", false) != -1 || StrContains(StringToSearch, "{mossgreen}", false) != -1)
+	else if (StrContains(rankName, "{olive}", false) != -1 || StrContains(rankName, "{mossgreen}", false) != -1)
 		return 5;
-	else if (StrContains(StringToSearch, "{red}", false) != -1)
+	else if (StrContains(rankName, "{red}", false) != -1)
 		return 6;
-	else if (StrContains(StringToSearch, "{grey}", false) != -1)
+	else if (StrContains(rankName, "{grey}", false) != -1)
 		return 7;
-	else if (StrContains(StringToSearch, "{yellow}", false) != -1)
+	else if (StrContains(rankName, "{yellow}", false) != -1)
 		return 8;
-	else if (StrContains(StringToSearch, "{lightblue}", false) != -1)
+	else if (StrContains(rankName, "{lightblue}", false) != -1)
 		return 9;
-	else if (StrContains(StringToSearch, "{steelblue}", false) != -1 || StrContains(StringToSearch, "{darkblue}", false) != -1)
+	else if (StrContains(rankName, "{steelblue}", false) != -1 || StrContains(rankName, "{darkblue}", false) != -1)
 		return 10;
-	else if (StrContains(StringToSearch, "{pink}", false) != -1)
+	else if (StrContains(rankName, "{pink}", false) != -1)
 		return 11;
-	else if (StrContains(StringToSearch, "{lightred}", false) != -1)
+	else if (StrContains(rankName, "{lightred}", false) != -1)
 		return 12;
-	else if (StrContains(StringToSearch, "{purple}", false) != -1)
+	else if (StrContains(rankName, "{purple}", false) != -1)
 		return 13;
-	else if (StrContains(StringToSearch, "{darkgrey}", false) != -1 || StrContains(StringToSearch, "{darkgray}", false) != -1)
+	else if (StrContains(rankName, "{darkgrey}", false) != -1 || StrContains(rankName, "{darkgray}", false) != -1)
 		return 14;
-	else if (StrContains(StringToSearch, "{orange}", false) != -1)
+	else if (StrContains(rankName, "{orange}", false) != -1)
 		return 15;
 	else 
 		return 0;
-}
+}*/
 
-public void setNameColor(char[] ClientName, int index, int size)
+/*public void setNameColor(char[] ClientName, int index, int size)
 {
 	switch (index)
 	{
@@ -724,7 +721,7 @@ public void setNameColor(char[] ClientName, int index, int size)
 		default:
 			Format(ClientName, size, "%c%s", WHITE, ClientName);
 	}
-}
+}*/
 
 public void normalizeChatString(char[] ParseString, int size)
 {
@@ -1478,6 +1475,7 @@ public void SetClientDefaults(int client)
 	g_fLastTimeNoClipUsed[client] = -1.0;
 	g_fStartTime[client] = -1.0;
 	g_fPlayerLastTime[client] = -1.0;
+	g_fLastTimePracUsed[client] = -1.0;
 	g_fPauseTime[client] = 0.0;
 	g_MapRank[client] = 99999;
 	g_OldMapRank[client] = 99999;
@@ -2179,7 +2177,7 @@ public void SetSkillGroups()
 			else
 				ClearArray(g_hSkillGroups);
 
-			char sRankName[128], sRankNameColored[128];
+			char sRankName[128], sRankNameColored[128],sNameColor[32]; //color string size is "enough"
 			float fPercentage;
 			int points;
 			do
@@ -2187,6 +2185,7 @@ public void SetSkillGroups()
 				// Get section as Rankname
 				KvGetString(hKeyValues, "name", sRankName, 128);
 				KvGetString(hKeyValues, "name", sRankNameColored, 128);
+				KvGetString(hKeyValues, "rankColor", sNameColor, 32);
 
 				// Get percentage
 				fPercentage = KvGetFloat(hKeyValues, "percentage");
@@ -2200,18 +2199,17 @@ public void SetSkillGroups()
 				RankValue[PointReq] = points;
 
 				// Replace colors on name
-				addColorToString(sRankNameColored, 128);
+				//addColorToString(sRankNameColored, 128);
 				
 				// Get player name color
 				//I cringe reading this...
-				RankValue[NameColor] = getFirstColor(sRankName);
 
-				// Remove colors from rank name
+				// Remove colors from then non-colored rank name
 				normalizeChatString(sRankName, 128);
 
 				Format(RankValue[RankName], 128, "%s", sRankName);
-
 				Format(RankValue[RankNameColored], 128, "%s", sRankNameColored);
+				Format(RankValue[NameColor], 32 ,"%s",sNameColor);
 
 				PushArrayArray(g_hSkillGroups, RankValue[0]);
 
@@ -2248,16 +2246,11 @@ public void SetPlayerRank(int client)
 
 			Format(g_pr_rankname[client], 128, "[%s]", RankValue[RankName]);
 			Format(g_pr_chat_coloredrank[client], 128, "[%s%c]", RankValue[RankNameColored], WHITE);
-			g_PlayerChatRank[client] = RankValue[NameColor];
+			Format(g_pr_rankColor[client],32,"%s", RankValue[NameColor]);
 		}
 	}
 	else
 	{
-		// Player is using a title
-		if (GetConVarBool(g_hPointSystem))
-		{
-			g_PlayerChatRank[client] = RankValue[NameColor];
-		}
 		Format(g_pr_rankname[client], 128, "[%s]", g_szflagTitle[g_iTitleInUse[client]]);
 		Format(g_pr_chat_coloredrank[client], 128, "[%s%c]", g_szflagTitle_Colored[g_iTitleInUse[client]], WHITE);
 	}
@@ -2326,7 +2319,7 @@ stock Action PrintSpecMessageAll(int client)
 	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
 	
 	if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
-		setNameColor(szName, g_PlayerChatRank[client], 64);	
+		Format(szName,sizeof(szName),"%s%s",g_pr_rankColor[client],szName);
 
 	if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
 		CPrintToChatAll("{green}%s{default} %s *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, szTextToAll);
