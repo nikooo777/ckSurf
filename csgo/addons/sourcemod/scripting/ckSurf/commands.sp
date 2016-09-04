@@ -1914,6 +1914,7 @@ public Action Client_RankingSystem(int client, int args)
 
 public Action Client_Pause(int client, int args)
 {
+	Client_Surrender(client, args);
 	if (GetClientTeam(client) == 1)return Plugin_Handled;
 	PauseMethod(client);
 	if (g_bPause[client] == false)
