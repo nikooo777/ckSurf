@@ -28,7 +28,7 @@
 	"PracticeStartError"
 	{
 		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] You don't have a checkpoint to teleport to! Create one by using%c !cp"	
+		"en"        "[{1}CK{2}] You don't have a checkpoint to teleport to! Create one by using {3}!cp"	
 	}
 	"PracticeUndo"
 	{
@@ -38,7 +38,7 @@
 	"PracticeUndoError"
 	{
 		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] You don't have a checkpoint to undo! Create a checkpoint by using %c!cp"
+		"en"        "[{1}CK{2}] You don't have a checkpoint to undo! Create a checkpoint by using {3}!cp"
 	}
 	"ToogleCheckpoints1"
 	{
