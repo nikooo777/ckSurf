@@ -1883,8 +1883,8 @@ public Action Client_Ranks(int client, int args)
 
 			if (i != 0 && i % 3 == 0)
 			{
-				CPPrintToChat(client, ChatLine);
-				PrintToConsole(client, Chatline);
+				CPrintToChat(client, ChatLine);
+				PrintToConsole(client, ChatLine);
 				Format(ChatLine, 512, " ");
 			}
 			Format(ChatLine, 512, "%s%s%c (%ip)   ", ChatLine, RankValue[RankNameColored], WHITE, RankValue[PointReq]);
