@@ -1835,6 +1835,7 @@ public void AutoBhop(int client)
 		PrintToChat(client, "%t", "AutoBhop3", MOSSGREEN, WHITE);
 	
 	g_bAutoBhopClient[client] = !g_bAutoBhopClient[client];
+	SendConVarValue(client, g_cvar_sv_autobunnyhopping, (g_bAutoBhopClient[client]?"1":"0"));
 }
 
 public Action Client_Hide(int client, int args)

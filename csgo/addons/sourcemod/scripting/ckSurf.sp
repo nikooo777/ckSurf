@@ -687,7 +687,11 @@ bool g_bPracticeMode[MAXPLAYERS + 1]; 							// Client is in the practice mode
 
 /*------------ late load linux fix --------*/
 Handle g_cvar_sv_hibernate_when_empty = INVALID_HANDLE;
-//bool g_useHibernate = false;
+
+/**
+* Autobhop handle
+*/
+Handle g_cvar_sv_autobunnyhopping = INVALID_HANDLE;
 
 /*=========================================
 =            Predefined arrays            =
@@ -1657,7 +1661,9 @@ public void OnPluginStart()
 	
 	//linux late-loading fix
 	g_cvar_sv_hibernate_when_empty = FindConVar("sv_hibernate_when_empty");
-
+	g_cvar_sv_autobunnyhopping = FindConVar("sv_autobunnyhopping");
+	SetConVarBool(g_cvar_sv_autobunnyhopping, false);
+	
 	if (GetConVarInt(g_cvar_sv_hibernate_when_empty) == 1) 
 	{
 		SetConVarInt(g_cvar_sv_hibernate_when_empty, 0);
