@@ -926,13 +926,13 @@ public Action Client_Challenge(int client, int args)
 			{
 				Menu menu2 = CreateMenu(ChallengeMenuHandler2);
 				char tmp[64];
-				if (GetConVarBool(g_hPointSystem))
+				if (GetConVarBool(g_hPointSystem)&&GetConVarBool(g_hChallengePoints))
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nYour Points: %i", g_pr_points[client]);
 				else
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nPlayer point system disabled", g_pr_points[client]);
 				SetMenuTitle(menu2, tmp);
 				AddMenuItem(menu2, "0", "No bet");
-				if (GetConVarBool(g_hPointSystem))
+				if (GetConVarBool(g_hPointSystem)&&GetConVarBool(g_hChallengePoints))
 				{
 					Format(tmp, 64, "%i", g_pr_PointUnit * 50);
 					if (g_pr_PointUnit * 50 <= g_pr_points[client])
