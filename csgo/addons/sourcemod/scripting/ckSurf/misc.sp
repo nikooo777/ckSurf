@@ -3123,3 +3123,16 @@ public void CheckpointToSpec(int client, char[] buffer)
 		}
 	}
 }
+
+void resetZone(int zoneIndex)
+{
+	g_mapZones[zoneIndex][zoneId] = -1;
+	g_mapZones[zoneIndex][PointA] = -1.0;
+	g_mapZones[zoneIndex][PointB] = -1.0;
+	g_mapZones[zoneIndex][zoneType] = -1;
+	g_mapZones[zoneIndex][zoneTypeId] = -1;
+	g_mapZones[zoneIndex][zoneName] = 0;
+	g_mapZones[zoneIndex][Vis] = 0;
+	g_mapZones[zoneIndex][Team] = 0;
+	g_mapZones[zoneIndex][zoneGroup] = 0;
+}

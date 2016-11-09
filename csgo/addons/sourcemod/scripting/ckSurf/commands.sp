@@ -376,6 +376,12 @@ public Action Command_createPlayerCheckpoint(int client, int args)
 		return Plugin_Handled;
 	}
 	
+	if(GetClientTeam(client) < 2)
+	{
+		ReplyToCommand(client, "You can't use checkpoints in spectator mode! You must join a team first");
+		return Plugin_Handled;
+	}
+	
 	float CheckpointTime = GetGameTime();
 	
 	// Move old checkpoint to the undo values, if the last checkpoint was made more than a second ago
