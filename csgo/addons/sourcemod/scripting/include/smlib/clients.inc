@@ -159,7 +159,7 @@ stock Client_FindBySteamId(const String:auth[])
 			continue;
 		}
 
-		GetClientAuthId(client, AuthId_Engine, clientAuth, sizeof(clientAuth));
+		GetClientAuthId(client, AuthId_Steam2, clientAuth, sizeof(clientAuth));
 
 		if (StrEqual(auth, clientAuth)) {
 			return client;
@@ -1720,7 +1720,7 @@ stock bool:Client_PrintHintText(client, const String:format[], any:...)
 	if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available
 		&& GetUserMessageType() == UM_Protobuf) {
 
-		PbSetString(userMessage, "text", format);
+		PbSetString(userMessage, "text", buffer);
 	}
 	else {
 		BfWriteByte(userMessage, 1);
@@ -1783,7 +1783,7 @@ stock bool:Client_PrintKeyHintText(client, const String:format[], any:...)
 	if (GetFeatureStatus(FeatureType_Native, "GetUserMessageType") == FeatureStatus_Available
 		&& GetUserMessageType() == UM_Protobuf) {
 
-		PbSetString(userMessage, "hints", buffer);
+		PbAddString(userMessage, "hints", buffer);
 	}
 	else {
 		BfWriteByte(userMessage, 1);
