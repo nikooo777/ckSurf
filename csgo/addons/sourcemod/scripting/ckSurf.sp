@@ -1674,7 +1674,7 @@ public void OnPluginStart()
 	
 	
 	//Get Server Tickate
-	g_Server_Tickrate = view_as<int>(1 / GetTickInterval());
+	g_Server_Tickrate = RoundFloat(1 / GetTickInterval());
 	
 	//language file
 	LoadTranslations("ckSurf.phrases");
