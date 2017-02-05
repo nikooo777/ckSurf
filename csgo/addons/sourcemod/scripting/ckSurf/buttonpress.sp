@@ -261,7 +261,6 @@ public void CL_OnEndTimerPress(int client)
 		else if (diff > 0.0)
 		{  // Client's new record
 			g_fPersonalRecord[client] = g_fFinalTime[client];
-			g_MapTimesCount++;
 			if (GetConVarInt(g_hExtraPoints) > 0)
 				g_pr_multiplier[client] += 1; // Improved time, increase multip (how many times the player finished this map)
 			FormatTimeFloat(1, g_fPersonalRecord[client], 3, g_szPersonalRecord[client], 64);
