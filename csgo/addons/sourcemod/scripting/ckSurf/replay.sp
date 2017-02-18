@@ -444,7 +444,7 @@ public void LoadRecordReplay()
 	g_RecordBot = -1;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_BonusBot)
+		if (!IsValidClient(i) || !IsFakeClient(i) || IsClientSourceTV(i) || i == g_InfoBot || i == g_BonusBot)
 			continue;
 		if (!IsPlayerAlive(i))
 		{
@@ -499,7 +499,7 @@ public void LoadBonusReplay()
 	g_BonusBot = -1;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i) || !IsFakeClient(i) || i == g_InfoBot || i == g_RecordBot)
+		if (!IsValidClient(i) || !IsFakeClient(i) || IsClientSourceTV(i) || i == g_InfoBot || i == g_RecordBot)
 			continue;
 		
 		if (!IsPlayerAlive(i))
