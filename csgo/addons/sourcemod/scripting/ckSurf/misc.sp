@@ -2642,7 +2642,7 @@ public void LoadInfoBot()
 	g_InfoBot = -1;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i) || !IsFakeClient(i) || i == g_RecordBot || i == g_BonusBot)
+		if (!IsValidClient(i) || !IsFakeClient(i) || IsClientSourceTV(i) || i == g_RecordBot || i == g_BonusBot)
 			continue;
 		g_InfoBot = i;
 		break;
