@@ -274,7 +274,7 @@ public Action Command_VoteExtend(int client, int args)
 	// Here we go through and make sure this user has not already voted. This persists throughout map.
 	for (int i = 0; i < g_VoteExtends; i++)
 	{
-		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false))
+		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false) && GetConVarBool(g_hMaxVoteExtendsUniquePlayers))
 		{
 			ReplyToCommand(client, "[CK] You have already used your vote to extend this map.");
 			return Plugin_Handled;
