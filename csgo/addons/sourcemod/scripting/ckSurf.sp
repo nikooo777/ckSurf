@@ -261,6 +261,7 @@ char g_szUsedVoteExtend[MAXPLAYERS+1][32]; 						// SteamID's which triggered ex
 int g_VoteExtends = 0; 											// How many extends have happened in current map
 ConVar g_hVoteExtendTime; 										// Extend time CVar
 ConVar g_hMaxVoteExtends; 										// Extend max count CVar
+ConVar g_hMaxVoteExtendsUniquePlayers; 							// Extend max votes by unique players CVar 
 
 /*----------  Bonus variables  ----------*/
 char g_szBonusFastest[MAXZONEGROUPS][MAX_NAME_LENGTH]; 			// Name of the #1 in the current maps bonus
@@ -1721,6 +1722,7 @@ public void OnPluginStart()
 	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
 	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
+	g_hMaxVoteExtendsUniquePlayers = CreateConVar("ck_max_vote_extends_unique_players", "1", "on/off - Prohibit multiple extends of a person", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "0", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hBackupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hReplaceReplayTime = 	CreateConVar("ck_replay_replace_faster", "1", "(1 / 0) Replace record bots if a players time is faster than the bot, even if the time is not a server record.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
