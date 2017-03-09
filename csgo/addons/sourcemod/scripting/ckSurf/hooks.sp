@@ -54,7 +54,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 		g_bPause[client] = false;
 		g_bFirstTimerStart[client] = true;
 		SetEntityMoveType(client, MOVETYPE_WALK);
-		SetEntityRenderMode(client, RENDER_NORMAL);
+		SetPlayerVisible(client);
 		
 		//strip weapons
 		if ((GetClientTeam(client) > 1) && IsValidClient(client))

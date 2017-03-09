@@ -1956,7 +1956,7 @@ public void PauseMethod(int client)
 			if (g_fPauseTime[client] > 0.0)
 				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];
 		}
-		SetEntityRenderMode(client, RENDER_NONE);
+		SetPlayerInvisible(client);
 		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 	}
 	else
@@ -1969,7 +1969,7 @@ public void PauseMethod(int client)
 		g_bPause[client] = false;
 		if (!g_bRoundEnd)
 			SetEntityMoveType(client, MOVETYPE_WALK);
-		SetEntityRenderMode(client, RENDER_NORMAL);
+		SetPlayerVisible(client);
 		if (GetConVarBool(g_hCvarNoBlock))
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 		else
@@ -2222,7 +2222,7 @@ public void Action_NoClip(int client)
 					g_fCurrentRunTime[client] = -1.0;
 				}
 				SetEntityMoveType(client, MOVETYPE_NOCLIP);
-				SetEntityRenderMode(client, RENDER_NONE);
+				SetPlayerInvisible(client);
 				SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				g_bNoClip[client] = true;
 			}
@@ -2243,7 +2243,7 @@ public void Action_UnNoClip(int client)
 			if (mt == MOVETYPE_NOCLIP)
 			{
 				SetEntityMoveType(client, MOVETYPE_WALK);
-				SetEntityRenderMode(client, RENDER_NORMAL);
+				SetPlayerVisible(client);
 				if (GetConVarBool(g_hCvarNoBlock))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				else

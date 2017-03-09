@@ -51,7 +51,7 @@ public void CL_OnStartTimerPress(int client)
 		g_fStartPauseTime[client] = 0.0;
 		g_bPause[client] = false;
 		SetEntityMoveType(client, MOVETYPE_WALK);
-		SetEntityRenderMode(client, RENDER_NORMAL);
+		SetPlayerVisible(client);
 		g_fStartTime[client] = GetGameTime();
 		g_fCurrentRunTime[client] = 0.0;
 		g_bPositionRestored[client] = false;
