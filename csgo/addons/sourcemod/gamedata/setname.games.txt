@@ -112,9 +112,9 @@
 			
 			"CBaseClient::SetName"
 			{
-				"windows"	"27"
-				"linux"		"64"
-				"mac"		"64"
+				"windows"	"29"
+				"linux"		"67"
+				"mac"		"67"
 			}
 			
 			"CBaseClient::GetClientName"

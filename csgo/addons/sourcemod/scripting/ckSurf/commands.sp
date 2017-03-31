@@ -274,7 +274,7 @@ public Action Command_VoteExtend(int client, int args)
 	// Here we go through and make sure this user has not already voted. This persists throughout map.
 	for (int i = 0; i < g_VoteExtends; i++)
 	{
-		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false))
+		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false) && GetConVarBool(g_hMaxVoteExtendsUniquePlayers))
 		{
 			ReplyToCommand(client, "[CK] You have already used your vote to extend this map.");
 			return Plugin_Handled;
@@ -373,6 +373,12 @@ public Action Command_createPlayerCheckpoint(int client, int args)
 	if (g_iClientInZone[client][0] == 1 || g_iClientInZone[client][0] == 5)
 	{
 		PrintToChat(client, "%t", "PracticeInStartZone", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
+	
+	if(GetClientTeam(client) < 2)
+	{
+		ReplyToCommand(client, "You can't use checkpoints in spectator mode! You must join a team first");
 		return Plugin_Handled;
 	}
 	
@@ -926,13 +932,13 @@ public Action Client_Challenge(int client, int args)
 			{
 				Menu menu2 = CreateMenu(ChallengeMenuHandler2);
 				char tmp[64];
-				if (GetConVarBool(g_hPointSystem))
+				if (GetConVarBool(g_hPointSystem)&&GetConVarBool(g_hChallengePoints))
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nYour Points: %i", g_pr_points[client]);
 				else
 					Format(tmp, 64, "ckSurf - Challenge: Player Bet?\nPlayer point system disabled", g_pr_points[client]);
 				SetMenuTitle(menu2, tmp);
 				AddMenuItem(menu2, "0", "No bet");
-				if (GetConVarBool(g_hPointSystem))
+				if (GetConVarBool(g_hPointSystem)&&GetConVarBool(g_hChallengePoints))
 				{
 					Format(tmp, 64, "%i", g_pr_PointUnit * 50);
 					if (g_pr_PointUnit * 50 <= g_pr_points[client])
@@ -1835,6 +1841,7 @@ public void AutoBhop(int client)
 		PrintToChat(client, "%t", "AutoBhop3", MOSSGREEN, WHITE);
 	
 	g_bAutoBhopClient[client] = !g_bAutoBhopClient[client];
+	SendConVarValue(client, g_cvar_sv_autobunnyhopping, (g_bAutoBhopClient[client]?"1":"0"));
 }
 
 public Action Client_Hide(int client, int args)
@@ -1883,7 +1890,8 @@ public Action Client_Ranks(int client, int args)
 
 			if (i != 0 && i % 3 == 0)
 			{
-				PrintToChat(client, ChatLine);
+				CPrintToChat(client, ChatLine);
+				PrintToConsole(client, ChatLine);
 				Format(ChatLine, 512, " ");
 			}
 			Format(ChatLine, 512, "%s%s%c (%ip)   ", ChatLine, RankValue[RankNameColored], WHITE, RankValue[PointReq]);

@@ -2642,7 +2642,7 @@ public void LoadInfoBot()
 	g_InfoBot = -1;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i) || !IsFakeClient(i) || i == g_RecordBot || i == g_BonusBot)
+		if (!IsValidClient(i) || !IsFakeClient(i) || IsClientSourceTV(i) || i == g_RecordBot || i == g_BonusBot)
 			continue;
 		g_InfoBot = i;
 		break;
@@ -3122,4 +3122,17 @@ public void CheckpointToSpec(int client, char[] buffer)
 			}
 		}
 	}
+}
+
+void resetZone(int zoneIndex)
+{
+	g_mapZones[zoneIndex][zoneId] = -1;
+	g_mapZones[zoneIndex][PointA] = -1.0;
+	g_mapZones[zoneIndex][PointB] = -1.0;
+	g_mapZones[zoneIndex][zoneType] = -1;
+	g_mapZones[zoneIndex][zoneTypeId] = -1;
+	g_mapZones[zoneIndex][zoneName] = 0;
+	g_mapZones[zoneIndex][Vis] = 0;
+	g_mapZones[zoneIndex][Team] = 0;
+	g_mapZones[zoneIndex][zoneGroup] = 0;
 }

@@ -1570,6 +1570,7 @@ public int MenuHandler_Editor(Handle tMenu, MenuAction action, int client, int i
 					if (g_ClientSelectedZone[client] != -1)
 					{
 						db_deleteZone(client, g_mapZones[g_ClientSelectedZone[client]][zoneId]);
+						resetZone(g_ClientSelectedZone[client]);
 					}
 					resetSelection(client);
 					ZoneMenu(client);
@@ -1799,15 +1800,7 @@ public int MenuHandler_ClearZones(Handle tMenu, MenuAction action, int client, i
 			{
 				for (int i = 0; i < MAXZONES; i++) 
 				{
-					g_mapZones[i][zoneId] = -1;
-					g_mapZones[i][PointA] = -1.0;
-					g_mapZones[i][PointB] = -1.0;
-					g_mapZones[i][zoneId] = -1;
-					g_mapZones[i][zoneType] = -1;
-					g_mapZones[i][zoneTypeId] = -1;
-					g_mapZones[i][zoneName] = 0;
-					g_mapZones[i][Vis] = 0;
-					g_mapZones[i][Team] = 0;
+					resetZone(i);
 				}
 				g_mapZonesCount = 0;
 				db_deleteMapZones();
