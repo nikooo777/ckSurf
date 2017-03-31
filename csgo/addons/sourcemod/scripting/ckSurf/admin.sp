@@ -2,25 +2,25 @@ public Action Admin_giveTitle(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	
+
 	if (g_iCustomTitleCount == 0)
 	{
 		PrintToChat(client, "[%cCK%c] No custom titles loaded.", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-	
+
 	g_iAdminSelectedClient[client] = -1;
 	g_iAdminEditingType[client] = 1;
 	Format(g_szAdminSelectedSteamID[client], 32, "");
-	
+
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
-	
+
 	if (args == 0)
 	{
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select Player to give title to:");
-		
+
 		char szName[MAX_NAME_LENGTH], id[8];
 		for (int i = 1; i < MAXPLAYERS; i++)
 		{
@@ -38,9 +38,9 @@ public Action Admin_giveTitle(int client, int args)
 	if (args > 0)
 	{
 		char sResult[MAX_NAME_LENGTH], arg[MAX_NAME_LENGTH];
-		
+
 		GetCmdArg(1, arg, 32);
-		
+
 		if (StrContains(arg, "STEAM_", false) != -1)
 		{
 			for (int i = 1; i < (MAXPLAYERS + 1); i++)
@@ -95,7 +95,7 @@ public int Handler_selectPlayer(Handle tMenu, MenuAction action, int client, int
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			g_iAdminSelectedClient[client] = StringToInt(aID);
 			GetClientAuthId(g_iAdminSelectedClient[client], AuthId_Steam2, g_szAdminSelectedSteamID[client], MAX_NAME_LENGTH, true);
-			
+
 			switch (g_iAdminEditingType[client])
 			{
 				case 1:db_checkPlayersTitles(client);
@@ -119,17 +119,17 @@ public int Handler_TitleMenu(Handle tMenu, MenuAction action, int client, int it
 			char aID[8];
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int titleID = StringToInt(aID);
-			
+
 			if (titleID == -1)
 				return;
 			if (g_iAdminSelectedClient[client] != -1)
 				Array_Copy(g_bflagTitles[client], g_bflagTitles_orig[client], TITLE_COUNT);
-			
+
 			if (g_bAdminFlagTitlesTemp[client][titleID])
 				g_bAdminFlagTitlesTemp[client][titleID] = false;
 			else
 				g_bAdminFlagTitlesTemp[client][titleID] = true;
-			
+
 			if (g_bAdminSelectedHasFlag[client])
 				db_updatePlayerTitles(client, titleID);
 			else
@@ -146,20 +146,20 @@ public Action Admin_deleteTitles(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	
+
 	g_iAdminSelectedClient[client] = -1;
 	g_iAdminEditingType[client] = 2;
 	Format(g_szAdminSelectedSteamID[client], 32, "");
-	
+
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
-	
-	
+
+
 	if (args == 0)
 	{
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select player to delete titles from:");
-		
+
 		char szName[MAX_NAME_LENGTH], id[2];
 		for (int i = 1; i < (MAXPLAYERS + 1); i++)
 		{
@@ -177,9 +177,9 @@ public Action Admin_deleteTitles(int client, int args)
 	if (args > 0)
 	{
 		char sResult[MAX_NAME_LENGTH], arg[MAX_NAME_LENGTH];
-		
+
 		GetCmdArg(1, arg, 32);
-		
+
 		if (StrContains(arg, "STEAM_", false) != -1)
 		{
 			for (int i = 1; i < (MAXPLAYERS + 1); i++)
@@ -231,18 +231,18 @@ public Action Admin_deleteTitle(int client, int args)
 	g_iAdminSelectedClient[client] = -1;
 	g_iAdminEditingType[client] = 3;
 	Format(g_szAdminSelectedSteamID[client], 32, "");
-	
+
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
-	
+
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	
+
 	if (args == 0)
 	{
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
 		SetMenuTitle(playerMenu, "Select player to remove title from:");
-		
+
 		char szName[MAX_NAME_LENGTH], id[2];
 		for (int i = 1; i < (MAXPLAYERS + 1); i++)
 		{
@@ -260,9 +260,9 @@ public Action Admin_deleteTitle(int client, int args)
 	if (args > 0)
 	{
 		char sResult[MAX_NAME_LENGTH], arg[MAX_NAME_LENGTH];
-		
+
 		GetCmdArg(1, arg, 32);
-		
+
 		if (StrContains(arg, "STEAM_", false) != -1)
 		{
 			for (int i = 1; i < (MAXPLAYERS + 1); i++)
@@ -320,7 +320,7 @@ public void Admin_renameZone(int client, const char[] name)
 	//avoid unnecessary calls by checking the first cell first. If it's 0 -> \0 then negating it will make the if check pass -> return
 	if (!name[0] || StrEqual(name, " ") || StrEqual(name, ""))
 	{
-		PrintToChat(client, "[%CK%c] Please give the zone a valid name.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%cCK%c] Please give the zone a valid name.", MOSSGREEN, WHITE);
 		return;
 	}
 	if (strlen(name) > 128)
@@ -336,7 +336,7 @@ public void Admin_renameZone(int client, const char[] name)
 		return;
 	}
 	char szZoneName[128];
-	
+
 	Format(szZoneName, 128, "%s", name);
 	db_setZoneNames(client, szZoneName);
 	g_ClientRenamingZone[client] = false;
@@ -346,7 +346,7 @@ public void OnAdminMenuReady(Handle topmenu)
 {
 	if (topmenu == g_hAdminMenu)
 		return;
-	
+
 	g_hAdminMenu = topmenu;
 	TopMenuObject serverCmds = FindTopMenuCategory(g_hAdminMenu, ADMINMENU_SERVERCOMMANDS);
 	AddToTopMenu(g_hAdminMenu, "sm_ckadmin", TopMenuObject_Item, TopMenuHandler2, serverCmds, "sm_ckadmin", ADMFLAG_RCON);
@@ -356,7 +356,7 @@ public int TopMenuHandler2(Handle topmenu, TopMenuAction action, TopMenuObject o
 {
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "ckSurf");
-	
+
 	else
 		if (action == TopMenuAction_SelectOption)
 		Admin_ckPanel(param, 0);
@@ -366,7 +366,7 @@ public Action Admin_insertMapTier(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	
+
 	if (args < 2)
 	{
 		ReplyToCommand(client, "[CK] Usage: sm_addmaptier <ZoneGroup> <Tier>");
@@ -398,15 +398,15 @@ public Action Admin_insertSpawnLocation(int client, int args)
 {
 	if (!IsValidClient(client))
 		return Plugin_Handled;
-	
+
 	float SpawnLocation[3];
 	float SpawnAngle[3];
-	
+
 	GetClientAbsOrigin(client, SpawnLocation);
 	GetClientEyeAngles(client, SpawnAngle);
-	
+
 	SpawnLocation[2] += 3.0;
-	
+
 	if (g_bGotSpawnLocation[g_iClientInZone[client][2]])
 	{
 		db_updateSpawnLocations(SpawnLocation, SpawnAngle, g_iClientInZone[client][2]);
@@ -417,7 +417,7 @@ public Action Admin_insertSpawnLocation(int client, int args)
 		db_insertSpawnLocations(SpawnLocation, SpawnAngle, g_iClientInZone[client][2]);
 		PrintToChat(client, "[%cCK%c] Spawnpoint added", MOSSGREEN, WHITE);
 	}
-	
+
 	return Plugin_Handled;
 }
 
@@ -432,7 +432,7 @@ public Action Admin_deleteSpawnLocation(int client, int args)
 	}
 	else
 		PrintToChat(client, "[%cCK%c] No spawnpoint to delete!", MOSSGREEN, WHITE);
-	
+
 	return Plugin_Handled;
 }
 
@@ -445,7 +445,7 @@ public Action Admin_ClearAssists(int client, int args)
 			g_fMaxPercCompleted[0] = 0.0;
 			CS_SetMVPCount(i, 0);
 		}
-	
+
 	return Plugin_Handled;
 }
 
@@ -462,7 +462,7 @@ public Action Admin_ckPanel(int client, int args)
 		PrintToConsole(client, "[PLAYER TIMES]\n sm_resettimes (Drops playertimes table)\n sm_resetmaptimes <map> (Resets player times for given map)\n sm_resetplayertimes <steamid> [<map>] (Resets players times + extra points for given steamid with or without given map.)\n");
 		PrintToConsole(client, " sm_resetplayertime <steamid> <map> (Resets map time for given steamid and map)\n");
 		PrintToConsole(client, "sm_deletecheckpoints (Deletes all checkpoint times in the current map)\n sm_deletebonus (Deletes all bonus times in the current map)\n \n");
-		
+
 	}
 	return Plugin_Handled;
 }
@@ -471,31 +471,31 @@ public void ckAdminMenu(int client)
 {
 	if (!IsValidClient(client))
 		return;
-	
+
 	if (!(GetUserFlagBits(client) & g_AdminMenuFlag) && !(GetUserFlagBits(client) & ADMFLAG_ROOT))
 	{
 		PrintToChat(client, "[%cCK%c] You don't have access to the admin menu.", MOSSGREEN, WHITE);
 		return;
 	}
-	
+
 	char szTmp[128];
-	
+
 	Handle adminmenu = CreateMenu(AdminPanelHandler);
 	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
 		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)", VERSION);
 	else
 		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)", VERSION);
 	SetMenuTitle(adminmenu, szTmp);
-	
+
 	if (!g_pr_RankingRecalc_InProgress)
 		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Recalculate player ranks");
 	else
 		AddMenuItem(adminmenu, "[1.] Recalculate player ranks", "[1.] Stop the recalculation");
-	
+
 	AddMenuItem(adminmenu, "", "", ITEMDRAW_SPACER);
-	
+
 	int menuItemNumber = 2;
-	
+
 	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
 	{
 		Format(szTmp, sizeof(szTmp), "[%i.] Edit or create zones", menuItemNumber);
@@ -507,161 +507,161 @@ public void ckAdminMenu(int client)
 		AddMenuItem(adminmenu, szTmp, szTmp, ITEMDRAW_DISABLED);
 	}
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hCvarGodMode))
 		Format(szTmp, sizeof(szTmp), "[%i.] Godmode  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Godmode  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hCvarNoBlock))
 		Format(szTmp, sizeof(szTmp), "[%i.] Noblock  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Noblock  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hAutoRespawn))
 		Format(szTmp, sizeof(szTmp), "[%i.] Autorespawn  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Autorespawn  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hCleanWeapons))
 		Format(szTmp, sizeof(szTmp), "[%i.] Strip weapons  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Strip weapons  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hcvarRestore))
 		Format(szTmp, sizeof(szTmp), "[%i.] Restore function  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Restore function  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hPauseServerside))
 		Format(szTmp, sizeof(szTmp), "[%i.] !pause command -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] !pause command  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hGoToServer))
 		Format(szTmp, sizeof(szTmp), "[%i.] !goto command  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] !goto command  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hRadioCommands))
 		Format(szTmp, sizeof(szTmp), "[%i.] Radio commands  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Radio commands  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hReplayBot))
 		Format(szTmp, sizeof(szTmp), "[%i.] Replay bot  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Replay bot  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hPointSystem))
 		Format(szTmp, sizeof(szTmp), "[%i.] Player point system  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Player point system  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hCountry))
 		Format(szTmp, sizeof(szTmp), "[%i.] Player country tag  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Player country tag  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hPlayerSkinChange))
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow custom models  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow custom models  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hNoClipS))
 		Format(szTmp, sizeof(szTmp), "[%i.] +noclip  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] +noclip (admin/vip excluded)  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hAutoBhopConVar))
 		Format(szTmp, sizeof(szTmp), "[%i.] Auto bunnyhop (only surf_/bhop_ maps)  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Auto bunnyhop  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hAdminClantag))
 		Format(szTmp, sizeof(szTmp), "[%i.] Admin clan tag  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Admin clan tag  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hMapEnd))
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow map changes  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[i.] Allow map changes  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hConnectMsg))
 		Format(szTmp, sizeof(szTmp), "[%i.] Connect message  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Connect message  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hDisconnectMsg))
 		Format(szTmp, sizeof(szTmp), "[%i.] Disconnect message - Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Disconnect message - Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hInfoBot))
 		Format(szTmp, sizeof(szTmp), "[%i.] Info bot  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Info bot  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hAttackSpamProtection))
 		Format(szTmp, sizeof(szTmp), "[%i.] Attack spam protection  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Attack spam protection  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hChallengePoints))
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow challenges points  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow challenges points  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	if (GetConVarBool(g_hAllowRoundEndCvar))
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow to end the current round  -  Enabled", menuItemNumber);
 	else
 		Format(szTmp, sizeof(szTmp), "[%i.] Allow to end the current round  -  Disabled", menuItemNumber);
 	AddMenuItem(adminmenu, szTmp, szTmp);
 	menuItemNumber++;
-	
+
 	SetMenuExitButton(adminmenu, true);
 	SetMenuOptionFlags(adminmenu, MENUFLAG_BUTTON_EXIT);
 	if (g_AdminMenuLastPage[client] < 6)
@@ -712,13 +712,13 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					PrintToChat(param1, "%t", "StopRecalculation", MOSSGREEN, WHITE);
 				}
 			}
-			
+
 			case 2:
 			{
 				ZoneMenu(param1);
 				refresh = false;
 			}
-			
+
 			case 3:
 			{
 				if (!GetConVarBool(g_hCvarGodMode))
@@ -726,7 +726,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_godmode 0");
 			}
-			
+
 			case 4:
 			{
 				if (!GetConVarBool(g_hCvarNoBlock))
@@ -734,7 +734,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_noblock 0");
 			}
-			
+
 			case 5:
 			{
 				if (!GetConVarBool(g_hAutoRespawn))
@@ -742,7 +742,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_autorespawn 0");
 			}
-			
+
 			case 6:
 			{
 				if (!GetConVarBool(g_hCleanWeapons))
@@ -750,7 +750,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_clean_weapons 0");
 			}
-			
+
 			case 7:
 			{
 				if (!GetConVarBool(g_hcvarRestore))
@@ -758,7 +758,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_restore 0");
 			}
-			
+
 			case 8:
 			{
 				if (!GetConVarBool(g_hPauseServerside))
@@ -766,7 +766,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_pause 0");
 			}
-			
+
 			case 9:
 			{
 				if (!GetConVarBool(g_hGoToServer))
@@ -774,7 +774,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_goto 0");
 			}
-			
+
 			case 10:
 			{
 				if (!GetConVarBool(g_hRadioCommands))
@@ -782,7 +782,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_use_radio 0");
 			}
-			
+
 			case 11:
 			{
 				if (!GetConVarBool(g_hReplayBot))
@@ -790,7 +790,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_replay_bot 0");
 			}
-			
+
 			case 12:
 			{
 				if (!GetConVarBool(g_hPointSystem))
@@ -798,7 +798,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_point_system 0");
 			}
-			
+
 			case 13:
 			{
 				if (!GetConVarBool(g_hCountry))
@@ -806,7 +806,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_country_tag 0");
 			}
-			
+
 			case 14:
 			{
 				if (!GetConVarBool(g_hPlayerSkinChange))
@@ -814,7 +814,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_custom_models 0");
 			}
-			
+
 			case 15:
 			{
 				if (!GetConVarBool(g_hNoClipS))
@@ -822,7 +822,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_noclip 0");
 			}
-			
+
 			case 16:
 			{
 				if (!GetConVarBool(g_hAutoBhopConVar))
@@ -830,7 +830,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_auto_bhop 0");
 			}
-			
+
 			case 17:
 			{
 				if (!GetConVarBool(g_hAdminClantag))
@@ -838,7 +838,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_admin_clantag 0");
 			}
-			
+
 			case 18:
 			{
 				if (!GetConVarBool(g_hMapEnd))
@@ -846,7 +846,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_map_end 0");
 			}
-			
+
 			case 19:
 			{
 				if (!GetConVarBool(g_hConnectMsg))
@@ -854,7 +854,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_connect_msg 0");
 			}
-			
+
 			case 20:
 			{
 				if (!GetConVarBool(g_hDisconnectMsg))
@@ -862,7 +862,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_disconnect_msg 0");
 			}
-			
+
 			case 21:
 			{
 				if (!GetConVarBool(g_hInfoBot))
@@ -870,7 +870,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_info_bot 0");
 			}
-			
+
 			case 22:
 			{
 				if (!GetConVarBool(g_hAttackSpamProtection))
@@ -878,7 +878,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_attack_spam_protection 0");
 			}
-			
+
 			case 23:
 			{
 				if (!GetConVarBool(g_hChallengePoints))
@@ -886,7 +886,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 				else
 					ServerCommand("ck_challenge_points 0");
 			}
-			
+
 			case 24:
 			{
 				if (!GetConVarBool(g_hAllowRoundEndCvar))
@@ -895,15 +895,15 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 					ServerCommand("ck_round_end 0");
 			}
 		}
-		
+
 		g_AdminMenuLastPage[param1] = param2;
 		if (menu != null)
 			CloseHandle(menu);
-		
+
 		if (refresh)
 			CreateTimer(0.1, RefreshAdminMenu, param1, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	
+
 	if (action == MenuAction_End)
 	{
 		//test
@@ -959,7 +959,7 @@ public Action Admin_InsertMapTiers(int client, int args)
 		PrintToChat(client, "[%cCK%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-	
+
 	Handle MapTierMenu = CreateMenu(MapTierHandler);
 	SetMenuTitle(MapTierMenu, "Insert MapTiers\n WARNING: This action will delete all existing maptier data and replace it with ckSurf's premade data.\n Do you wish to continue?");
 	AddMenuItem(MapTierMenu, "0", "NO");
@@ -969,7 +969,7 @@ public Action Admin_InsertMapTiers(int client, int args)
 	AddMenuItem(MapTierMenu, "0", "NO");
 	SetMenuExitBackButton(MapTierMenu, true);
 	DisplayMenu(MapTierMenu, client, MENU_TIME_FOREVER);
-	
+
 	return Plugin_Handled;
 }
 
@@ -977,11 +977,11 @@ public void Admin_InsertMapTierstoDatabase(int client)
 {
 	if (!IsValidClient(client))
 		return;
-	
+
 	g_insertingInformation = true;
-	
+
 	PrintToChat(client, "[%cCK%c] Maptier information is being inserted into the database. This might take a while.", MOSSGREEN, WHITE);
-	
+
 	Transaction h_addTiers = SQL_CreateTransaction();
 	SQL_AddQuery(h_addTiers, "INSERT INTO `ck_maptier` (`mapname`, `tier`, `btier1`, `btier2`, `btier3`, `btier4`, `btier5`, `btier6`, `btier7`, `btier8`, `btier9`, `btier10`) VALUES('surf_004_final1', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_1day', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_2012_beta12', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_3', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_4dimensional', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_6', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_81st_network_njv', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_abyss_fix', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_acp', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_acp_fix', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_adtr_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_advanced', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aether', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_again_njv_rg', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aircontrol_ksf', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_airflow', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_akai_final', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_akai_two_rg', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_alternation', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amateur_v2b', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amateur_v2b_', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_ambient_njv', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_apex_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_encore_nsf_v4', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_light', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_and_destroy', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_animals', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_annoyance_njv', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_anonymity', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_anthropomorphic-', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_apollonian', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_arghmyeyes', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_artifex', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aspiration', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_asrown', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_asrown-', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_ataque_final', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_atlas_1', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroia_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroria2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroria_2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aux', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_awakening_rg', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aweles', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_bbb', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_beginner', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_beginner_ug', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
 	SQL_AddQuery(h_addTiers, "INSERT INTO `ck_maptier` (`mapname`, `tier`, `btier1`, `btier2`, `btier3`, `btier4`, `btier5`, `btier6`, `btier7`, `btier8`, `btier9`, `btier10`) VALUES('surf_beyer', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_beyer2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_blackout_v1', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_blackside_njv', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_blub_njv', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_boatastic', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_bob', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_boring', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_bork_nbv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_broken', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_b_r_o_x_x_x', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_caca', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_calamity2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_calamity_njv_', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_calibration', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_canisius', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_canisius2', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_canisius2_fix', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_catalyst', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_catalyst2', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_chaos_rg', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_christmas', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_classics', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_classics2', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_clockwork', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_collaboration', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_collection_njv', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_colors_beta1', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_color_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_colours', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_commune_again_beta5-', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_commune_too_beta5', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_compact', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_compulsive_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_concept_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_construction', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_cookiejar', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_coralis_ksf', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_coralis_ksf-', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_core_fix', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_creation', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_crystal', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_crzyfrog_reloaded', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_curious', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_cyanide_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_cyka', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_deceptive_final', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
@@ -1001,7 +1001,7 @@ public void SQLTxn_TierInsertFailed(Handle db, any data, int numQueries, const c
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Inserting map tiers %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
-	
+
 	g_insertingInformation = false;
 	LogError("[ckSurf] SQL Tier insertion failed! Index: %i Error: %s", failIndex, error);
 }
@@ -1010,7 +1010,7 @@ public void SQLTxn_TierInsertSuccess(Handle db, any data, int numQueries, Handle
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Successfully inserted map tiers!", MOSSGREEN, WHITE);
-	
+
 	db_selectMapTier();
 	g_insertingInformation = false;
 }
@@ -1019,11 +1019,11 @@ public void Admin_InsertZonestoDatabase(int client)
 {
 	if (!IsValidClient(client))
 		return;
-	
+
 	g_insertingInformation = true;
-	
+
 	PrintToChat(client, "[%cCK%c] Inserting zones to the database, this might take a while... You will get a confirmation after the zones are inserted.", MOSSGREEN, WHITE);
-	
+
 	Transaction h_addZones = SQL_CreateTransaction();
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_004_final1', 0, 2, 1, -2210.79, -1471.97, 0.03125, -2813.97, 1470.97, 100.031, 0, 0, 0, NULL),('surf_004_final1', 1, 1, 1, -10240.4, 495.969, 15808, -10593.9, -495.969, 15908, 0, 0, 0, NULL),('surf_1day', 0, 3, 9, -10656.4, 8545.39, -3649.97, -10721.4, 8478.62, -3547.97, 0, 0, 0, NULL),('surf_1day', 1, 3, 8, -4614.87, -3654.2, 7870.03, -5629.14, -4143.97, 7972.03, 0, 0, 0, NULL),('surf_1day', 2, 3, 6, 2867.13, -3631.97, 8126.03, 3304.92, -3306.18, 8228.03, 0, 0, 0, NULL),('surf_1day', 3, 3, 7, -2858.19, -3971.13, 8126.03, -2305.42, -3683.49, 8228.03, 0, 0, 0, NULL),('surf_1day', 4, 2, 0, -12609.8, 6976.84, -10896.4, -13232, 7864.49, -10600, 0, 0, 0, NULL),('surf_1day', 5, 3, 5, -156.182, -4028, 8126.03, 201.998, -3689.19, 8228.03, 0, 0, 0, NULL),('surf_1day', 6, 2, 1, -13232, 6984.71, -10702, -13221.3, 7878.96, -9959.18, 0, 0, 0, NULL),('surf_1day', 7, 3, 4, -1483.52, -4333.14, -2625.97, -1034.06, -4818.06, -2523.97, 0, 0, 0, NULL),('surf_1day', 8, 3, 3, -12467.1, -5467.63, 2494.02, -12054, -5917.16, 2596.03, 0, 0, 0, NULL),('surf_1day', 9, 3, 2, -12531.1, -13607.2, 3517.95, -12042.9, -14070.7, 3620, 0, 0, 0, NULL),('surf_1day', 10, 3, 1, -4020.12, -6162.85, -8894.1, -3406.55, -5437.18, -8737.44, 0, 0, 0, NULL),('surf_1day', 11, 3, 0, 11568, -2217.01, -1761.97, 11467, -1739.43, -1659.97, 0, 0, 0, NULL),('surf_1day', 12, 5, 0, 2013.15, 148.516, -149.969, 2486.33, -394.254, -47.9688, 0, 0, 0, NULL),('surf_1day', 13, 1, 0, 5018.86, 9490.21, 4064.03, 4644.03, 9279.98, 4114.29, 0, 0, 1, NULL),('surf_1day', 14, 2, 0, -10192, 8880.84, 7200.03, -10070.6, 8573.16, 7300.03, 0, 0, 1, NULL),('surf_2012_beta12', 0, 3, 4, -291.67, 555.205, 11328, -568.846, 865.361, 11428, 0, 0, 0, NULL),('surf_2012_beta12', 1, 2, 0, -1154.6, 10869.3, 7489.03, -1405.99, 11014.8, 7683.01, 0, 0, 0, NULL),('surf_2012_beta12', 2, 3, 3, 7989.53, 8113.34, 9187.15, 8287.28, 7994.19, 9287.15, 0, 0, 0, NULL),('surf_2012_beta12', 3, 3, 2, 7832, -3919.96, 1664.03, 8049.35, -4312.86, 1764.03, 0, 0, 0, NULL),('surf_2012_beta12', 4, 1, 0, 4927.03, -3325.56, 1296.03, 5313.04, -3570.61, 1380.03, 0, 0, 0, NULL),('surf_2012_beta12', 5, 3, 0, 13372.8, -668.424, 15360, 13593.2, -1042.87, 15460, 0, 0, 0, NULL),('surf_2012_beta12', 6, 3, 1, -1457.81, -2968.9, 4484.03, -1153.5, -2645.08, 4580.03, 0, 0, 0, NULL),('surf_2012_beta12', 7, 1, 0, 2464.03, -5491.55, 4194.21, 2567.71, -5574.63, 4064.03, 0, 0, 1, NULL),('surf_2012_beta12', 8, 2, 0, 7263.84, -5506.87, -5918.97, 7169.44, -5566.97, -5731.47, 0, 0, 1, NULL),('surf_3', 0, 2, 0, 2696.61, -6294.64, -10978, 3484, -5478.25, -10876, 0, 0, 0, NULL),('surf_3', 1, 1, 0, -2999.05, 125.759, 7614.03, -3223.79, -130.836, 7716.03, 0, 0, 0, NULL),('surf_3', 2, 4, 0, -2607.33, 671.969, 5497.17, -3303.19, -668.399, 4032.03, 0, 0, 0, NULL),('surf_3', 3, 4, 1, 2448.03, -948.35, 3893.11, 3764.93, -279.609, 2424.03, 0, 0, 0, NULL),('surf_3', 4, 4, 2, 2832.91, -6174.93, -1696.03, 3333.32, -5632.03, -2216.97, 0, 0, 0, NULL),('surf_3', 5, 4, 3, 1385.72, -7639.93, -6400.03, 4874.62, -4141.72, -7919.97, 0, 0, 0, NULL),('surf_4dimensional', 0, 3, 1, -815.969, -903.357, -6657.97, -559.993, -1154.98, -6612.5, 0, 0, 0, NULL),('surf_4dimensional', 1, 2, 1, -3056, 335.969, 7534.03, -3754.43, -2431.97, 7636.03, 0, 0, 0, NULL),('surf_4dimensional', 2, 3, 0, 991.969, -3848.08, 1774.03, -1487.97, -5039.97, 1876.03, 0, 0, 0, NULL),('surf_4dimensional', 3, 1, 1, -2068.61, 335.969, 7534.03, -2768, -2431.97, 7636.03, 0, 0, 0, NULL),('surf_4dimensional', 4, 1, 0, 14982, 8360.87, 5616.03, 15472, 7011.96, 5725.6, 0, 0, 1, NULL),('surf_4dimensional', 5, 2, 0, -15312, -8864.03, -12402, -13968, -10366.3, -12300, 0, 0, 1, NULL),('surf_6', 0, 2, 1, -10880.7, -511.104, -6335.97, -11312, 576.04, -6119.97, 0, 0, 0, NULL),('surf_6', 1, 1, 1, 3455.95, 322.796, 6368.03, 3088.03, -320.212, 6468.03, 0, 0, 0, NULL);");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_abyss_fix', 0, 3, 3, 277.996, -5364.74, 2052.27, -424.273, -5826.73, 2154.03, 0, 0, 0, NULL),('surf_abyss_fix', 1, 3, 4, -3194.21, -9346.78, 3498.03, -2981.66, -9560.75, 3600.03, 0, 0, 0, NULL),('surf_abyss_fix', 2, 3, 0, 5049.86, 6286.21, 1900.03, 5485.27, 6078.75, 2002.03, 0, 0, 0, NULL),('surf_abyss_fix', 3, 2, 1, 10551.3, -6092.24, -438.862, 10075.6, -6125.3, -2.10574, 0, 0, 0, NULL),('surf_abyss_fix', 4, 2, 2, 10216.9, -453.893, -451.551, 10924.6, -439.612, 85.4582, 0, 0, 0, NULL),('surf_abyss_fix', 5, 3, 5, 10918.5, -4738.35, 2477.83, 10827.8, -4924.97, 2607.88, 0, 0, 0, NULL),('surf_abyss_fix', 6, 3, 2, -10247, -13047.2, 4622.03, -8487.03, -13321.4, 4724.03, 0, 0, 0, NULL),('surf_abyss_fix', 7, 1, 1, 835.409, -633.181, 1692.11, -225.452, -1369.41, 1853.86, 0, 0, 0, NULL),('surf_abyss_fix', 8, 3, 1, 7919.53, 5872.47, 4103.03, 9072.47, 5687.46, 4205.03, 0, 0, 0, NULL),('surf_abyss_fix', 9, 2, 3, 10522, -470.888, -441.969, 10227.8, -439.486, -286.475, 0, 0, 0, NULL),('surf_acp', 0, 1, 1, -11366.1, 2865.14, -12809.8, -11550.3, 3234.96, -12700.1, 0, 0, 0, NULL),('surf_acp', 1, 3, 6, 1992.04, 11539.3, 406.031, 2098.44, 11884.7, 508.031, 0, 0, 0, NULL),('surf_acp', 2, 2, 1, -13837.1, 15344, -38.9688, -15344, 13840, 63.0312, 0, 0, 0, NULL),('surf_acp', 3, 3, 1, -11410, 12941.3, -12806.1, -12232.1, 13669.8, -12701.9, 0, 0, 0, NULL),('surf_acp', 4, 3, 5, -11779, -14208, -5377.97, -11936, -14464, -5275.97, 0, 0, 0, NULL),('surf_acp', 5, 3, 2, 7915.95, -8471.91, -8961.97, 7385.61, -8959.3, -8859.97, 0, 0, 0, NULL),('surf_acp', 6, 3, 0, -11444.3, 6560.92, -12806, -12171.7, 5805.52, -12700.7, 0, 0, 0, NULL),('surf_acp', 7, 3, 3, 223.177, 7397.92, -5121.97, -233.873, 6918.97, -5019.97, 0, 0, 0, NULL),('surf_acp', 8, 3, 4, -12304, -13904, 6142.03, -13296, -13311.9, 6244.03, 0, 0, 0, NULL),('surf_acp', 9, 3, 7, 11744.1, 14333.1, 7934.03, 11525.3, 14843.2, 8036.03, 0, 0, 0, NULL),('surf_acp_fix', 0, 3, 1, -12273.9, 13748.1, -12806.6, -11356, 12812.4, -12642.7, 0, 0, 0, NULL),('surf_acp_fix', 1, 3, 2, 7193.08, -8203.48, -8976.16, 8183.83, -9201.1, -8867.65, 0, 0, 0, NULL),('surf_acp_fix', 2, 3, 3, -518.265, 7680.95, -5122.11, 518.025, 6654.6, -5022.82, 0, 0, 0, NULL),('surf_acp_fix', 3, 3, 6, 2122.53, 11520.9, 408.031, 1970.76, 11920.4, 508.031, 0, 0, 0, NULL),('surf_acp_fix', 4, 2, 0, -13840.3, 15359, -20.9688, -15357, 13825, 63.0312, 0, 0, 0, NULL),('surf_acp_fix', 5, 3, 7, 11540.4, 14360, 7936.03, 11756.1, 14825, 8036.03, 0, 0, 0, NULL),('surf_acp_fix', 6, 3, 0, -11388, 6602.23, -12823.8, -12327.4, 5652.24, -12649.3, 0, 0, 0, NULL),('surf_acp_fix', 7, 1, 0, -11347.9, 3550.64, -12799.8, -12318.1, 2579.26, -12714.8, 0, 0, 0, NULL),('surf_acp_fix', 8, 3, 4, -13296.3, -13907.4, 6130.69, -12291.4, -13316.8, 6230.74, 0, 0, 0, NULL),('surf_acp_fix', 9, 3, 5, -11936, -14464, -5375.97, -11778, -14208, -5275.97, 0, 0, 0, NULL),('surf_adtr_njv', 0, 1, 0, 1962.32, 2426.42, 1326.03, 877.762, 2494.46, 1549.97, 0, 0, 0, NULL),('surf_adtr_njv', 1, 3, 2, -10848, 233.375, -257.969, -10255.6, 869.006, -155.969, 0, 0, 0, NULL),('surf_adtr_njv', 2, 3, 1, -5951.97, 3735.97, -1282.97, -5594.07, 3320.03, -1180.97, 0, 0, 0, NULL),('surf_adtr_njv', 3, 2, 0, -1014.33, 442.128, -1659.05, -805.705, 645.288, -1543.13, 0, 0, 0, NULL),('surf_adtr_njv', 4, 3, 0, 1697.21, -2048.37, 1134.03, 2173.18, -1667.1, 1236.03, 0, 0, 0, NULL),('surf_adtr_njv', 5, 1, 0, -2285.42, -4640.5, -694.059, -2682.11, -4377.12, -558.712, 0, 0, 1, NULL),('surf_adtr_njv', 6, 2, 0, 1533.35, -4832.73, -1506.97, 2175.15, -4592.78, -1404.97, 0, 0, 1, NULL),('surf_advanced', 0, 1, 1, -13184.1, -382.969, 12560, -12416.2, -192.439, 12660, 0, 0, 0, NULL),('surf_advanced', 1, 3, 4, 142.784, -2858.55, -3759.97, 719.387, -3042.22, -3659.97, 0, 0, 0, NULL);");
@@ -1132,7 +1132,7 @@ public void SQLTxn_ZoneInsertFailed(Handle db, any data, int numQueries, const c
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Inserting zones %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
-	
+
 	g_insertingInformation = false;
 	LogError("[ckSurf] SQL Zone insertion failed! Index: %i Error: %s", failIndex, error);
 }
@@ -1141,7 +1141,7 @@ public void SQLTxn_ZoneInsertSuccess(Handle db, any data, int numQueries, Handle
 {
 	if (IsValidClient(data))
 		PrintToChat(data, "[%cCK%c] Successfully inserted map zones!", MOSSGREEN, WHITE);
-	
+
 	db_selectMapZones();
 	g_insertingInformation = false;
 }
@@ -1153,7 +1153,7 @@ public Action Admin_InsertMapZones(int client, int args)
 		PrintToChat(client, "[%cCK%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, WHITE);
 		return Plugin_Handled;
 	}
-	
+
 	Handle MapZoneMenu = CreateMenu(MapZoneHandler);
 	SetMenuTitle(MapZoneMenu, "Insert MapZones\n WARNING: This action will delete all existing MapZone data\n and replace it with ckSurf's premade data.\n Do you wish to continue?");
 	AddMenuItem(MapZoneMenu, "0", "NO");
@@ -1163,7 +1163,7 @@ public Action Admin_InsertMapZones(int client, int args)
 	AddMenuItem(MapZoneMenu, "0", "NO");
 	SetMenuExitBackButton(MapZoneMenu, true);
 	DisplayMenu(MapZoneMenu, client, MENU_TIME_FOREVER);
-	
+
 	return Plugin_Handled;
 }
 
@@ -1348,6 +1348,6 @@ public Action Admin_DeleteCheckpoints(int client, int args)
 		for (int x = 0; x < MAXZONEGROUPS; x++)
 			for (int k = 0; k < CPLIMIT; k++)
 				g_fCheckpointTimesRecord[x][i][k] = 0.0;
-	
+
 	db_deleteCheckpoints();
-} 
+}
