@@ -21,9 +21,9 @@ public Action SayText2(UserMsg msg_id, Handle bf, int[] players, int playersNum,
 }
 
 //attack spam protection
-public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnFire(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client > 0 && IsClientInGame(client) && GetConVarBool(g_hAttackSpamProtection))
 	{
 		char weapon[64];
@@ -45,9 +45,9 @@ public Action Event_OnFire(Handle event, const char[] name, bool dontBroadcast)
 }
 
 // - PlayerSpawn -
-public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client != 0)
 	{
 		g_SpecTarget[client] = -1;
@@ -327,9 +327,21 @@ public Action Say_Hook(int client, const char[] command, int argc)
 	return Plugin_Continue;
 }
 
-public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnPlayerTeamJoin(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if(!g_hAnnouncePlayers.BoolValue)
+	{
+		if(!GetEventBool(event, "silent"))
+		{
+			event.BroadcastDisabled = true;
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (!IsValidClient(client) || IsFakeClient(client))
 		return Plugin_Continue;
 	int team = GetEventInt(event, "team");
@@ -354,7 +366,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 	return Plugin_Continue;
 }
 
-public Action Event_PlayerDisconnect(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast)
 {
 	if (GetConVarBool(g_hDisconnectMsg))
 	{
@@ -397,9 +409,9 @@ public Action Hook_SetTransmit(int entity, int client)
 	return Plugin_Continue;
 }
 
-public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (IsValidClient(client))
 	{
 		if (!IsFakeClient(client))
@@ -434,7 +446,7 @@ public Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason)
 	return Plugin_Continue;
 }
 
-public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bRoundEnd = true;
 	return Plugin_Continue;
@@ -447,7 +459,7 @@ public void OnPlayerThink(int entity)
 
 
 // OnRoundRestart
-public Action Event_OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	int iEnt;
 	for (int i = 0; i < sizeof(EntityList); i++)
@@ -495,11 +507,11 @@ public Action OnTouchPushTrigger(int entity, int other)
 }
 
 // PlayerHurt 
-public Action Event_OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
+public Action Event_OnPlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!GetConVarBool(g_hCvarGodMode) && GetConVarInt(g_hAutohealing_Hp) > 0)
 	{
-		int client = GetClientOfUserId(GetEventInt(event, "userid"));
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		int remainingHeatlh = GetEventInt(event, "health");
 		if (remainingHeatlh > 0)
 		{

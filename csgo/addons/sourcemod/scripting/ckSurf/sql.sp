@@ -155,7 +155,7 @@ public void db_setupDatabase()
 	
 	if (g_hDb == null)
 	{
-		SetFailState("[ckSurf] Unable to connect to database (%s)", szError);
+		SetFailState("[%s] Unable to connect to database (%s)", g_szChatPrefix, szError);
 		return;
 	}
 	
@@ -171,7 +171,7 @@ public void db_setupDatabase()
 			g_DbType = SQLITE;
 		else
 		{
-			LogError("[ckSurf] Invalid Database-Type");
+			LogError("[%s] Invalid Database-Type", g_szChatPrefix);
 			return;
 		}
 	
@@ -240,9 +240,9 @@ void txn_addExtraCheckpoints()
 	{
 		PrintToServer("---------------------------------------------------------------------------");
 		disableServerHibernate();
-		PrintToServer("[ckSurf] Started to make changes to database. Updating from 1.17 -> 1.18.");
-		PrintToServer("[ckSurf] WARNING: DO NOT CONNECT TO THE SERVER, OR CHANGE MAP!");
-		PrintToServer("[ckSurf] Adding extra checkpoints... (1 / 6)");
+		PrintToServer("[%s] Started to make changes to database. Updating from 1.17 -> 1.18.", g_szChatPrefix);
+		PrintToServer("[%s] WARNING: DO NOT CONNECT TO THE SERVER, OR CHANGE MAP!", g_szChatPrefix);
+		PrintToServer("[%s] Adding extra checkpoints... (1 / 6)", g_szChatPrefix);
 
 		g_bInTransactionChain = true;
 		Transaction h_checkpoint = SQL_CreateTransaction();
@@ -256,7 +256,7 @@ void txn_addExtraCheckpoints()
 	}
 	else
 	{
-		PrintToServer("[ckSurf] No database update needed!");
+		PrintToServer("[%s] No database update needed!", g_szChatPrefix);
 		return;
 	}
 }
@@ -278,7 +278,7 @@ void txn_addZoneGroups()
 	}
 	else
 	{
-		PrintToServer("[ckSurf] Zonegroup changes were already done! Skipping to recreating playertemp!");
+		PrintToServer("[%s] Zonegroup changes were already done! Skipping to recreating playertemp!", g_szChatPrefix);
 		txn_recreatePlayerTemp();
 	}
 }
@@ -296,7 +296,7 @@ void txn_recreatePlayerTemp()
 	}
 	else
 	{
-		PrintToServer("[ckSurf] Playertemp was already recreated! Skipping to bonus tiers");
+		PrintToServer("[%s] Playertemp was already recreated! Skipping to bonus tiers", g_szChatPrefix);
 		txn_addBonusTiers();
 	}
 }
@@ -317,7 +317,7 @@ void txn_addBonusTiers()
 	}
 	else
 	{
-		PrintToServer("[ckSurf] Bonus tiers were already added. Skipping to spawn points");
+		PrintToServer("[%s] Bonus tiers were already added. Skipping to spawn points", g_szChatPrefix);
 		txn_addSpawnPoints();
 	}
 }
@@ -334,7 +334,7 @@ void txn_addSpawnPoints()
 	}
 	else
 	{
-		PrintToServer("[ckSurf] Spawnpoints were already added! Skipping to changes in zones");
+		PrintToServer("[%s] Spawnpoints were already added! Skipping to changes in zones", g_szChatPrefix);
 		txn_changesToZones();
 	}
 }
@@ -361,31 +361,33 @@ public void SQLTxn_Success(Handle db, any data, int numQueries, Handle[] results
 	switch (data)
 	{
 		case 1: {
-			PrintToServer("[ckSurf] Checkpoints added succesfully! Next up: adding zonegroups to ck_bonus (2 / 6)");
+			PrintToServer("[%s] Checkpoints added succesfully! Next up: adding zonegroups to ck_bonus (2 / 6)", g_szChatPrefix);
 			txn_addZoneGroups();
 		}
 		case 2: {
-			PrintToServer("[ckSurf] Bonus zonegroups succesfully added! Next up: recreating playertemp (3 / 6)");
+			PrintToServer("[%s] Bonus zonegroups succesfully added! Next up: recreating playertemp (3 / 6)", g_szChatPrefix);
 			txn_recreatePlayerTemp();
 		}
 		case 3: {
-			PrintToServer("[ckSurf] Playertemp succesfully recreated! Next up: adding bonus tiers (4 / 6)");
+			PrintToServer("[%s] Playertemp succesfully recreated! Next up: adding bonus tiers (4 / 6)", g_szChatPrefix);
 			txn_addBonusTiers();
 		}
 		case 4: {
-			PrintToServer("[ckSurf] Bonus tiers added succesfully! Next up: adding spawn points (5 / 6)");
+			PrintToServer("[%s] Bonus tiers added succesfully! Next up: adding spawn points (5 / 6)", g_szChatPrefix);
 			txn_addSpawnPoints();
 		}
 		case 5: {
-			PrintToServer("[ckSurf] Spawnpoints added succesfully! Next up: making changes to zones, to make them match the new database (6 / 6)");
+			PrintToServer("[%s] Spawnpoints added succesfully! Next up: making changes to zones, to make them match the new database (6 / 6)", g_szChatPrefix);
 			txn_changesToZones();
 		}
 		case 6: {
 			g_bInTransactionChain = false;
 					
 			revertServerHibernateSettings();
-			PrintToServer("[ckSurf] All changes succesfully done! Changing map!");
-			ForceChangeLevel(g_szMapName, "[ckSurf] Changing level after changes to the database have been done");
+			PrintToServer("[%s] All changes succesfully done! Changing map!", g_szChatPrefix);
+			char szBuffer[256];
+			Format(szBuffer, sizeof(szBuffer), "[%s] All changes succesfully done! Changing map!", g_szChatPrefix);
+			ForceChangeLevel(g_szMapName, szBuffer);
 		}
 	}
 }
@@ -397,27 +399,27 @@ public void SQLTxn_TXNFailed(Handle db, any data, int numQueries, const char[] e
 		switch (data)
 		{
 			case 1: {
-				PrintToServer("[ckSurf] Error in adding extra checkpoints! Retrying.. (%s)", error);
+				PrintToServer("[%s] Error in adding extra checkpoints! Retrying.. (%s)", g_szChatPrefix, error);
 				txn_addExtraCheckpoints();
 			}
 			case 2: {
-				PrintToServer("[ckSurf] Error in addin zonegroups! Retrying... (%s)", error);
+				PrintToServer("[%s] Error in addin zonegroups! Retrying... (%s)", g_szChatPrefix, error);
 				txn_addZoneGroups();
 			}
 			case 3: {
-				PrintToServer("[ckSurf] Error in recreating playertemp! Retrying... (%s)", error);
+				PrintToServer("[%s] Error in recreating playertemp! Retrying... (%s)", g_szChatPrefix, error);
 				txn_recreatePlayerTemp();
 			}
 			case 4: {
-				PrintToServer("[ckSurf] Error in adding bonus tiers! Retrying... (%s)", error);
+				PrintToServer("[%s] Error in adding bonus tiers! Retrying... (%s)", g_szChatPrefix, error);
 				txn_addBonusTiers();
 			}
 			case 5: {
-				PrintToServer("[ckSurf] Error in adding spawn points! Retrying... (%s)", error);
+				PrintToServer("[%s] Error in adding spawn points! Retrying... (%s)", g_szChatPrefix, error);
 				txn_addSpawnPoints();
 			}
 			case 6: {
-				PrintToServer("[ckSurf] Error in making changes to zones! Retrying... (%s)", error);
+				PrintToServer("[%s] Error in making changes to zones! Retrying... (%s)", g_szChatPrefix, error);
 				txn_changesToZones();
 			}
 		}
@@ -425,9 +427,9 @@ public void SQLTxn_TXNFailed(Handle db, any data, int numQueries, const char[] e
 	else
 	{
 		revertServerHibernateSettings();
-		PrintToServer("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
-		PrintToServer("[ckSurf]: Revert back to database backup.");
-		LogError("[ckSurf]: Couldn't make changes into the database. Transaction: %i, error: %s", data, error);
+		PrintToServer("[%s]: Couldn't make changes into the database. Transaction: %i, error: %s", g_szChatPrefix, data, error);
+		PrintToServer("[%s]: Revert back to database backup.", g_szChatPrefix);
+		LogError("[%s]: Couldn't make changes into the database. Transaction: %i, error: %s", g_szChatPrefix, data, error);
 		return;
 	}
 	g_failedTransactions[data]++;
@@ -459,11 +461,11 @@ public void db_createTables()
 
 public void SQLTxn_CreateDatabaseSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
-	PrintToServer("[ckSurf] Database tables succesfully created!");
+	PrintToServer("[%s] Database tables succesfully created!", g_szChatPrefix);
 }
 public void SQLTxn_CreateDatabaseFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
-	SetFailState("[ckSurf] Database tables could not be created! Error: %s", error);
+	SetFailState("[%s] Database tables could not be created! Error: %s", g_szChatPrefix, error);
 }
 
 
@@ -546,7 +548,7 @@ public void SQLTxn_RenameSuccess(Handle db, any data, int numQueries, Handle[] r
 {
 	g_bRenaming = false;
 	revertServerHibernateSettings();
-	PrintToChatAll("[%cCK%c] Database changes done succesfully, reloading the map...");
+	PrintToChatAll("[%c%s%c] Database changes done succesfully, reloading the map...");
 	ForceChangeLevel(g_szMapName, "Database Renaming Done. Restarting Map.");
 }
 
@@ -554,7 +556,7 @@ public void SQLTxn_RenameFailed(Handle db, any data, int numQueries, const char[
 {
 	g_bRenaming = false;
 	revertServerHibernateSettings();
-	SetFailState("[ckSurf] Database changes failed! (Renaming) Error: %s", error);
+	SetFailState("[%s] Database changes failed! (Renaming) Error: %s", g_szChatPrefix, error);
 }
 
 
@@ -581,7 +583,7 @@ public void SQL_checkPlayerFlagsCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_checkPlayerFlagsCallback): %s ", error);
+		LogError("[%s] SQL Error (SQL_checkPlayerFlagsCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -645,7 +647,7 @@ public void SQL_checkPlayerFlagsCallback2(Handle owner, Handle hndl, const char[
 	
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_checkPlayerFlagsCallback2): %s ", error);
+		LogError("[%s] SQL Error (SQL_checkPlayerFlagsCallback2): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -750,7 +752,7 @@ public void SQL_PersonalFlagCallback(Handle owner, Handle hndl, const char[] err
 	
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_PersonalFlagCallback): %s ", error);
+		LogError("[%s] SQL Error (SQL_PersonalFlagCallback): %s ", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewCheckpoints(client, szSteamID, g_szMapName);
 		return;
@@ -814,7 +816,7 @@ public void db_updateVIPAdminCallback(Handle owner, Handle hndl, const char[] er
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_updateVIPAdminCallback): %s ", error);
+		LogError("[%s] SQL Error (db_updateVIPAdminCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -846,7 +848,7 @@ public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_checkChangesInTitleCallback): %s ", error);
+		LogError("[%s] SQL Error (db_checkChangesInTitleCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -896,7 +898,7 @@ public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char
 				{
 					g_bflagTitles_orig[client][i] = g_bflagTitles[client][i];
 					if (g_bflagTitles[client][i])
-						PrintToChat(client, "[%cCK%c] Congratulations! You have gained the VIP privileges!", MOSSGREEN, WHITE);
+						PrintToChat(client, "[%c%s%c] Congratulations! You have gained the VIP privileges!", MOSSGREEN, g_szChatPrefix, WHITE);
 					else
 					{
 						if (g_iTitleInUse[client] == i)
@@ -906,7 +908,7 @@ public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char
 						}
 						
 						g_bTrailOn[client] = false;
-						PrintToChat(client, "[%cCK%c] You have lost your VIP privileges!", MOSSGREEN, WHITE);
+						PrintToChat(client, "[%c%s%c] You have lost your VIP privileges!", MOSSGREEN, g_szChatPrefix, WHITE);
 					}
 					break;
 				}
@@ -915,7 +917,7 @@ public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char
 					
 					g_bflagTitles_orig[client][i] = g_bflagTitles[client][i];
 					if (g_bflagTitles[client][i])
-						PrintToChat(client, "[%cCK%c] Congratulations! You have gained the custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
+						PrintToChat(client, "[%c%s%c] Congratulations! You have gained the custom title \"%s\"!", MOSSGREEN, g_szChatPrefix, WHITE, g_szflagTitle_Colored[i]);
 					else
 					{
 						if (g_iTitleInUse[client] == i)
@@ -924,7 +926,7 @@ public void db_checkChangesInTitleCallback(Handle owner, Handle hndl, const char
 							db_updatePlayerTitleInUse(-1, steamid);
 						}
 						
-						PrintToChat(client, "[%cCK%c] You have lost your custom title \"%s\"!", MOSSGREEN, WHITE, g_szflagTitle_Colored[i]);
+						PrintToChat(client, "[%c%s%c] You have lost your custom title \"%s\"!", MOSSGREEN, g_szChatPrefix, WHITE, g_szflagTitle_Colored[i]);
 					}
 					break;
 				}
@@ -944,12 +946,12 @@ public void SQL_insertFlagCallback(Handle owner, Handle hndl, const char[] error
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_insertFlagCallback): %s ", error);
+		LogError("[%s] SQL Error (SQL_insertFlagCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Succesfully granted title to a player", MOSSGREEN, WHITE);
+		PrintToChat(data, "[%c%s%c] Succesfully granted title to a player", MOSSGREEN, g_szChatPrefix, WHITE);
 	
 	db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
 }
@@ -965,12 +967,12 @@ public void SQL_updatePlayerFlagsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_updatePlayerFlagsCallback): %s ", error);
+		LogError("[%s] SQL Error (SQL_updatePlayerFlagsCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Succesfully updated player's titles", MOSSGREEN, WHITE);
+		PrintToChat(data, "[%c%s%c] Succesfully updated player's titles", MOSSGREEN, g_szChatPrefix, WHITE);
 	
 	if (g_iAdminSelectedClient[data] != -1)
 		db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
@@ -1001,11 +1003,11 @@ public void SQL_deletePlayerTitlesCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deletePlayerTitlesCallback): %s ", error);
+		LogError("[%s] SQL Error (SQL_deletePlayerTitlesCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	
-	PrintToChat(data, "[%cCK%c] Succesfully deleted player's titles.", MOSSGREEN, WHITE);
+	PrintToChat(data, "[%c%s%c] Succesfully deleted player's titles.", MOSSGREEN, g_szChatPrefix, WHITE);
 	db_checkChangesInTitle(g_iAdminSelectedClient[data], g_szAdminSelectedSteamID[data]);
 }
 
@@ -1040,7 +1042,7 @@ public void db_editSpawnLocationsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_editSpawnLocationsCallback): %s ", error);
+		LogError("[%s] SQL Error (db_editSpawnLocationsCallback): %s ", g_szChatPrefix, error);
 		return;
 	}
 	db_selectSpawnLocations();
@@ -1060,7 +1062,7 @@ public void db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const cha
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_selectSpawnLocationsCallback): %s ", error);
+		LogError("[%s] SQL Error (db_selectSpawnLocationsCallback): %s ", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_ClearLatestRecords();
 		return;
@@ -1102,7 +1104,7 @@ public void sql_selectPlayerProCountCallback(Handle owner, Handle hndl, const ch
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectPlayerProCountCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectPlayerProCountCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_viewFastestBonus();
 		return;
@@ -1137,7 +1139,7 @@ public void db_viewMapRankProCallback(Handle owner, Handle hndl, const char[] er
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewMapRankProCallback): %s ", error);
+		LogError("[%s] SQL Error (db_viewMapRankProCallback): %s ", g_szChatPrefix, error);
 	}
 	
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
@@ -1165,7 +1167,7 @@ public void SQL_UpdateStatCallback(Handle owner, Handle hndl, const char[] error
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_UpdateStatCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_UpdateStatCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1223,7 +1225,7 @@ public void sql_selectRankedPlayerCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectRankedPlayerCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectRankedPlayerCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1296,7 +1298,7 @@ public void sql_selectChallengesCallbackCalc(Handle owner, Handle hndl, const ch
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectChallengesCallbackCalc): %s", error);
+		LogError("[%s] SQL Error (sql_selectChallengesCallbackCalc): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1348,7 +1350,7 @@ public void sql_CountFinishedBonusCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_CountFinishedBonusCallback): %s", error);
+		LogError("[%s] SQL Error (sql_CountFinishedBonusCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1395,7 +1397,7 @@ public void sql_CountFinishedMapsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_CountFinishedMapsCallback): %s", error);
+		LogError("[%s] SQL Error (sql_CountFinishedMapsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1473,7 +1475,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_updatePlayerRankPointsCallback): %s", error);
+		LogError("[%s] SQL Error (sql_updatePlayerRankPointsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1508,7 +1510,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 					if (1 <= i <= MaxClients && IsValidEntity(i) && IsValidClient(i))
 					{
 						if (g_bManualRecalc)
-							PrintToChat(i, "%t", "PrUpdateFinished", MOSSGREEN, WHITE, LIMEGREEN);
+							PrintToChat(i, "%t", "PrUpdateFinished", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN);
 					}
 				g_bManualRecalc = false;
 				g_pr_RankingRecalc_InProgress = false;
@@ -1526,7 +1528,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 		{
 			ProfileMenu(data, -1);
 			if (IsValidClient(data))
-				PrintToChat(data, "%t", "Rc_PlayerRankFinished", MOSSGREEN, WHITE, GRAY, PURPLE, g_pr_points[data], GRAY);
+				PrintToChat(data, "%t", "Rc_PlayerRankFinished", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, g_pr_points[data], GRAY);
 			g_bRecalcRankInProgess[data] = false;
 		}
 		if (IsValidClient(data) && g_pr_showmsg[data]) // Player gained points
@@ -1538,7 +1540,7 @@ public void sql_updatePlayerRankPointsCallback(Handle owner, Handle hndl, const 
 			{
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						PrintToChat(i, "%t", "EarnedPoints", MOSSGREEN, WHITE, PURPLE, szName, GRAY, PURPLE, earnedPoints, GRAY, PURPLE, g_pr_points[data], GRAY);
+						PrintToChat(i, "%t", "EarnedPoints", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE, szName, GRAY, PURPLE, earnedPoints, GRAY, PURPLE, g_pr_points[data], GRAY);
 			}
 			g_pr_showmsg[data] = false;
 			db_CalculatePlayersCountGreater0();
@@ -1571,7 +1573,7 @@ public void db_viewPlayerPointsCallback(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewPlayerPointsCallback): %s", error);
+		LogError("[%s] SQL Error (db_viewPlayerPointsCallback): %s", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewPlayerOptions(client, g_szSteamID[client]);
 		return;
@@ -1628,7 +1630,7 @@ public void sql_selectRankedPlayersRankCallback(Handle owner, Handle hndl, const
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectRankedPlayersRankCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectRankedPlayersRankCallback): %s", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewPlayerOptions(client, g_szSteamID[client]);
 		return;
@@ -1716,7 +1718,7 @@ public void SQL_ViewRankedPlayerCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRankedPlayerCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1758,7 +1760,7 @@ public void SQL_ViewRankedPlayerCallback2(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback2): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRankedPlayerCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1782,7 +1784,7 @@ public void SQL_ViewRankedPlayerCallback4(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback4): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRankedPlayerCallback4): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1804,7 +1806,7 @@ public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayerCallback5): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRankedPlayerCallback5): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -1970,7 +1972,7 @@ public void SQL_ViewRankedPlayer2Callback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRankedPlayer2Callback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRankedPlayer2Callback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2010,7 +2012,7 @@ public void SQL_ViewPlayerAll2Callback(Handle owner, Handle hndl, const char[] e
 	
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewPlayerAll2Callback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewPlayerAll2Callback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2032,7 +2034,7 @@ public void SQL_ViewPlayerAll2Callback(Handle owner, Handle hndl, const char[] e
 			db_viewPlayerRank2(client, szSteamId2);
 	}
 	else
-		PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, WHITE, szName);
+		PrintToChat(client, "%t", "PlayerNotFound", MOSSGREEN, g_szChatPrefix, WHITE, szName);
 	CloseHandle(data);
 }
 
@@ -2052,7 +2054,7 @@ public void SQL_ViewPlayerAllCallback(Handle owner, Handle hndl, const char[] er
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewPlayerAllCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewPlayerAllCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2063,7 +2065,7 @@ public void SQL_ViewPlayerAllCallback(Handle owner, Handle hndl, const char[] er
 	}
 	else
 		if (IsClientInGame(data))
-		PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN, WHITE, g_szProfileName[data]);
+		PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN, g_szChatPrefix, WHITE, g_szProfileName[data]);
 }
 
 public void ContinueRecalc(int client)
@@ -2116,7 +2118,7 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectTopChallengersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectTopChallengersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	char szValue[128];
@@ -2173,7 +2175,7 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 		}
 		if (i == 1)
 		{
-			PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, WHITE);
+			PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, g_szChatPrefix, WHITE);
 			ckTopMenu(data);
 		}
 		else
@@ -2184,7 +2186,7 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 	}
 	else
 	{
-		PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, WHITE);
+		PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, g_szChatPrefix, WHITE);
 		ckTopMenu(data);
 	}
 }
@@ -2292,7 +2294,7 @@ public void db_viewChallengeHistory(int client, char szSteamId[32])
 	}
 	else
 		if (IsClientInGame(client))
-		PrintToChat(client, "[%cCK%c] Invalid SteamID found.", RED, WHITE);
+		PrintToChat(client, "[%c%s%c] Invalid SteamID found.", RED, WHITE);
 	ProfileMenu(client, -1);
 }
 
@@ -2300,7 +2302,7 @@ public void sql_selectChallengesCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectChallengesCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectChallengesCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2344,7 +2346,7 @@ public void sql_selectChallengesCallback(Handle owner, Handle hndl, const char[]
 				PrintToConsole(client, "-------------");
 				PrintToConsole(client, " ");
 				bHeader = true;
-				PrintToChat(client, "%t", "ConsoleOutput", LIMEGREEN, WHITE);
+				PrintToChat(client, "%t", "ConsoleOutput", LIMEGREEN, g_szChatPrefix, WHITE);
 			}
 			
 			//won/loss?
@@ -2376,7 +2378,7 @@ public void sql_selectChallengesCallback(Handle owner, Handle hndl, const char[]
 	if (!bHeader)
 	{
 		ProfileMenu(client, -1);
-		PrintToChat(client, "[%cCK%c] No challenges found.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] No challenges found.", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 }
 
@@ -2384,7 +2386,7 @@ public void sql_selectChallengesCallback2(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectChallengesCallback2): %s", error);
+		LogError("[%s] SQL Error (sql_selectChallengesCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2442,7 +2444,7 @@ public void sql_selectChallengesCompareCallback(Handle owner, Handle hndl, const
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectChallengesCompareCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectChallengesCompareCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2493,40 +2495,40 @@ public void sql_selectChallengesCompareCallback(Handle owner, Handle hndl, const
 		if (winratio > 0)
 		{
 			if (pointratio > 0)
-				PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
+				PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
 			else
 				if (pointratio < 0)
-					PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
+					PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
 				else
-					PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
+					PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, GREEN, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
 		}
 		else
 		{
 			if (winratio < 0)
 			{
 				if (pointratio > 0)
-					PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
+					PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
 				else
 					if (pointratio < 0)
-						PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
+						PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
 					else
-						PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
+						PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, RED, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
 				
 			}
 			else
 			{
 				if (pointratio > 0)
-					PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
+					PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, GREEN, szPointsRatio, GRAY);
 				else
 					if (pointratio < 0)
-						PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
+						PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, RED, szPointsRatio, GRAY);
 					else
-						PrintToChat(client, "[%cCK%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
+						PrintToChat(client, "[%c%s%c] %cYou have played %c%i%c challenges against %c%s%c (win/loss ratio: %c%s%c, points ratio: %c%s%c)", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, PURPLE, challenges, GRAY, PURPLE, szName, GRAY, YELLOW, szWinRatio, GRAY, YELLOW, szPointsRatio, GRAY);
 			}
 		}
 	}
 	else
-		PrintToChat(client, "[%cCK%c] No challenges againgst %s found", szName);
+		PrintToChat(client, "[%c%s%c] No challenges againgst %s found", szName);
 }
 
 public void db_insertPlayerChallenge(int client)
@@ -2545,7 +2547,7 @@ public void sql_insertChallengesCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_insertChallengesCallback): %s", error);
+		LogError("[%s] SQL Error (sql_insertChallengesCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 }
@@ -2647,7 +2649,7 @@ public void sql_selectMapRecordCallback(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectMapRecordCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectMapRecordCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_viewMapProRankCount();
 		return;
@@ -2684,7 +2686,7 @@ public void sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectProSurfersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectProSurfersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2718,7 +2720,7 @@ public void sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[]
 		}
 		if (i == 1)
 		{
-			PrintToChat(data, "%t", "NoMapRecords", MOSSGREEN, WHITE, g_szMapName);
+			PrintToChat(data, "%t", "NoMapRecords", MOSSGREEN, g_szChatPrefix, WHITE, g_szMapName);
 		}
 	}
 	topSurfersMenu.OptionFlags = MENUFLAG_BUTTON_EXIT;
@@ -2760,7 +2762,7 @@ public void db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_selectBonusesInMapCallback): %s", error);
+		LogError("[%s] SQL Error (db_selectBonusesInMapCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
@@ -2810,7 +2812,7 @@ public void db_selectBonusesInMapCallback(Handle owner, Handle hndl, const char[
 	}
 	else
 	{
-		PrintToChat(client, "[%cCK%c] No bonuses found.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] No bonuses found.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return;
 	}
 }
@@ -2852,7 +2854,7 @@ public void sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const c
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectTopBonusSurfersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectTopBonusSurfersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2917,11 +2919,11 @@ public void sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const c
 		}
 		if (i == 1)
 		{
-			PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
+			PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, g_szChatPrefix, WHITE, szMap);
 		}
 	}
 	else
-		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
+		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, g_szChatPrefix, WHITE, szMap);
 	Format(title, 256, "Top 50 Times on %s (B %i) \n    Rank    Time               Player", szFirstMap, zGrp);
 	topMenu.SetTitle(title);
 	topMenu.OptionFlags = MENUFLAG_BUTTON_EXIT;
@@ -2933,7 +2935,7 @@ public void sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectTopSurfersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectTopSurfersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -2999,11 +3001,11 @@ public void sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[]
 		}
 		if (i == 1)
 		{
-			PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
+			PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, g_szChatPrefix, WHITE, szMap);
 		}
 	}
 	else
-		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, WHITE, szMap);
+		PrintToChat(client, "%t", "NoTopRecords", MOSSGREEN, g_szChatPrefix, WHITE, szMap);
 	Format(title, 256, "Top 50 Times on %s \n    Rank    Time               Player", szFirstMap);
 	SetMenuTitle(menu, title);
 	SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
@@ -3032,7 +3034,7 @@ public void SQL_CurrentRunRankCallback(Handle owner, Handle hndl, const char[] e
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_CurrentRunRankCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_CurrentRunRankCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	// Get players rank, 9999999 = error
@@ -3063,7 +3065,7 @@ public void sql_selectRecordCallback(Handle owner, Handle hndl, const char[] err
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectRecordCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectRecordCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3134,7 +3136,7 @@ public void SQL_UpdateRecordProCallback(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_UpdateRecordProCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3157,7 +3159,7 @@ public void SQL_UpdateRecordProCallback2(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_UpdateRecordProCallback2): %s", error);
+		LogError("[%s] SQL Error (SQL_UpdateRecordProCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	// Get players rank, 9999999 = error
@@ -3189,7 +3191,7 @@ public void SQL_ViewRecordCallback(Handle owner, Handle hndl, const char[] error
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRecordCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -3236,7 +3238,7 @@ public void SQL_ViewRecordCallback2(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback2): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRecordCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3264,7 +3266,7 @@ public void SQL_ViewRecordCallback3(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback3): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRecordCallback3): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3321,7 +3323,7 @@ public void SQL_ViewRecordCallback4(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback4): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRecordCallback4): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3345,7 +3347,7 @@ public void SQL_ViewRecordCallback5(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewRecordCallback5): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewRecordCallback5): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3408,7 +3410,7 @@ public void db_viewAllRecords(int client, char szSteamId[32])
 		SQL_TQuery(g_hDb, SQL_ViewAllRecordsCallback, szQuery, client, DBPrio_Low);
 	else
 		if (IsClientInGame(client))
-		PrintToChat(client, "[%cCK%c] Invalid SteamID found.", RED, WHITE);
+		PrintToChat(client, "[%c%s%c] Invalid SteamID found.", RED, WHITE);
 	ProfileMenu(client, -1);
 }
 
@@ -3417,7 +3419,7 @@ public void SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] e
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewAllRecordsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3459,7 +3461,7 @@ public void SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] e
 						PrintToConsole(data, "-------------");
 						PrintToConsole(data, " ");
 						bHeader = true;
-						PrintToChat(data, "%t", "ConsoleOutput", LIMEGREEN, WHITE);
+						PrintToChat(data, "%t", "ConsoleOutput", LIMEGREEN, g_szChatPrefix, WHITE);
 					}
 					Handle pack = CreateDataPack();
 					WritePackString(pack, szName);
@@ -3495,7 +3497,7 @@ public void SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] e
 	{
 		if (!bHeader)
 		{
-			PrintToChat(data, "%t", "ConsoleOutput", LIMEGREEN, WHITE);
+			PrintToChat(data, "%t", "ConsoleOutput", LIMEGREEN, g_szChatPrefix, WHITE);
 			PrintToConsole(data, " ");
 			PrintToConsole(data, "-------------");
 			PrintToConsole(data, "Finished Maps");
@@ -3509,7 +3511,7 @@ public void SQL_ViewAllRecordsCallback(Handle owner, Handle hndl, const char[] e
 	if (!bHeader && StrEqual(szUncMaps, ""))
 	{
 		ProfileMenu(data, -1);
-		PrintToChat(data, "%t", "PlayerHasNoMapRecords", LIMEGREEN, WHITE, g_szProfileName[data]);
+		PrintToChat(data, "%t", "PlayerHasNoMapRecords", LIMEGREEN, g_szChatPrefix, WHITE, g_szProfileName[data]);
 	}
 }
 
@@ -3517,7 +3519,7 @@ public void SQL_ViewAllRecordsCallback2(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback2): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewAllRecordsCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3544,7 +3546,7 @@ public void SQL_ViewAllRecordsCallback3(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewAllRecordsCallback3): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewAllRecordsCallback3): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3586,7 +3588,7 @@ public void SQL_SelectPlayerCallback(Handle owner, Handle hndl, const char[] err
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_SelectPlayerCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_SelectPlayerCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3625,7 +3627,7 @@ public void SQL_selectPersonalRecordsCallback(Handle owner, Handle hndl, const c
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectPersonalRecordsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectPersonalRecordsCallback): %s", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewPersonalBonusRecords(client, g_szSteamID[client]);
 		return;
@@ -3691,7 +3693,7 @@ public void SQL_LastRunCallback(Handle owner, Handle hndl, const char[] error, a
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_LastRunCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_LastRunCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3790,7 +3792,7 @@ public void sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectRecordCheckpointsCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectRecordCheckpointsCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_CalcAvgRunTime();
 		return;
@@ -3829,7 +3831,7 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectCheckpointsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectCheckpointsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3891,7 +3893,7 @@ public void db_viewCheckpointsinZoneGroupCallback(Handle owner, Handle hndl, con
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectCheckpointsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectCheckpointsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -3942,7 +3944,7 @@ public void SQL_updateCheckpointsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_updateCheckpointsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_updateCheckpointsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	ResetPack(data);
@@ -3964,7 +3966,7 @@ public void SQL_deleteCheckpointsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deleteCheckpointsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_deleteCheckpointsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 }
@@ -4020,7 +4022,7 @@ public void db_insertMapTierCallback(Handle owner, Handle hndl, const char[] err
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_insertMapTierCallback): %s", error);
+		LogError("[%s] SQL Error (db_insertMapTierCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4040,7 +4042,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectMapTierCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectMapTierCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_viewRecordCheckpointInMap();
 		return;
@@ -4060,7 +4062,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 				g_bTierFound[i] = true;
 				if (i == 0)
 				{
-					Format(g_sTierString[0], 512, " [%cCK%c] %cMap: %c%s %c| ", MOSSGREEN, WHITE, GREEN, LIMEGREEN, g_szMapName, GREEN);
+					Format(g_sTierString[0], 512, " [%c%s%c] %cMap: %c%s %c| ", MOSSGREEN, g_szChatPrefix, WHITE, GREEN, LIMEGREEN, g_szMapName, GREEN);
 					switch (tier)
 					{
 						case 1:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], GRAY, tier, GREEN);
@@ -4086,12 +4088,12 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 				{
 					switch (tier)
 					{
-						case 1:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, GRAY, g_szZoneGroupName[i], tier);
-						case 2:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, LIGHTBLUE, g_szZoneGroupName[i], tier);
-						case 3:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, BLUE, g_szZoneGroupName[i], tier);
-						case 4:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, DARKBLUE, g_szZoneGroupName[i], tier);
-						case 5:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, RED, g_szZoneGroupName[i], tier);
-						case 6:Format(g_sTierString[i], 512, "[%cCK%c] &c%s Tier: %i", MOSSGREEN, WHITE, DARKRED, g_szZoneGroupName[i], tier);
+						case 1:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, g_szZoneGroupName[i], tier);
+						case 2:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, LIGHTBLUE, g_szZoneGroupName[i], tier);
+						case 3:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, BLUE, g_szZoneGroupName[i], tier);
+						case 4:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, DARKBLUE, g_szZoneGroupName[i], tier);
+						case 5:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, RED, g_szZoneGroupName[i], tier);
+						case 6:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, DARKRED, g_szZoneGroupName[i], tier);
 					}
 				}
 			}
@@ -4118,7 +4120,7 @@ public void SQL_deleteAllMapTiersCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deleteAllMapTiersCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_deleteAllMapTiersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4159,7 +4161,7 @@ public void db_viewBonusRunRank(Handle owner, Handle hndl, const char[] error, a
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewBonusRunRank): %s", error);
+		LogError("[%s] SQL Error (db_viewBonusRunRank): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -4192,7 +4194,7 @@ public void db_viewMapRankBonusCallback(Handle owner, Handle hndl, const char[] 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewMapRankBonusCallback): %s", error);
+		LogError("[%s] SQL Error (db_viewMapRankBonusCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4238,7 +4240,7 @@ public void SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, co
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectPersonalBonusRecordsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectPersonalBonusRecordsCallback): %s", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewPlayerPoints(client);
 		return;
@@ -4288,7 +4290,7 @@ public void SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectFastestBonusCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectFastestBonusCallback): %s", g_szChatPrefix, error);
 		
 		if (!g_bServerDataLoaded)
 			db_viewBonusTotalCount();
@@ -4344,7 +4346,7 @@ public void SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const c
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectBonusTotalCountCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectBonusTotalCountCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_selectMapTier();
 		return;
@@ -4386,7 +4388,7 @@ public void SQL_insertBonusCallback(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_insertBonusCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_insertBonusCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4417,7 +4419,7 @@ public void SQL_updateBonusCallback(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_updateBonusCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_updateBonusCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4435,7 +4437,7 @@ public void SQL_deleteBonusCallback(Handle owner, Handle hndl, const char[] erro
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deleteBonusCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_deleteBonusCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 }
@@ -4451,7 +4453,7 @@ public void SQL_selectBonusCountCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectBonusCountCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectBonusCountCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4512,7 +4514,7 @@ public void sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] err
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_setZoneNamesCallback): %s", error);
+		LogError("[%s] SQL Error (sql_setZoneNamesCallback): %s", g_szChatPrefix, error);
 		CloseHandle(data);
 		return;
 	}
@@ -4532,7 +4534,7 @@ public void sql_setZoneNamesCallback(Handle owner, Handle hndl, const char[] err
 	
 	if (IsValidClient(client))
 	{
-		PrintToChat(client, "[%cCK%c] Bonus name succesfully changed.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Bonus name succesfully changed.", MOSSGREEN, g_szChatPrefix, WHITE);
 		ListBonusSettings(client);
 	}
 	db_selectMapZones();
@@ -4553,7 +4555,7 @@ public void db_checkAndFixZoneIdsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_checkAndFixZoneIdsCallback): %s", error);
+		LogError("[%s] SQL Error (db_checkAndFixZoneIdsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4612,7 +4614,7 @@ public void SQL_deleteAllZonesCallback(Handle owner, Handle hndl, const char[] e
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deleteAllZonesCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_deleteAllZonesCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4644,7 +4646,7 @@ public void SQL_insertZonesCheapCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		PrintToChatAll("[%cCK%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, WHITE);
+		PrintToChatAll("[%c%s%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, g_szChatPrefix, WHITE);
 		db_checkAndFixZoneIds();
 		return;
 	}
@@ -4672,7 +4674,7 @@ public void SQL_insertZonesCallback(Handle owner, Handle hndl, const char[] erro
 	if (hndl == null)
 	{
 		
-		PrintToChatAll("[%cCK%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, WHITE);
+		PrintToChatAll("[%c%s%c] Failed to create a zone, attempting a fix... Recreate the zone, please.", MOSSGREEN, g_szChatPrefix, WHITE);
 		db_checkAndFixZoneIds();
 		return;
 	}
@@ -4691,7 +4693,7 @@ public void SQL_saveZonesCallBack(Handle owner, Handle hndl, const char[] error,
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_saveZonesCallBack): %s", error);
+		LogError("[%s] SQL Error (SQL_saveZonesCallBack): %s", g_szChatPrefix, error);
 		return;
 	}
 	char szzone[128];
@@ -4714,7 +4716,7 @@ public void SQL_updateZoneCallback(Handle owner, Handle hndl, const char[] error
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_updateZoneCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_updateZoneCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4728,9 +4730,9 @@ public int db_deleteZonesInGroup(int client)
 	if (g_CurrentSelectedZoneGroup[client] < 1)
 	{
 		if(IsValidClient(client))
-			PrintToChat(client, "[%cCKc%] Invalid zonegroup index selected, aborting. (%i)", MOSSGREEN, WHITE, g_CurrentSelectedZoneGroup[client]);
+			PrintToChat(client, "[%c%s%c] Invalid zonegroup index selected, aborting. (%i)", MOSSGREEN, g_szChatPrefix, WHITE, g_CurrentSelectedZoneGroup[client]);
 
-		PrintToServer("[CK] Invalid zonegroup index selected, aborting. (%i)", g_CurrentSelectedZoneGroup[client]);
+		PrintToServer("[%s] Invalid zonegroup index selected, aborting. (%i)", g_szChatPrefix, g_CurrentSelectedZoneGroup[client]);
 	}
 
 	Transaction h_DeleteZoneGroup = SQL_CreateTransaction();
@@ -4753,7 +4755,7 @@ public int db_deleteZonesInGroup(int client)
 
 public void SQLTxn_ZoneGroupRemovalSuccess(Handle db, any client, int numQueries, Handle[] results, any[] queryData)
 {
-	PrintToServer("[CK] Zonegroup removal was successful");
+	PrintToServer("[%s] Zonegroup removal was successful", g_szChatPrefix);
 
 	db_selectMapZones();
 	db_viewFastestBonus();
@@ -4763,7 +4765,7 @@ public void SQLTxn_ZoneGroupRemovalSuccess(Handle db, any client, int numQueries
 	if (IsValidClient(client))
 	{
 		ZoneMenu(client);
-		PrintToChat(client, "[%cCK%c] Zone group deleted.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Zone group deleted.", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	return;
 }
@@ -4771,9 +4773,9 @@ public void SQLTxn_ZoneGroupRemovalSuccess(Handle db, any client, int numQueries
 public void SQLTxn_ZoneGroupRemovalFailed(Handle db, any client, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if(IsValidClient(client))
-		PrintToChat(client, "[%cCK%c] Zonegroup removal failed! (Error: %s)", MOSSGREEN, WHITE, error);
+		PrintToChat(client, "[%c%s%c] Zonegroup removal failed! (Error: %s)", MOSSGREEN, g_szChatPrefix, WHITE, error);
 
-	PrintToServer("[CK] Zonegroup removal failed (Error: %s)", error);
+	PrintToServer("[%s] Zonegroup removal failed (Error: %s)", g_szChatPrefix, error);
 	return;
 }
 
@@ -4788,7 +4790,7 @@ public void SQL_selectzoneTypeIdsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectzoneTypeIdsCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectzoneTypeIdsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -4848,7 +4850,7 @@ public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, a
 {
 	if(hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (checkZoneTypeIds): %s", error);
+		LogError("[%s] SQL Error (checkZoneTypeIds): %s", g_szChatPrefix, error);
 		return;
 	}
 	if(SQL_HasResultSet(hndl))
@@ -4872,7 +4874,7 @@ public checkZoneTypeIdsCallback(Handle owner, Handle hndl, const char[] error, a
 						continue;
 					else
 					{
-						PrintToServer("[ckSurf] Error on zonetype: %i, zonetypeid: %i", i, idChecker[i][k]);
+						PrintToServer("[%s] Error on zonetype: %i, zonetypeid: %i", g_szChatPrefix, i, idChecker[i][k]);
 						Format(szQuery, 258, "UPDATE `ck_zones` SET zonetypeid = zonetypeid-1 WHERE mapname = '%s' AND zonetype = %i AND zonetypeid > %i AND zonegroup = %i;", g_szMapName, j, k, i);
 						SQL_LockDatabase(g_hDb);
 						SQL_FastQuery(g_hDb, szQuery);
@@ -4891,7 +4893,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 {
 	if(hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (checkZoneIdsCallback): %s", error);
+		LogError("[%s] SQL Error (checkZoneIdsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -4908,7 +4910,7 @@ public checkZoneIdsCallback(Handle owner, Handle hndl, const char[] error, any:d
 			}
 			else
 			{
-				PrintToServer("[ckSurf] Found an error in ZoneID's. Fixing...");
+				PrintToServer("[%s] Found an error in ZoneID's. Fixing...", g_szChatPrefix);
 				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = %i WHERE mapname = '%s' AND zoneid = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -4927,7 +4929,7 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 {
 	if(hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (checkZoneGroupIds): %s", error);
+		LogError("[%s] SQL Error (checkZoneGroupIds): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -4944,7 +4946,7 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 			else
 			{
 				i++;
-				PrintToServer("[ckSurf] Found an error in zoneGroupID's. Fixing...");
+				PrintToServer("[%s] Found an error in zoneGroupID's. Fixing...", g_szChatPrefix);
 				Format(szQuery, 258, "UPDATE `ck_zones` SET `zonegroup` = %i WHERE `mapname` = '%s' AND `zonegroup` = %i", i, g_szMapName, SQL_FetchInt(hndl, 0));
 				SQL_LockDatabase(g_hDb);
 				SQL_FastQuery(g_hDb, szQuery);
@@ -4966,7 +4968,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_selectMapZonesCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_selectMapZonesCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_GetMapRecord_Pro();
 		return;
@@ -5138,7 +5140,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 		for (int i = 0; i < g_mapZonesCount; i++)
 			if (zoneIdChecker[i] == 0)
 			{
-				PrintToServer("[ckSurf] Found an error in zoneid : %i", i);
+				PrintToServer("[%s] Found an error in zoneid : %i", g_szChatPrefix, i);
 				Format(szQuery, 258, "UPDATE `ck_zones` SET zoneid = zoneid-1 WHERE mapname = '%s' AND zoneid > %i", g_szMapName, i);
 				PrintToServer("Query: %s", szQuery);
 				SQL_TQuery(g_hDb, sql_zoneFixCallback, szQuery, -1, DBPrio_Low);
@@ -5149,7 +5151,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 		for (int i = 0; i < g_mapZoneGroupCount; i++)
 			if (zoneGroupChecker[i] == 0)
 			{
-				PrintToServer("[ckSurf] Found an error in zonegroup %i (ZoneGroups total: %i)", i, g_mapZoneGroupCount);
+				PrintToServer("[%s] Found an error in zonegroup %i (ZoneGroups total: %i)", g_szChatPrefix, i, g_mapZoneGroupCount);
 				Format(szQuery, 258, "UPDATE `ck_zones` SET `zonegroup` = zonegroup-1 WHERE `mapname` = '%s' AND `zonegroup` > %i", g_szMapName, i);
 				SQL_TQuery(g_hDb, sql_zoneFixCallback, szQuery, zoneGroupChecker[i], DBPrio_Low);
 				return;
@@ -5163,7 +5165,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 					{
 						if (zoneTypeIdChecker[i][k][x] == 0)
 						{
-							PrintToServer("[ckSurf] ZoneTypeID missing! [ZoneGroup: %i ZoneType: %i, ZonetypeId: %i]", i, k, x);
+							PrintToServer("[%s] ZoneTypeID missing! [ZoneGroup: %i ZoneType: %i, ZonetypeId: %i]", g_szChatPrefix, i, k, x);
 							Format(szQuery, 258, "UPDATE `ck_zones` SET zonetypeid = zonetypeid-1 WHERE mapname = '%s' AND zonetype = %i AND zonetypeid > %i AND zonegroup = %i;", g_szMapName, k, x, i);
 							SQL_TQuery(g_hDb, sql_zoneFixCallback, szQuery, -1, DBPrio_Low);
 							return;
@@ -5171,7 +5173,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 						else if (zoneTypeIdChecker[i][k][x] > 1)
 						{
 							char szerror[258];
-							Format(szerror, 258, "[ckSurf] Duplicate Stage Zone ID's on %s [ZoneGroup: %i, ZoneType: 3, ZoneTypeId: %i]", g_szMapName, k, x);
+							Format(szerror, 258, "[%s] Duplicate Stage Zone ID's on %s [ZoneGroup: %i, ZoneType: 3, ZoneTypeId: %i]", g_szChatPrefix, g_szMapName, k, x);
 							LogError(szerror);
 						}
 					}
@@ -5195,7 +5197,7 @@ public void sql_zoneFixCallback(Handle owner, Handle hndl, const char[] error, a
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_zoneFixCallback): %s", error);
+		LogError("[%s] SQL Error (sql_zoneFixCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	if (zongeroup == -1)
@@ -5214,7 +5216,7 @@ public void sql_zoneFixCallback2(Handle owner, Handle hndl, const char[] error, 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_zoneFixCallback2): %s", error);
+		LogError("[%s] SQL Error (sql_zoneFixCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -5234,7 +5236,7 @@ public void SQL_deleteMapZonesCallback(Handle owner, Handle hndl, const char[] e
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_deleteMapZonesCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_deleteMapZonesCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 }
@@ -5256,15 +5258,15 @@ public void db_deleteZone(int client, int zoneid)
 public void SQLTxn_ZoneRemovalSuccess(Handle db, any client, int numQueries, Handle[] results, any[] queryData)
 {
 	if (IsValidClient(client))
-		PrintToChat(client, "[%cCK%c] Zone Removed Succesfully", MOSSGREEN, WHITE);
-	PrintToServer("[ckSurf] Zone Removed Succesfully");
+		PrintToChat(client, "[%c%s%c] Zone Removed Succesfully", MOSSGREEN, g_szChatPrefix, WHITE);
+	PrintToServer("[%s] Zone Removed Succesfully", g_szChatPrefix);
 }
 
 public void SQLTxn_ZoneRemovalFailed(Handle db, any client, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (IsValidClient(client))
-		PrintToChat(client, "[%cCK%c] %cZone Removal Failed! Error:%c %s", MOSSGREEN, WHITE, RED, WHITE, error);
-	PrintToServer("[ckSurf] Zone Removal Failed. Error: %s", error);
+		PrintToChat(client, "[%c%s%c] %cZone Removal Failed! Error:%c %s", MOSSGREEN, g_szChatPrefix, WHITE, RED, WHITE, error);
+	PrintToServer("[%s] Zone Removal Failed. Error: %s", g_szChatPrefix, error);
 	return;
 }
 
@@ -5304,7 +5306,7 @@ public void db_insertLastPositionCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_insertLastPositionCallback): %s", error);
+		LogError("[%s] SQL Error (db_insertLastPositionCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -5354,7 +5356,7 @@ public void sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const cha
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectLatestRecordsCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectLatestRecordsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -5384,7 +5386,7 @@ public void sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const cha
 	else
 		PrintToConsole(data, "No records found.");
 	PrintToConsole(data, "----------------------------------------------------------------------------------------------------");
-	PrintToChat(data, "[%cCK%c] See console for output!", MOSSGREEN, WHITE);
+	PrintToChat(data, "[%c%s%c] See console for output!", MOSSGREEN, g_szChatPrefix, WHITE);
 }
 
 
@@ -5406,7 +5408,7 @@ public void GetDBNameCallback(Handle owner, Handle hndl, const char[] error, any
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (GetDBNameCallback): %s", error);
+		LogError("[%s] SQL Error (GetDBNameCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -5428,7 +5430,7 @@ public void SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_db_CalcAvgRunTimeCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_db_CalcAvgRunTimeCallback): %s", g_szChatPrefix, error);
 		
 		if (!g_bServerDataLoaded && g_bhasBonus)
 			db_CalcAvgRunTimeBonus();
@@ -5476,7 +5478,7 @@ public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_db_CalcAvgRunTimeCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_db_CalcAvgRunTimeCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_CalculatePlayerCount();
 		return;
@@ -5528,7 +5530,7 @@ public void SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const 
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_db_GetDynamicTimelimitCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_db_GetDynamicTimelimitCallback): %s", g_szChatPrefix, error);
 		loadAllClientSettings();
 		return;
 	}
@@ -5609,7 +5611,7 @@ public void sql_CountRankedPlayersCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_CountRankedPlayersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_CountRankedPlayersCallback): %s", g_szChatPrefix, error);
 		db_CalculatePlayersCountGreater0();
 		return;
 	}
@@ -5630,7 +5632,7 @@ public void sql_CountRankedPlayers2Callback(Handle owner, Handle hndl, const cha
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_CountRankedPlayers2Callback): %s", error);
+		LogError("[%s] SQL Error (sql_CountRankedPlayers2Callback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
 			db_selectSpawnLocations();
 		return;
@@ -5665,7 +5667,7 @@ public void db_viewUnfinishedMaps(int client, char szSteamId[32])
 {
 	if (IsValidClient(client))
 	{
-		PrintToChat(client, "%t", "ConsoleOutput", LIMEGREEN, WHITE);
+		PrintToChat(client, "%t", "ConsoleOutput", LIMEGREEN, g_szChatPrefix, WHITE);
 		ProfileMenu(client, -1);
 	}
 	else
@@ -5681,7 +5683,7 @@ public void db_viewUnfinishedMapsCallback(Handle owner, Handle hndl, const char[
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewUnfinishedMapsCallback): %s", error);
+		LogError("[%s] SQL Error (db_viewUnfinishedMapsCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 
@@ -5829,7 +5831,7 @@ public void SQL_ViewPlayerProfile1Callback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewPlayerProfile1Callback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewPlayerProfile1Callback): %s", g_szChatPrefix, error);
 		return;
 	}
 	char szPlayerName[MAX_NAME_LENGTH];
@@ -5859,7 +5861,7 @@ public void sql_selectPlayerNameCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectPlayerNameCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectPlayerNameCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -5898,7 +5900,7 @@ public void sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const cha
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (sql_selectRankedPlayersCallback): %s", error);
+		LogError("[%s] SQL Error (sql_selectRankedPlayersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -5913,7 +5915,7 @@ public void sql_selectRankedPlayersCallback(Handle owner, Handle hndl, const cha
 				if (1 <= c <= MaxClients && IsValidEntity(c) && IsValidClient(c))
 				{
 					if (g_bManualRecalc)
-						PrintToChat(c, "%t", "PrUpdateFinished", MOSSGREEN, WHITE, LIMEGREEN);
+						PrintToChat(c, "%t", "PrUpdateFinished", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN);
 				}
 			g_bManualRecalc = false;
 			g_pr_RankingRecalc_InProgress = false;
@@ -5996,7 +5998,7 @@ public void SQL_InsertPlayerCallBack(Handle owner, Handle hndl, const char[] err
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_InsertPlayerCallBack): %s", error);
+		LogError("[%s] SQL Error (SQL_InsertPlayerCallBack): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6028,7 +6030,7 @@ public void SQL_CheckCallback(Handle owner, Handle hndl, const char[] error, any
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_CheckCallback): %s", error);
+		LogError("[%s] SQL Error (SQL_CheckCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 }
@@ -6038,7 +6040,7 @@ public void SQL_CheckCallback2(Handle owner, Handle hndl, const char[] error, an
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_CheckCallback2): %s", error);
+		LogError("[%s] SQL Error (SQL_CheckCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6050,7 +6052,7 @@ public void SQL_CheckCallback3(Handle owner, Handle hndl, const char[] error, an
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_CheckCallback3): %s", error);
+		LogError("[%s] SQL Error (SQL_CheckCallback3): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6070,7 +6072,7 @@ public void SQL_CheckCallback4(Handle owner, Handle hndl, const char[] error, an
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_CheckCallback4): %s", error);
+		LogError("[%s] SQL Error (SQL_CheckCallback4): %s", g_szChatPrefix, error);
 		return;
 	}
 	char steamid[128];
@@ -6111,7 +6113,7 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_viewPlayerOptionsCallback): %s", error);
+		LogError("[%s] SQL Error (db_viewPlayerOptionsCallback): %s", g_szChatPrefix, error);
 		if (!g_bSettingsLoaded[client])
 			db_viewPersonalFlags(client, g_szSteamID[client]);
 		return;
@@ -6218,7 +6220,7 @@ public void db_sql_selectMapRecordHoldersCallback(Handle owner, Handle hndl, con
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_sql_selectMapRecordHoldersCallback): %s", error);
+		LogError("[%s] SQL Error (db_sql_selectMapRecordHoldersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6252,13 +6254,13 @@ public void db_sql_selectMapRecordHoldersCallback(Handle owner, Handle hndl, con
 		}
 		if (x == 0)
 		{
-			PrintToChat(data, "%t", "NoRecordTop", MOSSGREEN, WHITE);
+			PrintToChat(data, "%t", "NoRecordTop", MOSSGREEN, g_szChatPrefix, WHITE);
 			ckTopMenu(data);
 		}
 	}
 	else
 	{
-		PrintToChat(data, "%t", "NoRecordTop", MOSSGREEN, WHITE);
+		PrintToChat(data, "%t", "NoRecordTop", MOSSGREEN, g_szChatPrefix, WHITE);
 		ckTopMenu(data);
 	}
 }
@@ -6267,7 +6269,7 @@ public void db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, co
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_sql_selectMapRecordHoldersCallback2): %s", error);
+		LogError("[%s] SQL Error (db_sql_selectMapRecordHoldersCallback2): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6307,7 +6309,7 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (db_selectTop100PlayersCallback): %s", error);
+		LogError("[%s] SQL Error (db_selectTop100PlayersCallback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6373,7 +6375,7 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 		}
 		if (i == 1)
 		{
-			PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, WHITE);
+			PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, g_szChatPrefix, WHITE);
 		}
 		else
 		{
@@ -6383,7 +6385,7 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 	}
 	else
 	{
-		PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, WHITE);
+		PrintToChat(data, "%t", "NoPlayerTop", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 }
 
@@ -6391,7 +6393,7 @@ public void SQL_ViewPlayerProfile2Callback(Handle owner, Handle hndl, const char
 {
 	if (hndl == null)
 	{
-		LogError("[ckSurf] SQL Error (SQL_ViewPlayerProfile2Callback): %s", error);
+		LogError("[%s] SQL Error (SQL_ViewPlayerProfile2Callback): %s", g_szChatPrefix, error);
 		return;
 	}
 	
@@ -6402,7 +6404,7 @@ public void SQL_ViewPlayerProfile2Callback(Handle owner, Handle hndl, const char
 	}
 	else
 		if (IsClientInGame(data))
-		PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN, WHITE, g_szProfileName[data]);
+		PrintToChat(data, "%t", "PlayerNotFound", MOSSGREEN, g_szChatPrefix, WHITE, g_szProfileName[data]);
 }
 
 public int ProfileMenuHandler(Handle menu, MenuAction action, int client, int item)
@@ -6419,13 +6421,13 @@ public int ProfileMenuHandler(Handle menu, MenuAction action, int client, int it
 			{
 				if (g_bRecalcRankInProgess[client])
 				{
-					PrintToChat(client, "[%cCK%c] %cRecalculation in progress. Please wait!", MOSSGREEN, WHITE, GRAY);
+					PrintToChat(client, "[%c%s%c] %cRecalculation in progress. Please wait!", MOSSGREEN, g_szChatPrefix, WHITE, GRAY);
 				}
 				else
 				{
 					
 					g_bRecalcRankInProgess[client] = true;
-					PrintToChat(client, "%t", "Rc_PlayerRankStart", MOSSGREEN, WHITE, GRAY);
+					PrintToChat(client, "%t", "Rc_PlayerRankStart", MOSSGREEN, g_szChatPrefix, WHITE, GRAY);
 					CalculatePlayerRank(client);
 				}
 			}

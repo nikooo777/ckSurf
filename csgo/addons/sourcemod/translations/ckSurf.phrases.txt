@@ -2,133 +2,133 @@
 {
 	"PracticeNormal"
 	{
-		"#format"	"{1:c},{2:c},{3:c}"
-		"en"		"[{1}CK{2}] Normal mode activated. Change to teleport mode by writing {3}!prac"
+		"#format"	"{1:c},{2:s},{3:c},{4:c}"
+		"en"		"[{1}{2}{3}] Normal mode activated. Change to teleport mode by writing {4}!prac"
 	}
 	"PracticeInStartZone"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Can't make a checkpoint inside the start zone!"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Can't make a checkpoint inside the start zone!"
 	}
 	"PracticePointCreated"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] Player Checkpoint created. Use {3}!prac{4} to start the practice mode."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] Player Checkpoint created. Use {4}!prac{5} to start the practice mode."
 	}
 	"PracticeStarted"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:c}"
-		"en"        "[{1}CK{2}] Practice mode started! Use {3}!normal{4} or {5}!n {6} to get back to normal mode!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c}"
+		"en"        "[{1}{2}{3}] Practice mode started! Use {4}!normal{5} or {6}!n {7} to get back to normal mode!"
 	}
 	"PracticeStarted2"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:c}"
-		"en"        "[{1}CK{2}] Create new checkpoints with {3}!cp{4} or undo your last checkpoint with {5}!undo {6}."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c}"
+		"en"        "[{1}{2}{3}] Create new checkpoints with {4}!cp{5} or undo your last checkpoint with {6}!undo {7}."
 	}
 	"PracticeStartError"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] You don't have a checkpoint to teleport to! Create one by using {3}!cp"	
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] You don't have a checkpoint to teleport to! Create one by using {4}!cp"	
 	}
 	"PracticeUndo"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Undid your last Player Checkpoint."	
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Undid your last Player Checkpoint."	
 	}
 	"PracticeUndoError"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] You don't have a checkpoint to undo! Create a checkpoint by using {3}!cp"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] You don't have a checkpoint to undo! Create a checkpoint by using {4}!cp"
 	}
 	"ToogleCheckpoints1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Checkpoints disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Checkpoints disabled."
 	}
 	"ToggleCheckpoints2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Checkpoints Enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Checkpoints Enabled."
 	}
 	"ToggleCheckpoints3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Checkpoints will be enabled when you restart your timer."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Checkpoints will be enabled when you restart your timer."
 	}
 	"HideChat1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Hide chat enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Hide chat enabled."
 	}
 	"HideChat2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Hide chat disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Hide chat disabled."
 	}
 	"HideViewModel1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Weapon viewmodel disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Weapon viewmodel disabled."
 	}
 	"HideViewModel2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Weapon viewmodel enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Weapon viewmodel enabled."
 	}
 	"AdvertBonus"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:c},{5:c}"
-		"en"		"[{1}CK{2}] {3}Write {4}!bonus {5}to teleport to the bonus stage."
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c}"
+		"en"		"[{1}{2}{3}] {4}Write {5}!bonus {6}to teleport to the bonus stage."
 	}
 	"AdvertStage"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:c},{5:c},{6:c},{7:c}"
-		"en"		"[{1}CK{2}] {3}Write {4}!stages {5}or {6}!s {7}to teleport between stages."
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c},{8:c}"
+		"en"		"[{1}{2}{3}] {4}Write {5}!stages {6}or {7}!s {8}to teleport between stages."
 	}
 	"BonusNotFound"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] This map doesn't have a bonus stage."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] This map doesn't have a bonus stage."
 	}
 	"StageNotFound"
 	{
-		"#format"	"{1:c},{2:c}{3:i}"
-		"en"		"[{1}CK{2}] Could not find stage {3}."
+		"#format"	"{1:c},{2:s},{3:c},{4:i}"
+		"en"		"[{1}{2}{3}] Could not find stage {4}."
 	}
 	"StartNotFound"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] No startzone found! Contact an admin, please."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] No startzone found! Contact an admin, please."
 	}
 	"ZoneVisAll"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] The zone is visible for ALL."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] The zone is visible for ALL."
 	}
 	"ZoneVisT"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] The zone is visible for Terrorists."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] The zone is visible for Terrorists."
 	}
 	"ZoneVisCT"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] The zone is visible for Counter-Terrorists."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] The zone is visible for Counter-Terrorists."
 	}
 	"ZoneVisInv"
 	{
-		"#format"	"{1:c},{2:c}"
-		"en"		"[{1}CK{2}] The zone is invisible."
+		"#format"	"{1:c},{2:s},{3:c}"
+		"en"		"[{1}{2}{3}] The zone is invisible."
 	}
 	"AvgTime"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:s},{7:i}"
-		"en"        "[{1}CK{2}] {3}Avg. {4}map{5} time: {6} ({7})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:s},{8:i}"
+		"en"        "[{1}{2}{3}] {4}Avg. {5}map{6} time: {7} ({8})"
 	}
 	"AvgTimeBonus"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:c},{6:s},{7:i}"
-		"en"        "[{1}CK{2}] {3}Avg. {4}bonus{5} time: {6} ({7})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:s},{8:i}"
+		"en"        "[{1}{2}{3}] {4}Avg. {5}bonus{6} time: {7} ({8})"
 	}
 	"TimeleftCounter"
 	{
@@ -156,310 +156,310 @@
 	}
 	"MissedMapBest"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:s},{6:c}"
-		"en"       "[{1}CK{2}] {3}You have missed your best time of ({4}{5}{6})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:s},{7:c}"
+		"en"        "[{1}{2}{3}] {4}You have missed your best time of ({5}{6}{7})"
 	}
 	"KickMsg"
 	{
 		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:i}"
-		"en"        "[{1}CK FPSCHECK{2}] You will be {3}kicked in 10 seconds{4}. Please set fps_max between 100 and 300! (detected: fps_max {5})"
+		"en"        "[{1}FPSCHECK{2}] You will be {3}kicked in 10 seconds{4}. Please set fps_max between 100 and 300! (detected: fps_max {5})"
 	}
 	"TeamJoin"
 	{
 		"#format"   "{1:N},{2:s}"
-		"en"       "Player {1} joined {2}"
+		"en"        "Player {1} joined {2}"
 	}
 	"MapTopFail"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"       "[{1}CK{2}] Usage: !maptop <mapname>"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Usage: !maptop <mapname>"
 	}
 	"Measure1"
 	{
-		"#format"   "{1:c},{2:c},{3:.1f},{4:.1f}"
-		"en"       "[{1}CK{2}] Distance: {3} (Height offset: {4})"
+		"#format"   "{1:c},{2:s},{3:c},{4:.1f},{5:.1f}"
+		"en"        "[{1}{2}{3}] Distance: {4} (Height offset: {5})"
 	}
 	"Measure2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"       "[{1}CK{2}] You must set both points before finding a distance."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You must set both points before finding a distance."
 	}
 	"Measure3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"       "[{1}CK{2}] You are not aiming at anything solid!"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You are not aiming at anything solid!"
 	}
 	"Measure4"
 	{
-		"#format"   "{1:c},{2:c},{3:i},{4:.1f},{5:.1f},{6:.1f}"
-		"en"       "[{1}CK{2}] Got Point {3} at X: {4}, Y: {5}, Z: {6}"
+		"#format"   "{1:c},{2:s},{3:c},{4:i},{5:.1f},{6:.1f},{7:.1f}"
+		"en"        "[{1}{2}{3}] Got Point {4} at X: {5}, Y: {6}, Z: {7}"
 	}	
 	"KnifeDead"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] You can't change your knife while you are dead."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You can't change your knife while you are dead."
 	}
 	"Challenge1"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:i},{6:s}"
-		"en"        "[{1}CK{2}] {3}Challenge request sent to {4} (Bet: {5}p, Checkpoints{6})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:i},{7:s}"
+		"en"        "[{1}{2}{3}] {4}Challenge request sent to {5} (Bet: {6}p, Checkpoints{7})"
 	}
 	"Challenge2"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:i},{8:s}"
-		"en"        "[{1}CK{2}] {3}{4} challenged you. You have 20 seconds to {5}!accept{6} (Bet: {7}p, Checkpoints {8})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:i},{9:s}"
+		"en"        "[{1}{2}{3}] {4}{5} challenged you. You have 20 seconds to {6}!accept{7} (Bet: {8}p, Checkpoints {9})"
 	}
 	"Challenge3"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Challenge accepted."
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Challenge accepted."
 	}
 	"Challenge4"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} won a challenge against {6}{7}{8}! (Surrender)"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} won a challenge against {7}{8}{9}! (Surrender)"
 	}
 	"ChallengeFailed1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] No block must be enabled to start a challenge."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] No block must be enabled to start a challenge."
 	}
 	"ChallengeFailed2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] You must be alive to start a challenge."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You must be alive to start a challenge."
 	}
 	"ChallengeFailed3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] You are already in a challenge."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You are already in a challenge."
 	}
 	"ChallengeFailed4"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] No valid players found."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] No valid players found."
 	}
 	"ChallengeFailed5"
 	{
-		"#format"   "{1:c},{2:c},{3:s},{4:i}"
-		"en"        "[{1}CK{2}] {3} doesn't have enough player points ({4}) to accept your challenge"
+		"#format"   "{1:c},{2:s},{3:c},{4:s},{5:i}"
+		"en"        "[{1}{2}{3}] {4} doesn't have enough player points ({5}) to accept your challenge"
 	}
 	"ChallengeFailed6"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] {3} is already in a race"
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] {4} is already in a race"
 	}
 	"ChallengeStarted1"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}If you want to surrender just type !surrender"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}If you want to surrender just type !surrender"
 	}
 	"ChallengeStarted2"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Both of you can type !abort in chat to cancel the race"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Both of you can type !abort in chat to cancel the race"
 	}
 	"ChallengeStarted3"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Have Fun!!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Have Fun!!"
 	}
 	"ChallengeRequestExpired"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Challenge request expired!"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Challenge request expired!"
 	}
 	"ChallengeWon"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] {3}Challenge won! {4}(your opponent has left the server)"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] {4}Challenge won! {5}(your opponent has left the server)"
 	}
 	"ChallengeAborted"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c}"
-		"en"        "[{1}CK{2}] Challenge versus {3}{4}{5} aborted."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c}"
+		"en"        "[{1}{2}{3}] Challenge versus {4}{5}{6} aborted."
 	}
 	"SkillGroup"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:s}"
-		"en"        "[{1}CK{2}] {3}You are now ranked as {4}{5}"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:s}"
+		"en"        "[{1}{2}{3}] {4}You are now ranked as {5}{6}"
 	}
 	"Rc_PlayerRankStart"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Refreshing profile data.."
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Refreshing profile data.."
 	}
 	"Rc_PlayerRankFinished"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:i},{6:c}"
-		"en"        "[{1}CK{2}] {3}Profile refreshed. [{4}{5}{6}]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:i},{7:c}"
+		"en"        "[{1}{2}{3}] {4}Profile refreshed. [{5}{6}{7}]"
 	}	
 	"EarnedPoints"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:i},{8:c},{9:c},{10:i},{11:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} has earned {6}{7} points{8} [{9}{10}{11} Total]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:i},{9:c},{10:c},{11:i},{12:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} has earned {7}{8} points{9} [{10}{11}{12} Total]"
 	}
 	"LostPoints"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:i},{8:c},{9:c},{10:i},{11:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} has lost {6}{7} points{8} [{9}{10}{11} Total]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:i},{9:c},{10:c},{11:i},{12:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} has lost {7}{8} points{9} [{10}{11}{12} Total]"
 	}
 
 	"ChallengeW"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} won a challenge against {6}{7}{8}"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} won a challenge against {7}{8}{9}"
 	}
 
 	"ChallengeL"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:i},{8:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} has lost {6}{7} {8} points!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:i},{9:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} has lost {7}{8} {9} points!"
 	}
 	"NoReplayFound"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] No replay found."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] No replay found."
 	}
 	"BotAlreadyCreated"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Replay bot already spawned."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Replay bot already spawned."
 	}
 	"NoPlayerTop"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] No players found."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] No players found."
 	}
 	"NoRecordTop"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] No map times found."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] No map times found."
 	}
 	"PrUpdateStarted"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Recalculating player rankings. This may take a while, please wait! (You can follow the progress in your console)"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Recalculating player rankings. This may take a while, please wait! (You can follow the progress in your console)"
 	}
 	"PrUpdateFinished"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Recalculation finished!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Recalculation finished!"
 	}
 	"Top100Refreshed"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}Top 100 Players recalculated!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}Top 100 Players recalculated!"
 	}
 	"StopRecalculation"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Recalculation stopped!"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Recalculation stopped!"
 	}
 	"NewMapRecord"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} has beaten the {6}MAP RECORD"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} has beaten the {7}MAP RECORD"
 	}
 	"ReplayFinishingMsg"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c}"
-		"en"        "[{1}CK REPLAY{2}] {3}{4}{5} finished with a time of ({6}{7}{8})."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c}"
+		"en"        "[{1}{2} REPLAY{3}] {4}{5}{6} finished with a time of ({7}{8}{9})."
 	}
 	"ReplayFinishingMsgBonus"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c}"
-		"en"        "[{1}CK REPLAY{2}] {3}{4}{5} finished the {6}{7}{8} with a time of ({9}{10}{11})."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c}"
+		"en"        "[{1}{2} REPLAY{3}] {4}{5}{6} finished the {7}{8}{9} with a time of ({10}{11}{12})."
 	}
 	"MapFinished1"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:c},{8:c},{9:s},{10:c},{11:c},{12:c},{13:i},{14:c},{15:i},{16:c},{17:s},{18:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} finished the {6}map{7} with a time of ({8}{9}{10}). {11}[rank {12}#{13}{14}/{15} | record {16}{17}{18}]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:c},{9:c},{10:s},{11:c},{12:c},{13:c},{14:i},{15:c},{16:i},{17:c},{18:s},{19:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} finished the {7}map{8} with a time of ({9}{10}{11}). {12}[rank {13}#{14}{15}/{16} | record {17}{18}{19}]"
 	}
 	"MapFinished3"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:c},{8:c},{9:s},{10:c},{11:c},{12:s},{13:c},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} finished the {6}map{7} with a time of ({8}{9}{10}). Improving their best time by ({11}{12}{13}). {14}[rank {15}#{16}{17}/{18} | record {19}{20}{21}]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} finished the {7}map{8} with a time of ({9}{10}{11}). Improving their best time by ({12}{13}{14}). {15}[rank {16}#{17}{18}/{19} | record {20}{21}{22}]"
 	}
 	"MapFinished5"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:c},{8:c},{9:s},{10:c},{11:c},{12:s},{13:c},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"        "[{1}CK{2}] {3}{4}{5} finished the {6}map{7} with a time of ({8}{9}{10}). Missing their best time by ({11}{12}{13}). {14}[rank {15}#{16}{17}/{18} | record {19}{20}{21}]"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"        "[{1}{2}{3}] {4}{5}{6} finished the {7}map{8} with a time of ({9}{10}{11}). Missing their best time by ({12}{13}{14}). {15}[rank {16}#{17}{18}/{19} | record {20}{21}{22}]"
 	}
 	"BonusFinished1"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10} {11}. Missing their best time by {12}{13}{14}. [rank {15}#{16} {17}/ {18} | record {19}{20}{21}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:s},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11} {12}. Missing their best time by {13}{14}{15}. [rank {16}#{17} {18}/ {19} | record {20}{21}{22}]"
 	}
 	"BonusFinished2"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s}"
-		"en"		"[{1}CK{2}] {3}{4} has beaten the {5}{6} RECORD"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:s}"
+		"en"		"[{1}{2}{3}] {4}{5} has beaten the {6}{7} RECORD"
 	}
 	"BonusFinished3"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:c},{14:c},{15:s},{16:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10}{11}. [rank {12}#1 {13}/ 1 | record {14}{15}{16}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:c},{15:c},{16:s},{17:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11}{12}. [rank {13}#1 {14}/ 1 | record {15}{16}{17}]"
 	}
 	"BonusFinished4"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10} {11}. Improving the best time by {12}{13} {14}. [rank {15}#{16} {17}/ {18} | record {19}{20}{21}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:s},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11} {12}. Improving the best time by {13}{14}{15}. [rank {16}#{17} {18}/ {19} | record {20}{21}{22}]"
 	}
 	"BonusFinished5"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10} {11}. Improving the best time by {12}{13} {14}. [rank {15}#{16} {17}/ {18} | record {19}{20}{21}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:s},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11} {12}. Improving the best time by {13}{14}{15}. [rank {16}#{17} {18}/ {19} | record {20}{21}{22}]"
 	}
 	"BonusFinished6"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:c},{16:i},{17:c},{18:i},{19:c},{20:s},{21:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10} {11}. Improving their best time by {12}{13} {14}. [rank {15}#{16} {17}/ {18} | record {19}{20}{21}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:s},{15:c},{16:c},{17:i},{18:c},{19:i},{20:c},{21:s},{22:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11} {12}. Improving their best time by {13}{14}{15}. [rank {16}#{17} {18}/ {19} | record {20}{21}{22}]"
 	}
 	"BonusFinished7"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:c},{13:i},{14:c},{15:i},{16:c},{17:s},{18:c}"
-		"en"		"[{1}CK{2}] {3}{4} {5}finished the {6}{7} {8}with a time of {9}{10}{11}. [rank {12}#{13} {14}/ {15} | record {16}{17}{18}]"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:c},{14:i},{15:c},{16:i},{17:c},{18:s},{19:c}"
+		"en"		"[{1}{2}{3}] {4}{5} {6}finished the {7}{8} {9}with a time of {10}{11}{12}. [rank {13}#{14} {15}/ {16} | record {17}{18}{19}]"
 	}
 	"Checkpoint1"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:s}"
-		"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your best run. ({6}{7}{8}).{9}"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:s}"
+		"en"		"[{1}{2}{3}] {4}CP: {5} {6}compared to your best run. ({7}{8}{9}).{10}"
 	}
 	"Checkpoint1-spec"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:s}"
-		"en"		"[{1}CK{2}] {3}Spec-CP: {4} {5}compared to {6}{7}{8}'s best run. ({9}{10}{11}).{12}"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:c},{13:s}"
+		"en"		"[{1}{2}{3}] {4}Spec-CP: {4} {5}compared to {7}{8}{9}'s best run. ({10}{11}{12}).{13}"
 	}
 	"Checkpoint2"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:s}"
-		"en"		"[{1}CK{2}] {3}CP: {4} {5}compared to your PB. {6} {7}({8}{9}{10}).{11}"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:s},{8:c},{9:c},{10:s},{11:c},{12:s}"
+		"en"		"[{1}{2}{3}] {4}CP: {5} {6}compared to your PB. {7} {8}({9}{10}{11}).{12}"
 	}
 	"Checkpoint2-spec"
 	{
-		"#format"	"{1:c},{2:c},{3:c},{4:s},{5:c},{6:c},{7:s},{8:c},{9:s},{10:c},{11:c},{12:s},{13:c},{14:s}"
-		"en"		"[{1}CK{2}] {3}Spec-CP: {4} {5}compared to {6}{7}{8}'s PB. {9} {10}({11}{12}{13}).{14}"
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:s},{11:c},{12:c},{13:s},{14:c},{15:s}"
+		"en"		"[{1}{2}{3}] {4}Spec-CP: {5} {6}compared to {7}{8}{9}'s PB. {10} {11}({12}{13}{14}).{15}"
 	}
 	"Checkpoint3"
 	{
-		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:s}"
-		"en"		"[{1}CK{2}]{3} CP: Completed{4} {5} {6}of the map in {7}{8}.{9}"
+		"#format" 	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:s},{7:c},{8:c},{9:s},{10:s}"
+		"en"		"[{1}{2}{3}]{4} CP: Completed{5} {6} {7}of the map in {8}{9}.{10}"
 	}
 	"Checkpoint3-spec"
 	{
-		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:s},{6:c},{7:c},{8:s},{9:c},{10:c},{11:s},{12:s}"
-		"en"		"[{1}CK{2}]{3} Spec-CP: {4}{5}{6} Completed{7} {8} {9}of the map in {10}{11}.{12}"
+		"#format" 	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:s},{7:c},{8:c},{9:s},{10:c},{11:c},{12:s},{13:s}"
+		"en"		"[{1}{2}{3}]{4} Spec-CP: {5}{6}{7} Completed{8} {9} {10}of the map in {11}{12}.{13}"
 	}
 	"Checkpoint4"
 	{
-		"#format" 	"{1:c},{2:c},{3:c},{4:c},{5:i}"
-		"en"	  	"[{1}CK{2}]{3} CP: Reached checkpoint{4} {5}"
+		"#format" 	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:i}"
+		"en"	  	"[{1}{2}{3}]{4} CP: Reached checkpoint{5} {6}"
 	}
 	"Checkpoint4-spec"
 	{
-		"#format" 	"{1:c},{2:c},{3:c},{4:c}{5:s},{6:c},{7:c},{8:i}"
-		"en"	  	"[{1}CK{2}]{3} Spec-CP: {4}{5}{6} Reached checkpoint{7} {8}"
+		"#format" 	"{1:c},{2:s},{3:c},{4:c},{5:c}{6:s},{7:c},{8:c},{9:i}"
+		"en"	  	"[{1}{2}{3}]{4} Spec-CP: {5}{6}{7} Reached checkpoint{8} {9}"
 	}
 	"GrewCheckpoint"
 	{
@@ -479,133 +479,133 @@
 	}
 	"NoClipUnlocked"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] {3}NoClip unlocked (type into console: bind KEY +noclip)"
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] {4}NoClip unlocked (type into console: bind KEY +noclip)"
 	}
 	"PlayerNotFound"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] Player {3} not found."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] Player {4} not found."
 	}
 	"ConsoleOutput"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] See console for output!"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] See console for output!"
 	}
 	"PlayerHasNoMapRecords"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] {3} doesn't have local map times."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] {4} doesn't have local map times."
 	}
 	"NoTopRecords"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] No Local times found on {3}"
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] No Local times found on {4}"
 	}
 	"NoMapRecords"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] No Local map times found on {3}"
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] No Local map times found on {4}"
 	}
 	"AdminSetButton"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Failed! You must be alive to set a new button."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Failed! You must be alive to set a new button."
 	}
 	"NoclipNotAvailable2"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] You must finish the map or be ranked as {3}, MAPPER, VIP or ADMIN to use +noclip"
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] You must finish the map or be ranked as {4}, MAPPER, VIP or ADMIN to use +noclip"
 	}
 	"NoclipNotAvailable3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Noclip disabled (server-sided)"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Noclip disabled (server-sided)"
 	}
 	"StartDisabled"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] {3}!start{4} command is disabled."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] {4}!start{5} command is disabled."
 	}
 	"Spec"
 	{
-		"#format"   "{1:c},{2:c},{3:c}"
-		"en"        "[{1}CK{2}] You must be alive to use {3}!spec."
+		"#format"   "{1:c},{2:s},{3:c},{4:c}"
+		"en"        "[{1}{2}{3}] You must be alive to use {4}!spec."
 	}
 	"SpecInfo"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] Type {3}hideradar{4} in console to hide the spectator minimap!"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] Type {4}hideradar{5} in console to hide the spectator minimap!"
 	}
 	"Unspec"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] Type {3}!unspec{4} to go back to your old team."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] Type {4}!unspec{5} to go back to your old team."
 	}
 	"Goto1"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] {3}!goto{4} command is serverside disabled."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] {4}!goto{2} command is serverside disabled."
 	}
 	"Goto2"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] You can't use {3}!goto{4} if player blocking is enabled."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] You can't use {4}!goto{5} if player blocking is enabled."
 	}
 	"Goto3"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] You must {3}!stop{4} your timer to use !goto."
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] You must {4}!stop{5} your timer to use !goto."
 	}
 	"Goto4"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] Player {3} not found."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] Player {4} not found."
 	}
 	"Goto5"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] Player {3} has teleported to you."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] Player {4} has teleported to you."
 	}
 	"Goto6"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] You can't teleport to {3} because the player was crouching."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] You can't teleport to {4} because the player was crouching."
 	}
 	"Goto7"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] You can't teleport to {3} because he/she was not on ground."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] You can't teleport to {4} because he/she was not on ground."
 	}
 	"Goto8"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] You can't teleport to yourself."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] You can't teleport to yourself."
 	}
 	"Goto9"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] Failed! Player {3} is not alive."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] Failed! Player {4} is not alive."
 	}
 	"Goto10"
 	{
-		"#format"   "{1:c},{2:c},{3:s}"
-		"en"        "[{1}CK{2}] Player {3} disabled teleporting to him/her."
+		"#format"   "{1:c},{2:s},{3:c},{4:s}"
+		"en"        "[{1}{2}{3}] Player {4} disabled teleporting to him/her."
 	}
 	"SpeedMeter1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Speed meter enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Speed meter enabled."
 	}
 	"SpeedMeter2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Speed meter disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Speed meter disabled."
 	}
 	"TimerStopped1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Timer stopped."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Timer stopped."
 	}
 	"PositionRestored"
 	{
@@ -614,167 +614,167 @@
 	}
 	"RadioCommandsDisabled"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Radio commands are disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Radio commands are disabled."
 	}
 	"Hide1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Hide other players disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Hide other players disabled."
 	}
 	"Hide2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Hide other players enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Hide other players enabled."
 	}
 	"Pause1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Pause function is server-sided disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Pause function is server-sided disabled."
 	}
 	"Pause2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Pause disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Pause disabled."
 	}
 	"Pause3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Pause enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Pause enabled."
 	}
 	"Showtime1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Timer panel enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Timer panel enabled."
 	}
 	"Showtime2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Timer panel disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Timer panel disabled."
 	}
 	"DisableGoto1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Goto me enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Goto me enabled."
 	}
 	"DisableGoto2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Goto me disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Goto me disabled."
 	}
 	"Colorchat1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Colorchat enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Colorchat enabled."
 	}
 	"Colorchat2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Colorchat disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Colorchat disabled."
 	}
 	"Info1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Speed/Keys panel enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Speed/Keys panel enabled."
 	}
 	"Info2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Speed/Keys panel disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Speed/Keys panel disabled."
 	}
 	"ShowKeys1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Show keys enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Show keys enabled."
 	}
 	"ShowKeys2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Show keys disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Show keys disabled."
 	}
 	"QuakeSounds1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}KZ{2}] Quake sounds enabled."
+		"#format"   "{1:c},{2:c},{3:c}"
+		"en"        "[{1}{2}{3}] Quake sounds enabled."
 	}
 	"QuakeSounds2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}KZ{2}] Quake sounds disabled."
+		"#format"   "{1:c},{2:c},{3:c}"
+		"en"        "[{1}{2}{3}] Quake sounds disabled."
 	}
 	"HideSpecs1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Spectator list enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Spectator list enabled."
 	}
 	"HideSpecs2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Spectator list disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Spectator list disabled."
 	}
 	"AutoBhop1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] AutoBhop enabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] AutoBhop enabled."
 	}
 	"AutoBhop2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] AutoBhop disabled."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] AutoBhop disabled."
 	}
 	"AutoBhop3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] AutoBhop disabled. (server-sided)"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] AutoBhop disabled. (server-sided)"
 	}
 	"Usp1"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Note: Movement speed is slower than with a knife."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Note: Movement speed is slower than with a knife."
 	}
 	"Usp2"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] (no other weapons via chat command available)"
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] (no other weapons via chat command available)"
 	}
 	"Usp3"
 	{
-		"#format"   "{1:c},{2:c}"
-		"en"        "[{1}CK{2}] Nope. You already received 3 USP's.."
+		"#format"   "{1:c},{2:s},{3:c}"
+		"en"        "[{1}{2}{3}] Nope. You already received 3 USP's.."
 	}
 	"HelpMsg"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] Type {3}!help{4} in chat to get a list of ckSurf commands"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] Type {4}!help{5} in chat to get a list of ckSurf commands"
 	}
 	"Disconnected1"
 	{
 		"#format"   "{1:c},{2:c},{3:s},{4:c},{5:s}"
-		"en"       "{1}Player {2}{3}{4} has left the game. ({5})"
+		"en"        "{1}Player {2}{3}{4} has left the game. ({5})"
 	}
 	"Connected2"
 	{
 		"#format"   "{1:c},{2:c},{3:s},{4:c},{5:c},{6:s}"
-		"en"       "{1}Player {2}{3}{4} connected from {5}{6}"
+		"en"        "{1}Player {2}{3}{4} connected from {5}{6}"
 	}
 	"Connected1"
 	{
 		"#format"   "{1:c},{2:c},{3:s},{4:c}"
-		"en"       "{1}Player {2}{3}{4} connected."
+		"en"        "{1}Player {2}{3}{4} connected."
 	}
 	"MapRecord"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c},{5:s},{6:s}"
-		"en"        "[{1}CK{2}] {3}MAP RECORD{4}: {5} ({6})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c},{6:s},{7:s}"
+		"en"        "[{1}{2}{3}] {4}MAP RECORD{5}: {6} ({7})"
 	}
 	"BonusRecord"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:s},{5:c},{6:s},{7:s}"
-		"en"        "[{1}CK{2}] {3}{4} RECORD{5}: {6} ({7})"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:s},{6:c},{7:s},{8:s}"
+		"en"        "[{1}{2}{3}] {4}{5} RECORD{6}: {7} ({8})"
 	}
 	"LanguageSwitch"
 	{
-		"#format"   "{1:c},{2:c},{3:c},{4:c}"
-		"en"        "[{1}CK{2}] Type {3}!language{4} in chat to select a different language"
+		"#format"   "{1:c},{2:s},{3:c},{4:c},{5:c}"
+		"en"        "[{1}{2}{3}] Type {4}!language{5} in chat to select a different language"
 	}
 }

@@ -9,7 +9,7 @@ public void CL_OnStartTimerPress(int client)
 			{
 				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 				{
-					PrintToChat(client, "[%cCK%c] The server hasn't finished loading it's settings, please wait.", MOSSGREEN, WHITE);
+					PrintToChat(client, "[%c%s%c] The server hasn't finished loading it's settings, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
 					ClientCommand(client, "play buttons\\button10.wav");
 					g_fErrorMessage[client] = GetGameTime();
 				}
@@ -19,7 +19,7 @@ public void CL_OnStartTimerPress(int client)
 			{
 				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 				{
-					PrintToChat(client, "[%cCK%c] Your settings are currently being loaded, please wait.", MOSSGREEN, WHITE);
+					PrintToChat(client, "[%c%s%c] Your settings are currently being loaded, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
 					ClientCommand(client, "play buttons\\button10.wav");
 					g_fErrorMessage[client] = GetGameTime();
 				}
@@ -29,7 +29,7 @@ public void CL_OnStartTimerPress(int client)
 			{
 				if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 				{
-					PrintToChat(client, "[%cCK%c] The server hasn't finished loading your settings, please wait.", MOSSGREEN, WHITE);
+					PrintToChat(client, "[%c%s%c] The server hasn't finished loading your settings, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
 					ClientCommand(client, "play buttons\\button10.wav");
 					g_fErrorMessage[client] = GetGameTime();
 				}
@@ -127,9 +127,9 @@ public void CL_OnEndTimerPress(int client)
 					if (Target == client)
 					{
 						if (Target == g_RecordBot)
-							PrintToChat(i, "%t", "ReplayFinishingMsg", MOSSGREEN, WHITE, LIMEGREEN, g_szReplayName, GRAY, LIMEGREEN, g_szReplayTime, GRAY);
+							PrintToChat(i, "%t", "ReplayFinishingMsg", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, g_szReplayName, GRAY, LIMEGREEN, g_szReplayTime, GRAY);
 						if (Target == g_BonusBot)
-							PrintToChat(i, "%t", "ReplayFinishingMsgBonus", MOSSGREEN, WHITE, LIMEGREEN, g_szBonusName, GRAY, YELLOW, g_szZoneGroupName[g_iClientInZone[g_BonusBot][2]], GRAY, LIMEGREEN, g_szBonusTime, GRAY);
+							PrintToChat(i, "%t", "ReplayFinishingMsgBonus", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, g_szBonusName, GRAY, YELLOW, g_szZoneGroupName[g_iClientInZone[g_BonusBot][2]], GRAY, LIMEGREEN, g_szBonusTime, GRAY);
 					}
 				}
 			}
@@ -159,9 +159,9 @@ public void CL_OnEndTimerPress(int client)
 	if (g_bPracticeMode[client])
 	{
 		if (g_iClientInZone[client][2] > 0)
-			PrintToChat(client, "[%cCK%c] %c%N %cfinished the bonus with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
+			PrintToChat(client, "[%c%s%c] %c%N %cfinished the bonus with a time of [%c%s%c] in practice mode!", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
 		else
-			PrintToChat(client, "[%cCK%c] %c%N %cfinished the map with a time of [%c%s%c] in practice mode!", MOSSGREEN, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
+			PrintToChat(client, "[%c%s%c] %c%N %cfinished the map with a time of [%c%s%c] in practice mode!", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, client, WHITE, LIGHTBLUE, g_szFinalTime[client], WHITE);
 		
 		/* Start function call */
 		Call_StartForward(g_PracticeFinishForward);
@@ -297,12 +297,12 @@ public void CL_OnEndTimerPress(int client)
 						SetEntityRenderColor(i, 255, 255, 255, 255);
 						db_insertPlayerChallenge(client);
 						GetClientName(i, opponentName, MAX_NAME_LENGTH);
-						PrintToChatAll("%t", "ChallengeW", RED, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
+						PrintToChatAll("%t", "ChallengeW", RED, g_szChatPrefix, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
 						
 						if (g_Challenge_Bet[client] > 0)
 						{
 							int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
-							PrintToChatAll("%t", "ChallengeL", MOSSGREEN, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
+							PrintToChatAll("%t", "ChallengeL", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
 							CreateTimer(0.5, UpdatePlayerProfile, i, TIMER_FLAG_NO_MAPCHANGE);
 							g_pr_showmsg[client] = true;
 						}

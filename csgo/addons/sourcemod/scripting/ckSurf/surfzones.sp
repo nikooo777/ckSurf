@@ -271,12 +271,12 @@ public void EndTouch(int client, int action[3])
 					// NoClip check
 					if (g_bNoClip[client] || (!g_bNoClip[client] && (GetGameTime() - g_fLastTimeNoClipUsed[client]) < 3.0))
 					{
-						PrintToChat(client, "[%cCK%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, WHITE);
+						PrintToChat(client, "[%c%s%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
 					{
-						PrintToChat(client, "[%cCK%c] You have been using practice in the past few seconds, timer disabled.", MOSSGREEN, WHITE);
+						PrintToChat(client, "[%c%s%c] You have been using practice in the past few seconds, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else
@@ -643,7 +643,7 @@ public void ZoneMenu(int client)
 	
 	if (!(GetUserFlagBits(client) & g_ZoneMenuFlag) && !(GetUserFlagBits(client) & ADMFLAG_ROOT))
 	{
-		PrintToChat(client, "[%cCK%c] You don't have access to the zones menu.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] You don't have access to the zones menu.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return;
 	}
 	
@@ -947,7 +947,7 @@ public void renameBonusGroup(int client)
 	if (!IsValidClient(client))
 		return;
 	
-	PrintToChat(client, "[%cCK%c] Please write the bonus name in chat or use %c!cancel%c to stop.", MOSSGREEN, WHITE, MOSSGREEN, WHITE);
+	PrintToChat(client, "[%c%s%c] Please write the bonus name in chat or use %c!cancel%c to stop.", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, g_szChatPrefix, WHITE);
 	g_ClientRenamingZone[client] = true;
 }
 // Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
@@ -1084,7 +1084,7 @@ public int H_CreateBonusFirst(Handle tMenu, MenuAction action, int client, int i
 						return;
 					
 					g_Editing[client] = 2;
-					PrintToChat(client, "[%cCK%c] Bonus Start Zone Created", MOSSGREEN, WHITE);
+					PrintToChat(client, "[%c%s%c] Bonus Start Zone Created", MOSSGREEN, g_szChatPrefix, WHITE);
 					EndBonusZoneCreation(client);
 				}
 			}
@@ -1162,10 +1162,10 @@ public void SaveBonusZones(int client)
 		int id2 = g_mapZonesCount + 1;
 		db_insertZone(g_mapZonesCount, 1, 0, g_fBonusStartPos[client][0][0], g_fBonusStartPos[client][0][1], g_fBonusStartPos[client][0][2], g_fBonusStartPos[client][1][0], g_fBonusStartPos[client][1][1], g_fBonusStartPos[client][1][2], 0, 0, g_mapZoneGroupCount);
 		db_insertZone(id2, 2, 0, g_fBonusEndPos[client][0][0], g_fBonusEndPos[client][0][1], g_fBonusEndPos[client][0][2], g_fBonusEndPos[client][1][0], g_fBonusEndPos[client][1][1], g_fBonusEndPos[client][1][2], 0, 0, g_mapZoneGroupCount);
-		PrintToChat(client, "[%cCK%c] Bonus Saved!", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Bonus Saved!", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	else
-		PrintToChat(client, "[%cCK%c] Failed to Save Bonus, error in coordinates", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Failed to Save Bonus, error in coordinates", MOSSGREEN, g_szChatPrefix, WHITE);
 	
 	resetSelection(client);
 	ZoneMenu(client);
@@ -1628,20 +1628,20 @@ public int MenuHandler_Editor(Handle tMenu, MenuAction action, int client, int i
 					{
 						case 1:
 						{
-							PrintToChat(client, "%t", "ZoneVisAll", MOSSGREEN, WHITE);
+							PrintToChat(client, "%t", "ZoneVisAll", MOSSGREEN, g_szChatPrefix, WHITE);
 						}
 						case 2:
 						{
-							PrintToChat(client, "%t", "ZoneVisT", MOSSGREEN, WHITE);
+							PrintToChat(client, "%t", "ZoneVisT", MOSSGREEN, g_szChatPrefix, WHITE);
 						}
 						case 3:
 						{
-							PrintToChat(client, "%t", "ZoneVisCT", MOSSGREEN, WHITE);
+							PrintToChat(client, "%t", "ZoneVisCT", MOSSGREEN, g_szChatPrefix, WHITE);
 						}
 						case 4:
 						{
 							g_CurrentZoneVis[client] = 0;
-							PrintToChat(client, "%t", "ZoneVisInv", MOSSGREEN, WHITE);
+							PrintToChat(client, "%t", "ZoneVisInv", MOSSGREEN, g_szChatPrefix, WHITE);
 						}
 					}
 					EditorMenu(client);

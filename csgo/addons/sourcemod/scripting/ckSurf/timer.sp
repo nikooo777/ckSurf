@@ -286,7 +286,7 @@ public Action CKTimer2(Handle timer)
 				time = GetGameTime() - g_fChallenge_RequestTime[i];
 				if (time > 20.0)
 				{
-					PrintToChat(i, "%t", "ChallengeRequestExpired", RED, WHITE, YELLOW);
+					PrintToChat(i, "%t", "ChallengeRequestExpired", RED, g_szChatPrefix, WHITE, YELLOW);
 					g_bChallenge_Request[i] = false;
 				}
 			}
@@ -327,14 +327,14 @@ public Action Timer_Countdown(Handle timer, any client)
 {
 	if (IsValidClient(client) && g_bChallenge[client] && !IsFakeClient(client))
 	{
-		PrintToChat(client, "[%cCK%c] %c%i", RED, WHITE, YELLOW, g_CountdownTime[client]);
+		PrintToChat(client, "[%c%s%c] %c%i", RED, g_szChatPrefix, WHITE, YELLOW, g_CountdownTime[client]);
 		g_CountdownTime[client]--;
 		if (g_CountdownTime[client] <= 0)
 		{
 			SetEntityMoveType(client, MOVETYPE_WALK);
-			PrintToChat(client, "%t", "ChallengeStarted1", RED, WHITE, YELLOW);
-			PrintToChat(client, "%t", "ChallengeStarted2", RED, WHITE, YELLOW);
-			PrintToChat(client, "%t", "ChallengeStarted3", RED, WHITE, YELLOW);
+			PrintToChat(client, "%t", "ChallengeStarted1", RED, g_szChatPrefix, WHITE, YELLOW);
+			PrintToChat(client, "%t", "ChallengeStarted2", RED, g_szChatPrefix, WHITE, YELLOW);
+			PrintToChat(client, "%t", "ChallengeStarted3", RED, g_szChatPrefix, WHITE, YELLOW);
 			return Plugin_Stop;
 		}
 	}
@@ -389,8 +389,8 @@ public Action CheckChallenge(Handle timer, any client)
 						g_bChallenge[i] = false;
 						SetEntityRenderColor(client, 255, 255, 255, 255);
 						SetEntityRenderColor(i, 255, 255, 255, 255);
-						PrintToChat(client, "%t", "ChallengeAborted", RED, WHITE, GREEN, szNameTarget, WHITE);
-						PrintToChat(i, "%t", "ChallengeAborted", RED, WHITE, GREEN, szName, WHITE);
+						PrintToChat(client, "%t", "ChallengeAborted", RED, g_szChatPrefix, WHITE, GREEN, szNameTarget, WHITE);
+						PrintToChat(i, "%t", "ChallengeAborted", RED, g_szChatPrefix, WHITE, GREEN, szName, WHITE);
 						SetEntityMoveType(client, MOVETYPE_WALK);
 						SetEntityMoveType(i, MOVETYPE_WALK);
 					}
@@ -415,7 +415,7 @@ public Action CheckChallenge(Handle timer, any client)
 			
 			//chat msgs
 			if (IsValidClient(client))
-				PrintToChat(client, "%t", "ChallengeWon", RED, WHITE, YELLOW, WHITE);
+				PrintToChat(client, "%t", "ChallengeWon", RED, g_szChatPrefix, WHITE, YELLOW, WHITE);
 			
 			return Plugin_Stop;
 		}
@@ -463,7 +463,7 @@ public Action SetClanTag(Handle timer, any client)
 	//new rank
 	if (oldrank && GetConVarBool(g_hPointSystem))
 		if (!StrEqual(g_pr_rankname[client], old_pr_rankname, false) && IsValidClient(client))
-			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
+			CPrintToChat(client, "%t", "SkillGroup", MOSSGREEN, g_szChatPrefix, WHITE, GRAY, GRAY, g_pr_chat_coloredrank[client]);
 	
 	return Plugin_Handled;
 }
@@ -487,7 +487,7 @@ public Action WelcomeMsgTimer(Handle timer, any client)
 public Action HelpMsgTimer(Handle timer, any client)
 {
 	if (IsValidClient(client) && !IsFakeClient(client))
-		PrintToChat(client, "%t", "HelpMsg", MOSSGREEN, WHITE, GREEN, WHITE);
+		PrintToChat(client, "%t", "HelpMsg", MOSSGREEN, g_szChatPrefix, WHITE, GREEN, WHITE);
 	
 	return Plugin_Handled;
 }
@@ -500,22 +500,22 @@ public Action AdvertTimer(Handle timer)
 	{
 		if (g_bhasBonus)
 		{
-			PrintToChatAll("%t", "AdvertBonus", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChatAll("%t", "AdvertBonus", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
 		}
 		else if (g_bhasStages)
 		{
-			PrintToChatAll("%t", "AdvertStage", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChatAll("%t", "AdvertStage", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
 		}
 	}
 	else
 	{
 		if (g_bhasStages)
 		{
-			PrintToChatAll("%t", "AdvertStage", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChatAll("%t", "AdvertStage", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
 		}
 		else if (g_bhasBonus)
 		{
-			PrintToChatAll("%t", "AdvertBonus", MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChatAll("%t", "AdvertBonus", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
 		}
 	}
 	return Plugin_Continue;
