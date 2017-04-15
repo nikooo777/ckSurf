@@ -217,7 +217,22 @@ void teleportEntitySafe(int client, float fDestination[3], float fAngles[3], flo
 	// Teleport
 	TeleportEntity(client, fDestination, fAngles, fVelocity);
 }
-
+void teleportEntitySafeBonus(int client, float fDestination[3], float fAngles[3], float fVelocity[3], bool stopTimer)
+{
+	if (stopTimer)
+		Client_Stop(client, 1);
+	
+	int zId = setClientLocation(client, fDestination); // Set new location
+	
+	if (zId > -1 && g_bTimeractivated[client] && g_mapZones[zId][zoneType] == 2) // If teleporting to the end zone, stop timer
+		Client_Stop(client, 0);
+	if (zId > -1 && g_mapZones[zId][zoneType] == 3) {
+		Client_Stop(client, 1);
+		PrintToChat(client, "[%c%s%c] %cYour Bonus time has been stopped as your position has been restored at a stage start.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+	}
+	// Teleport
+	TeleportEntity(client, fDestination, fAngles, fVelocity);
+}
 int setClientLocation(int client, float fDestination[3])
 {
 	int zId = IsInsideZone(fDestination);
