@@ -2745,6 +2745,7 @@ public void SetInfoBotName(int ent)
 		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");
 	SetClientName(g_InfoBot, szBuffer);
 	Client_SetScore(g_InfoBot, 9999);
+	CS_SetClientContributionScore(g_InfoBot, 99999);
 	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
 }
 
