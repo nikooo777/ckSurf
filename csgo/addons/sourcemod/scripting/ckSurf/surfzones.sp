@@ -269,14 +269,19 @@ public void EndTouch(int client, int action[3])
 					lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
 					
 					// NoClip check
-					if (g_bNoClip[client] || (!g_bNoClip[client] && (GetGameTime() - g_fLastTimeNoClipUsed[client]) < 3.0))
+					if (g_bNoClip[client])
 					{
-						PrintToChat(client, "[%c%s%c] You are noclipping or have noclipped recently, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
+						PrintToChat(client, "[%c%s%c] You are noclipping, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
+						ClientCommand(client, "play buttons\\button10.wav");
+					}
+					if ((!g_bNoClip[client]) && g_bNoclipWithoutR[client])
+					{
+						PrintToChat(client, "[%c%s%c] You have noclipped and have not restarted, please type !r to begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
 					{
-						PrintToChat(client, "[%c%s%c] You have been using practice in the past few seconds, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
+						PrintToChat(client, "[%c%s%c] You have been using practice in the past few seconds, timer @!!@!@disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else

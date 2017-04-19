@@ -273,6 +273,7 @@ public void PlayRecord(int client, int type)
 		Format(g_szReplayName, sizeof(g_szReplayName), "%s", iFileHeader[view_as<int>(FH_Playername)]);
 		Format(buffer, sizeof(buffer), "%s (%s)", g_szReplayName, g_szReplayTime);
 		CS_SetClientClanTag(client, "MAP REPLAY");
+		CS_SetClientContributionScore(client, 99999);
 		SetClientName(client, buffer);
 	}
 	else
@@ -281,6 +282,7 @@ public void PlayRecord(int client, int type)
 		Format(g_szBonusName, sizeof(g_szBonusName), "%s", iFileHeader[view_as<int>(FH_Playername)]);
 		Format(buffer, sizeof(buffer), "%s (%s)", g_szBonusName, g_szBonusTime);
 		CS_SetClientClanTag(client, "BONUS REPLAY");
+		CS_SetClientContributionScore(client, 99999);
 		SetClientName(client, buffer);
 	}
 	g_hBotMimicsRecord[client] = iFileHeader[view_as<int>(FH_frames)];

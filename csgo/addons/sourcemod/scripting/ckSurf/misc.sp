@@ -1291,11 +1291,12 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	
 	float GameTime = GetGameTime();
 	g_fLastCommandBack[client] = GameTime;
 	g_ClientSelectedZone[client] = -1;
 	g_Editing[client] = 0;
-	
+	//g_testb = 0;
 	g_bClientRestarting[client] = false;
 	g_fClientRestarting[client] = GameTime;
 	g_fErrorMessage[client] = GameTime;
@@ -1335,6 +1336,8 @@ public void SetClientDefaults(int client)
 	g_bRestorePositionMsg[client] = false;
 	g_bRestorePosition[client] = false;
 	g_bRespawnPosition[client] = false;
+	
+
 	g_bNoClip[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;
@@ -1350,6 +1353,7 @@ public void SetClientDefaults(int client)
 	g_fPlayerCordsLastPosition[client] = view_as<float>( { 0.0, 0.0, 0.0 } );
 	g_fLastChatMessage[client] = GetGameTime();
 	g_fLastTimeNoClipUsed[client] = -1.0;
+	g_bNoclipWithoutR[client] = false;
 	g_fStartTime[client] = -1.0;
 	g_fPlayerLastTime[client] = -1.0;
 	g_fLastTimePracUsed[client] = -1.0;
