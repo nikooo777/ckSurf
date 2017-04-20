@@ -217,7 +217,22 @@ void teleportEntitySafe(int client, float fDestination[3], float fAngles[3], flo
 	// Teleport
 	TeleportEntity(client, fDestination, fAngles, fVelocity);
 }
-
+void teleportEntitySafeBonus(int client, float fDestination[3], float fAngles[3], float fVelocity[3], bool stopTimer)
+{
+	if (stopTimer)
+		Client_Stop(client, 1);
+	
+	int zId = setClientLocation(client, fDestination); // Set new location
+	
+	if (zId > -1 && g_bTimeractivated[client] && g_mapZones[zId][zoneType] == 2) // If teleporting to the end zone, stop timer
+		Client_Stop(client, 0);
+	if (zId > -1 && g_mapZones[zId][zoneType] == 3) {
+		Client_Stop(client, 1);
+		PrintToChat(client, "[%c%s%c] %cYour Bonus time has been stopped as your position has been restored at a stage start.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+	}
+	// Teleport
+	TeleportEntity(client, fDestination, fAngles, fVelocity);
+}
 int setClientLocation(int client, float fDestination[3])
 {
 	int zId = IsInsideZone(fDestination);
@@ -1276,11 +1291,12 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
+	
 	float GameTime = GetGameTime();
 	g_fLastCommandBack[client] = GameTime;
 	g_ClientSelectedZone[client] = -1;
 	g_Editing[client] = 0;
-	
+	//g_testb = 0;
 	g_bClientRestarting[client] = false;
 	g_fClientRestarting[client] = GameTime;
 	g_fErrorMessage[client] = GameTime;
@@ -1320,6 +1336,8 @@ public void SetClientDefaults(int client)
 	g_bRestorePositionMsg[client] = false;
 	g_bRestorePosition[client] = false;
 	g_bRespawnPosition[client] = false;
+	
+
 	g_bNoClip[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;
@@ -1335,6 +1353,7 @@ public void SetClientDefaults(int client)
 	g_fPlayerCordsLastPosition[client] = view_as<float>( { 0.0, 0.0, 0.0 } );
 	g_fLastChatMessage[client] = GetGameTime();
 	g_fLastTimeNoClipUsed[client] = -1.0;
+	g_bNoclipWithoutR[client] = false;
 	g_fStartTime[client] = -1.0;
 	g_fPlayerLastTime[client] = -1.0;
 	g_fLastTimePracUsed[client] = -1.0;
@@ -2730,6 +2749,7 @@ public void SetInfoBotName(int ent)
 		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");
 	SetClientName(g_InfoBot, szBuffer);
 	Client_SetScore(g_InfoBot, 9999);
+	CS_SetClientContributionScore(g_InfoBot, 99999);
 	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
 }
 

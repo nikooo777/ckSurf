@@ -50,6 +50,11 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client != 0)
 	{
+		bool inBonus = false;
+		if (g_iClientInZone[client][2] > 0) 
+		{
+			inBonus = true;	
+		}
 		g_SpecTarget[client] = -1;
 		g_bPause[client] = false;
 		g_bFirstTimerStart[client] = true;
@@ -142,14 +147,28 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
 				if (g_bRestorePosition[client])
 				{
 					g_bPositionRestored[client] = true;
-					teleportEntitySafe(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					if (inBonus)
+					{
+						teleportEntitySafeBonus(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					}
+					else
+					{
+						teleportEntitySafe(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					}
 					g_bRestorePosition[client] = false;
 				}
 				else
 				{
 					if (g_bRespawnPosition[client])
 					{
+						if (inBonus)
+					{
+						teleportEntitySafeBonus(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					}
+					else
+					{
 						teleportEntitySafe(client, g_fPlayerCordsRestore[client], g_fPlayerAnglesRestore[client], NULL_VECTOR, false);
+					}
 						g_bRespawnPosition[client] = false;
 					}
 					else

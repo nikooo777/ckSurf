@@ -566,7 +566,8 @@ Handle g_hSkillGroups = null;									// Array that holds SkillGroup objects in 
 float g_fErrorMessage[MAXPLAYERS + 1]; 							// Used to limit error message spam too often
 float g_fClientRestarting[MAXPLAYERS + 1]; 						// Used to track the time the player took to write the second !r, if too long, reset the boolean
 bool g_bClientRestarting[MAXPLAYERS + 1]; 						// Client wanted to restart run
-float g_fLastTimeNoClipUsed[MAXPLAYERS + 1]; 					// Last time the client used noclip
+float g_fLastTimeNoClipUsed[MAXPLAYERS + 1];
+bool g_bNoclipWithoutR[MAXPLAYERS + 1]; 
 float g_fLastTimePracUsed[MAXPLAYERS + 1]; 						// Last time the client used practice mode
 bool g_bRespawnPosition[MAXPLAYERS + 1]; 						// Does client have a respawn location in memory?
 float g_fLastSpeed[MAXPLAYERS + 1]; 							// Client's last speed, used in panels
@@ -1886,6 +1887,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_help2", Client_RankingSystem, "[ckSurf] Explanation of the ckSurf ranking system");
 	RegConsoleCmd("sm_flashlight", Client_Flashlight, "[ckSurf] on/off flashlight");
 	RegConsoleCmd("sm_maptop", Client_MapTop, "[ckSurf] displays local map top for a given map");
+	RegConsoleCmd("sm_mtop", Client_MapTop, "[ckSurf] displays local map top for a given map");
 	RegConsoleCmd("sm_hidespecs", Client_HideSpecs, "[ckSurf] hides spectators from menu/panel");
 	RegConsoleCmd("sm_compare", Client_Compare, "[ckSurf] compare your challenge results");
 	RegConsoleCmd("sm_wr", Client_Wr, "[ckSurf] prints records in chat");
@@ -1900,6 +1902,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_rank", Client_Profile, "[ckSurf] opens a player profile");
 	RegConsoleCmd("sm_options", Client_OptionMenu, "[ckSurf] opens options menu");
 	RegConsoleCmd("sm_top", Client_Top, "[ckSurf] displays top rankings (Top 100 Players, Top 50 overall)");
+	RegConsoleCmd("sm_t", Client_Top, "[ckSurf] displays top rankings (Top 100 Players, Top 50 overall)");
 	RegConsoleCmd("sm_topSurfers", Client_Top, "[ckSurf] displays top rankings (Top 100 Players, Top 50 overall)");
 	RegConsoleCmd("sm_bonustop", Client_BonusTop, "[ckSurf] displays top rankings of the bonus");
 	RegConsoleCmd("sm_btop", Client_BonusTop, "[ckSurf] displays top rankings of the bonus");
@@ -1910,6 +1913,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_latest", Client_Latest, "[ckSurf] shows latest map records");
 	RegConsoleCmd("sm_showtime", Client_Showtime, "[ckSurf] on/off - timer text in panel/menu");
 	RegConsoleCmd("sm_hide", Client_Hide, "[ckSurf] on/off - hides other players");
+	RegConsoleCmd("sm_h", Client_Hide, "[ckSurf] on/off - hides other players");
 	RegConsoleCmd("sm_togglecheckpoints", ToggleCheckpoints, "[ckSurf] on/off - Enable player checkpoints");
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");

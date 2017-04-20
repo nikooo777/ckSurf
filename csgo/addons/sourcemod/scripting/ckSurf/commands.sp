@@ -497,10 +497,11 @@ public Action Command_Teleport(int client, int args)
 
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
+		
 		teleportClient(client, g_iClientInZone[client][2], 1, false);
 		return Plugin_Handled;
 	}
-
+	
 	teleportClient(client, g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client], false);
 	return Plugin_Handled;
 }
@@ -765,7 +766,14 @@ public Action Command_Restart(int client, int args)
 			return Plugin_Handled;
 		}
 	}
-	
+	if (g_bNoClip[client])
+					{
+					PrintToChat(client, "[%c%s%c] You are still noclipping. To start your run unnoclip and then type !r", MOSSGREEN, g_szChatPrefix, WHITE);	
+					} else 
+					{
+					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					g_bNoclipWithoutR[client] = false;
+					}
 	g_bClientRestarting[client] = false;
 	
 	teleportClient(client, 0, 1, true);
@@ -2228,6 +2236,8 @@ public void Action_NoClip(int client)
 	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_hNoClipS.BoolValue)
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
+		g_bNoclipWithoutR[client] = true;
+		PrintToChat(client, "[%c%s%c] You are now noclipping. To start your run type !r", MOSSGREEN, g_szChatPrefix, WHITE);
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{
@@ -2255,6 +2265,7 @@ public void Action_UnNoClip(int client)
 	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
+		PrintToChat(client, "[%c%s%c] You have stoppd noclipping. To start your run type !r", MOSSGREEN, g_szChatPrefix, WHITE);
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{
