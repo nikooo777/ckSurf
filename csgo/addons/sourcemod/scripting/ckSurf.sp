@@ -418,6 +418,7 @@ ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
 ConVar g_hCountry = null; 										// Display countries for players?
 ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
 ConVar g_hCvarNoBlock = null; 									// Allow player blocking?
+ConVar g_hCvarPlayerOpacity = null; 						// Player opacity (translucency)
 ConVar g_hPointSystem = null; 									// Use the point system?
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
 int g_ownerOffset; 												// Used to clear weapons from ground
@@ -1353,6 +1354,12 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
 	}
+	else if (convar == g_hCvarPlayerOpacity)
+	{
+		for (int client = 1; client <= MAXPLAYERS; client++)
+			if (IsValidEntity(client) && GetEntityRenderMode(client) != RENDER_NONE)
+				SetPlayerVisible(client);
+	}
 	else if (convar == g_hCleanWeapons)
 	{
 		if (GetConVarBool(g_hCleanWeapons))
@@ -1755,6 +1762,8 @@ public void OnPluginStart()
 	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
 	g_hCvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hCvarNoBlock, OnSettingChanged);
+	g_hCvarPlayerOpacity = CreateConVar("ck_player_opacity", "255", "0-255 - Player opacity (0 invisible, 255 fully visible)", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	HookConVarChange(g_hCvarPlayerOpacity, OnSettingChanged);
 	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hAdminClantag, OnSettingChanged);
 	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
