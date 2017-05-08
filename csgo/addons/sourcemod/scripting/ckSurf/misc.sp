@@ -2465,8 +2465,12 @@ public void SpecListMenuDead(int client) // What Spectators see
 						if (ObservedUser == ObservedUser2)
 						{
 							count++;
+							//strip backslashes from names (causes lags and crashes?)
+							char cleanName[MAX_NAME_LENGTH];
+							Format(cleanName, sizeof(cleanName),"%N",x);
+							ReplaceString(cleanName,sizeof(cleanName),"\\","",false);
 							if (count < 6)
-								Format(sSpecs, 512, "%s%N\n", sSpecs, x);
+								Format(sSpecs, 512, "%s%s\n", sSpecs, cleanName);
 						}
 						if (count == 6)
 							Format(sSpecs, 512, "%s...", sSpecs);
