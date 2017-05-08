@@ -95,7 +95,7 @@ stock String_RemoveList(String:buffer[], String:removeList[][], size, bool:caseS
 
 /**
  * Converts the whole String to lower case.
- * Only works with alphabetical characters (not ÖÄÜ) because Sourcemod suxx !
+ * Only works with alphabetical characters (not Ã–Ã„Ãœ) because Sourcemod suxx !
  * The Output String can be the same as the Input String.
  *
  * @param input				Input String.
@@ -120,7 +120,7 @@ stock String_ToLower(const String:input[], String:output[], size)
 
 /**
  * Converts the whole String to upper case.
- * Only works with alphabetical characters (not öäü) because Sourcemod suxx !
+ * Only works with alphabetical characters (not Ã¶Ã¤Ã¼) because Sourcemod suxx !
  * The Output String can be the same as the Input String.
  *
  * @param input				Input String.

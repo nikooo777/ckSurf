@@ -274,7 +274,7 @@ public Action Command_VoteExtend(int client, int args)
 	// Here we go through and make sure this user has not already voted. This persists throughout map.
 	for (int i = 0; i < g_VoteExtends; i++)
 	{
-		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false))
+		if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false) && GetConVarBool(g_hMaxVoteExtendsUniquePlayers))
 		{
 			ReplyToCommand(client, "[CK] You have already used your vote to extend this map.");
 			return Plugin_Handled;
@@ -373,6 +373,12 @@ public Action Command_createPlayerCheckpoint(int client, int args)
 	if (g_iClientInZone[client][0] == 1 || g_iClientInZone[client][0] == 5)
 	{
 		PrintToChat(client, "%t", "PracticeInStartZone", MOSSGREEN, WHITE);
+		return Plugin_Handled;
+	}
+	
+	if(GetClientTeam(client) < 2)
+	{
+		ReplyToCommand(client, "You can't use checkpoints in spectator mode! You must join a team first");
 		return Plugin_Handled;
 	}
 	
@@ -1950,7 +1956,7 @@ public void PauseMethod(int client)
 			if (g_fPauseTime[client] > 0.0)
 				g_fStartPauseTime[client] = g_fStartPauseTime[client] - g_fPauseTime[client];
 		}
-		SetEntityRenderMode(client, RENDER_NONE);
+		SetPlayerInvisible(client);
 		SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 	}
 	else
@@ -1963,7 +1969,7 @@ public void PauseMethod(int client)
 		g_bPause[client] = false;
 		if (!g_bRoundEnd)
 			SetEntityMoveType(client, MOVETYPE_WALK);
-		SetEntityRenderMode(client, RENDER_NORMAL);
+		SetPlayerVisible(client);
 		if (GetConVarBool(g_hCvarNoBlock))
 			SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 		else
@@ -2216,7 +2222,7 @@ public void Action_NoClip(int client)
 					g_fCurrentRunTime[client] = -1.0;
 				}
 				SetEntityMoveType(client, MOVETYPE_NOCLIP);
-				SetEntityRenderMode(client, RENDER_NONE);
+				SetPlayerInvisible(client);
 				SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				g_bNoClip[client] = true;
 			}
@@ -2237,7 +2243,7 @@ public void Action_UnNoClip(int client)
 			if (mt == MOVETYPE_NOCLIP)
 			{
 				SetEntityMoveType(client, MOVETYPE_WALK);
-				SetEntityRenderMode(client, RENDER_NORMAL);
+				SetPlayerVisible(client);
 				if (GetConVarBool(g_hCvarNoBlock))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 				else

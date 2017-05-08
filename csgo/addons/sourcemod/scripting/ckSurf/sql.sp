@@ -4983,16 +4983,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 		
 		for (int i = 0; i < MAXZONES; i++) 
 		{
-			g_mapZones[i][zoneId] = -1;
-			g_mapZones[i][PointA] = -1.0;
-			g_mapZones[i][PointB] = -1.0;
-			g_mapZones[i][zoneId] = -1;
-			g_mapZones[i][zoneType] = -1;
-			g_mapZones[i][zoneTypeId] = -1;
-			g_mapZones[i][zoneName] = 0;
-			g_mapZones[i][Vis] = 0;
-			g_mapZones[i][Team] = 0;
-			g_mapZones[i][zoneGroup] = 0;
+			resetZone(i);
 		}
 		
 		for (int x = 0; x < MAXZONEGROUPS; x++)

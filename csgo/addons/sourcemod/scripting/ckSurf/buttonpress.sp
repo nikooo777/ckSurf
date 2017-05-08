@@ -51,7 +51,7 @@ public void CL_OnStartTimerPress(int client)
 		g_fStartPauseTime[client] = 0.0;
 		g_bPause[client] = false;
 		SetEntityMoveType(client, MOVETYPE_WALK);
-		SetEntityRenderMode(client, RENDER_NORMAL);
+		SetPlayerVisible(client);
 		g_fStartTime[client] = GetGameTime();
 		g_fCurrentRunTime[client] = 0.0;
 		g_bPositionRestored[client] = false;
@@ -261,7 +261,6 @@ public void CL_OnEndTimerPress(int client)
 		else if (diff > 0.0)
 		{  // Client's new record
 			g_fPersonalRecord[client] = g_fFinalTime[client];
-			g_MapTimesCount++;
 			if (GetConVarInt(g_hExtraPoints) > 0)
 				g_pr_multiplier[client] += 1; // Improved time, increase multip (how many times the player finished this map)
 			FormatTimeFloat(1, g_fPersonalRecord[client], 3, g_szPersonalRecord[client], 64);

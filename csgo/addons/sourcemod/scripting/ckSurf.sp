@@ -35,8 +35,8 @@
 #pragma semicolon 1
 
 // Plugin info
-#define VERSION "1.19"
-#define PLUGIN_VERSION 119
+#define VERSION "1.19.2"
+#define PLUGIN_VERSION 1192
 
 // Database definitions
 #define MYSQL 0
@@ -261,6 +261,7 @@ char g_szUsedVoteExtend[MAXPLAYERS+1][32]; 						// SteamID's which triggered ex
 int g_VoteExtends = 0; 											// How many extends have happened in current map
 ConVar g_hVoteExtendTime; 										// Extend time CVar
 ConVar g_hMaxVoteExtends; 										// Extend max count CVar
+ConVar g_hMaxVoteExtendsUniquePlayers; 							// Extend max votes by unique players CVar 
 
 /*----------  Bonus variables  ----------*/
 char g_szBonusFastest[MAXZONEGROUPS][MAX_NAME_LENGTH]; 			// Name of the #1 in the current maps bonus
@@ -417,6 +418,7 @@ ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
 ConVar g_hCountry = null; 										// Display countries for players?
 ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
 ConVar g_hCvarNoBlock = null; 									// Allow player blocking?
+ConVar g_hCvarPlayerOpacity = null; 						// Player opacity (translucency)
 ConVar g_hPointSystem = null; 									// Use the point system?
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
 int g_ownerOffset; 												// Used to clear weapons from ground
@@ -1352,6 +1354,12 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
 	}
+	else if (convar == g_hCvarPlayerOpacity)
+	{
+		for (int client = 1; client <= MAXPLAYERS; client++)
+			if (IsValidEntity(client) && GetEntityRenderMode(client) != RENDER_NONE)
+				SetPlayerVisible(client);
+	}
 	else if (convar == g_hCleanWeapons)
 	{
 		if (GetConVarBool(g_hCleanWeapons))
@@ -1674,7 +1682,7 @@ public void OnPluginStart()
 	
 	
 	//Get Server Tickate
-	g_Server_Tickrate = view_as<int>(1 / GetTickInterval());
+	g_Server_Tickrate = RoundFloat(1 / GetTickInterval());
 	
 	//language file
 	LoadTranslations("ckSurf.phrases");
@@ -1721,6 +1729,7 @@ public void OnPluginStart()
 	g_hServerVipCommand = CreateConVar("ck_enable_vip", "1", "(0 / 1) Enables the !vip command. Requires a server restart.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
 	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
+	g_hMaxVoteExtendsUniquePlayers = CreateConVar("ck_max_vote_extends_unique_players", "1", "on/off - Prohibit multiple extends of a person", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "0", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hBackupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hReplaceReplayTime = 	CreateConVar("ck_replay_replace_faster", "1", "(1 / 0) Replace record bots if a players time is faster than the bot, even if the time is not a server record.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1753,6 +1762,8 @@ public void OnPluginStart()
 	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
 	g_hCvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hCvarNoBlock, OnSettingChanged);
+	g_hCvarPlayerOpacity = CreateConVar("ck_player_opacity", "255", "0-255 - Player opacity (0 invisible, 255 fully visible)", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	HookConVarChange(g_hCvarPlayerOpacity, OnSettingChanged);
 	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hAdminClantag, OnSettingChanged);
 	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
