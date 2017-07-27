@@ -12,7 +12,7 @@ void setReplayTime(int zGrp)
 		BuildPath(Path_SM, sPath, sizeof(sPath), "%s%s.rec", CK_REPLAY_PATH, g_szMapName);
 
 	int iFileHeader[FILE_HEADER_LENGTH];
-	LoadRecordFromFile(sPath, iFileHeader);
+	LoadRecordFromFile(sPath, iFileHeader, true);
 	Format(sTime, sizeof(sTime), "%s", iFileHeader[view_as<int>(FH_Time)]);
 
 	ExplodeString(sTime, ":", sBuffer, 4, 54);
@@ -144,8 +144,8 @@ public void SaveRecording(int client, int zgroup)
 	else
 	{
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
-		g_hRecordingAdditionalTeleport[client] = null;
 	}
+	g_hRecordingAdditionalTeleport[client] = null;
 
 	WriteRecordToDisk(sPath2, iHeader);
 
@@ -173,6 +173,17 @@ public void LoadReplays()
 	g_RecordBot = -1;
 	g_BonusBot = -1;
 	g_iCurrentBonusReplayIndex = 0;
+	Handle hSnapshot = CreateTrieSnapshot(g_hLoadedRecordsAdditionalTeleport);
+	int iSnapshotLength = TrieSnapshotLength(hSnapshot);
+	char sKey[PLATFORM_MAX_PATH];
+	Handle hAT;
+	for (int i = 0; i < iSnapshotLength; i++)
+	{
+		GetTrieSnapshotKey(hSnapshot, i, sKey, sizeof(sKey));
+		GetTrieValue(g_hLoadedRecordsAdditionalTeleport, sKey, hAT);
+		delete hAT;
+	}
+	CloseHandle(hSnapshot);
 	ClearTrie(g_hLoadedRecordsAdditionalTeleport);
 
 	// Check that map replay exists
@@ -204,7 +215,7 @@ public void LoadReplays()
 		int iFileHeader[FILE_HEADER_LENGTH];
 		float initPos[3];
 		char newPath[256];
-		LoadRecordFromFile(sPath, iFileHeader);
+		LoadRecordFromFile(sPath, iFileHeader, true);
 		Array_Copy(iFileHeader[view_as<int>(FH_initialPosition)], initPos, 3);
 		int zId = IsInsideZone(initPos, 50.0);
 		if (zId != -1 && g_mapZones[zId][zoneGroup] != 0)
@@ -265,7 +276,7 @@ public void PlayRecord(int client, int type)
 
 	int iFileHeader[FILE_HEADER_LENGTH];
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", sPath);
-	LoadRecordFromFile(sPath, iFileHeader);
+	LoadRecordFromFile(sPath, iFileHeader, false);
 	
 	if (type == 0)
 	{
@@ -351,7 +362,7 @@ public void WriteRecordToDisk(const char[] sPath, iFileHeader[FILE_HEADER_LENGTH
 	LoadReplays();
 }
 
-public void LoadRecordFromFile(const char[] path, int headerInfo[FILE_HEADER_LENGTH])
+public void LoadRecordFromFile(const char[] path, int headerInfo[FILE_HEADER_LENGTH], bool headerOnly)
 {
 	Handle hFile = OpenFile(path, "rb");
 	if (hFile == null)
@@ -399,6 +410,13 @@ public void LoadRecordFromFile(const char[] path, int headerInfo[FILE_HEADER_LEN
 	headerInfo[view_as<int>(FH_Checkpoints)] = iCp;
 	headerInfo[view_as<int>(FH_tickCount)] = iTickCount;
 	headerInfo[view_as<int>(FH_frames)] = null;
+
+	// Don't load more if we're only interested in the meta data.
+	if (headerOnly)
+	{
+		CloseHandle(hFile);
+		return;
+	}
 	
 	Handle hRecordFrames = CreateArray(view_as<int>(FrameInfo));
 	Handle hAdditionalTeleport = CreateArray(AT_SIZE);
@@ -425,8 +443,18 @@ public void LoadRecordFromFile(const char[] path, int headerInfo[FILE_HEADER_LEN
 	
 	headerInfo[view_as<int>(FH_frames)] = hRecordFrames;
 	
+	// Free any old handles if we already loaded this one once before.
+	Handle hOldAT;
+	if (GetTrieValue(g_hLoadedRecordsAdditionalTeleport, path, hOldAT))
+	{
+		delete hOldAT;
+		RemoveFromTrie(g_hLoadedRecordsAdditionalTeleport, path);
+	}
+
 	if (GetArraySize(hAdditionalTeleport) > 0)
 		SetTrieValue(g_hLoadedRecordsAdditionalTeleport, path, hAdditionalTeleport);
+	else
+		CloseHandle(hAdditionalTeleport);
 	CloseHandle(hFile);
 	
 	return;
@@ -556,7 +584,9 @@ public void StopPlayerMimic(int client)
 	g_BotMimicRecordTickCount[client] = 0;
 	g_bValidTeleportCall[client] = false;
 	SDKUnhook(client, SDKHook_WeaponCanSwitchTo, Hook_WeaponCanSwitchTo);
-	g_hBotMimicsRecord[client] = null;
+	delete g_hBotMimicsRecord[client];
+	// TODO: Remove additional teleport handle from g_hLoadedRecordsAdditionalTeleport for the record this bot was mimicing?
+	//       They're cleaned up when reloading all replays later/on map start.
 }
 
 public bool IsPlayerMimicing(int client)
