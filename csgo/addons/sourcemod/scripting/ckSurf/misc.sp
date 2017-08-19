@@ -2912,10 +2912,7 @@ public void CenterHudAlive(int client)
 		int speed = RoundToNearest(g_fLastSpeed[client]);
 		if (speed <= 300) {
 		//TODO Make coloured speed increase as gradient as speed increase i.e. 0-Red, 500-blue, 1000-green, 20000, yellow.
-		}
-		
-		
-				
+		}	
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
 		{
 			if (g_bTimeractivated[client])
@@ -2930,8 +2927,7 @@ public void CenterHudAlive(int client)
 				}
 			}
 			else
-				PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Stopped</font> %s\n<font color='#d639cb'>PB:</font> %s%s\n<font color='#45f74e' size='22'>ckSurf | CSGO Surf Plugin</font>\n <font color='#d639cb'>Map:</font> <font color='#eabf25'>%s</font></font>",timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, g_szMapName);
-			//TODO Replace "ckSurf | CSGO Surf Plugin" with CVar.
+				PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Stopped</font> %s\n<font color='#d639cb'>PB:</font> %s%s\n<font color='#45f74e' size='22'>%s</font>",timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, g_szServerName);
 		}
 	}
 }
