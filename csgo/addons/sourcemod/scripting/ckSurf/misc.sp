@@ -1288,7 +1288,6 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
-
 	float GameTime = GetGameTime();
 	g_fLastCommandBack[client] = GameTime;
 	g_ClientSelectedZone[client] = -1;
@@ -1333,7 +1332,6 @@ public void SetClientDefaults(int client)
 	g_bRestorePositionMsg[client] = false;
 	g_bRestorePosition[client] = false;
 	g_bRespawnPosition[client] = false;
-
 	g_bNoClip[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;

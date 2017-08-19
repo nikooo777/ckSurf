@@ -513,11 +513,10 @@ public Action Command_Teleport(int client, int args)
 
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
-
 		teleportClient(client, g_iClientInZone[client][2], 1, false);
 		return Plugin_Handled;
 	}
-
+	
 	teleportClient(client, g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client], false);
 	return Plugin_Handled;
 }
@@ -2287,8 +2286,8 @@ public void Action_NoClip(int client)
 			return Plugin_Handled;
 		}
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
-		g_bNoclipWithoutR[client] = true;
 		PrintToChat(client, "[%c%s%c] You are now noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);
+		g_bNoclipWithoutR[client] = true;
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{
