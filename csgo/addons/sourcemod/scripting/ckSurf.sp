@@ -35,7 +35,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define VERSION "1.19.3"
+#define VERSION "1.20.1"
 #define PLUGIN_VERSION 1192
 
 // Database definitions
@@ -102,7 +102,7 @@
 
 // Zone definitions
 #define ZONE_MODEL "models/props/de_train/barrel.mdl"
-#define ZONEAMOUNT 9		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+#define ZONEAMOUNT 12		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Checker(8) NoPause (9), SpeedCap(10) teleport-11), Stop(0)
 #define MAXZONEGROUPS 11	// Maximum amount of zonegroups in a map
 #define MAXZONES 128		// Maximum amount of zones in a map
 
@@ -197,7 +197,7 @@ public Plugin myinfo =
 {
 	name = "ckSurf", 
 	author = "Elzi", 
-	description = "#clan.kikkeli's Surf Plugin", 
+	description = "Surf Plugin",  //Dont want to add custom server name on github
 	version = VERSION, 
 	url = ""
 };
@@ -321,12 +321,13 @@ int g_ClientSelectedZone[MAXPLAYERS + 1] =  { -1, ... };		// Currently selected 
 int g_ClientSelectedScale[MAXPLAYERS + 1];						// Currently selected scale
 int g_ClientSelectedPoint[MAXPLAYERS + 1];						// Currently selected point
 int g_CurrentZoneTypeId[MAXPLAYERS + 1];						// Currently selected zone's type ID
+char g_sAName[MAXPLAYERS + 1][64];								// Currently selected zone's type ID
 bool g_ClientRenamingZone[MAXPLAYERS + 1];						// Is client renaming zone?
 int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
 int beamColorCT[] =  { 0, 0, 255, 255 };				
 int beamColorN[] =  { 255, 255, 0, 255 };
 int beamColorM[] =  { 0, 255, 0, 255 };
-char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" }; // Default zone names
+char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" , "No Pause", "Speedcap", "Teleport"}; // Default zone names
 int g_BeamSprite;												// Zone sprites
 int g_HaloSprite;
 
@@ -397,6 +398,8 @@ ConVar g_hDynamicTimelimit = null; 								// Dynamic timelimit?
 ConVar g_hAdminClantag = null;									// Admin clan tag?
 char g_szChatPrefix[24];										// Chat Prefix
 ConVar g_hChatPrefix = null; 									// Chat Prefix
+char g_szServerName[32];										// Server Name
+ConVar g_hServerName = null;									// Server Name
 ConVar g_hAnnouncePlayers = null;								// Show team join
 ConVar g_hConnectMsg = null; 									// Connect message?
 ConVar g_hDisconnectMsg = null; 								// Disconnect message?
@@ -411,6 +414,7 @@ ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
 ConVar g_hCountry = null; 										// Display countries for players?
 ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
 ConVar g_hCvarNoBlock = null; 									// Allow player blocking?
+ConVar g_hCvarPlayerOpacity = null; 							// Player opacity (translucency)
 ConVar g_hPointSystem = null; 									// Use the point system?
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
 int g_ownerOffset; 												// Used to clear weapons from ground
@@ -969,7 +973,7 @@ public void OnConfigsExecuted()
 	else
 		ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
 
-	ServerCommand("sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
+	ServerCommand("sv_disable_immunity_alpha 1;sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
 }
 
 public void OnAutoConfigsBuffered()
@@ -1015,7 +1019,7 @@ public void OnClientPutInServer(int client)
 	if (IsFakeClient(client))
 	{
 		g_hRecordingAdditionalTeleport[client] = CreateArray(view_as<int>(AdditionalTeleport));
-		CS_SetMVPCount(client, 1);
+		//CS_SetMVPCount(client, 1);
 		return;
 	}
 	else
@@ -1044,7 +1048,7 @@ public void OnClientPutInServer(int client)
 		PlayerSpawn(client);
 	
 	if (g_bTierFound[0])
-		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
+		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 	
 	if (!g_bRenaming && !g_bInTransactionChain && g_bServerDataLoaded && !g_bSettingsLoaded[client] && !g_bLoadingSettings[client])
 	{
@@ -1175,6 +1179,10 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		GetConVarString(g_hChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
 	}
+	else if (convar == g_hServerName)
+	{
+		GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));	
+	}
 	else if (convar == g_hReplayBot)
 	{
 		if (g_hReplayBot.BoolValue)
@@ -1255,13 +1263,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 		else
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 	}
 	else if (convar == g_hAutoRespawn)
@@ -1310,7 +1318,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 		else
 		{
@@ -1318,7 +1326,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				if (IsValidClient(i))
 				{
 					Format(g_pr_rankname[i], 128, "");
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 				}
 		}
 	}
@@ -1327,16 +1335,22 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		if (g_hCvarNoBlock.BoolValue)
 		{
 			for (int client = 1; client <= MAXPLAYERS; client++)
-				if (IsValidEntity(client))
+				if (IsValidClient(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 			
 		}
 		else
 		{
 			for (int client = 1; client <= MAXPLAYERS; client++)
-				if (IsValidEntity(client))
+				if (IsValidClient(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
+	}
+	else if (convar == g_hCvarPlayerOpacity)
+	{
+		for (int client = 1; client <= MAXPLAYERS; client++)
+			if (IsValidClient(client) && GetEntityRenderMode(client) != RENDER_NONE)
+				SetPlayerVisible(client);
 	}
 	else if (convar == g_hCleanWeapons)
 	{
@@ -1378,7 +1392,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				{
 					GetCountry(i);
 					if (g_hPointSystem.BoolValue)
-						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+						RequestFrame(SetClanTag, GetClientSerial(i));
 				}
 			}
 		}
@@ -1387,7 +1401,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 			if (g_hPointSystem.BoolValue)
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+						RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 	}
 	else if (convar == g_hInfoBot)
@@ -1564,7 +1578,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		if (g_hRecordBotTrail.BoolValue && IsValidClient(g_RecordBot) && g_hBotTrail[0] == null)
 		{
-			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, g_RecordBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, GetClientSerial(g_RecordBot), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
@@ -1577,7 +1591,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		if (g_hBonusBotTrail.BoolValue && IsValidClient(g_BonusBot) && g_hBotTrail[1] == null)
 		{
-			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, g_BonusBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, GetClientSerial(g_BonusBot), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
@@ -1671,6 +1685,7 @@ public void OnPluginStart()
 	CreateConVar("ckSurf_version", VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
 	g_hConnectMsg = CreateConVar("ck_connect_msg", "0", "on/off - Enables a player connect message with country", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAnnouncePlayers = CreateConVar("ck_announce_msg", "0", "on/off - Enables a player announce message when joining a team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAllowRoundEndCvar = CreateConVar("ck_round_end", "0", "on/off - Allows to end the current round", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1746,6 +1761,8 @@ public void OnPluginStart()
 	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
 	g_hCvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hCvarNoBlock, OnSettingChanged);
+	g_hCvarPlayerOpacity = CreateConVar("ck_player_opacity", "255", "0-255 - Player opacity (0 invisible, 255 fully visible)", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	HookConVarChange(g_hCvarPlayerOpacity, OnSettingChanged);
 	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hAdminClantag, OnSettingChanged);
 	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1868,6 +1885,8 @@ public void OnPluginStart()
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
 	GetConVarString(g_hChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
 	HookConVarChange(g_hChatPrefix, OnSettingChanged);
+	GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));
+	HookConVarChange(g_hServerName, OnSettingChanged);
 
 	db_setupDatabase();
 
@@ -1925,6 +1944,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_restart", Command_Restart, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_start", Command_Restart, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_b", Command_ToBonus, "[ckSurf] Teleports player back to the start");
+	RegConsoleCmd("sm_ncr", Command_RestartNC, "[ckSurf] Teleports player back to the start after they have NoClipped as well as set state to not noclipd");
 	RegConsoleCmd("sm_bonus", Command_ToBonus, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_bonuses", Command_ListBonuses, "[ckSurf] Displays a list of bonuses in current map");
 	RegConsoleCmd("sm_s", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
@@ -1976,6 +1996,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode");
 
 	RegAdminCmd("sm_ckadmin", Admin_ckPanel, g_AdminMenuFlag, "[ckSurf] Displays the ckSurf menu panel");
+	RegAdminCmd("sm_extend", Command_extend, g_AdminMenuFlag, "[ckSurf] Extend map by certain amount");
 	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, g_AdminMenuFlag, "[ckSurf] Recalculates player profile for given steam id");
 	RegAdminCmd("sm_resetchallenges", Admin_DropChallenges, ADMFLAG_ROOT, "[ckSurf] Resets all player challenges (drops table challenges) - requires z flag");
 	RegAdminCmd("sm_resettimes", Admin_DropAllMapRecords, ADMFLAG_ROOT, "[ckSurf] Resets all player times (drops table playertimes) - requires z flag");
