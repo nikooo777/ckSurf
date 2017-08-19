@@ -35,7 +35,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define VERSION "1.19.3"
+#define VERSION "1.19.5"
 #define PLUGIN_VERSION 1192
 
 // Database definitions
@@ -411,6 +411,7 @@ ConVar g_hPlayerSkinChange = null; 								// Allow changing player models?
 ConVar g_hCountry = null; 										// Display countries for players?
 ConVar g_hAutoRespawn = null; 									// Respawn players automatically?
 ConVar g_hCvarNoBlock = null; 									// Allow player blocking?
+ConVar g_hCvarPlayerOpacity = null; 							// Player opacity (translucency)
 ConVar g_hPointSystem = null; 									// Use the point system?
 ConVar g_hCleanWeapons = null; 									// Clean weapons from ground?
 int g_ownerOffset; 												// Used to clear weapons from ground
@@ -969,7 +970,7 @@ public void OnConfigsExecuted()
 	else
 		ServerCommand("mp_respawn_on_death_ct 0;mp_respawn_on_death_t 0");
 
-	ServerCommand("sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
+	ServerCommand("sv_disable_immunity_alpha 1;sv_infinite_ammo 2;mp_endmatch_votenextmap 0;mp_do_warmup_period 0;mp_warmuptime 0;mp_match_can_clinch 0;mp_match_end_changelevel 1;mp_match_restart_delay 10;mp_endmatch_votenextleveltime 10;mp_endmatch_votenextmap 0;mp_halftime 0;	bot_zombie 1;mp_do_warmup_period 0;mp_maxrounds 1");
 }
 
 public void OnAutoConfigsBuffered()
@@ -1015,7 +1016,7 @@ public void OnClientPutInServer(int client)
 	if (IsFakeClient(client))
 	{
 		g_hRecordingAdditionalTeleport[client] = CreateArray(view_as<int>(AdditionalTeleport));
-		CS_SetMVPCount(client, 1);
+		//CS_SetMVPCount(client, 1);
 		return;
 	}
 	else
@@ -1044,7 +1045,7 @@ public void OnClientPutInServer(int client)
 		PlayerSpawn(client);
 	
 	if (g_bTierFound[0])
-		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, client, TIMER_FLAG_NO_MAPCHANGE);
+		AnnounceTimer[client] = CreateTimer(20.0, AnnounceMap, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 	
 	if (!g_bRenaming && !g_bInTransactionChain && g_bServerDataLoaded && !g_bSettingsLoaded[client] && !g_bLoadingSettings[client])
 	{
@@ -1255,13 +1256,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 		else
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 	}
 	else if (convar == g_hAutoRespawn)
@@ -1310,7 +1311,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		{
 			for (int i = 1; i <= MaxClients; i++)
 				if (IsValidClient(i))
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 		else
 		{
@@ -1318,7 +1319,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				if (IsValidClient(i))
 				{
 					Format(g_pr_rankname[i], 128, "");
-					CreateTimer(0.0, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+					RequestFrame(SetClanTag, GetClientSerial(i));
 				}
 		}
 	}
@@ -1327,16 +1328,22 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 		if (g_hCvarNoBlock.BoolValue)
 		{
 			for (int client = 1; client <= MAXPLAYERS; client++)
-				if (IsValidEntity(client))
+				if (IsValidClient(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 2, 4, true);
 			
 		}
 		else
 		{
 			for (int client = 1; client <= MAXPLAYERS; client++)
-				if (IsValidEntity(client))
+				if (IsValidClient(client))
 					SetEntData(client, FindSendPropInfo("CBaseEntity", "m_CollisionGroup"), 5, 4, true);
 		}
+	}
+	else if (convar == g_hCvarPlayerOpacity)
+	{
+		for (int client = 1; client <= MAXPLAYERS; client++)
+			if (IsValidClient(client) && GetEntityRenderMode(client) != RENDER_NONE)
+				SetPlayerVisible(client);
 	}
 	else if (convar == g_hCleanWeapons)
 	{
@@ -1378,7 +1385,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 				{
 					GetCountry(i);
 					if (g_hPointSystem.BoolValue)
-						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+						RequestFrame(SetClanTag, GetClientSerial(i));
 				}
 			}
 		}
@@ -1387,7 +1394,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 			if (g_hPointSystem.BoolValue)
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						CreateTimer(0.5, SetClanTag, i, TIMER_FLAG_NO_MAPCHANGE);
+						RequestFrame(SetClanTag, GetClientSerial(i));
 		}
 	}
 	else if (convar == g_hInfoBot)
@@ -1564,7 +1571,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		if (g_hRecordBotTrail.BoolValue && IsValidClient(g_RecordBot) && g_hBotTrail[0] == null)
 		{
-			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, g_RecordBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			g_hBotTrail[0] = CreateTimer(5.0 , ReplayTrailRefresh, GetClientSerial(g_RecordBot), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
@@ -1577,7 +1584,7 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		if (g_hBonusBotTrail.BoolValue && IsValidClient(g_BonusBot) && g_hBotTrail[1] == null)
 		{
-			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, g_BonusBot, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+			g_hBotTrail[1] = CreateTimer(5.0 , ReplayTrailRefresh, GetClientSerial(g_BonusBot), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
@@ -1746,6 +1753,8 @@ public void OnPluginStart()
 	HookConVarChange(g_hAutoRespawn, OnSettingChanged);
 	g_hCvarNoBlock = CreateConVar("ck_noblock", "1", "on/off - Player no blocking", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hCvarNoBlock, OnSettingChanged);
+	g_hCvarPlayerOpacity = CreateConVar("ck_player_opacity", "255", "0-255 - Player opacity (0 invisible, 255 fully visible)", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	HookConVarChange(g_hCvarPlayerOpacity, OnSettingChanged);
 	g_hAdminClantag = CreateConVar("ck_admin_clantag", "1", "on/off - Admin clan tag (necessary flag: b - z)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	HookConVarChange(g_hAdminClantag, OnSettingChanged);
 	g_hReplayBot = CreateConVar("ck_replay_bot", "1", "on/off - Bots mimic the local map record", FCVAR_NOTIFY, true, 0.0, true, 1.0);

@@ -154,7 +154,6 @@ public Action Admin_deleteTitles(int client, int args)
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
 
-
 	if (args == 0)
 	{
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
@@ -309,7 +308,6 @@ public Action Admin_deleteTitle(int client, int args)
 	return Plugin_Handled;
 }
 
-
 public void Admin_renameZone(int client, const char[] name)
 {
 	if (!IsValidClient(client))
@@ -443,7 +441,7 @@ public Action Admin_ClearAssists(int client, int args)
 		{
 			CS_SetClientAssists(i, 0);
 			g_fMaxPercCompleted[0] = 0.0;
-			CS_SetMVPCount(i, 0);
+			//CS_SetMVPCount(i, 0);
 		}
 
 	return Plugin_Handled;
@@ -686,7 +684,6 @@ public void ckAdminMenu(int client)
 								DisplayMenuAtItem(adminmenu, client, 36, MENU_TIME_FOREVER);
 }
 
-
 public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
@@ -901,7 +898,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 			CloseHandle(menu);
 
 		if (refresh)
-			CreateTimer(0.1, RefreshAdminMenu, param1, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(param1), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	if (action == MenuAction_End)
