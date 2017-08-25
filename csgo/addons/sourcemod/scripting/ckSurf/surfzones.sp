@@ -108,7 +108,11 @@ public Action StartTouchTrigger(int caller, int activator)
 			StartTouch(activator, action);
 		}
 		else
+<<<<<<< HEAD
 			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 0) // Allow MISC zones regardless of zonegroup
+=======
+			if (action[0] == 6 || action[0] == 7 || action[0] == 8 || action[0] == 9 || action[0] == 0) // Allow MISC zones regardless of zonegroup
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 				StartTouch(activator, action);
 	}
 
@@ -152,7 +156,11 @@ public void StartTouch(int client, int action[3])
 {
 	if (IsValidClient(client))
 	{
+<<<<<<< HEAD
 		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+=======
+		// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Checker(8) noPause(9), Stop(0)
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 		if (action[0] == 0) // Stop Zone
 		{
@@ -272,8 +280,13 @@ public void EndTouch(int client, int action[3])
 					}
 					if ((!g_bNoClip[client]) && g_bNoclipWithoutR[client])
 					{
+<<<<<<< HEAD
 						PrintToChat(client, "[%c%s%c] You have noclipped and have not restarted, please type !r to begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
+=======
+						ClientCommand(client, "play buttons\\button10.wav");
+						PrintToChat(client, "[%c%s%c] You have noclipped and have not restarted, please type !r to begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
 					{
@@ -1299,6 +1312,14 @@ public void SelectMiscZoneType(int client)
 	SelectZoneMenu.AddItem("7", "Validator");
 	SelectZoneMenu.AddItem("8", "Checker");
 	SelectZoneMenu.AddItem("0", "Stop");
+<<<<<<< HEAD
+=======
+	SelectZoneMenu.AddItem("9", "No Pause");
+	//TODO add in Speed Cap zone. Should be simple, whilst in the zone stop player from going over set speed to prevent RNG boosts. Would need to save max allowed speed in DB.
+	SelectZoneMenu.AddItem("10", "Speed Cap(For RNG)", ITEMDRAW_DISABLED);
+	//TODO Add in teleport zone type. A zone where you set the zone to have a desitation, Similar to teletostart except you can define where the start is.
+	SelectZoneMenu.AddItem("11", "Teleport", ITEMDRAW_DISABLED);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 	SelectZoneMenu.ExitButton = true;
 	SelectZoneMenu.Display(client, MENU_TIME_FOREVER);
@@ -1853,4 +1874,8 @@ stock void RemoveZones()
 			AcceptEntityInput(i, "Kill");
 		}
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608

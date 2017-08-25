@@ -1622,9 +1622,9 @@ public void sql_selectRankedPlayersRankCallback(Handle owner, Handle hndl, const
 		g_PlayerRank[client] = SQL_GetRowCount(hndl);
 		// Sort players by rank in scoreboard
 		if (g_pr_AllPlayers < g_PlayerRank[client])
-			CS_SetClientContributionScore(client, 0);
+			CS_SetClientContributionScore(client, -9999);
 		else
-			CS_SetClientContributionScore(client, (g_pr_AllPlayers - SQL_GetRowCount(hndl)));
+			CS_SetClientContributionScore(client, g_PlayerRank[client] * -1);
 	}
 
 	if (!g_bSettingsLoaded[client])
@@ -1896,13 +1896,17 @@ public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[
 	{
 		if (GetConVarBool(g_hPointSystem))
 			Format(szRanking, 255, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nNext skill group in: %ip%s\n", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, RankDifference, szNextRank);
-		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nNext skill group in: %ip%s\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\nâ•˜W/L Ratio: %s\nâ•˜W/L Points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, RankDifference, szNextRank, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
+		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nNext skill group in: %ip%s\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\n+W/L Ratio: %s\n+W/L Points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, RankDifference, szNextRank, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
 	}
 	else
 	{
 		if (GetConVarBool(g_hPointSystem))
 			Format(szRanking, 255, "Rank: %s/%i (%i)\nPoints: %ip (%s)\n", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup);
+<<<<<<< HEAD
 		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\nâ•˜ W/L Ratio: %s\nâ•˜ W/L points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
+=======
+		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\n+ W/L Ratio: %s\n+ W/L points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 	}
 	char szID[32][2];
@@ -2110,18 +2114,22 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 				Format(szPointsRatio, 32, "%ip", pointsratio);
 
 			if (pointsratio < 10)
-				Format(szValue, 128, "       %s         Â» %s (%s)", szPointsRatio, szName, szWinRatio);
+				Format(szValue, 128, "       %s         » %s (%s)", szPointsRatio, szName, szWinRatio);
 			else
 				if (pointsratio < 100)
-					Format(szValue, 128, "       %s       Â» %s (%s)", szPointsRatio, szName, szWinRatio);
+					Format(szValue, 128, "       %s       » %s (%s)", szPointsRatio, szName, szWinRatio);
 				else
 					if (pointsratio < 1000)
-						Format(szValue, 128, "       %s     Â» %s (%s)", szPointsRatio, szName, szWinRatio);
+						Format(szValue, 128, "       %s     » %s (%s)", szPointsRatio, szName, szWinRatio);
 					else
 						if (pointsratio < 10000)
-							Format(szValue, 128, "       %s   Â» %s (%s)", szPointsRatio, szName, szWinRatio);
+							Format(szValue, 128, "       %s   » %s (%s)", szPointsRatio, szName, szWinRatio);
 						else
+<<<<<<< HEAD
 							Format(szValue, 128, "       %s Â» %s (%s)", szPointsRatio, szName, szWinRatio);
+=======
+							Format(szValue, 128, "       %s » %s (%s)", szPointsRatio, szName, szWinRatio);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 			topChallengersMenu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
@@ -2649,9 +2657,9 @@ public void sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[]
 			if (time < 3600.0)
 				Format(szTime, 32, "  %s", szTime);
 			if (i < 10)
-				Format(szValue, 128, "[0%i.] %s    Â» %s", i, szTime, szName);
+				Format(szValue, 128, "[0%i.] %s    » %s", i, szTime, szName);
 			else
-				Format(szValue, 128, "[%i.] %s    Â» %s", i, szTime, szName);
+				Format(szValue, 128, "[%i.] %s    » %s", i, szTime, szName);
 			AddMenuItem(topSurfersMenu, szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
 		}
@@ -2837,11 +2845,11 @@ public void sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const c
 					if (time < 3600.0)
 						Format(szTime, 32, "   %s", szTime);
 					if (i == 100)
-						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
 					if (i >= 10)
-						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
 					else
-						Format(szValue, 128, "[0%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[0%i.] %s |    » %s", i, szTime, szName);
 					topMenu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 					PushArrayString(stringArray, szName);
 					if (i == 1)
@@ -2919,11 +2927,11 @@ public void sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[]
 					if (time < 3600.0)
 						Format(szTime, 32, "   %s", szTime);
 					if (i == 100)
-						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
 					if (i >= 10)
-						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
 					else
-						Format(szValue, 128, "[0%i.] %s |    Â» %s", i, szTime, szName);
+						Format(szValue, 128, "[0%i.] %s |    » %s", i, szTime, szName);
 					AddMenuItem(menu, szSteamID, szValue, ITEMDRAW_DEFAULT);
 					PushArrayString(stringArray, szName);
 					if (i == 1)
@@ -6093,7 +6101,7 @@ public void db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, co
 		CloseHandle(data);
 
 		SQL_FetchString(hndl, 1, szName, MAX_NAME_LENGTH);
-		Format(szValue, 128, "      %s       Â»  %s", szRecords, szName);
+		Format(szValue, 128, "      %s       »  %s", szRecords, szName);
 		g_menuTopSurfersMenu[client].AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 		if (count == 1)
 		{
@@ -6159,21 +6167,25 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 						Format(szPerc, 16, "%.1f%c  ", fperc, PERCENT);
 
 			if (points < 10)
-				Format(szValue, 128, "%s      %ip       %s     Â» %s", szRank, points, szPerc, szName);
+				Format(szValue, 128, "%s      %ip       %s     » %s", szRank, points, szPerc, szName);
 			else
 				if (points < 100)
-					Format(szValue, 128, "%s     %ip       %s     Â» %s", szRank, points, szPerc, szName);
+					Format(szValue, 128, "%s     %ip       %s     » %s", szRank, points, szPerc, szName);
 				else
 					if (points < 1000)
-						Format(szValue, 128, "%s   %ip       %s     Â» %s", szRank, points, szPerc, szName);
+						Format(szValue, 128, "%s   %ip       %s     » %s", szRank, points, szPerc, szName);
 					else
 						if (points < 10000)
-							Format(szValue, 128, "%s %ip       %s     Â» %s", szRank, points, szPerc, szName);
+							Format(szValue, 128, "%s %ip       %s     » %s", szRank, points, szPerc, szName);
 						else
 							if (points < 100000)
-								Format(szValue, 128, "%s %ip     %s     Â» %s", szRank, points, szPerc, szName);
+								Format(szValue, 128, "%s %ip     %s     » %s", szRank, points, szPerc, szName);
 							else
+<<<<<<< HEAD
 								Format(szValue, 128, "%s %ip   %s     Â» %s", szRank, points, szPerc, szName);
+=======
+								Format(szValue, 128, "%s %ip   %s     » %s", szRank, points, szPerc, szName);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 			menu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;

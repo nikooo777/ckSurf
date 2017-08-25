@@ -244,6 +244,26 @@ public int H_PlayersTitles(Menu tMenu, MenuAction action, int client, int item)
 	}
 }
 
+<<<<<<< HEAD
+=======
+public Action Command_extend(int client, int args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_extend <message>");
+		return Plugin_Handled;	
+	}
+	
+		char arg1[3];
+		GetCmdArg(1, arg1, sizeof(arg1));
+		int ExtendAmount = StringToInt(arg1);
+
+	PrintToChatAll("[%c%s%c] The current map has been extended by ADMIN.", MOSSGREEN, g_szChatPrefix, WHITE);
+	ExtendMapTimeLimit(ExtendAmount * 60);
+	return Plugin_Handled;
+}
+
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 public Action Command_VoteExtend(int client, int args)
 {
 	if(!IsValidClient(client))
@@ -496,11 +516,18 @@ public Action Command_Teleport(int client, int args)
 
 	if (g_Stage[g_iClientInZone[client][2]][client] == 1)
 	{
+<<<<<<< HEAD
 
 		teleportClient(client, g_iClientInZone[client][2], 1, false);
 		return Plugin_Handled;
 	}
 
+=======
+		teleportClient(client, g_iClientInZone[client][2], 1, false);
+		return Plugin_Handled;
+	}
+	
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	teleportClient(client, g_iClientInZone[client][2], g_Stage[g_iClientInZone[client][2]][client], false);
 	return Plugin_Handled;
 }
@@ -768,6 +795,7 @@ public Action Command_Restart(int client, int args)
 		}
 	}
 	if (g_bNoClip[client])
+<<<<<<< HEAD
 	{
 		PrintToChat(client, "[%c%s%c] You are still noclipping. To start your run unnoclip and then type !r", MOSSGREEN, g_szChatPrefix, WHITE);	
 	}
@@ -776,6 +804,46 @@ public Action Command_Restart(int client, int args)
 		PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
 		g_bNoclipWithoutR[client] = false;
 	}
+=======
+		{
+			PrintToChat(client, "[%c%s%c] You are still noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);	
+		} else
+		{
+		ClientCommand(client, "play ambient/misc/clank4");
+		g_bNoclipWithoutR[client] = false;
+		}
+	g_bClientRestarting[client] = false;
+	teleportClient(client, 0, 1, true);
+	return Plugin_Handled;
+}
+
+public Action Command_RestartNC(int client, int args)
+{
+	if (g_hDoubleRestartCommand.BoolValue && args == 0)
+	{
+		if (GetGameTime() - g_fClientRestarting[client] > 5.0)
+			g_bClientRestarting[client] = false;
+		
+		// Check that the client has a timer running, the zonegroup he is in has stages and that this is the first click
+		if (IsValidClient(client) && g_bTimeractivated[client] && g_mapZonesTypeCount[g_iClientInZone[client][2]][3] > 0 && !g_bClientRestarting[client] && g_Stage[g_iClientInZone[client][2]][client] > 1)
+		{
+			g_fClientRestarting[client] = GetGameTime();
+			g_bClientRestarting[client] = true;
+			PrintToChat(client, "[%c%s%c] Are you sure you want to restart your run? Use %c!r%c again to restart.", MOSSGREEN, g_szChatPrefix, WHITE, GREEN, WHITE);
+			return Plugin_Handled;
+		}
+	}
+	if (g_bNoClip[client])
+					{
+					Action_UnNoClip(client);
+					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					ClientCommand(client, "play ambient/misc/clank3");
+					} else 
+					{
+					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					ClientCommand(client, "play ambient/misc/clank3");
+					}
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	g_bClientRestarting[client] = false;
 	teleportClient(client, 0, 1, true);
 	return Plugin_Handled;
@@ -1946,6 +2014,14 @@ public Action Client_RankingSystem(int client, int args)
 
 public Action Client_Pause(int client, int args)
 {
+<<<<<<< HEAD
+=======
+	if (g_iClientInZone[client][0] == 9) 
+	{
+		PrintToChat(client, "[%c%s%c]%c You may not pause where you are currently.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+		return Plugin_Handled;
+	}
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	Client_Surrender(client, args);
 	if (GetClientTeam(client) == 1)return Plugin_Handled;
 	PauseMethod(client);
@@ -2227,11 +2303,24 @@ public Action Client_Stop(int client, int args)
 
 public void Action_NoClip(int client)
 {
+<<<<<<< HEAD
 	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client) && g_hNoClipS.BoolValue)
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		g_bNoclipWithoutR[client] = true;
 		PrintToChat(client, "[%c%s%c] You are now noclipping. To start your run type !r", MOSSGREEN, g_szChatPrefix, WHITE);
+=======
+	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+	{
+		if (!g_hNoClipS.BoolValue)
+		{
+			PrintToChat(client, "[%c%s%c] This server has disabled NoClipping", MOSSGREEN, g_szChatPrefix, WHITE);
+			return Plugin_Handled;
+		}
+		g_fLastTimeNoClipUsed[client] = GetGameTime();
+		PrintToChat(client, "[%c%s%c] You are now noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);
+		g_bNoclipWithoutR[client] = true;
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{
@@ -2259,7 +2348,11 @@ public void Action_UnNoClip(int client)
 	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
+<<<<<<< HEAD
 		PrintToChat(client, "[%c%s%c] You have stoppd noclipping. To start your run type !r", MOSSGREEN, g_szChatPrefix, WHITE);
+=======
+		PrintToChat(client, "[%c%s%c] You have stoppd noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		int team = GetClientTeam(client);
 		if (team == 2 || team == 3)
 		{

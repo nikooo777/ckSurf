@@ -35,7 +35,11 @@
 #pragma semicolon 1
 
 // Plugin info
+<<<<<<< HEAD
 #define VERSION "1.19.5"
+=======
+#define VERSION "1.20.2"
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 #define PLUGIN_VERSION 1192
 
 // Database definitions
@@ -102,7 +106,11 @@
 
 // Zone definitions
 #define ZONE_MODEL "models/props/de_train/barrel.mdl"
+<<<<<<< HEAD
 #define ZONEAMOUNT 9		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+=======
+#define ZONEAMOUNT 12		// The amount of different type of zones	-	Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Checker(8) NoPause (9), SpeedCap(10) teleport-11), Stop(0)
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 #define MAXZONEGROUPS 11	// Maximum amount of zonegroups in a map
 #define MAXZONES 128		// Maximum amount of zones in a map
 
@@ -197,7 +205,11 @@ public Plugin myinfo =
 {
 	name = "ckSurf", 
 	author = "Elzi", 
+<<<<<<< HEAD
 	description = "#clan.kikkeli's Surf Plugin", 
+=======
+	description = "Surf Plugin",  //Dont want to add custom server name on github
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	version = VERSION, 
 	url = ""
 };
@@ -321,12 +333,20 @@ int g_ClientSelectedZone[MAXPLAYERS + 1] =  { -1, ... };		// Currently selected 
 int g_ClientSelectedScale[MAXPLAYERS + 1];						// Currently selected scale
 int g_ClientSelectedPoint[MAXPLAYERS + 1];						// Currently selected point
 int g_CurrentZoneTypeId[MAXPLAYERS + 1];						// Currently selected zone's type ID
+<<<<<<< HEAD
+=======
+char g_sAName[MAXPLAYERS + 1][64];								// Currently selected zone's type ID
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 bool g_ClientRenamingZone[MAXPLAYERS + 1];						// Is client renaming zone?
 int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
 int beamColorCT[] =  { 0, 0, 255, 255 };				
 int beamColorN[] =  { 255, 255, 0, 255 };
 int beamColorM[] =  { 0, 255, 0, 255 };
+<<<<<<< HEAD
 char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" }; // Default zone names
+=======
+char g_szZoneDefaultNames[ZONEAMOUNT][128] =  { "Stop", "Start", "End", "Stage", "Checkpoint", "SpeedStart", "TeleToStart", "Validator", "Checker" , "No Pause", "Speedcap", "Teleport"}; // Default zone names
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 int g_BeamSprite;												// Zone sprites
 int g_HaloSprite;
 
@@ -397,6 +417,11 @@ ConVar g_hDynamicTimelimit = null; 								// Dynamic timelimit?
 ConVar g_hAdminClantag = null;									// Admin clan tag?
 char g_szChatPrefix[24];										// Chat Prefix
 ConVar g_hChatPrefix = null; 									// Chat Prefix
+<<<<<<< HEAD
+=======
+char g_szServerName[32];										// Server Name
+ConVar g_hServerName = null;									// Server Name
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 ConVar g_hAnnouncePlayers = null;								// Show team join
 ConVar g_hConnectMsg = null; 									// Connect message?
 ConVar g_hDisconnectMsg = null; 								// Disconnect message?
@@ -1176,6 +1201,13 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	{
 		GetConVarString(g_hChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
 	}
+<<<<<<< HEAD
+=======
+	else if (convar == g_hServerName)
+	{
+		GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));	
+	}
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	else if (convar == g_hReplayBot)
 	{
 		if (g_hReplayBot.BoolValue)
@@ -1678,6 +1710,10 @@ public void OnPluginStart()
 	CreateConVar("ckSurf_version", VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+<<<<<<< HEAD
+=======
+	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	g_hConnectMsg = CreateConVar("ck_connect_msg", "0", "on/off - Enables a player connect message with country", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAnnouncePlayers = CreateConVar("ck_announce_msg", "0", "on/off - Enables a player announce message when joining a team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAllowRoundEndCvar = CreateConVar("ck_round_end", "0", "on/off - Allows to end the current round", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1877,6 +1913,11 @@ public void OnPluginStart()
 	HookConVarChange(g_hZoneMenuFlag, OnSettingChanged);
 	GetConVarString(g_hChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
 	HookConVarChange(g_hChatPrefix, OnSettingChanged);
+<<<<<<< HEAD
+=======
+	GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));
+	HookConVarChange(g_hServerName, OnSettingChanged);
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 	db_setupDatabase();
 
@@ -1934,6 +1975,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_restart", Command_Restart, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_start", Command_Restart, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_b", Command_ToBonus, "[ckSurf] Teleports player back to the start");
+<<<<<<< HEAD
+=======
+	RegConsoleCmd("sm_ncr", Command_RestartNC, "[ckSurf] Teleports player back to the start after they have NoClipped as well as set state to not noclipd");
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	RegConsoleCmd("sm_bonus", Command_ToBonus, "[ckSurf] Teleports player back to the start");
 	RegConsoleCmd("sm_bonuses", Command_ListBonuses, "[ckSurf] Displays a list of bonuses in current map");
 	RegConsoleCmd("sm_s", Command_ToStage, "[ckSurf] Teleports player to the selected stage");
@@ -1985,6 +2030,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode");
 
 	RegAdminCmd("sm_ckadmin", Admin_ckPanel, g_AdminMenuFlag, "[ckSurf] Displays the ckSurf menu panel");
+<<<<<<< HEAD
+=======
+	RegAdminCmd("sm_extend", Command_extend, g_AdminMenuFlag, "[ckSurf] Extend map by certain amount");
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, g_AdminMenuFlag, "[ckSurf] Recalculates player profile for given steam id");
 	RegAdminCmd("sm_resetchallenges", Admin_DropChallenges, ADMFLAG_ROOT, "[ckSurf] Resets all player challenges (drops table challenges) - requires z flag");
 	RegAdminCmd("sm_resettimes", Admin_DropAllMapRecords, ADMFLAG_ROOT, "[ckSurf] Resets all player times (drops table playertimes) - requires z flag");
@@ -2190,4 +2239,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+<<<<<<< HEAD
 /*=====  End of Natives  ======*/
+=======
+/*=====  End of Natives  ======*/
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608

@@ -230,7 +230,30 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		Admin_renameZone(client, sText);
 		return Plugin_Handled;
 	}
+<<<<<<< HEAD
 
+=======
+	//TODO Make this dynamic by replicating setup in DB.
+	if (StrContains(sText, "how", false) >= 0)
+	{
+		if (StrContains(sText, "spec", false) >= 0)
+		{
+			PrintToChatAll("%t", "SpecHelp", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChat(client, "[%c%s%c] %cDoes this answer your question?", MOSSGREEN, g_szChatPrefix, WHITE, YELLOW);
+			return Plugin_Handled;
+			
+		}
+		if (StrContains(sText, "noclip", false) >= 0)
+		{
+			PrintToChatAll("%t", "NCHelp", MOSSGREEN, g_szChatPrefix, WHITE, MOSSGREEN, WHITE, MOSSGREEN, WHITE, MOSSGREEN);
+			PrintToChat(client, "[%c%s%c] %cDoes this answer your question?", MOSSGREEN, g_szChatPrefix, WHITE, YELLOW);
+			return Plugin_Handled;
+			
+		}		
+	}
+	
+	
+>>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	if (!GetConVarBool(g_henableChatProcessing))
 		return Plugin_Continue;
 
