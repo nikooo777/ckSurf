@@ -230,9 +230,6 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		Admin_renameZone(client, sText);
 		return Plugin_Handled;
 	}
-<<<<<<< HEAD
-
-=======
 	//TODO Make this dynamic by replicating setup in DB.
 	if (StrContains(sText, "how", false) >= 0)
 	{
@@ -253,7 +250,6 @@ public Action Say_Hook(int client, const char[] command, int argc)
 	}
 	
 	
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	if (!GetConVarBool(g_henableChatProcessing))
 		return Plugin_Continue;
 

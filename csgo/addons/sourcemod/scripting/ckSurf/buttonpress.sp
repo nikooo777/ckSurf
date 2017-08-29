@@ -446,8 +446,4 @@ public void CL_OnEndTimerPress(int client)
 	//set mvp star
 	g_MVPStars[client] += 1;
 	//CS_SetMVPCount(client, g_MVPStars[client]);
-<<<<<<< HEAD
 } 
-=======
-} 
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608

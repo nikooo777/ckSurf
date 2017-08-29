@@ -881,11 +881,8 @@ public void PrintConsoleInfo(int client)
 
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
 	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", VERSION, RoundToNearest(fltickrate));
-<<<<<<< HEAD
-=======
 	PrintToConsole(client, "This version of ckSurf has been modfied by: jonitaikaponi, nikooo777, connorjan, blackhawk74, ");
-	PrintToConsole(client, "zAfLu, Squallkins, marcowmadeira, 2called-chaos, 1DJ, Maxximou5, peace-maker.
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
+	PrintToConsole(client, "zAfLu, Squallkins, marcowmadeira, 2called-chaos, 1DJ, Maxximou5, peace-maker.");
 	if (iConsoleTimeleft > 0)
 		PrintToConsole(client, "iConsoleTimeleft on %s: %s", g_szMapName, finalOutput);
 	PrintToConsole(client, "Menu formatting is optimized for 1920x1080!");
@@ -1291,10 +1288,6 @@ public void checkTrailStatus(int client, float speed)
 
 public void SetClientDefaults(int client)
 {
-<<<<<<< HEAD
-
-=======
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	float GameTime = GetGameTime();
 	g_fLastCommandBack[client] = GameTime;
 	g_ClientSelectedZone[client] = -1;
@@ -1339,10 +1332,6 @@ public void SetClientDefaults(int client)
 	g_bRestorePositionMsg[client] = false;
 	g_bRestorePosition[client] = false;
 	g_bRespawnPosition[client] = false;
-<<<<<<< HEAD
-
-=======
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	g_bNoClip[client] = false;
 	g_bChallenge[client] = false;
 	g_bOverlay[client] = false;
@@ -2823,41 +2812,23 @@ public void CenterHudAlive(int client)
 {
 	if (!IsValidClient(client))
 		return;
-<<<<<<< HEAD
-
-	char pAika[54], timerText[32], StageString[24];
-
-=======
 	
 	char pAika[54], timerText[32], StageString[64];
 	
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 	if (g_bInfoPanel[client])
 	{
 		if (!g_bhasStages) // map is linear
 		{
-<<<<<<< HEAD
-			Format(StageString, 24, "Linear\t");
-=======
 			Format(StageString, 64, "Linear\t");
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		}
 		else // map has stages
 		{
 			if (g_Stage[g_iClientInZone[client][2]][client] > 9)
-<<<<<<< HEAD
-				Format(StageString, 24, "%i / %i\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1)); // less \t's to make lines align
-			else
-				Format(StageString, 24, "%i / %i\t\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1));
-		}
-
-=======
 				Format(StageString, 64, "%i / %i\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1)); // less \t's to make lines align
 			else
 				Format(StageString, 64, "%i / %i\t\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1));
 		}
 		
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		if (g_bTimeractivated[client] && !g_bPause[client])
 		{
 			FormatTimeFloat(client, g_fCurrentRunTime[client], 3, pAika, 128);
@@ -2874,20 +2845,12 @@ public void CenterHudAlive(int client)
 				Format(pAika, 128, "<font color='#99FF99'>%s</font>", pAika); // hasn't missed best personal time yet
 			}
 		}
-<<<<<<< HEAD
-
-=======
 		
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		if (g_bPracticeMode[client])
 			Format(timerText, 32, "[PRAC]: ");
 		else
 			Format(timerText, 32, "");
-<<<<<<< HEAD
-
-=======
 		
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		// Set Checkpoint back to normal
 		if (GetGameTime() - g_fLastDifferenceTime[client] > 5.0)
 		{
@@ -2895,11 +2858,7 @@ public void CenterHudAlive(int client)
 			{
 				if (g_fRecordMapTime != 9999999.0)
 				{
-<<<<<<< HEAD
-					Format(g_szLastSRDifference[client], 64, "\t\tSR: %s", g_szRecordMapTime);
-=======
 					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> %s", g_szRecordMapTime);
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 					if (g_fPersonalRecord[client] > 0.0)
 					{
 						Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecord[client]);
@@ -2911,34 +2870,13 @@ public void CenterHudAlive(int client)
 				}
 				else
 				{
-<<<<<<< HEAD
-					Format(g_szLastSRDifference[client], 64, "\t\tSR: N/A");
-=======
 					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> N/A");
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 					Format(g_szLastPBDifference[client], 64, "N/A");
 				}
 			}
 			else
 			{
 				Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecordBonus[g_iClientInZone[client][2]][client]);
-<<<<<<< HEAD
-				Format(g_szLastSRDifference[client], 64, "\t\tSR: %s", g_szBonusFastestTime[g_iClientInZone[client][2]]);
-			}
-		}
-
-		char szRank[32];
-		if (g_iClientInZone[client][2] > 0) // if in bonus stage, get bonus times
-		{
-			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
-				Format(szRank, 64, "\tRank: %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
-			else
-				if (g_iBonusCount[g_iClientInZone[client][2]] > 0)
-					Format(szRank, 64, "\t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
-				else
-					Format(szRank, 64, "\t\tRank: N/A");
-
-=======
 				Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> %s", g_szBonusFastestTime[g_iClientInZone[client][2]]);
 			}
 		}
@@ -2956,21 +2894,10 @@ public void CenterHudAlive(int client)
 				else
 					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font> N/A");
 			
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		}
 		else // if in normal map, get normal times
 		{
 			if (g_fPersonalRecord[client] > 0.0)
-<<<<<<< HEAD
-				Format(szRank, 64, "\tRank: %i / %i", g_MapRank[client], g_MapTimesCount);
-			else
-				if (g_MapTimesCount > 0)
-					Format(szRank, 64, "\t\tRank: N/A / %i", g_MapTimesCount);
-				else
-					Format(szRank, 64, "\t\tRank: N/A");
-		}
-
-=======
 				Format(szRank, 128, "\t<font color='#d639cb'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
 			else
 				if (g_MapTimesCount > 0)
@@ -2979,29 +2906,16 @@ public void CenterHudAlive(int client)
 					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font>  N/A");
 		}
 		
-		char szSpeed[32];
 		int speed = RoundToNearest(g_fLastSpeed[client]);
 		if (speed <= 300) {
 		//TODO Make coloured speed increase as gradient as speed increase i.e. 0-Red, 500-blue, 1000-green, 20000, yellow.
 		}	
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
 		{
 			if (g_bTimeractivated[client])
 			{
 				if (g_bPause[client])
 				{
-<<<<<<< HEAD
-					PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Paused</font> %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
-				}
-				else
-				{
-					PrintHintText(client, "<font face=''>%s%s %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
-				}
-			}
-			else
-				PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Stopped</font> %s\nPB: %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
-=======
 					PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Paused</font> %s\n<font color='#d639cb'>PB:<font color='#ffffff'> %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
 				}
 				else
@@ -3011,7 +2925,6 @@ public void CenterHudAlive(int client)
 			}
 			else
 				PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Stopped</font> %s\n<font color='#d639cb'>PB:</font> %s%s\n<font color='#45f74e' size='22'>%s</font>",timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, g_szServerName);
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 		}
 	}
 }

@@ -1902,11 +1902,7 @@ public void SQL_ViewRankedPlayerCallback5(Handle owner, Handle hndl, const char[
 	{
 		if (GetConVarBool(g_hPointSystem))
 			Format(szRanking, 255, "Rank: %s/%i (%i)\nPoints: %ip (%s)\n", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup);
-<<<<<<< HEAD
-		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\nâ•˜ W/L Ratio: %s\nâ•˜ W/L points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
-=======
 		Format(g_pr_szrank[client], 512, "Rank: %s/%i (%i)\nPoints: %ip (%s)\nMaps completed: %i/%i (records: %i)\nPlayed challenges: %i\n+ W/L Ratio: %s\n+ W/L points ratio: %s\n ", szRank, g_pr_RankedPlayers, g_pr_AllPlayers, points, szSkillGroup, finishedmapspro, g_pr_MapCount, prorecords, challenges, szChallengesWinRatio, szChallengesPoints);
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 	}
 	char szID[32][2];
@@ -2125,11 +2121,7 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 						if (pointsratio < 10000)
 							Format(szValue, 128, "       %s   » %s (%s)", szPointsRatio, szName, szWinRatio);
 						else
-<<<<<<< HEAD
-							Format(szValue, 128, "       %s Â» %s (%s)", szPointsRatio, szName, szWinRatio);
-=======
 							Format(szValue, 128, "       %s » %s (%s)", szPointsRatio, szName, szWinRatio);
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 			topChallengersMenu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
@@ -6181,11 +6173,7 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 							if (points < 100000)
 								Format(szValue, 128, "%s %ip     %s     » %s", szRank, points, szPerc, szName);
 							else
-<<<<<<< HEAD
-								Format(szValue, 128, "%s %ip   %s     Â» %s", szRank, points, szPerc, szName);
-=======
 								Format(szValue, 128, "%s %ip   %s     » %s", szRank, points, szPerc, szName);
->>>>>>> b90c36d45ce88a477a9542083bed5704e4a08608
 
 			menu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
