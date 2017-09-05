@@ -35,7 +35,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.3"
+#define PLUGIN_VERSION "1.20.4"
 
 // Database definitions
 #define MYSQL 0
@@ -1993,6 +1993,8 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_normal", Command_normalMode, "[ckSurf] Switches player back to normal mode");
 	RegConsoleCmd("sm_n", Command_normalMode, "[ckSurf] Switches player back to normal mode");
 
+
+	RegAdminCmd("sm_botfix", Admin_fixBot, g_AdminMenuFlag, "[ckSurf] Fixes Bots.");
 	RegAdminCmd("sm_ckadmin", Admin_ckPanel, g_AdminMenuFlag, "[ckSurf] Displays the ckSurf menu panel");
 	RegAdminCmd("sm_extend", Command_extend, g_AdminMenuFlag, "[ckSurf] Extend map by certain amount");
 	RegAdminCmd("sm_refreshprofile", Admin_RefreshProfile, g_AdminMenuFlag, "[ckSurf] Recalculates player profile for given steam id");

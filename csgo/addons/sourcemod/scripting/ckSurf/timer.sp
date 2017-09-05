@@ -472,6 +472,17 @@ public Action TerminateRoundTimer(Handle timer)
 	return Plugin_Handled;
 }
 
+public Action BotRestartTimer(Handle timer)
+{
+	Handle replay = FindConVar("ck_replay_bot");
+	Handle bonus = FindConVar("ck_bonus_bot");
+	SetConVarInt(replay, 1, true, true);
+	SetConVarInt(bonus, 1, true, false);
+	PrintToChatAll("[%c%s%c] Replay bots have been restarted.", MOSSGREEN, g_szChatPrefix, WHITE);
+	return Plugin_Handled;
+}
+
+
 public Action WelcomeMsgTimer(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
@@ -492,7 +503,7 @@ public Action HelpMsgTimer(Handle timer, any serial)
 	return Plugin_Handled;
 }
 
-public Action AdvertTimer(Handle timer)
+public Action AdvertTimer(Handle timer, any serial)
 {
 	g_Advert++;
 	if ((g_Advert % 2) == 0)

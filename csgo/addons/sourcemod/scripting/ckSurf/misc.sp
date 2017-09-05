@@ -2834,15 +2834,15 @@ public void CenterHudAlive(int client)
 			FormatTimeFloat(client, g_fCurrentRunTime[client], 3, pAika, 128);
 			if (g_bMissedMapBest[client] && g_fPersonalRecord[client] > 0.0) // missed best personal time
 			{
-				Format(pAika, 128, "<font color='#FFFFB2'>%s</font>", pAika);
+				Format(pAika, 128, "<font color='#00ff87'>%s</font>", pAika);
 			}
 			else if (g_fPersonalRecord[client] < 0.1) // hasn't finished the map yet
 			{
-				Format(pAika, 128, "<font color='#7F7FFF'>%s</font>", pAika);
+				Format(pAika, 128, "<font color='#00ff87'>%s</font>", pAika);
 			}
 			else
 			{
-				Format(pAika, 128, "<font color='#99FF99'>%s</font>", pAika); // hasn't missed best personal time yet
+				Format(pAika, 128, "<font color='#00ff87'>%s</font>", pAika); // hasn't missed best personal time yet
 			}
 		}
 		
@@ -2858,7 +2858,7 @@ public void CenterHudAlive(int client)
 			{
 				if (g_fRecordMapTime != 9999999.0)
 				{
-					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> %s", g_szRecordMapTime);
+					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#00c3ff'>SR:</font> %s", g_szRecordMapTime);
 					if (g_fPersonalRecord[client] > 0.0)
 					{
 						Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecord[client]);
@@ -2870,14 +2870,14 @@ public void CenterHudAlive(int client)
 				}
 				else
 				{
-					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> N/A");
+					Format(g_szLastSRDifference[client], 64, "\t\t<font color='#00c3ff'>SR:</font> N/A");
 					Format(g_szLastPBDifference[client], 64, "N/A");
 				}
 			}
 			else
 			{
 				Format(g_szLastPBDifference[client], 64, "%s", g_szPersonalRecordBonus[g_iClientInZone[client][2]][client]);
-				Format(g_szLastSRDifference[client], 64, "\t\t<font color='#d639cb'>SR:</font> %s", g_szBonusFastestTime[g_iClientInZone[client][2]]);
+				Format(g_szLastSRDifference[client], 64, "\t\t<font color='#00c3ff'>SR:</font> %s", g_szBonusFastestTime[g_iClientInZone[client][2]]);
 			}
 		}
 		
@@ -2887,29 +2887,55 @@ public void CenterHudAlive(int client)
 		if (g_iClientInZone[client][2] > 0) // if in bonus stage, get bonus times
 		{
 			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
-				Format(szRank, 128, "\t<font color='#d639cb'>Rank:</font> %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+				Format(szRank, 128, "\tRank:%i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
 			else
 				if (g_iBonusCount[g_iClientInZone[client][2]] > 0)
-					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					Format(szRank, 128, "\t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
 				else
-					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font> N/A");
+					Format(szRank, 128, "\t\tRank:</font> N/A");
 			
 		}
 		else // if in normal map, get normal times
 		{
 			if (g_fPersonalRecord[client] > 0.0)
-				Format(szRank, 128, "\t<font color='#d639cb'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
+				Format(szRank, 128, "\tRank: %i / %i", g_MapRank[client], g_MapTimesCount);
 			else
 				if (g_MapTimesCount > 0)
-					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font> N/A / %i", g_MapTimesCount);
+					Format(szRank, 128, "\t\tRank:N/A / %i", g_MapTimesCount);
 				else
-					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font>  N/A");
+					Format(szRank, 128, "\t\tRank: N/A");
 		}
 		
 		int speed = RoundToNearest(g_fLastSpeed[client]);
-		if (speed <= 300) {
-		//TODO Make coloured speed increase as gradient as speed increase i.e. 0-Red, 500-blue, 1000-green, 20000, yellow.
-		}	
+		int colourLookup = RoundToFloor(speed / 233.33);
+		if (colourLookup > 15)
+		{
+			colourLookup = 15;
+		}
+		char colourName[8];
+		switch (colourLookup)
+		{
+		//Just a random colour array pulled from https://www.google.com.au/search?q=%23FF0000
+		
+		case 0: Format(colourName, sizeof(colourName), "d7e8b7");
+		case 1: Format(colourName, sizeof(colourName),  "ade544");
+		case 2: Format(colourName, sizeof(colourName),  "59e543");
+		case 3: Format(colourName, sizeof(colourName),  "21e05a");
+		case 4: Format(colourName, sizeof(colourName),  "0fe2ae");
+		case 5: Format(colourName, sizeof(colourName),  "20c3cc");
+		case 6: Format(colourName, sizeof(colourName),  "20a6cc");
+		case 7: Format(colourName, sizeof(colourName),  "2078cc");
+		case 8: Format(colourName, sizeof(colourName),  "203ccc");
+		case 9: Format(colourName, sizeof(colourName),  "3f20cc");
+		case 10: Format(colourName, sizeof(colourName),  "6420cc");
+		case 11: Format(colourName, sizeof(colourName),  "9520cc");
+		case 12: Format(colourName, sizeof(colourName),  "c920cc");
+		case 13: Format(colourName, sizeof(colourName),  "cc2087");
+		case 14: Format(colourName, sizeof(colourName),  "cc205f");
+		case 15: Format(colourName, sizeof(colourName),  "e05d00");
+		}
+	
+		
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
 		{
 			if (g_bTimeractivated[client])
@@ -2919,8 +2945,10 @@ public void CenterHudAlive(int client)
 					PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Paused</font> %s\n<font color='#d639cb'>PB:<font color='#ffffff'> %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
 				}
 				else
-				{				
-					PrintHintText(client, "<font face=''>%s%s %s\nPB: %s%s\n<font color='#d639cb'>Stage:</font>  %s<font color='#d639cb'>Speed:</font>  %i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
+				{	
+					//DEBUG					
+					//PrintToConsole(client, "%s%s %s\nPB: %s%s\nStage: %sSpeed: <font color='#%s'>%i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, colourName, speed);
+					PrintHintText(client, "<font face='' size='21'>%s%s %s\n<font color='#ffbb00'>PB:</font> %s%s\nStage: %sSpeed: <font color='#%s'>%i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, colourName, speed);
 				}
 			}
 			else
@@ -2928,6 +2956,8 @@ public void CenterHudAlive(int client)
 		}
 	}
 }
+
+
 
 public void Checkpoint(int client, int zone, int zonegroup)
 {
