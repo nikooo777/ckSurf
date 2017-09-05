@@ -5,7 +5,7 @@ public Action Admin_giveTitle(int client, int args)
 
 	if (g_iCustomTitleCount == 0)
 	{
-		PrintToChat(client, "[%cCK%c] No custom titles loaded.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] No custom titles loaded.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
 
@@ -74,7 +74,7 @@ public Action Admin_giveTitle(int client, int args)
 			}
 			if (g_iAdminSelectedClient[client] == -1)
 			{
-				PrintToChat(client, "[%cCK%c] Couldn't find player %s", MOSSGREEN, WHITE, arg);
+				PrintToChat(client, "[%c%s%c] Couldn't find player %s", MOSSGREEN, g_szChatPrefix, WHITE, arg);
 			}
 			else
 			{
@@ -154,7 +154,6 @@ public Action Admin_deleteTitles(int client, int args)
 	for (int i = 0; i < TITLE_COUNT; i++)
 		g_bAdminFlagTitlesTemp[client][i] = false;
 
-
 	if (args == 0)
 	{
 		Menu playerMenu = CreateMenu(Handler_selectPlayer);
@@ -215,7 +214,7 @@ public Action Admin_deleteTitles(int client, int args)
 			}
 			if (g_iAdminSelectedClient[client] == -1)
 			{
-				PrintToChat(client, "[%cCK%c] Couldn't find player %s", MOSSGREEN, WHITE, arg);
+				PrintToChat(client, "[%c%s%c] Couldn't find player %s", MOSSGREEN, g_szChatPrefix, WHITE, arg);
 			}
 			else
 			{
@@ -298,7 +297,7 @@ public Action Admin_deleteTitle(int client, int args)
 			}
 			if (g_iAdminSelectedClient[client] == -1)
 			{
-				PrintToChat(client, "[%cCK%c] Couldn't find player %s", MOSSGREEN, WHITE, arg);
+				PrintToChat(client, "[%c%s%c] Couldn't find player %s", MOSSGREEN, g_szChatPrefix, WHITE, arg);
 			}
 			else
 			{
@@ -308,7 +307,6 @@ public Action Admin_deleteTitle(int client, int args)
 	}
 	return Plugin_Handled;
 }
-
 
 public void Admin_renameZone(int client, const char[] name)
 {
@@ -320,17 +318,17 @@ public void Admin_renameZone(int client, const char[] name)
 	//avoid unnecessary calls by checking the first cell first. If it's 0 -> \0 then negating it will make the if check pass -> return
 	if (!name[0] || StrEqual(name, " ") || StrEqual(name, ""))
 	{
-		PrintToChat(client, "[%cCK%c] Please give the zone a valid name.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Please give the zone a valid name.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return;
 	}
 	if (strlen(name) > 128)
 	{
-		PrintToChat(client, "[%cCK%c] Zone name too long. Maximum is 128 characters.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Zone name too long. Maximum is 128 characters.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return;
 	}
 	if (StrEqual(name, "!cancel", false)) //false -> non sensitive
 	{
-		PrintToChat(client, "[%cCK%c] Cancelled bonus renaming.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Cancelled bonus renaming.", MOSSGREEN, g_szChatPrefix, WHITE);
 		g_ClientRenamingZone[client] = false;
 		ListBonusSettings(client);
 		return;
@@ -370,7 +368,7 @@ public Action Admin_insertMapTier(int client, int args)
 	if (args < 2)
 	{
 		ReplyToCommand(client, "[CK] Usage: sm_addmaptier <ZoneGroup> <Tier>");
-		PrintToChat(client, "[%cCK%c] Zone Groups:", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Zone Groups:", MOSSGREEN, g_szChatPrefix, WHITE);
 		PrintToChat(client, "[%c0.%c] Map Tier", BLUE, WHITE);
 		for (int i = 1; i < g_mapZoneGroupCount; i++)
 		{
@@ -389,7 +387,7 @@ public Action Admin_insertMapTier(int client, int args)
 		if ((tier < 7 || tier > 0) && (-1 < zonegroup < g_mapZoneGroupCount))
 			db_insertMapTier(tier, zonegroup);
 		else
-			PrintToChat(client, "[%cCK%c] Invalid tier number or zone group. Please choose a tier number between 1-6 and a valid zone group.", MOSSGREEN, WHITE);
+			PrintToChat(client, "[%c%s%c] Invalid tier number or zone group. Please choose a tier number between 1-6 and a valid zone group.", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	return Plugin_Handled;
 }
@@ -410,12 +408,12 @@ public Action Admin_insertSpawnLocation(int client, int args)
 	if (g_bGotSpawnLocation[g_iClientInZone[client][2]])
 	{
 		db_updateSpawnLocations(SpawnLocation, SpawnAngle, g_iClientInZone[client][2]);
-		PrintToChat(client, "[%cCK%c] Spawnpoint edited", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Spawnpoint edited", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	else
 	{
 		db_insertSpawnLocations(SpawnLocation, SpawnAngle, g_iClientInZone[client][2]);
-		PrintToChat(client, "[%cCK%c] Spawnpoint added", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Spawnpoint added", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 
 	return Plugin_Handled;
@@ -428,10 +426,10 @@ public Action Admin_deleteSpawnLocation(int client, int args)
 	if (g_bGotSpawnLocation[g_iClientInZone[client][2]])
 	{
 		db_deleteSpawnLocations(g_iClientInZone[client][2]);
-		PrintToChat(client, "[%cCK%c] Spawnpoint deleted", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Spawnpoint deleted", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	else
-		PrintToChat(client, "[%cCK%c] No spawnpoint to delete!", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] No spawnpoint to delete!", MOSSGREEN, g_szChatPrefix, WHITE);
 
 	return Plugin_Handled;
 }
@@ -443,7 +441,7 @@ public Action Admin_ClearAssists(int client, int args)
 		{
 			CS_SetClientAssists(i, 0);
 			g_fMaxPercCompleted[0] = 0.0;
-			CS_SetMVPCount(i, 0);
+			//CS_SetMVPCount(i, 0);
 		}
 
 	return Plugin_Handled;
@@ -454,7 +452,7 @@ public Action Admin_ckPanel(int client, int args)
 	ckAdminMenu(client);
 	if ((GetUserFlagBits(client) & g_AdminMenuFlag))
 	{
-		PrintToChat(client, "[%cCK%c] See console for more commands", LIMEGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] See console for more commands", MOSSGREEN, g_szChatPrefix, WHITE);
 		PrintToConsole(client, "\n[ckSurf root admin]\n");
 		PrintToConsole(client, "\n sm_refreshprofile <steamid> (recalculates player profile for given steamid)\n sm_deleteproreplay <mapname> (Deletes pro replay file for a given map)\n sm_deletetpreplay <mapname> (Deletes tp replay file for a given map)\n ");
 		PrintToConsole(client, "\n sm_zones (Open up the zonee modification menu)\n sm_insertmapzones (Inserts premade map zones into the servers database. ONLY RUN THIS ONCE!)\n sm_insertmaptiers (Inserts premade map tier information into the servers database. ONLY RUN THIS ONCE!)\n");
@@ -474,7 +472,7 @@ public void ckAdminMenu(int client)
 
 	if (!(GetUserFlagBits(client) & g_AdminMenuFlag) && !(GetUserFlagBits(client) & ADMFLAG_ROOT))
 	{
-		PrintToChat(client, "[%cCK%c] You don't have access to the admin menu.", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] You don't have access to the admin menu.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return;
 	}
 
@@ -482,9 +480,9 @@ public void ckAdminMenu(int client)
 
 	Handle adminmenu = CreateMenu(AdminPanelHandler);
 	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)", VERSION);
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)", PLUGIN_VERSION);
 	else
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)", VERSION);
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)", PLUGIN_VERSION);
 	SetMenuTitle(adminmenu, szTmp);
 
 	if (!g_pr_RankingRecalc_InProgress)
@@ -686,7 +684,6 @@ public void ckAdminMenu(int client)
 								DisplayMenuAtItem(adminmenu, client, 36, MENU_TIME_FOREVER);
 }
 
-
 public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
@@ -698,7 +695,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 			{
 				if (!g_pr_RankingRecalc_InProgress)
 				{
-					PrintToChat(param1, "%t", "PrUpdateStarted", MOSSGREEN, WHITE);
+					PrintToChat(param1, "%t", "PrUpdateStarted", MOSSGREEN, g_szChatPrefix, WHITE);
 					g_bManualRecalc = true;
 					g_pr_Recalc_AdminID = param1;
 					RefreshPlayerRankTable(MAX_PR_PLAYERS);
@@ -709,7 +706,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 						g_bProfileRecalc[i] = false;
 					g_bManualRecalc = false;
 					g_pr_RankingRecalc_InProgress = false;
-					PrintToChat(param1, "%t", "StopRecalculation", MOSSGREEN, WHITE);
+					PrintToChat(param1, "%t", "StopRecalculation", MOSSGREEN, g_szChatPrefix, WHITE);
 				}
 			}
 
@@ -901,7 +898,7 @@ public int AdminPanelHandler(Handle menu, MenuAction action, int param1, int par
 			CloseHandle(menu);
 
 		if (refresh)
-			CreateTimer(0.1, RefreshAdminMenu, param1, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(param1), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	if (action == MenuAction_End)
@@ -956,7 +953,7 @@ public Action Admin_InsertMapTiers(int client, int args)
 {
 	if (g_insertingInformation)
 	{
-		PrintToChat(client, "[%cCK%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
 
@@ -980,7 +977,7 @@ public void Admin_InsertMapTierstoDatabase(int client)
 
 	g_insertingInformation = true;
 
-	PrintToChat(client, "[%cCK%c] Maptier information is being inserted into the database. This might take a while.", MOSSGREEN, WHITE);
+	PrintToChat(client, "[%c%s%c] Maptier information is being inserted into the database. This might take a while.", MOSSGREEN, g_szChatPrefix, WHITE);
 
 	Transaction h_addTiers = SQL_CreateTransaction();
 	SQL_AddQuery(h_addTiers, "INSERT INTO `ck_maptier` (`mapname`, `tier`, `btier1`, `btier2`, `btier3`, `btier4`, `btier5`, `btier6`, `btier7`, `btier8`, `btier9`, `btier10`) VALUES('surf_004_final1', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_1day', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_2012_beta12', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_3', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_4dimensional', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_6', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_81st_network_njv', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_abyss_fix', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_acp', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_acp_fix', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_adtr_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_advanced', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aether', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_again_njv_rg', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aircontrol_ksf', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_airflow', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_akai_final', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_akai_two_rg', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_alternation', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amateur_v2b', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amateur_v2b_', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_ambient_njv', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_apex_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_encore_nsf_v4', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_amplitude_light', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_and_destroy', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_animals', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_annoyance_njv', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_anonymity', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_anthropomorphic-', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_apollonian', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_arghmyeyes', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_artifex', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aspiration', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_asrown', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_asrown-', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_ataque_final', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_atlas_1', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroia_njv', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroria2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_auroria_2', 4, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aux', 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_awakening_rg', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_aweles', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_bbb', 3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_beginner', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),('surf_beginner_ug', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
@@ -1000,7 +997,7 @@ public void Admin_InsertMapTierstoDatabase(int client)
 public void SQLTxn_TierInsertFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Inserting map tiers %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
+		PrintToChat(data, "[%c%s%c] Inserting map tiers %cfailed!%c. Check error logs.", MOSSGREEN, g_szChatPrefix, WHITE, RED, WHITE);
 
 	g_insertingInformation = false;
 	LogError("[ckSurf] SQL Tier insertion failed! Index: %i Error: %s", failIndex, error);
@@ -1009,7 +1006,7 @@ public void SQLTxn_TierInsertFailed(Handle db, any data, int numQueries, const c
 public void SQLTxn_TierInsertSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Successfully inserted map tiers!", MOSSGREEN, WHITE);
+		PrintToChat(data, "[%c%s%c] Successfully inserted map tiers!", MOSSGREEN, g_szChatPrefix, WHITE);
 
 	db_selectMapTier();
 	g_insertingInformation = false;
@@ -1022,7 +1019,7 @@ public void Admin_InsertZonestoDatabase(int client)
 
 	g_insertingInformation = true;
 
-	PrintToChat(client, "[%cCK%c] Inserting zones to the database, this might take a while... You will get a confirmation after the zones are inserted.", MOSSGREEN, WHITE);
+	PrintToChat(client, "[%c%s%c] Inserting zones to the database, this might take a while... You will get a confirmation after the zones are inserted.", MOSSGREEN, g_szChatPrefix, WHITE);
 
 	Transaction h_addZones = SQL_CreateTransaction();
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_004_final1', 0, 2, 1, -2210.79, -1471.97, 0.03125, -2813.97, 1470.97, 100.031, 0, 0, 0, NULL),('surf_004_final1', 1, 1, 1, -10240.4, 495.969, 15808, -10593.9, -495.969, 15908, 0, 0, 0, NULL),('surf_1day', 0, 3, 9, -10656.4, 8545.39, -3649.97, -10721.4, 8478.62, -3547.97, 0, 0, 0, NULL),('surf_1day', 1, 3, 8, -4614.87, -3654.2, 7870.03, -5629.14, -4143.97, 7972.03, 0, 0, 0, NULL),('surf_1day', 2, 3, 6, 2867.13, -3631.97, 8126.03, 3304.92, -3306.18, 8228.03, 0, 0, 0, NULL),('surf_1day', 3, 3, 7, -2858.19, -3971.13, 8126.03, -2305.42, -3683.49, 8228.03, 0, 0, 0, NULL),('surf_1day', 4, 2, 0, -12609.8, 6976.84, -10896.4, -13232, 7864.49, -10600, 0, 0, 0, NULL),('surf_1day', 5, 3, 5, -156.182, -4028, 8126.03, 201.998, -3689.19, 8228.03, 0, 0, 0, NULL),('surf_1day', 6, 2, 1, -13232, 6984.71, -10702, -13221.3, 7878.96, -9959.18, 0, 0, 0, NULL),('surf_1day', 7, 3, 4, -1483.52, -4333.14, -2625.97, -1034.06, -4818.06, -2523.97, 0, 0, 0, NULL),('surf_1day', 8, 3, 3, -12467.1, -5467.63, 2494.02, -12054, -5917.16, 2596.03, 0, 0, 0, NULL),('surf_1day', 9, 3, 2, -12531.1, -13607.2, 3517.95, -12042.9, -14070.7, 3620, 0, 0, 0, NULL),('surf_1day', 10, 3, 1, -4020.12, -6162.85, -8894.1, -3406.55, -5437.18, -8737.44, 0, 0, 0, NULL),('surf_1day', 11, 3, 0, 11568, -2217.01, -1761.97, 11467, -1739.43, -1659.97, 0, 0, 0, NULL),('surf_1day', 12, 5, 0, 2013.15, 148.516, -149.969, 2486.33, -394.254, -47.9688, 0, 0, 0, NULL),('surf_1day', 13, 1, 0, 5018.86, 9490.21, 4064.03, 4644.03, 9279.98, 4114.29, 0, 0, 1, NULL),('surf_1day', 14, 2, 0, -10192, 8880.84, 7200.03, -10070.6, 8573.16, 7300.03, 0, 0, 1, NULL),('surf_2012_beta12', 0, 3, 4, -291.67, 555.205, 11328, -568.846, 865.361, 11428, 0, 0, 0, NULL),('surf_2012_beta12', 1, 2, 0, -1154.6, 10869.3, 7489.03, -1405.99, 11014.8, 7683.01, 0, 0, 0, NULL),('surf_2012_beta12', 2, 3, 3, 7989.53, 8113.34, 9187.15, 8287.28, 7994.19, 9287.15, 0, 0, 0, NULL),('surf_2012_beta12', 3, 3, 2, 7832, -3919.96, 1664.03, 8049.35, -4312.86, 1764.03, 0, 0, 0, NULL),('surf_2012_beta12', 4, 1, 0, 4927.03, -3325.56, 1296.03, 5313.04, -3570.61, 1380.03, 0, 0, 0, NULL),('surf_2012_beta12', 5, 3, 0, 13372.8, -668.424, 15360, 13593.2, -1042.87, 15460, 0, 0, 0, NULL),('surf_2012_beta12', 6, 3, 1, -1457.81, -2968.9, 4484.03, -1153.5, -2645.08, 4580.03, 0, 0, 0, NULL),('surf_2012_beta12', 7, 1, 0, 2464.03, -5491.55, 4194.21, 2567.71, -5574.63, 4064.03, 0, 0, 1, NULL),('surf_2012_beta12', 8, 2, 0, 7263.84, -5506.87, -5918.97, 7169.44, -5566.97, -5731.47, 0, 0, 1, NULL),('surf_3', 0, 2, 0, 2696.61, -6294.64, -10978, 3484, -5478.25, -10876, 0, 0, 0, NULL),('surf_3', 1, 1, 0, -2999.05, 125.759, 7614.03, -3223.79, -130.836, 7716.03, 0, 0, 0, NULL),('surf_3', 2, 4, 0, -2607.33, 671.969, 5497.17, -3303.19, -668.399, 4032.03, 0, 0, 0, NULL),('surf_3', 3, 4, 1, 2448.03, -948.35, 3893.11, 3764.93, -279.609, 2424.03, 0, 0, 0, NULL),('surf_3', 4, 4, 2, 2832.91, -6174.93, -1696.03, 3333.32, -5632.03, -2216.97, 0, 0, 0, NULL),('surf_3', 5, 4, 3, 1385.72, -7639.93, -6400.03, 4874.62, -4141.72, -7919.97, 0, 0, 0, NULL),('surf_4dimensional', 0, 3, 1, -815.969, -903.357, -6657.97, -559.993, -1154.98, -6612.5, 0, 0, 0, NULL),('surf_4dimensional', 1, 2, 1, -3056, 335.969, 7534.03, -3754.43, -2431.97, 7636.03, 0, 0, 0, NULL),('surf_4dimensional', 2, 3, 0, 991.969, -3848.08, 1774.03, -1487.97, -5039.97, 1876.03, 0, 0, 0, NULL),('surf_4dimensional', 3, 1, 1, -2068.61, 335.969, 7534.03, -2768, -2431.97, 7636.03, 0, 0, 0, NULL),('surf_4dimensional', 4, 1, 0, 14982, 8360.87, 5616.03, 15472, 7011.96, 5725.6, 0, 0, 1, NULL),('surf_4dimensional', 5, 2, 0, -15312, -8864.03, -12402, -13968, -10366.3, -12300, 0, 0, 1, NULL),('surf_6', 0, 2, 1, -10880.7, -511.104, -6335.97, -11312, 576.04, -6119.97, 0, 0, 0, NULL),('surf_6', 1, 1, 1, 3455.95, 322.796, 6368.03, 3088.03, -320.212, 6468.03, 0, 0, 0, NULL);");
@@ -1112,7 +1109,7 @@ public void Admin_InsertZonestoDatabase(int client)
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_vegetables', 4, 2, 0, 10854.3, 964.135, -3217.3, 11318.4, 863.66, -2899.15, 0, 0, 0, NULL),('surf_vegetables', 5, 3, 8, 11581.3, -914.969, 3532.03, 10589.3, -369.272, 3634.03, 0, 0, 0, NULL),('surf_vegetables', 6, 3, 7, 8043.83, -2950, 2358.03, 8509.44, -2421.43, 2460.03, 0, 0, 0, NULL),('surf_vegetables', 7, 3, 6, 5020.42, 958.997, 3714.03, 5527, 814.736, 3824.03, 0, 0, 0, NULL),('surf_vegetables', 8, 3, 5, 3353.98, -664.031, 1441.21, 2790.76, -742.141, 1542.19, 0, 0, 0, NULL),('surf_vegetables', 9, 3, 1, -5644.08, -2784.35, 552.581, -5825.63, -2585.14, 654.511, 0, 0, 0, NULL),('surf_vegetables', 10, 3, 3, -1104.02, 1184.59, 868.991, -1407.97, 1281.01, 970.991, 0, 0, 0, NULL),('surf_vegetables', 11, 1, 0, 200.241, -10137.2, 730.031, -189.392, -10025.7, 832.031, 0, 0, 1, NULL),('surf_vegetables', 12, 2, 0, -42.6156, -9371.08, -1168.38, 54.978, -9478.93, -1134.83, 0, 0, 1, NULL),('surf_velocity_nsf', 0, 3, 0, 974.891, 2991.56, -3841.97, 282.987, 2317.52, -3739.97, 0, 0, 0, NULL),('surf_velocity_nsf', 1, 1, 1, 2360.84, -6403.95, -4609.97, 1981.1, -5878.01, -4507.97, 0, 0, 0, NULL),('surf_velocity_nsf', 2, 3, 3, 11066.3, -2865.61, -2396.97, 10594.2, -2917.35, -2304.97, 0, 0, 0, NULL),('surf_velocity_nsf', 3, 2, 1, -4498.85, -2526.77, -4930.74, -4709.99, -2351.3, -4828.74, 0, 0, 0, NULL),('surf_velocity_nsf', 4, 3, 4, 5503.61, -408.031, -7721.97, 5288.03, -615.969, -7619.97, 0, 0, 0, NULL),('surf_velocity_nsf', 5, 3, 1, 4880.47, 1361.44, 566.031, 5227.69, 1072.03, 668.031, 0, 0, 0, NULL),('surf_velocity_nsf', 6, 3, 2, -7135.92, 6877.16, -9233.97, -7550.47, 7331.53, -9131.97, 0, 0, 0, NULL),('surf_voteforthisone', 0, 3, 6, 10555.2, -15120, -769.969, 10049.3, -14437.2, -624.644, 0, 0, 0, NULL),('surf_voteforthisone', 1, 3, 3, -14165.9, -4502.14, 8830.03, -13635.7, -3905.8, 8932.03, 0, 0, 0, NULL),('surf_voteforthisone', 2, 2, 0, 6544.03, -6983.94, -4414.49, 7792, -5680.03, -4251.98, 0, 0, 0, NULL),('surf_voteforthisone', 3, 3, 4, -4063.97, 6221.6, 9505.75, -3866.66, 5832.33, 9472.03, 0, 0, 0, NULL),('surf_voteforthisone', 4, 3, 5, 7124.69, -12035.3, 6846.03, 6938.11, -11342.2, 6948.03, 0, 0, 0, NULL),('surf_voteforthisone', 5, 1, 0, -11505.2, -1914.13, 13998, -12286.8, -2884.44, 14100, 0, 0, 0, NULL),('surf_voteforthisone', 6, 3, 0, -2095.97, 2400.03, 13758, -1104.03, 2820.81, 13860, 0, 0, 0, NULL),('surf_voteforthisone', 7, 3, 1, 12484.5, 5426.9, 12734, 12005.6, 6031.93, 12836, 0, 0, 0, NULL),('surf_voteforthisone', 8, 3, 2, -11536.6, 4015.97, 13502, -12528, 3579.45, 13604, 0, 0, 0, NULL),('surf_water-run_b5', 0, 2, 1, 10644.7, -9556.18, -9781.97, 10845.3, -9771.96, -9679.97, 0, 0, 0, NULL),('surf_water-run_b5', 1, 3, 0, -14109.4, -14338.7, -5089.97, -13804.5, -14576, -4987.97, 0, 0, 0, NULL),('surf_water-run_b5', 2, 1, 1, -318.979, -11670, 510.031, 442.436, -12016, 612.031, 0, 0, 0, NULL),('surf_water-run_b5', 3, 3, 1, 11029.6, -11850.3, -6049.97, 10405.1, -12474.2, -5947.97, 0, 0, 0, NULL),('surf_waterworks', 0, 1, 0, -5182.38, 2616.03, 15230, -4708.03, 3743.99, 15332, 0, 0, 0, NULL),('surf_waterworks', 1, 2, 0, -4622.27, 1746.47, -4097.97, -6140.64, -348.867, -3995.97, 0, 0, 0, NULL),('surf_waterworks', 2, 4, 0, -7662.51, 8743.97, 11494.5, -6307.63, 4712.03, 7520.48, 0, 0, 0, NULL),('surf_waterworks', 3, 4, 1, -8191.97, 6638.95, 7379.85, -4000.38, 9698.86, 5352.03, 0, 0, 0, NULL),('surf_waterworks', 4, 4, 2, -1554.66, 6859.57, -85.9166, -4102.43, 4673.78, -2479.97, 0, 0, 0, NULL),('surf_waterworks', 5, 4, 3, 14480, -12794.5, 7104.37, 16064, -15245.3, 3939.06, 0, 0, 0, NULL),('surf_waterworks', 6, 4, 4, 36.9534, -11976.3, 2221.46, 1912.94, -16128, -1915.97, 0, 0, 0, NULL),('surf_waterworks', 7, 4, 5, 8989.04, 1656.56, 101.407, 9846.84, -319.969, -1002.74, 0, 0, 0, NULL),('surf_wazor', 0, 2, 0, 9170.45, -14995.4, -5875.29, 9308.15, -15115.3, -5756.47, 0, 0, 0, NULL);");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_wazor', 1, 3, 0, -1602.36, -1300.97, 4346.03, -1811.86, -1094.84, 4448.03, 0, 0, 0, NULL),('surf_wazor', 2, 1, 0, -14016, 14658.9, 5114.03, -14560, 15320, 5216.03, 0, 0, 0, NULL),('surf_wazor', 3, 3, 1, 13292.6, 12491.6, 9461.56, 13567.1, 12335.9, 9556.99, 0, 0, 0, NULL),('surf_wazor', 4, 3, 2, -12474.1, -15736.8, 8181.03, -11770, -16096.1, 8283.03, 0, 0, 0, NULL),('surf_wazor', 5, 3, 3, 5930.68, -14939.8, -993.969, 5794.47, -15148.1, -891.969, 0, 0, 0, NULL),('surf_wazor', 6, 2, 1, -5002.99, -14265.8, 14734, -4930.75, -13421.9, 14836, 0, 0, 0, NULL),('surf_whoknows', 0, 1, 1, 960.326, -12490.5, 14846, 580.079, -13568.5, 14948, 0, 0, 0, NULL),('surf_whoknows', 1, 2, 1, -14128, -9735.4, -2561.97, -11024, -10630.7, -2459.97, 0, 0, 0, NULL),('surf_whoknows', 2, 4, 0, 11776, -9458.63, 11056.3, 10496, -9054.27, 10108.8, 0, 0, 0, NULL),('surf_whoknows', 3, 4, 1, -229.754, 12736, 9391, -4203.33, 9374.5, 7232.03, 0, 0, 0, NULL),('surf_whoknows', 4, 4, 2, 813.847, -13315.6, 4159.97, 3372.35, -15227.2, 2816.03, 0, 0, 0, NULL),('surf_whoknows', 5, 4, 3, 13819.8, -548.121, 3199.97, 11904, -2142.68, 2573.76, 0, 0, 0, NULL),('surf_whoknows', 6, 4, 4, 2130.96, 15604.7, 1023.97, 2510.71, 13824, -537.733, 0, 0, 0, NULL),('surf_whoknows', 7, 4, 5, -14144, -3406.5, -2281.29, -11036.8, -2113.47, -5631.97, 0, 0, 0, NULL),('surf_whoknows', 8, 1, 0, 1432.44, -1040.03, -7418.56, 599.879, -772.172, -7487.97, 0, 0, 1, NULL),('surf_whoknows', 9, 2, 0, 1983.97, -14368.9, -9797.38, 71.7366, -15168, -9901.89, 0, 0, 1, NULL),('surf_wood', 0, 1, 0, 4383.68, 835.273, 6782.03, 4587.5, 321.435, 6884.03, 0, 0, 0, NULL),('surf_wood', 1, 2, 0, -12120, 1392, -4705.97, -11375.6, -239.969, -4603.97, 0, 0, 0, NULL),('surf_wood', 2, 2, 0, 3242.65, -4643.51, 4880.62, 3120.06, -5002.37, 4980.03, 0, 0, 1, NULL),('surf_wood', 3, 1, 0, 213.618, -4968.39, 5193.03, 313.532, -4684.76, 5112.03, 0, 0, 1, NULL),('surf_xc_simplicity', 0, 3, 1, -2828.97, -1034.06, -27.9688, -3184.77, -1363.21, 72.0312, 0, 0, 0, NULL),('surf_xc_simplicity', 1, 3, 0, -532.765, 184.031, 512.031, -1375.97, 600, 612.031, 0, 0, 0, NULL),('surf_xc_simplicity', 2, 1, 1, -7945.21, 4497.98, 1874.03, -8231.35, 4238.03, 1974.03, 0, 0, 0, NULL),('surf_xc_simplicity', 3, 2, 1, -2774.06, 2050.93, -218.266, -3243.95, 1935.84, 128.109, 0, 0, 0, NULL),('surf_x_rg', 0, 3, 6, 3948.22, 6956.17, 2032.03, 3308.97, 6629.55, 2132.03, 0, 0, 0, NULL),('surf_x_rg', 1, 2, 1, 137.424, -67.0239, 203.089, 435.724, 458.302, 498.129, 0, 0, 0, NULL),('surf_x_rg', 2, 1, 1, -828.834, 15.875, -311.764, -538.388, 367.988, -211.969, 0, 0, 0, NULL),('surf_x_rg', 3, 3, 0, -485.139, 10608, 1653.18, -368.428, 10944, 1748.03, 0, 0, 0, NULL),('surf_x_rg', 4, 3, 1, 665.622, 3681.42, 2592.03, 1416, 4452.78, 2692.03, 0, 0, 0, NULL),('surf_x_rg', 5, 3, 2, -194.275, 9210.27, 5168.03, -393.132, 8897.14, 5268.03, 0, 0, 0, NULL),('surf_x_rg', 6, 3, 3, 605.329, -3767.97, -3049.48, 1383.97, -3224.03, -2949.48, 0, 0, 0, NULL),('surf_x_rg', 7, 3, 4, 5859.88, 2365.06, -743.969, 5608, 2115.61, -643.969, 0, 0, 0, NULL),('surf_x_rg', 8, 3, 5, 2613.54, 8767.95, -1119.97, 2388.01, 9008.29, -1019.97, 0, 0, 0, NULL),('surf_x_rg', 9, 3, 7, 3520.03, 15056.9, -9856.97, 3917.97, 14502.8, -9741.03, 0, 0, 0, NULL),('surf_yay', 0, 2, 1, -1921.97, 614.031, -3074.97, -1305.6, 1320.97, -2974.97, 0, 0, 0, NULL),('surf_yay', 1, 1, 1, 31.5784, -174.614, 0.03125, -222.686, -429.778, 100.031, 0, 0, 0, NULL),('surf_yay', 2, 1, 2, 31.0053, -175.632, 0.03125, -224, -93.2234, 100.031, 0, 0, 0, NULL),('surf_year3000', 0, 1, 1, 221.12, -2355.03, 9093.55, 678.828, -2958.97, 9195.55, 0, 0, 0, NULL),('surf_year3000', 1, 2, 1, -5165.77, 8055.18, -5027.97, -5851.91, 8499.73, -4925.97, 0, 0, 0, NULL),('surf_year3000', 2, 1, 2, -130.942, -2958.97, 9093.55, -591.296, -2355.03, 9195.55, 0, 0, 0, NULL);");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_y_rg', 0, 3, 21, -6671.97, -5104.03, 1104.03, -6441.81, -6607.97, 1204.03, 0, 0, 0, NULL),('surf_y_rg', 1, 3, 20, 15088, -2160.31, 7648.03, 15824, -2651.68, 7748.03, 0, 0, 0, NULL),('surf_y_rg', 2, 3, 19, 11962.1, -4427.06, 4880.03, 12116.1, -4146.38, 4980.03, 0, 0, 0, NULL),('surf_y_rg', 3, 3, 22, -9744.03, -15344, 10752, -10090.9, -14352, 10852, 0, 0, 0, NULL),('surf_y_rg', 4, 2, 1, -12720, -13282, 9600.03, -12546.3, -13598.4, 9700.03, 0, 0, 0, NULL),('surf_y_rg', 5, 3, 18, -14302.1, -10681.9, 10915.7, -14178.9, -10822.6, 10972.1, 0, 0, 0, NULL),('surf_y_rg', 6, 3, 12, -16238, 11056, 15998, -15957.7, 10304, 16098, 0, 0, 0, NULL),('surf_y_rg', 7, 3, 4, -11103.8, -4897.73, 1488.03, -10736, -5401.57, 1588.03, 0, 0, 0, NULL),('surf_y_rg', 8, 3, 5, 1490.2, -10464, 14064, 1436.03, -10563.2, 14164, 0, 0, 0, NULL),('surf_y_rg', 9, 3, 11, 10826.8, -8140.34, 2132.03, 11093.2, -8510.26, 2259.06, 0, 0, 0, NULL),('surf_y_rg', 10, 3, 10, -4317.92, -15357.8, 12560, -3990.85, -15709.3, 12660, 0, 0, 0, NULL),('surf_y_rg', 11, 3, 9, -5603.46, -4144.03, 8864.03, -5839.97, -4495.97, 8964.03, 0, 0, 0, NULL),('surf_y_rg', 12, 3, 6, 13616, 3827.39, 15392, 14032, 3664.03, 15492, 0, 0, 0, NULL),('surf_y_rg', 13, 3, 7, 3806.93, -9679.4, 1824.03, 4048.13, -10033.1, 1924.03, 0, 0, 0, NULL),('surf_y_rg', 14, 3, 13, 1838.79, 3410.38, 15484.2, 1658.36, 3737.94, 15584.2, 0, 0, 0, NULL),('surf_y_rg', 15, 3, 3, -13152.9, -8991.97, 9912.03, -13020.1, -8825.7, 10012, 0, 0, 0, NULL),('surf_y_rg', 16, 3, 17, -11487.3, 1069.34, 15152, -11261.9, 806.955, 15252, 0, 0, 0, NULL),('surf_y_rg', 17, 3, 16, -1293.97, 6213.36, 14688, -238.031, 5934, 14788, 0, 0, 0, NULL),('surf_y_rg', 18, 3, 15, 10192, -8047.97, 1824.03, 9704.58, -7760.03, 1924.03, 0, 0, 0, NULL),('surf_y_rg', 19, 3, 14, 880.031, 6064.03, 13536, 2127.97, 6565.14, 13636, 0, 0, 0, NULL),('surf_y_rg', 20, 1, 1, -6846.54, -10048.2, 8576.03, -6462.65, -9278.3, 8676.03, 0, 0, 0, NULL),('surf_y_rg', 21, 3, 0, 15695.5, -11697.4, -913.969, 15763.4, -11628.5, -813.969, 0, 0, 0, NULL),('surf_y_rg', 22, 3, 1, 14912, -9040.03, 2320.03, 15392, -9080.64, 2420.03, 0, 0, 0, NULL),('surf_y_rg', 23, 3, 2, -4435.95, 6621.03, 13222.9, -4521.88, 6695.75, 13322.9, 0, 0, 0, NULL),('surf_y_rg', 24, 3, 8, -11342, 13681.1, -1246.97, -10960.5, 13455.2, -1146.97, 0, 0, 0, NULL),('surf_zion', 0, 3, 1, 6569.95, 623.969, 6590.03, 6138.46, 306.301, 6692.03, 0, 0, 0, NULL),('surf_zion', 1, 3, 0, -3885.58, 495.969, 638.031, -4284.78, 179.919, 740.031, 0, 0, 0, NULL),('surf_zion', 2, 1, 1, 433.677, 64.318, 638.031, -379.771, 495.995, 740.031, 0, 0, 0, NULL),('surf_zion_njv', 0, 1, 1, -331.438, 65.05, 638.031, 329.117, 495.969, 740.031, 0, 0, 0, NULL),('surf_zion_njv', 1, 3, 1, 6215.06, 454.111, 6590.03, 6471.56, 623.969, 6692.03, 0, 0, 0, NULL),('surf_zion_njv', 2, 3, 0, -4215.33, 332.012, 638.031, -3970.71, 495.969, 740.031, 0, 0, 0, NULL),('surf_zion_njv', 3, 2, 1, 4892.61, -4940.22, 11293.3, 4719.42, -5154.43, 11492.8, 0, 0, 0, NULL),('surf_zion_njv', 4, 3, 3, 5780.33, 1508.22, 14782, 5467.67, 1313.35, 14884, 0, 0, 0, NULL),('surf_zion_njv', 5, 3, 2, 360.696, 12691.2, 14846, 656.388, 12473.5, 14948, 0, 0, 0, NULL),('surf_christmas', 11, 3, 4, -14592, -9222.65, 14715.2, -14082.8, -9398.97, 14560, 0, 0, 0, NULL),('surf_halloween_tf', 4, 4, 2, 2336.22, 2566.68, -6436.95, 1926.71, 16.0312, -8485.59, 0, 0, 0, NULL),('surf_halloween_tf', 5, 4, 3, -11733.4, 2575.97, -8604.9, -12308, 27.5203, -10648, 0, 0, 0, NULL),('surf_halloween_tf', 6, 4, 4, -6172.61, -8176.03, 14597.6, -6594.05, -9672.41, 13032, 0, 0, 0, NULL),('surf_halloween_tf', 7, 4, 5, -3955.91, -9961.95, 5224.03, -9338.43, -7921.4, 7719.97, 0, 0, 0, NULL),('surf_halloween_tf', 8, 4, 6, -10123.7, -14576, 3102.57, -12041.8, -3337.77, 40.0311, 0, 0, 0, NULL);");
-	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_lolrevlis2', 5, 4, 0, -38.2023, 1677.9, 2047.97, 359.454, 2439.97, 1329.35, 0, 0, 0, NULL),('surf_lolrevlis2', 6, 4, 1, -117.954, -2551.97, 1685.86, -341.496, -1537.74, 1024.03, 0, 0, 0, NULL),('surf_lolrevlis2', 7, 4, 2, -3644.13, -1528.03, 1915.08, -3346.46, -2551.97, 1082.04, 0, 0, 0, NULL),('surf_lolrevlis2', 8, 4, 3, -1736.98, 712.175, 1007.97, -2462.93, 278.665, 604.385, 0, 0, 0, NULL),('surf_lolrevlis2', 9, 4, 4, -2607.97, 944.285, 370.505, -1616.03, 1155.57, 5.03194, 0, 0, 0, NULL),('surf_sewers', 2, 4, 0, 1289.22, -1471.97, 12537.5, -70.5302, 439.75, 10560, 0, 0, 0, NULL),('surf_sewers', 3, 4, 1, -9231.08, 447.969, 12542.7, -9560.18, -1471.97, 11729.4, 0, 0, 0, NULL),('surf_sewers', 4, 4, 2, 6993.34, 42.252, 5567.97, 8140.07, -1534.29, 2624.03, 0, 0, 0, NULL),('surf_sewers', 5, 4, 3, -1717.61, 511.969, -641.353, -475.531, -1500.9, -2111.97, 0, 0, 0, NULL),('surf_sewers', 6, 4, 4, -11778.7, -1535.97, -5764.99, -13907.9, 511.969, -6287.88, 0, 0, 0, NULL),('surf_sewers', 7, 4, 5, 4964.77, 1215.97, -9732.44, 6542.71, -2237.78, -12160, 0, 0, 0, NULL),('surf_sewers', 8, 6, 0, 9723.45, -128.031, -9536.83, 8640.03, -1277.72, -9661.09, 0, 0, 0, NULL),('surf_vector_final', 7, 6, 0, -21.2757, -617.51, -1130.59, -942.154, 141.969, -2761.72, 0, 0, 0, ''),('surf_vector_final', 6, 2, 0, -415.631, 5847.03, 4211.68, -1696.89, 5981.3, 3928.03, 0, 0, 1, 'BONUS 1'),('surf_vector_final', 5, 1, 0, -3484.48, 11915.2, 7374.03, -3802.97, 10897.2, 7475.97, 0, 0, 1, 'BONUS 1'),('surf_coralis_ksf-', 6, 2, 0, -724.571, -2592.03, 4234.75, 38.2156, -2368.03, 4563.33, 0, 0, 2, 'BONUS 2'),('surf_coralis_ksf-', 5, 1, 0, -850.864, 3775.97, 6252.47, 84.6812, 3270.86, 6762.97, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 25, 2, 0, 9248.03, -12738.6, -2259.74, 9437.44, -13051.6, -2351.97, 0, 0, 4, 'syÃ¶pÃ¤bonus'),('surf_kz_protraining', 24, 1, 0, 9249.95, -12672, -2077.43, 9434.13, -11792, -2359.63, 0, 0, 4, 'syÃ¶pÃ¤bonus'),('surf_kz_protraining', 23, 2, 0, -11264, -2831.78, -10244.1, -11067.6, -2580.42, -10496, 0, 0, 3, 'iisibonus'),('surf_kz_protraining', 22, 1, 0, -12352, -7392.95, -5910.47, -12162.4, -7798.4, -6143.97, 0, 0, 3, 'iisibonus'),('surf_kz_protraining', 21, 3, 0, 2079.26, -11329.6, -55.0312, 1505.11, -11557.3, -129.969, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 20, 2, 0, -1920.03, -9729.66, 223.952, -1981.73, -9898.73, 160.031, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 19, 1, 0, 4351.24, -9728.03, 1855.4, 4542.98, -10221.3, 2079.97, 0, 0, 2, 'BONUS 2'),('surf_mesa_mine', 15, 1, 0, -6071.97, -11463, -13006.9, -5856.47, -11145.2, -13072, 0, 0, 1, 'BONUS 1'),('surf_mesa_mine', 16, 2, 0, -5796.75, -12770.5, -14497.1, -6302.61, -12478.4, -14544, 0, 0, 1, 'BONUS 1'),('surf_newb_hazard_r1', 2, 2, 1, -1599.67, -3612.54, 486.694, -796.392, -3693.56, 923.901, 0, 0, 0, ''),('surf_bbb', 9, 1, 0, -10975.5, 1167.97, -209.44, -11160, 661.708, -439.879, 0, 0, 2, 'BONUS 2'),('surf_bbb', 10, 2, 0, -11160, 1155.92, -642.43, -10648, 664.182, -569.199, 0, 0, 2, 'BONUS 2'),('surf_bbb', 11, 1, 1, -10840.9, 1167.97, -202.934, -10657, 661.852, -455.969, 0, 0, 2, 'BONUS 2'),('surf_bbb', 12, 1, 2, -10648, 842.855, -203.766, -11157, 662.307, -455.969, 0, 0, 2, 'BONUS 2'),('surf_bbb', 13, 1, 3, -11160, 1166.88, -201.226, -10665.1, 981.16, -455.969, 0, 0, 2, 'BONUS 2'),('surf_coralis_ksf-', 8, 4, 1, 10458.8, -714.524, -5568.03, 8312.03, -278.34, -8498.2, 0, 0, 0, ''),('surf_coralis_ksf-', 7, 4, 0, 8565.19, -13888, -58.3928, 10404.6, -13221.8, -1535.97, 0, 0, 0, ''),('surf_coralis_ksf-', 9, 4, 2, -9460.96, 12710.6, 3183.97, -12504, 11404.5, 1398.01, 0, 0, 0, ''),('surf_coralis_ksf-', 10, 4, 3, -4443.51, 12960, -8770.28, -6567.97, 14876.8, -12774.6, 0, 0, 0, ''),('surf_lithium-', 8, 6, 0, 9088.03, -11059.5, -1064.11, 9780.47, -10038.3, -1407.97, 0, 0, 0, '');");
+	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_lolrevlis2', 5, 4, 0, -38.2023, 1677.9, 2047.97, 359.454, 2439.97, 1329.35, 0, 0, 0, NULL),('surf_lolrevlis2', 6, 4, 1, -117.954, -2551.97, 1685.86, -341.496, -1537.74, 1024.03, 0, 0, 0, NULL),('surf_lolrevlis2', 7, 4, 2, -3644.13, -1528.03, 1915.08, -3346.46, -2551.97, 1082.04, 0, 0, 0, NULL),('surf_lolrevlis2', 8, 4, 3, -1736.98, 712.175, 1007.97, -2462.93, 278.665, 604.385, 0, 0, 0, NULL),('surf_lolrevlis2', 9, 4, 4, -2607.97, 944.285, 370.505, -1616.03, 1155.57, 5.03194, 0, 0, 0, NULL),('surf_sewers', 2, 4, 0, 1289.22, -1471.97, 12537.5, -70.5302, 439.75, 10560, 0, 0, 0, NULL),('surf_sewers', 3, 4, 1, -9231.08, 447.969, 12542.7, -9560.18, -1471.97, 11729.4, 0, 0, 0, NULL),('surf_sewers', 4, 4, 2, 6993.34, 42.252, 5567.97, 8140.07, -1534.29, 2624.03, 0, 0, 0, NULL),('surf_sewers', 5, 4, 3, -1717.61, 511.969, -641.353, -475.531, -1500.9, -2111.97, 0, 0, 0, NULL),('surf_sewers', 6, 4, 4, -11778.7, -1535.97, -5764.99, -13907.9, 511.969, -6287.88, 0, 0, 0, NULL),('surf_sewers', 7, 4, 5, 4964.77, 1215.97, -9732.44, 6542.71, -2237.78, -12160, 0, 0, 0, NULL),('surf_sewers', 8, 6, 0, 9723.45, -128.031, -9536.83, 8640.03, -1277.72, -9661.09, 0, 0, 0, NULL),('surf_vector_final', 7, 6, 0, -21.2757, -617.51, -1130.59, -942.154, 141.969, -2761.72, 0, 0, 0, ''),('surf_vector_final', 6, 2, 0, -415.631, 5847.03, 4211.68, -1696.89, 5981.3, 3928.03, 0, 0, 1, 'BONUS 1'),('surf_vector_final', 5, 1, 0, -3484.48, 11915.2, 7374.03, -3802.97, 10897.2, 7475.97, 0, 0, 1, 'BONUS 1'),('surf_coralis_ksf-', 6, 2, 0, -724.571, -2592.03, 4234.75, 38.2156, -2368.03, 4563.33, 0, 0, 2, 'BONUS 2'),('surf_coralis_ksf-', 5, 1, 0, -850.864, 3775.97, 6252.47, 84.6812, 3270.86, 6762.97, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 25, 2, 0, 9248.03, -12738.6, -2259.74, 9437.44, -13051.6, -2351.97, 0, 0, 4, 'syöpäbonus'),('surf_kz_protraining', 24, 1, 0, 9249.95, -12672, -2077.43, 9434.13, -11792, -2359.63, 0, 0, 4, 'syöpäbonus'),('surf_kz_protraining', 23, 2, 0, -11264, -2831.78, -10244.1, -11067.6, -2580.42, -10496, 0, 0, 3, 'iisibonus'),('surf_kz_protraining', 22, 1, 0, -12352, -7392.95, -5910.47, -12162.4, -7798.4, -6143.97, 0, 0, 3, 'iisibonus'),('surf_kz_protraining', 21, 3, 0, 2079.26, -11329.6, -55.0312, 1505.11, -11557.3, -129.969, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 20, 2, 0, -1920.03, -9729.66, 223.952, -1981.73, -9898.73, 160.031, 0, 0, 2, 'BONUS 2'),('surf_kz_protraining', 19, 1, 0, 4351.24, -9728.03, 1855.4, 4542.98, -10221.3, 2079.97, 0, 0, 2, 'BONUS 2'),('surf_mesa_mine', 15, 1, 0, -6071.97, -11463, -13006.9, -5856.47, -11145.2, -13072, 0, 0, 1, 'BONUS 1'),('surf_mesa_mine', 16, 2, 0, -5796.75, -12770.5, -14497.1, -6302.61, -12478.4, -14544, 0, 0, 1, 'BONUS 1'),('surf_newb_hazard_r1', 2, 2, 1, -1599.67, -3612.54, 486.694, -796.392, -3693.56, 923.901, 0, 0, 0, ''),('surf_bbb', 9, 1, 0, -10975.5, 1167.97, -209.44, -11160, 661.708, -439.879, 0, 0, 2, 'BONUS 2'),('surf_bbb', 10, 2, 0, -11160, 1155.92, -642.43, -10648, 664.182, -569.199, 0, 0, 2, 'BONUS 2'),('surf_bbb', 11, 1, 1, -10840.9, 1167.97, -202.934, -10657, 661.852, -455.969, 0, 0, 2, 'BONUS 2'),('surf_bbb', 12, 1, 2, -10648, 842.855, -203.766, -11157, 662.307, -455.969, 0, 0, 2, 'BONUS 2'),('surf_bbb', 13, 1, 3, -11160, 1166.88, -201.226, -10665.1, 981.16, -455.969, 0, 0, 2, 'BONUS 2'),('surf_coralis_ksf-', 8, 4, 1, 10458.8, -714.524, -5568.03, 8312.03, -278.34, -8498.2, 0, 0, 0, ''),('surf_coralis_ksf-', 7, 4, 0, 8565.19, -13888, -58.3928, 10404.6, -13221.8, -1535.97, 0, 0, 0, ''),('surf_coralis_ksf-', 9, 4, 2, -9460.96, 12710.6, 3183.97, -12504, 11404.5, 1398.01, 0, 0, 0, ''),('surf_coralis_ksf-', 10, 4, 3, -4443.51, 12960, -8770.28, -6567.97, 14876.8, -12774.6, 0, 0, 0, ''),('surf_lithium-', 8, 6, 0, 9088.03, -11059.5, -1064.11, 9780.47, -10038.3, -1407.97, 0, 0, 0, '');");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_lithium-', 9, 1, 0, -5721.82, -3429.03, 2220.96, -5338.51, -3844.71, 2048.91, 0, 0, 1, 'BONUS 1'),('surf_lithium-', 10, 2, 0, -6177.77, -6118.58, 468.455, -6077.11, -5951.66, 299.481, 0, 0, 1, 'BONUS 1'),('surf_lithium-', 11, 2, 1, -5017.87, -6118.1, 468.283, -4922.16, -5949.33, 297.031, 0, 0, 1, 'BONUS 1'),('surf_lt_unicorn', 12, 1, 0, -11770.8, -6764.21, 11464.9, -12033.8, -7089.62, 11561.3, 0, 0, 2, 'BONUS 2'),('surf_lt_unicorn', 13, 2, 0, -10736.7, -6280.01, 12714.3, -11169.7, -5817.16, 12584.6, 0, 0, 2, 'BONUS 2'),('surf_lithium2-', 6, 2, 1, -3523.43, 2493.01, 882.212, -3238.77, 1727.99, 668.277, 0, 0, 0, ''),('surf_wood', 4, 4, 0, -2437.08, 2111.97, 4197.98, -1640.97, -959.969, 3105.88, 0, 0, 0, ''),('surf_wood', 5, 4, 1, 6115.22, 834.111, 2015.97, 6505.71, 361.242, 2268.03, 0, 0, 0, ''),('surf_wood', 6, 4, 2, 5637.9, 50.6005, -488.971, 6880.37, 1145.58, -855.359, 0, 0, 0, ''),('surf_wood', 7, 4, 3, 3743.74, 128.031, -6353.99, 2790.36, 1019.49, -4768.03, 0, 0, 0, ''),('surf_wood', 8, 7, 0, 2704.84, -865.711, -4768.03, 2332.79, 2047.97, -6366.34, 0, 0, 0, ''),('surf_wood', 9, 8, 0, -10717.5, -887.947, -4768.03, -11689.5, 2047.97, -6294.55, 0, 0, 0, ''),('surf_bob', 12, 6, 0, 3583.97, -8696.35, 11704, 2048.03, -8194.06, 11412.4, 0, 0, 0, ''),('surf_kitsune2_GO', 0, 1, 0, -1690.49, -10883.4, 1824.03, -355.238, -11712, 1917.07, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 1, 3, 0, -4478.46, 14272, 6104.45, -5772.43, 13443.3, 5664.03, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 2, 3, 1, 2708.81, 13312, 8031.38, 1381.83, 12484.5, 7712.03, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 3, 3, 2, -4095.97, -4119.37, 14302.5, -2060, -5424.88, 13856, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 4, 3, 3, 7838.15, -2877.96, 14880, 6507.61, -2048.03, 15289.7, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 5, 3, 4, 9882.63, 13984.7, 13856, 8549.62, 14816, 14266.3, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 6, 3, 5, -12684.5, 14304, 14718.1, -13977.8, 13476.5, 14272, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 7, 3, 6, 13979.8, -4416.03, 12895.4, 12640, -3616.38, 13308.7, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 8, 3, 7, -11907.9, -14336, 14288.8, -10605.2, -8192.03, 13857.3, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 9, 3, 8, -6654.45, -14311, -3584.03, -5320.03, -12288, -4028.28, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 10, 3, 9, 13508.5, 12654.7, 1600.03, 14336, 13970.7, 2039.91, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 11, 3, 10, -14848, 620.813, 1277.67, -14017.3, -659.075, 832.031, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 12, 2, 0, -4122.53, -2033.81, -12320, -6136.78, 2047.97, -13947.9, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 13, 2, 1, -4101.04, 1023.97, -13959, -4253.45, -1023.97, -14265, 0, 0, 0, 'Start 0'),('surf_kitsune2_GO', 14, 1, 0, 2967.18, 5768.05, -4032.03, 3785.47, 7098.14, -4447.97, 0, 0, 1, 'BONUS 1'),('surf_kitsune2_GO', 15, 2, 0, 15308.9, 543.969, -8322.09, 12756, -2015.97, -8631.95, 0, 0, 1, 'BONUS 1'),('surf_kitsune2_GO', 16, 1, 0, 9855.97, -265.953, -3077.45, 8580.97, -1091.95, -3487.97, 0, 0, 2, 'BONUS 2'),('surf_kitsune2_GO', 17, 2, 0, 8576.03, -2343.14, -5120.76, 9838.75, -3183.97, -5530.73, 0, 0, 2, 'BONUS 2'),('surf_kitsune2_GO', 18, 1, 0, -10084.4, 5920.03, -4857.46, -11416.3, 6745.99, -5279.97, 0, 0, 3, 'BONUS 3'),('surf_kitsune2_GO', 19, 2, 0, -10090.8, 11072, -4798.74, -11418.8, 10244.1, -5279.97, 0, 0, 3, 'BONUS 3'),('surf_kitsune2_GO', 20, 1, 0, 1469.43, -580.502, -1577.97, 580.562, -1469.79, -1727.97, 0, 0, 4, 'BONUS 4'),('surf_kitsune2_GO', 21, 2, 0, -855.636, -1695.97, -5636.21, -646.612, -357.463, -6047.97, 0, 0, 4, 'BONUS 4'),('surf_kitsune2_GO', 22, 2, 1, 1695.97, 855.33, -5633.07, 361.305, 646.898, -6047.97, 0, 0, 4, 'BONUS 4'),('surf_kitsune2_GO', 23, 2, 2, 1695.97, -2908.71, -5636.89, 363.93, -2694.96, -6047.97, 0, 0, 4, 'BONUS 4');");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_kitsune2_GO', 24, 2, 3, 2906.91, -371.661, -5632.03, 2694.81, -1665.34, -6047.97, 0, 0, 4, 'BONUS 4'),('surf_refraxis', 11, 1, 0, 2560.03, 7027.32, -3471.96, 3070.41, 6849.79, -3583.97, 0, 0, 2, 'BONUS 2'),('surf_refraxis', 12, 2, 0, 2560.14, 9987.33, -3807.97, 3071.97, 10405, -3687.58, 0, 0, 2, 'BONUS 2'),('surf_creation', 7, 2, 0, -8033.17, 116.418, 4400.03, -8159.97, 423.966, 4591.56, 0, 0, 1, 'BONUS 1'),('surf_creation', 6, 1, 0, -7309.37, 20.0957, 6016.03, -7048.32, 515.093, 6447.97, 0, 0, 1, 'BONUS 1'),('surf_extremex', 8, 3, 6, -9570.33, 10139.9, 3071.97, -9074.4, 10430.4, 2816.03, 0, 0, 0, ''),('surf_polygon', 5, 1, 0, -13056, 8962.28, 11447, -12544, 9157.94, 11234.6, 0, 0, 1, 'BONUS 1'),('surf_polygon', 6, 2, 0, -13052.6, 12867, 6656.03, -12550.7, 13248, 6776.21, 0, 0, 1, 'BONUS 1'),('surf_6', 2, 1, 0, -1826.54, 13349.7, 12468, -1581.09, 13602, 12368, 0, 0, 1, 'BONUS 1'),('surf_6', 3, 2, 0, 6426.32, 13633.3, 11952, 6727.97, 13134.6, 12044, 0, 0, 1, 'BONUS 1'),('surf_ace', 0, 1, 0, -1346.39, -892.208, 3232.03, -1789.12, 639.969, 3344.47, 0, 0, 0, 'Start 0'),('surf_ace', 1, 3, 0, 1472.03, -892.279, 2729.84, 1913.9, 639.969, 2564.1, 0, 0, 0, 'Start 0'),('surf_ace', 2, 3, 1, 6400.92, 639.969, 2173.35, 5955.73, -895.969, 2058.86, 0, 0, 0, 'Start 0'),('surf_ace', 3, 3, 2, 4803.26, -890.564, 512.031, 5240.05, 639.969, 619.008, 0, 0, 0, 'Start 0'),('surf_ace', 4, 3, 3, -2492.71, -895.969, -925.863, -2048.59, 639.969, -810.075, 0, 0, 0, 'Start 0'),('surf_ace', 5, 3, 4, -11966.1, 639.969, -2335.01, -11526.9, -895.969, -2219.87, 0, 0, 0, 'Start 0'),('surf_ace', 6, 3, 5, 1987.63, -895.969, -4816.28, 2424.7, 635.795, -4927.97, 0, 0, 0, 'Start 0'),('surf_ace', 7, 3, 6, -3964.49, -895.969, -6758.57, -3520.03, 631.929, -6870.18, 0, 0, 0, 'Start 0'),('surf_ace', 8, 2, 0, -11049.6, 2549.68, 9334.37, -11378.2, 2136.52, 9195.22, 0, 0, 0, 'Start 0'),('surf_ace', 9, 1, 0, -11358.7, 12798.3, 8160.03, -9644.79, 12416, 8259.81, 0, 0, 1, 'BONUS 1'),('surf_ace', 10, 2, 0, 8322.32, 8821.22, 7424.03, 8830.31, 11469, 7612.03, 0, 0, 1, 'BONUS 1'),('surf_ace', 11, 1, 1, -9634.51, 7871.97, 8424.86, -11359.6, 7493.99, 8160.03, 0, 0, 1, 'BONUS 1'),('surf_asrown', 2, 1, 0, -600.192, 11728.4, 7520.03, -985.456, 11968, 7624.83, 0, 0, 1, 'BONUS 1'),('surf_asrown', 3, 2, 0, -2054.32, -4290, 5056.03, 471.969, -4782.87, 5248.55, 0, 0, 1, 'BONUS 1'),('surf_beyer2', 2, 1, 0, -4677.69, -12928, 2083.52, -5119.01, -13824, 1922.12, 0, 0, 1, 'BONUS 1'),('surf_beyer2', 3, 2, 0, -4446.38, -12896, -3809.96, -4073.26, -13853.2, -4127.97, 0, 0, 1, 'BONUS 1'),('surf_beyer2', 4, 1, 0, -8927.97, -130.591, -7018.54, -6932.55, -482.324, -7135.97, 0, 0, 2, 'BONUS 2'),('surf_beyer2', 5, 2, 0, -7457.09, -12477.2, -11936, -8324.39, -12097, -11104, 0, 0, 2, 'BONUS 2'),('surf_beyer2', 6, 1, 0, -13090.8, -15585.4, 8159.03, -14621.1, -16160, 8271.05, 0, 0, 3, 'BONUS 3'),('surf_beyer2', 7, 2, 0, -14878.1, -3105.8, -4809.97, -13348.2, -4250.98, -4959.97, 0, 0, 3, 'BONUS 3'),('surf_beyer2', 8, 1, 0, -12687.7, -10082.5, 15200, -11680, -10391.8, 14948.4, 0, 0, 4, 'BONUS 4'),('surf_beyer2', 9, 2, 0, -10914.3, 2945.67, 12182, -13467.2, 4218.83, 12032, 0, 0, 4, 'BONUS 4'),('surf_beyer2', 10, 1, 0, 12704, -4320.72, 11072, 13985.3, -5087.97, 11218.4, 0, 0, 5, 'BONUS 5'),('surf_beyer2', 11, 2, 0, 12833.6, 13473.4, 11478, 13848.5, 14491.6, 11328, 0, 0, 5, 'BONUS 5'),('surf_borderlands', 0, 1, 0, 10113.1, -15968.6, 11466, 10879.6, -16223, 11366, 0, 0, 0, 'Start 0'),('surf_borderlands', 1, 3, 0, 14081.4, -15968.7, 16000, 14839.6, -16192, 16065.2, 0, 0, 0, 'Start 0'),('surf_borderlands', 2, 3, 1, 6146.08, -15969.1, 6630.03, 6908.47, -16192, 6690.32, 0, 0, 0, 'Start 0'),('surf_borderlands', 3, 3, 2, 3362.22, -15969.1, -537.969, 4121.4, -16192, -462.16, 0, 0, 0, 'Start 0');");
 	SQL_AddQuery(h_addZones, "INSERT INTO `ck_zones` (`mapname`, `zoneid`, `zonetype`, `zonetypeid`, `pointa_x`, `pointa_y`, `pointa_z`, `pointb_x`, `pointb_y`, `pointb_z`, `vis`, `team`, `zonegroup`, `zonename`) VALUES('surf_borderlands', 4, 3, 3, -2494.75, -15968.7, -5145.97, -1733.02, -16192, -5089.85, 0, 0, 0, 'Start 0'),('surf_borderlands', 5, 3, 4, -12092.5, -1428.13, 388.031, -11333.4, -1676.04, 288.031, 0, 0, 0, 'Start 0'),('surf_borderlands', 6, 3, 5, -4605.08, -131.014, 6784.03, -3584.03, -375.907, 6865.03, 0, 0, 0, 'Start 0'),('surf_borderlands', 7, 2, 0, -4764.02, 4547.69, 2112.03, -3431.65, 5090.64, 2538.4, 0, 0, 0, 'Start 0'),('surf_canisius2_fix', 6, 2, 1, 6701.03, -4346.01, -2374.51, 7031.24, -3804.92, -2695.97, 0, 0, 0, ''),('surf_cubic', 0, 1, 0, -11781.8, -11224.1, 8068.03, -13306.4, -10725.6, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 1, 3, 0, -7032.87, -10725.3, 8068.03, -5511.23, -11225.4, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 2, 3, 1, -761.119, -10725.5, 8068.03, 763.594, -11225.5, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 3, 3, 2, 5510.02, -10721.3, 8068.03, 7034.21, -11222.5, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 4, 3, 3, 11783.4, -10721.6, 8068.03, 13305, -11221.8, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 5, 3, 4, -13305.6, -3685.42, 8068.03, -11782.6, -4185.47, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 6, 3, 5, -7031.72, -3681.89, 8068.03, -5510, -4180.45, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 7, 3, 6, -758.526, -3685.18, 8068.03, 760.999, -4185.69, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 8, 3, 7, 5510.83, -3685.17, 8068.03, 7033.22, -4185.04, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 9, 3, 8, 11783, -3681.01, 8068.03, 13306.2, -4181.05, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 10, 3, 9, -13303.2, 3354.41, 8068.03, -11783.4, 2855.09, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 11, 3, 10, -7031.3, 3353.22, 8068.03, -5511.19, 2854.38, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 12, 3, 11, -761.836, 3355.38, 8068.03, 762.694, 2853.57, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 13, 3, 12, 5510.96, 3358.76, 8068.03, 7034.51, 2858.34, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 14, 3, 13, 11783.1, 3034.65, 8068.03, 13306.6, 2534.36, 7968.03, 0, 0, 0, 'Start 0'),('surf_cubic', 15, 3, 14, -13302.8, -10721.4, 932.031, -11781.4, -11222.1, 832.031, 0, 0, 0, 'Start 0'),('surf_cubic', 16, 3, 15, -5512.96, -11225, -123.969, -7035.71, -10725.6, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 17, 3, 16, 753.279, -11218.5, -123.969, -761.106, -10725.5, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 18, 3, 17, 5513.65, -10721.8, -123.969, 7034.58, -11221.4, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 19, 3, 18, 11782.6, -10725.1, -123.969, 13305.4, -11226.7, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 20, 3, 19, -13306.6, -3681.23, -123.969, -11781.4, -4182.13, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 21, 3, 20, -7034.5, -3685.2, -123.969, -5509.23, -4185.7, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 22, 3, 21, -761.324, -3685.28, -123.969, 763.44, -4186.99, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 23, 3, 22, 7032.08, -4186.85, -123.969, 5509.74, -3685.88, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 24, 3, 23, 13301.3, -4184.28, -123.969, 11780.4, -3685.69, -223.969, 0, 0, 0, 'Start 0'),('surf_cubic', 25, 3, 24, -1415.29, -10209.8, -8635.97, 105.98, -10709.6, -8735.97, 0, 0, 0, 'Start 0'),('surf_cubic', 26, 3, 25, 5514.17, -10722.8, -9339.97, 7032.97, -11222, -9439.97, 0, 0, 0, 'Start 0'),('surf_cubic', 27, 3, 26, 11789.3, -10724, -9339.97, 13303.1, -11219.4, -9439.97, 0, 0, 0, 'Start 0'),('surf_cubic', 28, 2, 0, 13306.3, -14042, -10476, 11783.4, -14510.7, -10776, 0, 0, 0, 'Start 0'),('surf_deceptive_final', 7, 2, 0, -14073.1, 6659.83, 608.031, -14320, 6907.78, 764.607, 0, 0, 1, 'BONUS 1'),('surf_distraction_v2', 8, 1, 0, -6905.51, -10784.6, 2575.03, -6517.49, -10449.2, 2830.97, 0, 0, 1, 'BONUS 1'),('surf_distraction_v2', 9, 2, 0, -2253.49, 787.969, -7090.07, -2289.36, 726.779, -7324.14, 0, 0, 1, 'BONUS 1');");
@@ -1131,7 +1128,7 @@ public void Admin_InsertZonestoDatabase(int client)
 public void SQLTxn_ZoneInsertFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
 {
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Inserting zones %cfailed!%c. Check error logs.", MOSSGREEN, WHITE, RED, WHITE);
+		PrintToChat(data, "[%c%s%c] Inserting zones %cfailed!%c. Check error logs.", MOSSGREEN, g_szChatPrefix, WHITE, RED, WHITE);
 
 	g_insertingInformation = false;
 	LogError("[ckSurf] SQL Zone insertion failed! Index: %i Error: %s", failIndex, error);
@@ -1140,7 +1137,7 @@ public void SQLTxn_ZoneInsertFailed(Handle db, any data, int numQueries, const c
 public void SQLTxn_ZoneInsertSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
 {
 	if (IsValidClient(data))
-		PrintToChat(data, "[%cCK%c] Successfully inserted map zones!", MOSSGREEN, WHITE);
+		PrintToChat(data, "[%c%s%c] Successfully inserted map zones!", MOSSGREEN, g_szChatPrefix, WHITE);
 
 	db_selectMapZones();
 	g_insertingInformation = false;
@@ -1150,7 +1147,7 @@ public Action Admin_InsertMapZones(int client, int args)
 {
 	if (g_insertingInformation)
 	{
-		PrintToChat(client, "[%cCK%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] Wait for inserting to finish, before starting it again..", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
 

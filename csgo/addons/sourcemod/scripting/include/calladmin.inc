@@ -260,7 +260,7 @@ forward void CallAdmin_OnReportHandled(int client, int id);
 
 
 /* Do not edit below this line */
-public SharedPlugin __pl_calladmin =
+public SharedPlugin __pl_calladmin = 
 {
 	name = "calladmin",
 	file = "calladmin.smx",
