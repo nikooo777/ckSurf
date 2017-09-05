@@ -452,7 +452,7 @@ public Action Admin_ckPanel(int client, int args)
 	ckAdminMenu(client);
 	if ((GetUserFlagBits(client) & g_AdminMenuFlag))
 	{
-		PrintToChat(client, "[%c%s%c] See console for more commands", LIMEGREEN, WHITE);
+		PrintToChat(client, "[%c%s%c] See console for more commands", MOSSGREEN, g_szChatPrefix, WHITE);
 		PrintToConsole(client, "\n[ckSurf root admin]\n");
 		PrintToConsole(client, "\n sm_refreshprofile <steamid> (recalculates player profile for given steamid)\n sm_deleteproreplay <mapname> (Deletes pro replay file for a given map)\n sm_deletetpreplay <mapname> (Deletes tp replay file for a given map)\n ");
 		PrintToConsole(client, "\n sm_zones (Open up the zonee modification menu)\n sm_insertmapzones (Inserts premade map zones into the servers database. ONLY RUN THIS ONCE!)\n sm_insertmaptiers (Inserts premade map tier information into the servers database. ONLY RUN THIS ONCE!)\n");
@@ -480,9 +480,9 @@ public void ckAdminMenu(int client)
 
 	Handle adminmenu = CreateMenu(AdminPanelHandler);
 	if (GetUserFlagBits(client) & g_ZoneMenuFlag)
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)", VERSION);
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (full access)", PLUGIN_VERSION);
 	else
-		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)", VERSION);
+		Format(szTmp, sizeof(szTmp), "ckSurf %s Admin Menu (limited access)", PLUGIN_VERSION);
 	SetMenuTitle(adminmenu, szTmp);
 
 	if (!g_pr_RankingRecalc_InProgress)

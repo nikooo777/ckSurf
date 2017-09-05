@@ -880,7 +880,7 @@ public void PrintConsoleInfo(int client)
 		return;
 
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
-	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", VERSION, RoundToNearest(fltickrate));
+	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", PLUGIN_VERSION, RoundToNearest(fltickrate));
 	PrintToConsole(client, "This version of ckSurf has been modfied by: jonitaikaponi, nikooo777, connorjan, blackhawk74, ");
 	PrintToConsole(client, "zAfLu, Squallkins, marcowmadeira, 2called-chaos, 1DJ, Maxximou5, peace-maker.");
 	if (iConsoleTimeleft > 0)
