@@ -35,8 +35,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define VERSION "1.20.2"
-#define PLUGIN_VERSION 1192
+#define PLUGIN_VERSION "1.20.3"
 
 // Database definitions
 #define MYSQL 0
@@ -198,7 +197,7 @@ public Plugin myinfo =
 	name = "ckSurf", 
 	author = "Elzi", 
 	description = "Surf Plugin",  //Dont want to add custom server name on github
-	version = VERSION, 
+	version = PLUGIN_VERSION, 
 	url = ""
 };
 
@@ -321,7 +320,6 @@ int g_ClientSelectedZone[MAXPLAYERS + 1] =  { -1, ... };		// Currently selected 
 int g_ClientSelectedScale[MAXPLAYERS + 1];						// Currently selected scale
 int g_ClientSelectedPoint[MAXPLAYERS + 1];						// Currently selected point
 int g_CurrentZoneTypeId[MAXPLAYERS + 1];						// Currently selected zone's type ID
-char g_sAName[MAXPLAYERS + 1][64];								// Currently selected zone's type ID
 bool g_ClientRenamingZone[MAXPLAYERS + 1];						// Is client renaming zone?
 int beamColorT[] =  { 255, 0, 0, 255 };							// Zone team colors TODO: remove
 int beamColorCT[] =  { 0, 0, 255, 255 };				
@@ -1682,7 +1680,7 @@ public void OnPluginStart()
 	//language file
 	LoadTranslations("ckSurf.phrases");
 
-	CreateConVar("ckSurf_version", VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
+	CreateConVar("ckSurf_version", PLUGIN_VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);

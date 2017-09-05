@@ -880,9 +880,9 @@ public void PrintConsoleInfo(int client)
 		return;
 
 	PrintToConsole(client, "-----------------------------------------------------------------------------------------------------------");
-	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", VERSION, RoundToNearest(fltickrate));
+	PrintToConsole(client, "This server is running ckSurf v%s - Author: Elzi - Server tickrate: %i", PLUGIN_VERSION, RoundToNearest(fltickrate));
 	PrintToConsole(client, "This version of ckSurf has been modfied by: jonitaikaponi, nikooo777, connorjan, blackhawk74, ");
-	PrintToConsole(client, "zAfLu, Squallkins, marcowmadeira, 2called-chaos, 1DJ, Maxximou5, peace-maker.
+	PrintToConsole(client, "zAfLu, Squallkins, marcowmadeira, 2called-chaos, 1DJ, Maxximou5, peace-maker.");
 	if (iConsoleTimeleft > 0)
 		PrintToConsole(client, "iConsoleTimeleft on %s: %s", g_szMapName, finalOutput);
 	PrintToConsole(client, "Menu formatting is optimized for 1920x1080!");
@@ -2906,7 +2906,6 @@ public void CenterHudAlive(int client)
 					Format(szRank, 128, "\t\t<font color='#d639cb'>Rank:</font>  N/A");
 		}
 		
-		char szSpeed[32];
 		int speed = RoundToNearest(g_fLastSpeed[client]);
 		if (speed <= 300) {
 		//TODO Make coloured speed increase as gradient as speed increase i.e. 0-Red, 500-blue, 1000-green, 20000, yellow.

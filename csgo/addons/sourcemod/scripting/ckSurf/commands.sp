@@ -252,9 +252,9 @@ public Action Command_extend(int client, int args)
 		return Plugin_Handled;	
 	}
 	
-		char arg1[3];
-		GetCmdArg(1, arg1, sizeof(arg1));
-		int ExtendAmount = StringToInt(arg1);
+	char arg1[3];
+	GetCmdArg(1, arg1, sizeof(arg1));
+	int ExtendAmount = StringToInt(arg1);
 
 	PrintToChatAll("[%c%s%c] The current map has been extended by ADMIN.", MOSSGREEN, g_szChatPrefix, WHITE);
 	ExtendMapTimeLimit(ExtendAmount * 60);
@@ -268,7 +268,7 @@ public Action Command_VoteExtend(int client, int args)
 
 	if (!g_bflagTitles[client][0])
 	{
-		PrintToChat(client, "[%c%s%c] This command requires the VIP title.",MOSSGREEN, g_szChatPrefix, WHITE);
+		PrintToChat(client, "[%c%s%c] This command requires the VIP title.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
 
@@ -2283,7 +2283,7 @@ public void Action_NoClip(int client)
 		if (!g_hNoClipS.BoolValue)
 		{
 			PrintToChat(client, "[%c%s%c] This server has disabled NoClipping", MOSSGREEN, g_szChatPrefix, WHITE);
-			return Plugin_Handled;
+			return;
 		}
 		g_fLastTimeNoClipUsed[client] = GetGameTime();
 		PrintToChat(client, "[%c%s%c] You are now noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);
