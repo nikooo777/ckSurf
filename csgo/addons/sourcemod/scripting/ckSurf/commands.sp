@@ -2006,12 +2006,22 @@ public Action Client_RankingSystem(int client, int args)
 }
 
 public Action Client_Pause(int client, int args)
-{
+{	
 	if (g_iClientInZone[client][0] == 9) 
 	{
 		PrintToChat(client, "[%c%s%c]%c You may not pause where you are currently.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
 		return Plugin_Handled;
 	}
+	else if (g_iClientInZone[client][0] == 3 || g_iClientInZone[client][0] ==  5 || g_iClientInZone[client][0] ==  1)
+	{
+		//Skip
+	}
+	else 
+	{
+		PrintToChat(client, "[%c%s%c]%c You may only pause inside a start zone or a stage zone.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+		return Plugin_Handled;
+	}
+	
 	Client_Surrender(client, args);
 	if (GetClientTeam(client) == 1)return Plugin_Handled;
 	PauseMethod(client);

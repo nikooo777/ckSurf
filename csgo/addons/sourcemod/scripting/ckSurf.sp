@@ -35,7 +35,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.4"
+#define PLUGIN_VERSION "1.20.5"
 
 // Database definitions
 #define MYSQL 0
@@ -89,10 +89,10 @@
 #define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
 #define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
 #define SKILLGROUP_PATH "configs/ckSurf/skillgroups.cfg"
-#define PRO_FULL_SOUND_PATH "sound/quake/holyshit.mp3"
-#define PRO_RELATIVE_SOUND_PATH "*quake/holyshit.mp3"
-#define CP_FULL_SOUND_PATH "sound/quake/wickedsick.mp3"
-#define CP_RELATIVE_SOUND_PATH "*quake/wickedsick.mp3"
+#define PRO_FULL_SOUND_PATH "sound/quake/br.mp3"
+#define PRO_RELATIVE_SOUND_PATH "*quake/br.mp3"
+#define CP_FULL_SOUND_PATH "sound/quake/sr.mp3"
+#define CP_RELATIVE_SOUND_PATH "*quake/sr.mp3"
 #define UNSTOPPABLE_SOUND_PATH "sound/quake/unstoppable.mp3"
 #define UNSTOPPABLE_RELATIVE_SOUND_PATH "*quake/unstoppable.mp3"
 
@@ -287,6 +287,7 @@ int g_Advert; 													// Defines which advert to play
 
 /*----------  Maptier Variables  ----------*/
 char g_sTierString[MAXZONEGROUPS][512];							// The string for each zonegroup
+char g_sJustTier[64]; 												// Just the tier for the map
 bool g_bTierEntryFound;											// Tier data found?
 bool g_bTierFound[MAXZONEGROUPS];								// Tier data found in ZGrp
 Handle AnnounceTimer[MAXPLAYERS + 1];							// Tier announce timer
@@ -347,7 +348,7 @@ ConVar g_hSlopeFixEnable;
 Handle g_MapFinishForward;
 Handle g_BonusFinishForward;
 Handle g_PracticeFinishForward;
-
+int iGameText = -1;
 /*----------  CVars  ----------*/
 // Zones
 int g_ZoneMenuFlag;
@@ -396,8 +397,12 @@ ConVar g_hDynamicTimelimit = null; 								// Dynamic timelimit?
 ConVar g_hAdminClantag = null;									// Admin clan tag?
 char g_szChatPrefix[24];										// Chat Prefix
 ConVar g_hChatPrefix = null; 									// Chat Prefix
-char g_szServerName[32];										// Server Name
+char g_szServerName[64];										// Server Name
 ConVar g_hServerName = null;									// Server Name
+char g_szAdvert1[64];											// Advert 1
+ConVar g_hAdvert1 = null;										// Advert 1
+char g_szAdvert2[64];											// Advert 2
+ConVar g_hAdvert2 = null;										// Advert 2
 ConVar g_hAnnouncePlayers = null;								// Show team join
 ConVar g_hConnectMsg = null; 									// Connect message?
 ConVar g_hDisconnectMsg = null; 								// Disconnect message?
@@ -601,7 +606,8 @@ char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
 char g_BlockedChatText[256][256];								// Blocked chat commands
 float g_fLastOverlay[MAXPLAYERS + 1];							// Last time an overlay was displayed
-
+int g_iAnimate;													// Counts seconds in order to allow for animating displays.
+int g_iAdvert;													// Counts seconds in order to allow for adverts which update differntly to displays.
 
 /*----------  Player location restoring  ----------*/
 bool g_bPositionRestored[MAXPLAYERS + 1]; 						// Clients location was restored this run
@@ -873,8 +879,13 @@ public void OnMapStart()
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	CreateTimer(1.5, animateTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	CreateTimer(0.25, advertTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+	//Start Async as to not make adverts update at same time as display format.
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	Format(g_sJustTier, 64, "<font color='#84837b'>Tier: N/A</font>");
+	
 	g_hZoneTimer = CreateTimer(g_hChecker.FloatValue, BeamBoxAll, _, TIMER_REPEAT);
 		
 	//AutoBhop?
@@ -1180,6 +1191,14 @@ public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] 
 	else if (convar == g_hServerName)
 	{
 		GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));	
+	}
+	else if (convar == g_hAdvert1)
+	{
+		GetConVarString(g_hAdvert1, g_szAdvert1, sizeof(g_szAdvert1));	
+	}
+	else if (convar == g_hAdvert2)
+	{
+		GetConVarString(g_hAdvert2, g_szAdvert2, sizeof(g_szAdvert2));	
 	}
 	else if (convar == g_hReplayBot)
 	{
@@ -1684,6 +1703,8 @@ public void OnPluginStart()
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
+	g_hAdvert1 = CreateConVar("ck_advert_1", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
+	g_hAdvert2 = CreateConVar("ck_advert_2", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
 	g_hConnectMsg = CreateConVar("ck_connect_msg", "0", "on/off - Enables a player connect message with country", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAnnouncePlayers = CreateConVar("ck_announce_msg", "0", "on/off - Enables a player announce message when joining a team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hAllowRoundEndCvar = CreateConVar("ck_round_end", "0", "on/off - Allows to end the current round", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1885,6 +1906,10 @@ public void OnPluginStart()
 	HookConVarChange(g_hChatPrefix, OnSettingChanged);
 	GetConVarString(g_hServerName, g_szServerName, sizeof(g_szServerName));
 	HookConVarChange(g_hServerName, OnSettingChanged);
+	GetConVarString(g_hAdvert1, g_szAdvert1, sizeof(g_szAdvert1));
+	HookConVarChange(g_hAdvert1, OnSettingChanged);
+	GetConVarString(g_hAdvert2, g_szAdvert2, sizeof(g_szAdvert2));
+	HookConVarChange(g_hAdvert2, OnSettingChanged);
 
 	db_setupDatabase();
 

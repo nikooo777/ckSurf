@@ -195,12 +195,38 @@ public Action DelayedStuff(Handle timer)
 	LoadInfoBot();
 	return Plugin_Handled;
 }
+public Action animateTimer(Handle timer)
+{
+	if(g_iAnimate==4)
+	{
+		g_iAnimate = 0;
+	}
+	else
+	{
+		g_iAnimate++;
+	}
+}
 
+public Action advertTimer(Handle timer)
+{
+	CreateTimer(2.75, advertTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+}
+public Action advertTimer2(Handle timer)
+{
+	if(g_iAdvert==3)
+	{
+		g_iAdvert = 0;
+	}
+	else
+	{
+		g_iAdvert++;
+	}
+}
 public Action CKTimer2(Handle timer)
 {
 	if (g_bRoundEnd)
 		return Plugin_Continue;
-
+	
 	if (GetConVarBool(g_hMapEnd))
 	{
 		Handle hTmp;
@@ -471,6 +497,8 @@ public Action TerminateRoundTimer(Handle timer)
 	CS_TerminateRound(1.0, CSRoundEnd_CTWin, true);
 	return Plugin_Handled;
 }
+
+
 
 public Action BotRestartTimer(Handle timer)
 {

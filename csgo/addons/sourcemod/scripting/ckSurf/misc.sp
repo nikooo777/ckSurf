@@ -1627,6 +1627,9 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 						PlayRecordSound(2);
 						PrintToChat(i, "%t", "NewMapRecord", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE);
 						PrintToConsole(i, "[%s] %s scored a new MAP RECORD", g_szChatPrefix, szName);
+						char FancyMsg[64]; 
+						Format(FancyMsg, 64, "[%s] %s has beaten the MAP RECORD", g_szChatPrefix, szName);
+						LchatSR(FancyMsg);
 					}
 				}
 			}
@@ -1687,6 +1690,63 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 	return;
 }
 
+void LchatSR(const char[] message)
+{		
+		
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+
+		HudMessage(i, "255 0 255", "0 255 48", "2",  "3", message, "-1.0", "0.93", "0.05", "0.05", "15.0");
+		HudMessage(i, "255 0 255", "0 255 48", "2",  "3", message, "-1.0", "0.13", "0.05", "0.05", "15.0");
+	
+	}
+}
+void LchatBR(const char[] message)
+{		
+		
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+
+		HudMessage(i, "21 147 237", "255 165 0", "2",  "3", message, "-1.0", "0.93", "0.05", "0.05", "15.0");
+		HudMessage(i, "21 147 237", "255 165 0", "2",  "3", message, "-1.0", "0.13", "0.05", "0.05", "15.0");
+	
+	}
+}
+
+void HudMessage(int client, const char[] color,const char[] color2, const char[] effect, const char[] channel, const char[] message, const char[] posx, const char[] posy, const char[] fadein, const char[] fadeout, const char[] holdtime)
+{
+	
+  if(IsValidEntity(iGameText) == false)
+  {
+    iGameText = CreateEntityByName("game_text");
+  }
+  DispatchKeyValue(iGameText, "channel", channel);
+  DispatchKeyValue(iGameText, "color", color);
+  DispatchKeyValue(iGameText, "color2", color2);
+  DispatchKeyValue(iGameText, "effect", effect);
+  DispatchKeyValue(iGameText, "fadein", fadein);
+  DispatchKeyValue(iGameText, "fadeout", fadeout);
+  DispatchKeyValue(iGameText, "fxtime", "0.25");
+  DispatchKeyValue(iGameText, "holdtime", holdtime);
+  DispatchKeyValue(iGameText, "message", message);
+  DispatchKeyValue(iGameText, "spawnflags", "0");
+  DispatchKeyValue(iGameText, "x", posx);
+  DispatchKeyValue(iGameText, "y", posy);
+  DispatchSpawn(iGameText);
+  SetVariantString("!activator");
+  AcceptEntityInput(iGameText,"display",client);
+
+}
+
+
 stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 {
 	if (!IsValidClient(client))
@@ -1707,7 +1767,7 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		if (g_bBonusSRVRecord[client])
 		{
 			PlayRecordSound(1);
-
+			
 			RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
 			FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
 			Format(szRecordDiff, 54, "-%s", szRecordDiff);
@@ -1715,6 +1775,9 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		if (g_bBonusFirstRecord[client] && g_bBonusSRVRecord[client])
 		{
 			PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			char FancyMsg[64]; 
+			Format(FancyMsg, 64, "[%s] %s has beaten the %s RECORD", g_szChatPrefix, szName, g_szZoneGroupName[zGroup]);
+			LchatBR(FancyMsg);
 			if (g_tmpBonusCount[zGroup] == 0)
 				PrintToChatAll("%t", "BonusFinished3", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, WHITE, LIMEGREEN, g_szFinalTime[client], WHITE);
 			else
@@ -1723,6 +1786,9 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		if (g_bBonusPBRecord[client] && g_bBonusSRVRecord[client])
 		{
 			PrintToChatAll("%t", "BonusFinished2", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, YELLOW, g_szZoneGroupName[zGroup]);
+			char FancyMsg[64]; 
+			Format(FancyMsg, 64, "[%s] %s has beaten the %s RECORD", g_szChatPrefix, szName, g_szZoneGroupName[zGroup]);
+			LchatBR(FancyMsg);
 			PrintToChatAll("%t", "BonusFinished5", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
 		}
 		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
@@ -2884,26 +2950,45 @@ public void CenterHudAlive(int client)
 		
 		
 		char szRank[128];
+		char szRank2[64];
+		//Need two strigns, because formmating is differnt on each for some strange reason, i ccant be bothered to look into...
 		if (g_iClientInZone[client][2] > 0) // if in bonus stage, get bonus times
 		{
 			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
-				Format(szRank, 128, "\tRank:%i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+				{
+				Format(szRank, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+				Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+				}
 			else
 				if (g_iBonusCount[g_iClientInZone[client][2]] > 0)
-					Format(szRank, 128, "\t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					{
+					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					}
 				else
-					Format(szRank, 128, "\t\tRank:</font> N/A");
-			
+					{
+					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A");
+					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					}
 		}
 		else // if in normal map, get normal times
 		{
 			if (g_fPersonalRecord[client] > 0.0)
-				Format(szRank, 128, "\tRank: %i / %i", g_MapRank[client], g_MapTimesCount);
+			{
+				Format(szRank, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
+				Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
+			}
 			else
 				if (g_MapTimesCount > 0)
-					Format(szRank, 128, "\t\tRank:N/A / %i", g_MapTimesCount);
+				{
+					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A / %i", g_MapTimesCount);
+					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_MapTimesCount);
+				}
 				else
-					Format(szRank, 128, "\t\tRank: N/A");
+				{
+					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A");
+					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A");
+				}
 		}
 		
 		int speed = RoundToNearest(g_fLastSpeed[client]);
@@ -2934,8 +3019,37 @@ public void CenterHudAlive(int client)
 		case 14: Format(colourName, sizeof(colourName),  "cc205f");
 		case 15: Format(colourName, sizeof(colourName),  "e05d00");
 		}
-	
 		
+		char szPB[64];
+		char szSR[64];
+		char szSpeed[64];
+		char szAdvert[64];
+		char szStage[64];
+		char szTier[64];
+		
+		Format(szPB, 64, "<font color='#ffbb00'>PB:</font> %s", g_szLastPBDifference[client]);
+		Format(szSR, 64, "%s", g_szLastSRDifference[client]);
+		Format(szSpeed, 64, "Speed: <font color='#%s'>%i</font>", colourName, speed);
+		Format(szAdvert, 64, "<font color='#45f74e'>%s</font>", g_szServerName);
+		Format(szStage, 64, "<font color='#a8603c'>Stage:</font> %s", StageString);
+		Format(szTier, 64, "%s", g_sJustTier);
+		
+		int dispVersion;
+		
+		switch(g_iAnimate)
+			{
+				case 0:dispVersion = 0;
+				case 1:dispVersion = 1;
+				case 2:dispVersion = 2;
+			}
+		switch(g_iAdvert)
+			{
+				case 0:Format(szAdvert, 64, "<font color='#45f74e'>%s</font>", g_szServerName);
+				case 1:Format(szAdvert, 64, "<font color='#1c9ddd'>%s", g_szAdvert1);
+				case 2:Format(szAdvert, 64, "<font color='#e814d9'>%s", g_szAdvert2);
+				case 3:Format(szAdvert, 64, "<font color='#dda218'>Map: %s", g_szMapName);
+			}
+
 		if (IsValidEntity(client) && 1 <= client <= MaxClients && !g_bOverlay[client])
 		{
 			if (g_bTimeractivated[client])
@@ -2946,13 +3060,31 @@ public void CenterHudAlive(int client)
 				}
 				else
 				{	
+					
 					//DEBUG					
 					//PrintToConsole(client, "%s%s %s\nPB: %s%s\nStage: %sSpeed: <font color='#%s'>%i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, colourName, speed);
-					PrintHintText(client, "<font face='' size='21'>%s%s %s\n<font color='#ffbb00'>PB:</font> %s%s\nStage: %sSpeed: <font color='#%s'>%i</font>", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, colourName, speed);
+					PrintHintText(client, "<font face='' size='21'>%s%s %s\n<font color='#ffbb00'>PB:</font> %s%s\nStage: %s%s", timerText, pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, szSpeed);
 				}
 			}
 			else
-				PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Stopped</font> %s\n<font color='#d639cb'>PB:</font> %s%s\n<font color='#45f74e' size='22'>%s</font>",timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, g_szServerName);
+				{
+					//SR Text: 
+					//PB TEXT: szPB
+					//RANK TEXT: szRank
+					//SERVER TEXT: g_szServerName1..3
+					//STAGE TEXT: szStage
+					//MAP TEXT: szMapName
+					//SPEED TEXT: szSpeed
+					//TIER TEXT: szTier
+					
+					switch(dispVersion)
+						{
+							case 0: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font> %s\n%s%s\n%s",timerText, szSR, szStage, szSpeed, szAdvert);
+							case 1: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t\t%s\n%s\t\t%s\n%s",timerText, szPB, szTier, szSpeed, szAdvert);
+							case 2: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t%s\n%s%s\n%s",timerText, szRank2, szStage, szSpeed, szAdvert);
+						}	
+					
+				}
 		}
 	}
 }
