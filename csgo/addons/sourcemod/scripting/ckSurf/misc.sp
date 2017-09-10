@@ -2893,6 +2893,8 @@ public void CenterHudAlive(int client)
 				Format(StageString, 64, "%i / %i\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1)); // less \t's to make lines align
 			else
 				Format(StageString, 64, "%i / %i\t\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1));
+			if(g_mapZonesTypeCount[g_iClientInZone[client][2]][3] >8)
+				Format(StageString, 64, "%i / %i\t", g_Stage[g_iClientInZone[client][2]][client], (g_mapZonesTypeCount[g_iClientInZone[client][2]][3] + 1)); // less \t's to make lines align
 		}
 		
 		if (g_bTimeractivated[client] && !g_bPause[client])
@@ -2956,18 +2958,18 @@ public void CenterHudAlive(int client)
 		{
 			if (g_fPersonalRecordBonus[g_iClientInZone[client][2]][client] > 0.0)
 				{
-				Format(szRank, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
+				Format(szRank, 128, "\tRank: %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
 				Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRankBonus[g_iClientInZone[client][2]][client], g_iBonusCount[g_iClientInZone[client][2]]);
 				}
 			else
 				if (g_iBonusCount[g_iClientInZone[client][2]] > 0)
 					{
-					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
+					Format(szRank, 128, "\t\tRank: N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
 					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
 					}
 				else
 					{
-					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A");
+					Format(szRank, 128, "\t\tRank: N/A");
 					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_iBonusCount[g_iClientInZone[client][2]]);
 					}
 		}
@@ -2975,18 +2977,18 @@ public void CenterHudAlive(int client)
 		{
 			if (g_fPersonalRecord[client] > 0.0)
 			{
-				Format(szRank, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
+				Format(szRank, 128, "\tRank: %i / %i", g_MapRank[client], g_MapTimesCount);
 				Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> %i / %i", g_MapRank[client], g_MapTimesCount);
 			}
 			else
 				if (g_MapTimesCount > 0)
 				{
-					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A / %i", g_MapTimesCount);
+					Format(szRank, 128, "\t\t<Rank: N/A / %i", g_MapTimesCount);
 					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_MapTimesCount);
 				}
 				else
 				{
-					Format(szRank, 128, "\t\t<font color='#70a83b'>Rank:</font> N/A");
+					Format(szRank, 128, "\t\tRank: N/A");
 					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A");
 				}
 		}
@@ -3056,7 +3058,7 @@ public void CenterHudAlive(int client)
 			{
 				if (g_bPause[client])
 				{
-					PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Paused</font> %s\n<font color='#d639cb'>PB:<font color='#ffffff'> %s%s\nStage: %sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
+					PrintHintText(client, "<font face=''>%s<font color='#FF0000'>Paused</font> %s\n<font color='#d639cb'>PB:<font color='#ffffff'> %s%s\nStage:%sSpeed: %i</font>", timerText, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, RoundToNearest(g_fLastSpeed[client]));
 				}
 				else
 				{	
