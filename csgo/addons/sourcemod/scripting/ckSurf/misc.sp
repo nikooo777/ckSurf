@@ -2983,7 +2983,7 @@ public void CenterHudAlive(int client)
 			else
 				if (g_MapTimesCount > 0)
 				{
-					Format(szRank, 128, "\t\t<Rank: N/A / %i", g_MapTimesCount);
+					Format(szRank, 128, "\t\tRank: N/A / %i", g_MapTimesCount);
 					Format(szRank2, 128, "\t<font color='#70a83b'>Rank:</font> N/A / %i", g_MapTimesCount);
 				}
 				else
