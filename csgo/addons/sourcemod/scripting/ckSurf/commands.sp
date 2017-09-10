@@ -261,6 +261,19 @@ public Action Command_extend(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Admin_fixBot(int client, int args)
+{
+	Handle replay = FindConVar("ck_replay_bot");
+	Handle bonus = FindConVar("ck_bonus_bot");
+	
+	
+	SetConVarInt(replay, 0, true, true);
+	SetConVarInt(bonus, 0, true, false);
+	PrintToChatAll("[%c%s%c] Replay bots are being restarted.", MOSSGREEN, g_szChatPrefix, WHITE);
+	CreateTimer(3.0, BotRestartTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+	return Plugin_Handled;
+}
+
 public Action Command_VoteExtend(int client, int args)
 {
 	if(!IsValidClient(client))
@@ -816,10 +829,12 @@ public Action Command_RestartNC(int client, int args)
 					{
 					Action_UnNoClip(client);
 					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					g_bNoclipWithoutR[client] = false;
 					ClientCommand(client, "play ambient/misc/clank3");
 					} else 
 					{
 					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					g_bNoclipWithoutR[client] = false;
 					ClientCommand(client, "play ambient/misc/clank3");
 					}
 	g_bClientRestarting[client] = false;
@@ -1991,12 +2006,22 @@ public Action Client_RankingSystem(int client, int args)
 }
 
 public Action Client_Pause(int client, int args)
-{
+{	
 	if (g_iClientInZone[client][0] == 9) 
 	{
 		PrintToChat(client, "[%c%s%c]%c You may not pause where you are currently.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
 		return Plugin_Handled;
 	}
+	else if (g_iClientInZone[client][0] == 3 || g_iClientInZone[client][0] ==  5 || g_iClientInZone[client][0] ==  1)
+	{
+		//Skip
+	}
+	else 
+	{
+		PrintToChat(client, "[%c%s%c]%c You may only pause inside a start zone or a stage zone.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+		return Plugin_Handled;
+	}
+	
 	Client_Surrender(client, args);
 	if (GetClientTeam(client) == 1)return Plugin_Handled;
 	PauseMethod(client);

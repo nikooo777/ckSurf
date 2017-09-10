@@ -195,12 +195,38 @@ public Action DelayedStuff(Handle timer)
 	LoadInfoBot();
 	return Plugin_Handled;
 }
+public Action animateTimer(Handle timer)
+{
+	if(g_iAnimate==2)
+	{
+		g_iAnimate = 0;
+	}
+	else
+	{
+		g_iAnimate++;
+	}
+}
 
+public Action advertTimer(Handle timer)
+{
+	CreateTimer(2.75, advertTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+}
+public Action advertTimer2(Handle timer)
+{
+	if(g_iAdvert==3)
+	{
+		g_iAdvert = 0;
+	}
+	else
+	{
+		g_iAdvert++;
+	}
+}
 public Action CKTimer2(Handle timer)
 {
 	if (g_bRoundEnd)
 		return Plugin_Continue;
-
+	
 	if (GetConVarBool(g_hMapEnd))
 	{
 		Handle hTmp;
@@ -472,6 +498,19 @@ public Action TerminateRoundTimer(Handle timer)
 	return Plugin_Handled;
 }
 
+
+
+public Action BotRestartTimer(Handle timer)
+{
+	Handle replay = FindConVar("ck_replay_bot");
+	Handle bonus = FindConVar("ck_bonus_bot");
+	SetConVarInt(replay, 1, true, true);
+	SetConVarInt(bonus, 1, true, false);
+	PrintToChatAll("[%c%s%c] Replay bots have been restarted.", MOSSGREEN, g_szChatPrefix, WHITE);
+	return Plugin_Handled;
+}
+
+
 public Action WelcomeMsgTimer(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
@@ -492,7 +531,7 @@ public Action HelpMsgTimer(Handle timer, any serial)
 	return Plugin_Handled;
 }
 
-public Action AdvertTimer(Handle timer)
+public Action AdvertTimer(Handle timer, any serial)
 {
 	g_Advert++;
 	if ((g_Advert % 2) == 0)
