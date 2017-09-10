@@ -197,7 +197,7 @@ public Action DelayedStuff(Handle timer)
 }
 public Action animateTimer(Handle timer)
 {
-	if(g_iAnimate==4)
+	if(g_iAnimate==2)
 	{
 		g_iAnimate = 0;
 	}
