@@ -939,7 +939,16 @@ public void PrintConsoleInfo(int client)
 
 stock void FakePrecacheSound(const char[] szPath)
 {
-	AddToStringTable(FindStringTable("soundprecache"), szPath);
+    char szPathStar[PLATFORM_MAX_PATH];
+    Format(szPathStar, sizeof(szPathStar), "*%s", szPath); 
+    AddToStringTable(FindStringTable("soundprecache"), szPathStar);
+}
+
+stock void AddSoundToDownloadsTable(const char[] szPath)
+{
+    char szPathStar[PLATFORM_MAX_PATH];
+    Format(szPathStar, sizeof(szPathStar), "sound/%s", szPath);
+    AddFileToDownloadsTable(szPathStar);
 }
 
 public Action BlockRadio(int client, const char[] command, int args)
@@ -1037,7 +1046,7 @@ public void PlayButtonSound(int client)
 	{
 		char buffer[255];
 		GetConVarString(g_hSoundPath, buffer, 255);
-		Format(buffer, sizeof(buffer), "play %s", buffer);
+		Format(buffer, sizeof(buffer), "play *%s", buffer);
 		ClientCommand(client, buffer);
 	}
 
@@ -1054,7 +1063,7 @@ public void PlayButtonSound(int client)
 				{
 					char szsound[255];
 					GetConVarString(g_hSoundPath, szsound, 256);
-					Format(szsound, sizeof(szsound), "play %s", szsound);
+					Format(szsound, sizeof(szsound), "play *%s", szsound);
 					ClientCommand(i, szsound);
 				}
 			}
@@ -1465,7 +1474,7 @@ public void PlayRecordSound(int iRecordtype)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i) && g_bEnableQuakeSounds[i] == true)
 			{
-				Format(buffer, sizeof(buffer), "play %s", PRO_RELATIVE_SOUND_PATH);
+				Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordBonus);
 				ClientCommand(i, buffer);
 			}
 		}
@@ -1477,7 +1486,7 @@ public void PlayRecordSound(int iRecordtype)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i) && g_bEnableQuakeSounds[i] == true)
 			{
-				Format(buffer, sizeof(buffer), "play %s", CP_RELATIVE_SOUND_PATH);
+				Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordMap);
 				ClientCommand(i, buffer);
 			}
 		}
@@ -1487,7 +1496,7 @@ public void PlayRecordSound(int iRecordtype)
 public void PlayUnstoppableSound(int client)
 {
 	char buffer[255];
-	Format(buffer, sizeof(buffer), "play %s", UNSTOPPABLE_RELATIVE_SOUND_PATH);
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordBeat);
 	if (!IsFakeClient(client) && g_bEnableQuakeSounds[client])
 		ClientCommand(client, buffer);
 	//spec stop sound
@@ -1508,14 +1517,16 @@ public void PlayUnstoppableSound(int client)
 
 public void InitPrecache()
 {
-	AddFileToDownloadsTable(UNSTOPPABLE_SOUND_PATH);
-	FakePrecacheSound(UNSTOPPABLE_RELATIVE_SOUND_PATH);
-	AddFileToDownloadsTable(PRO_FULL_SOUND_PATH);
-	FakePrecacheSound(PRO_RELATIVE_SOUND_PATH);
-	AddFileToDownloadsTable(PRO_FULL_SOUND_PATH);
-	FakePrecacheSound(PRO_RELATIVE_SOUND_PATH);
-	AddFileToDownloadsTable(CP_FULL_SOUND_PATH);
-	FakePrecacheSound(CP_RELATIVE_SOUND_PATH);
+	g_hSoundRecordBonus.GetString(g_szSoundRecordBonus, sizeof(g_szSoundRecordBonus));
+	g_hSoundRecordMap.GetString(g_szSoundRecordMap, sizeof(g_szSoundRecordMap));
+	g_hSoundRecordBeat.GetString(g_szSoundRecordBeat, sizeof(g_szSoundRecordBeat));
+
+	AddSoundToDownloadsTable(g_szSoundRecordBeat);
+	FakePrecacheSound(g_szSoundRecordBeat);
+	AddSoundToDownloadsTable(g_szSoundRecordMap);
+	FakePrecacheSound(g_szSoundRecordMap);
+	AddSoundToDownloadsTable(g_szSoundRecordBonus);
+	FakePrecacheSound(g_szSoundRecordBonus);
 
 	char szBuffer[256];
 	// Replay Player Model

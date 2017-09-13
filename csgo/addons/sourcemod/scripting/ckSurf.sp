@@ -9,9 +9,9 @@
 
 #include <sourcemod>
 #include <sdkhooks>
+#include <sdktools>
 #include <adminmenu>
 #include <cstrike>
-#include <smlib>
 #include <geoip>
 #include <basecomm>
 #include <colors>
@@ -21,6 +21,7 @@
 #include <dhooks>
 #include <mapchooser>
 #include <ckSurf>
+#include <ckSurf-misc>
 
 /*====================================
 =            Declarations            =
@@ -30,12 +31,11 @@
 =           	 Definitions 		         =
 =============================================*/
 
-// Require new syntax and semicolons
+// Require new syntax
 #pragma newdecls required
-#pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.5.2"
+#define PLUGIN_VERSION "1.20.5.3"
 
 // Database definitions
 #define MYSQL 0
@@ -89,12 +89,6 @@
 #define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
 #define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
 #define SKILLGROUP_PATH "configs/ckSurf/skillgroups.cfg"
-#define PRO_FULL_SOUND_PATH "sound/quake/br.mp3"
-#define PRO_RELATIVE_SOUND_PATH "*quake/br.mp3"
-#define CP_FULL_SOUND_PATH "sound/quake/sr.mp3"
-#define CP_RELATIVE_SOUND_PATH "*quake/sr.mp3"
-#define UNSTOPPABLE_SOUND_PATH "sound/quake/unstoppable.mp3"
-#define UNSTOPPABLE_RELATIVE_SOUND_PATH "*quake/unstoppable.mp3"
 
 // Checkpoint definitions
 #define CPLIMIT 35			// Maximum amount of checkpoints in a map
@@ -168,9 +162,9 @@ enum FileHeader
 
 enum MapZone
 {
-	zoneId,  				// ID within the map
-	zoneType,  				// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
-	zoneTypeId, 			// ID of the same type eg. Start-1, Start-2, Start-3...
+	zoneId,  			// ID within the map
+	zoneType,  			// Types: Start(1), End(2), Stage(3), Checkpoint(4), Speed(5), TeleToStart(6), Validator(7), Chekcer(8), Stop(0)
+	zoneTypeId, 		// ID of the same type eg. Start-1, Start-2, Start-3...
 	Float:PointA[3], 
 	Float:PointB[3], 
 	Float:CenterPoint[3],
@@ -182,10 +176,10 @@ enum MapZone
 
 enum SkillGroup
 {
-	PointReq,				// Points required for next skillgroup
-	String:NameColor[32],				// Color to use for name if colored chatnames is turned on
-	String:RankName[128],	// Skillgroup name without colors
-	String:RankNameColored[128], // Skillgroup name with colors
+	PointReq,						// Points required for next skillgroup
+	String:NameColor[32],			// Color to use for name if colored chatnames is turned on
+	String:RankName[128],			// Skillgroup name without colors
+	String:RankNameColored[128],	// Skillgroup name with colors
 }
 
 /*===================================
@@ -199,7 +193,7 @@ public Plugin myinfo =
 	description = "Surf Plugin",  //Dont want to add custom server name on github
 	version = PLUGIN_VERSION, 
 	url = ""
-};
+}
 
 /*=================================
 =            Variables            =
@@ -444,6 +438,9 @@ ConVar g_hSpeedPreSpeed = null; 								// Speed Start zone speed cap
 ConVar g_hBonusPreSpeed = null; 								// Bonus start zone speed cap
 ConVar g_hSoundEnabled = null; 									// Enable timer start sound
 ConVar g_hSoundPath = null;										// Define start sound
+ConVar g_hSoundRecordBonus = null;								// Sound for beating bonus record
+ConVar g_hSoundRecordMap = null;								// Sound for beating map record
+ConVar g_hSoundRecordBeat = null;								// Sound for beating your own record
 //char sSoundPath[64];
 ConVar g_hSpawnToStartZone = null; 								// Teleport on spawn to start zone 
 ConVar g_hAnnounceRank = null; 									// Min rank to announce in chat
@@ -605,6 +602,9 @@ char g_szCountry[MAXPLAYERS + 1][100];							// Country codes
 char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
 char g_BlockedChatText[256][256];								// Blocked chat commands
+char g_szSoundRecordBonus[64];									// Sound for beating bonus record
+char g_szSoundRecordMap[64];										// Sound for beating map record
+char g_szSoundRecordBeat[64];									// Sound for beating your own record
 float g_fLastOverlay[MAXPLAYERS + 1];							// Last time an overlay was displayed
 int g_iAnimate;													// Counts seconds in order to allow for animating displays.
 int g_iAdvert;													// Counts seconds in order to allow for adverts which update differntly to displays.
@@ -1735,6 +1735,9 @@ public void OnPluginStart()
 	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone", FCVAR_NOTIFY);
+	g_hSoundRecordBonus = CreateConVar("ck_sound_record_bonus", "quake/holyshit.mp3", "The path to the sound file that plays after beating the bonus record", FCVAR_NOTIFY);
+	g_hSoundRecordMap = CreateConVar("ck_sound_record_map", "quake/wickedsick.mp3", "The path to the sound file that plays after beating the map record", FCVAR_NOTIFY);
+	g_hSoundRecordBeat = CreateConVar("ck_sound_record_beat", "quake/unstoppable.mp3", "The path to the sound file that plays after beating your record", FCVAR_NOTIFY);
 	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records", FCVAR_NOTIFY, true, 0.0);
 	g_hAnnounceRecord = CreateConVar("ck_chat_record_type", "0", "0: Announce all times to chat, 1: Only announce PB's to chat, 2: Only announce SR's to chat", FCVAR_NOTIFY, true, 0.0, true, 2.0);
 	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
