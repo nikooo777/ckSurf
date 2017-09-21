@@ -77,10 +77,24 @@ char sql_insertLatestRecords[] = "INSERT INTO ck_latestrecords (steamid, name, r
 char sql_selectLatestRecords[] = "SELECT name, runtime, map, date FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
 
 //TABLE PLAYEROPTIONS
-char sql_createPlayerOptions[] = "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', checkpoints INT(12) DEFAULT '1', PRIMARY KEY(steamid));";
-char sql_insertPlayerOptions[] = "INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i', '%i');";
-char sql_selectPlayerOptions[] = "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints FROM ck_playeroptions where steamid = '%s'";
-char sql_updatePlayerOptions[] = "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i' where steamid = '%s'";
+char sql_createPlayerOptions[] = "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', checkpoints INT(12) DEFAULT '1', srSound INT(12) NOT NULL  DEFAULT '0', brSound INT(12) NOT NULL DEFAULT '1',  beatSound INT(12) NOT NULL DEFAULT '2',   PRIMARY KEY(steamid));"; 
+char sql_newPlayerOptions[] = "ALTER TABLE `ck_playeroptions`  ADD `srSound` INT(12) NOT NULL DEFAULT '0'  AFTER `checkpoints`,  ADD brSound INT(12) NOT NULL DEFAULT '1'  AFTER srSound,  ADD beatSound INT(12) NOT NULL DEFAULT '2'  AFTER `brSound`;" 
+char sql_insertPlayerOptions[] = "INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints, srSound, brSound, beatSound) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i');"; 
+char sql_selectPlayerOptions[] = "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints, srSound, brSound, beatSound FROM ck_playeroptions where steamid = '%s'"; 
+char sql_updatePlayerOptions[] = "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i', srSound = '%i', brSound = '%i', beatSound = '%i' where steamid = '%s'"; 
+
+
+//TABLE SOUND
+//char sql_createSound[] = "CREATE TABLE IF NOT EXISTS ck_sound (soundId INT(12) NOT NULL AUTO_INCREMENT, soundCost INT(12) NOT NULL, soundType INT(12) NOT NULL, soundPerm INT(12) NOT NULL, soundPath VARCHAR(64) NOT NULL, PRIMARY KEY (soundId));";
+//char sql_insertSoundDefaultSr[] = "INSERT INTO ck_sound (soundId, soundType, soundCost, soundPerm, soundPath) VALUES (0, 0, 0, 0, 'quake/holyshit.mp3');";
+//char sql_insertSoundDefaultBr[] = "INSERT INTO ck_sound (soundId, soundType, soundCost, soundPerm, soundPath) VALUES (0, 0, 0, 0, 'quake/wickedsick.mp3');";
+//char sql_insertSoundDefaultBeat[] = "INSERT INTO ck_sound (soundId, soundType, soundCost, soundPerm, soundPath) VALUES (0, 0, 0, 0, 'quake/unstoppable.mp3');";
+//char sql_updateDefaultSrSound[] = "UPDATE ck_playeroptions SET srSound = 0 where srSound = '%i'";
+//char sql_updateDefaultBrSound[] = "UPDATE ck_playeroptions SET brSound = 1 where brSound = '%s'";
+//char sql_updateDefaultBeatSound[] = "UPDATE ck_playeroptions SET beatSound = 2 where beatSound = '%s'";
+//char sql_insertSound[] = "INSERT INTO ck_sound (soundId, soundType, soundCost, soundPerm, soundPath) VALUES (NULL, '%i', '%i', '%i', '%s');";
+//char sql_selectSoundPath[] = "SELECT soundId, soundPath FROM ck_sound;";
+//char sql_deleteSound[] = "DELETE FROM ck_sound WHERE soundID = '%i'";
 
 //TABLE PLAYERRANK
 char sql_createPlayerRank[] = "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12) unsigned  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) unsigned DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
@@ -220,8 +234,27 @@ public void db_setupDatabase()
 	SQL_FastQuery(g_hDb, "CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro)");
 	SQL_FastQuery(g_hDb, "CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup)");
 
+	/////////////////////////////// 
+  	// 1.20.7 Changes            // 
+  	// -Add Custom wr/br sounds  // 
+ 	// - Custom join/dc msg      // 
+  	// - custom pos              // 
+  	/////////////////////////////// 
+  	SQL_FastQuery(g_hDb, sql_newPlayerOptions);  
+  	
+  	//if (!SQL_FastQuery(g_hDb, "SELECT soundId FROM ck_sound LIMIT 1"))
+  	//{
+  		//PrintToServer("---------------------------------------------------------------------------");
+  		//PrintToServer("[%s] ADDING IN CUSTOM SOUNDS TO DATABSE", g_szChatPrefix);
+  		//SQL_FastQuery(g_hDb, sql_createSound);
+  		//PrintToServer("---------------------------------------------------------------------------");
+		  	
+  	//}
+  		  	
+  	
 	SQL_UnlockDatabase(g_hDb);
-
+	//Do custom sounds now, otherwise we'll find that the precache doesnt load in time.
+	//db_loadCustomSounds();
 	for (int i = 0; i < sizeof(g_failedTransactions); i++)
 		g_failedTransactions[i] = 0;
 
@@ -551,6 +584,85 @@ public void SQLTxn_RenameFailed(Handle db, any data, int numQueries, const char[
 	revertServerHibernateSettings();
 	SetFailState("[%s] Database changes failed! (Renaming) Error: %s", g_szChatPrefix, error);
 }
+//public void SQLTxn_SoundSuccess(Handle db, any data, int numQueries, Handle[] results, any[] queryData)
+//{
+	//PrintToServer("---------------------------------------------------------------------------");
+	//PrintToServer("[ckSurf] Database changes for sounds done succesfully, reloading the map...");
+	//ForceChangeLevel(g_szMapName, "Database Renaming Done. Restarting Map.");
+	//PrintToServer("---------------------------------------------------------------------------");
+//}
+
+//public void SQLTxn_SoundFailed(Handle db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
+//{
+	//PrintToServer("---------------------------------------------------------------------------");
+	//SetFailState("[%s] Database changes for sounds failed! (Renaming) Error: %s", g_szChatPrefix, error);
+	//PrintToServer("[%s] Database changes for sounds failed! (Renaming) Error: %s", g_szChatPrefix, error);
+	//PrintToServer("---------------------------------------------------------------------------");
+//}
+///////////////////////
+//// CUSTOM SOUNDS ////
+///////////////////////
+
+//public void db_loadCustomSounds()
+//{
+	//char szQuery[512];
+	//Format(szQuery, 512, sql_selectSoundPath);
+	//SQL_TQuery(g_hDb, db_viewCustomSoundsCallback, szQuery,  DBPrio_Low);
+	
+	//if (!g_bServerDataLoaded)
+		//db_selectMapZones();
+		
+//}
+
+//public void db_viewCustomSoundsCallback(Handle owner, Handle hndl, const char[] error, any data)
+//{
+	//PrintToServer("---------------------------------------------------------------------------");
+  	//PrintToServer("[%s] Coming for Custom Records now...", g_szChatPrefix);
+  	//PrintToServer("---------------------------------------------------------------------------");
+	//if (hndl == null)
+	//{
+		//PrintToServer("---------------------------------------------------------------------------");
+  		//PrintToServer("[%s] ERROR: %s", g_szChatPrefix, error);
+  		//PrintToServer("---------------------------------------------------------------------------");
+		//LogError("[%s] SQL Error (db_viewCustomSoundsCallback): %s", g_szChatPrefix, error);
+		//return;
+	//}
+	//if (SQL_GetRowCount(hndl) != 0) //Results Found
+	//{
+		//PrintToServer("---------------------------------------------------------------------------");
+  		//PrintToServer("[%s] Custom Records Found...", g_szChatPrefix);
+  		//PrintToServer("---------------------------------------------------------------------------");
+		//int soundId;
+		//char SoundPath[128];
+		//{
+			//soundId = SQL_FetchInt(hndl, 0);
+			//SQL_FetchString(hndl, 1, SoundPath, 128);
+			//PrintToServer("[%s] Adding %s",g_szChatPrefix, SoundPath);
+			//Format(SoundPath, 64, "'%s'", SoundPath);
+			//g_szSoundPath[soundId] = SoundPath;
+			//PrintToServer("---------------------------------------------------------------------------");
+  			//PrintToServer("[%s] Adding %i with %s", g_szChatPrefix, soundId, SoundPath);
+  			//PrintToServer("---------------------------------------------------------------------------");
+		//}
+	//}
+	//else //No Records found, insert default set
+	//{
+		//PrintToServer("---------------------------------------------------------------------------");
+  		//PrintToServer("---------------------------------------------------------------------------");
+		//char sql_insertSound[] = "INSERT INTO ck_sound (soundId, soundType, soundCost, soundPerm, soundPath) VALUES (NULL, '%i', '%i', '%i', '%s');";
+		//Transaction hndlsound = SQL_CreateTransaction();
+		//SQL_AddQuery(hndlsound, "TRUNCATE TABLE ck_sound");
+		//SQL_AddQuery(hndlsound, sql_insertSoundDefaultSr);
+		//SQL_AddQuery(hndlsound, sql_insertSoundDefaultBr);
+		//SQL_AddQuery(hndlsound, sql_insertSoundDefaultBeat);
+		//SQL_ExecuteTransaction(g_hDb, hndlsound, SQLTxn_SoundSuccess, SQLTxn_SoundFailed);
+	//}
+  	//PrintToServer("[%s] Finishing Custom Records now...", g_szChatPrefix);
+  	//PrintToServer("---------------------------------------------------------------------------");
+  	//InitPrecache();
+  	//
+	//return;
+//}
 
 ///////////////////////
 //// PLAYER TITLES ////
@@ -5508,6 +5620,7 @@ public void db_ClearLatestRecords()
 
 	if (!g_bServerDataLoaded)
 		db_GetDynamicTimelimit();
+		
 }
 
 public void db_viewUnfinishedMaps(int client, char szSteamId[32])
@@ -5966,7 +6079,9 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 		g_bHideChat[client] = view_as<bool>(SQL_FetchInt(hndl, 10));
 		g_bViewModel[client] = view_as<bool>(SQL_FetchInt(hndl, 11));
 		g_bCheckpointsEnabled[client] = view_as<bool>(SQL_FetchInt(hndl, 12));
-
+		g_SrSoundId[client] = SQL_FetchInt(hndl, 13); 
+		g_BrSoundId[client] = SQL_FetchInt(hndl, 14); 
+		g_BeatSoundId[client] = SQL_FetchInt(hndl, 15); 
 		//org
 		g_borg_AutoBhopClient[client] = g_bAutoBhopClient[client];
 		g_borg_InfoPanel[client] = g_bInfoPanel[client];
@@ -5980,6 +6095,9 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 		g_borg_HideChat[client] = g_bHideChat[client];
 		g_borg_ViewModel[client] = g_bViewModel[client];
 		g_borg_CheckpointsEnabled[client] = g_bCheckpointsEnabled[client];
+		g_orgSrSoundId[client] = g_SrSoundId[client]; 
+		g_orgBrSoundId[client] = g_BrSoundId[client]; 
+		g_orgBeatSoundId[client] = g_BeatSoundId[client];  
 	}
 	else
 	{
@@ -5989,7 +6107,8 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 
 		//"INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i');";
 
-		Format(szQuery, 512, sql_insertPlayerOptions, g_szSteamID[client], 1, 1, 1, 1, 1, 0, 0, 1, "weapon_knife", 0, 0, 1, 1);
+		
+		Format(szQuery, 512, sql_insertPlayerOptions, g_szSteamID[client], 1, 1, 1, 1, 1, 0, 0, 1, "weapon_knife", 0, 0, 1, 1, 0, 1, 2); 
 		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, DBPrio_Low);
 		g_borg_InfoPanel[client] = true;
 		g_borg_EnableQuakeSounds[client] = true;
@@ -6004,6 +6123,9 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 		g_borg_HideChat[client] = false;
 		g_borg_ViewModel[client] = true;
 		g_borg_CheckpointsEnabled[client] = true;
+		g_orgSrSoundId[client] = 0; 
+		g_orgBrSoundId[client] = 1; 
+		g_orgBeatSoundId[client] = 2; 
 	}
 	if (!g_bSettingsLoaded[client])
 		db_viewPersonalFlags(client, g_szSteamID[client]);
@@ -6012,11 +6134,10 @@ public void db_viewPlayerOptionsCallback(Handle owner, Handle hndl, const char[]
 
 public void db_updatePlayerOptions(int client)
 {
-	if (g_borg_ViewModel[client] != g_bViewModel[client] || g_borg_HideChat[client] != g_bHideChat[client] || g_borg_StartWithUsp[client] != g_bStartWithUsp[client] || g_borg_AutoBhopClient[client] != g_bAutoBhopClient[client] || g_borg_InfoPanel[client] != g_bInfoPanel[client] || g_borg_EnableQuakeSounds[client] != g_bEnableQuakeSounds[client] || g_borg_ShowNames[client] != g_bShowNames[client] || g_borg_GoToClient[client] != g_bGoToClient[client] || g_borg_ShowTime[client] != g_bShowTime[client] || g_borg_Hide[client] != g_bHide[client] || g_borg_ShowSpecs[client] != g_bShowSpecs[client] || g_borg_CheckpointsEnabled[client] != g_bCheckpointsEnabled[client])
+	if (g_borg_ViewModel[client] != g_bViewModel[client] || g_borg_HideChat[client] != g_bHideChat[client] || g_borg_StartWithUsp[client] != g_bStartWithUsp[client] || g_borg_AutoBhopClient[client] != g_bAutoBhopClient[client] || g_borg_InfoPanel[client] != g_bInfoPanel[client] || g_borg_EnableQuakeSounds[client] != g_bEnableQuakeSounds[client] || g_borg_ShowNames[client] != g_bShowNames[client] || g_borg_GoToClient[client] != g_bGoToClient[client] || g_borg_ShowTime[client] != g_bShowTime[client] || g_borg_Hide[client] != g_bHide[client] || g_borg_ShowSpecs[client] != g_bShowSpecs[client] || g_borg_CheckpointsEnabled[client] != g_bCheckpointsEnabled[client] || g_orgSrSoundId[client] != g_SrSoundId[client] || g_orgBrSoundId[client] != g_BrSoundId[client] || g_orgBeatSoundId[client] != g_BeatSoundId[client]) 
 	{
 		char szQuery[1024];
-
-		Format(szQuery, 1024, sql_updatePlayerOptions, BooltoInt(g_bInfoPanel[client]), BooltoInt(g_bEnableQuakeSounds[client]), BooltoInt(g_bAutoBhopClient[client]), BooltoInt(g_bShowNames[client]), BooltoInt(g_bGoToClient[client]), BooltoInt(g_bShowTime[client]), BooltoInt(g_bHide[client]), BooltoInt(g_bShowSpecs[client]), "weapon_knife", BooltoInt(g_bStartWithUsp[client]), BooltoInt(g_bHideChat[client]), BooltoInt(g_bViewModel[client]), BooltoInt(g_bCheckpointsEnabled[client]), g_szSteamID[client]);
+		Format(szQuery, 1024, sql_updatePlayerOptions, BooltoInt(g_bInfoPanel[client]), BooltoInt(g_bEnableQuakeSounds[client]), BooltoInt(g_bAutoBhopClient[client]), BooltoInt(g_bShowNames[client]), BooltoInt(g_bGoToClient[client]), BooltoInt(g_bShowTime[client]), BooltoInt(g_bHide[client]), BooltoInt(g_bShowSpecs[client]), "weapon_knife", BooltoInt(g_bStartWithUsp[client]), BooltoInt(g_bHideChat[client]), BooltoInt(g_bViewModel[client]), BooltoInt(g_bCheckpointsEnabled[client]),g_SrSoundId[client] ,g_BrSoundId[client] ,g_BeatSoundId[client] , g_szSteamID[client]);
 		SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, client, DBPrio_Low);
 	}
 }

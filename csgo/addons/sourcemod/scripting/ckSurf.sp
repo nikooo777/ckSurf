@@ -22,6 +22,7 @@
 #include <mapchooser>
 #include <ckSurf>
 #include <ckSurf-misc>
+#include <StealthRevived> 
 
 /*====================================
 =            Declarations            =
@@ -35,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.5.3"
+#define PLUGIN_VERSION "1.20.9"
 
 // Database definitions
 #define MYSQL 0
@@ -89,6 +90,7 @@
 #define MULTI_SERVER_MAPCYCLE "configs/ckSurf/multi_server_mapcycle.txt"
 #define CUSTOM_TITLE_PATH "configs/ckSurf/custom_chat_titles.txt"
 #define SKILLGROUP_PATH "configs/ckSurf/skillgroups.cfg"
+#define CUSTOM_SOUND "configs/ckSurf/custom_sounds.txt"
 
 // Checkpoint definitions
 #define CPLIMIT 35			// Maximum amount of checkpoints in a map
@@ -122,6 +124,8 @@
 // Title definitions
 #define TITLE_COUNT 23		// The amount of custom titles that can be configured in custom_chat_titles.txt
 
+// Sound Defintions
+#define SOUND_COUNT 100	// The amount of custom sounds that can be added to db. 
 /*====================================
 =            Enumerations            =
 ====================================*/
@@ -226,6 +230,16 @@ bool g_bAdminFlagTitlesTemp[MAXPLAYERS + 1][TITLE_COUNT]; 		// Which title admin
 int g_iAdminSelectedClient[MAXPLAYERS + 1]; 					// Which clientid did the admin select
 int g_iAdminEditingType[MAXPLAYERS + 1]; 						// What the admin is editing
 
+
+/*----------  Custom Sounds  ----------*/
+char g_szSoundPath[SOUND_COUNT][128];
+char g_szSoundName[SOUND_COUNT][128];
+int g_iSoundCost[SOUND_COUNT];
+int g_iSoundType[SOUND_COUNT];
+int g_iSoundPerm[SOUND_COUNT];
+int g_iBuyingMenuLookup[MAXPLAYERS + 1][SOUND_COUNT];
+int g_iBuyingMenuType[MAXPLAYERS + 1];
+int g_iCustomSoundCount; 										// How many custom Sounds are loaded
 /*----------  VIP Variables  ----------*/
 // Enable VIP CVar
 //bool g_bServerVipCommand;
@@ -438,10 +452,6 @@ ConVar g_hSpeedPreSpeed = null; 								// Speed Start zone speed cap
 ConVar g_hBonusPreSpeed = null; 								// Bonus start zone speed cap
 ConVar g_hSoundEnabled = null; 									// Enable timer start sound
 ConVar g_hSoundPath = null;										// Define start sound
-ConVar g_hSoundRecordBonus = null;								// Sound for beating bonus record
-ConVar g_hSoundRecordMap = null;								// Sound for beating map record
-ConVar g_hSoundRecordBeat = null;								// Sound for beating your own record
-//char sSoundPath[64];
 ConVar g_hSpawnToStartZone = null; 								// Teleport on spawn to start zone 
 ConVar g_hAnnounceRank = null; 									// Min rank to announce in chat
 ConVar g_hForceCT = null; 										// Force players CT
@@ -495,6 +505,12 @@ bool g_bAutoBhopClient[MAXPLAYERS + 1]; 						// Use auto bhop?
 bool g_borg_AutoBhopClient[MAXPLAYERS + 1];
 bool g_bInfoPanel[MAXPLAYERS + 1]; 								// Client is showing the info panel
 bool g_borg_InfoPanel[MAXPLAYERS + 1];
+int g_SrSoundId[MAXPLAYERS + 1]; 
+int g_BrSoundId[MAXPLAYERS + 1]; 
+int g_BeatSoundId[MAXPLAYERS + 1]; 
+int g_orgSrSoundId[MAXPLAYERS + 1]; 
+int g_orgBrSoundId[MAXPLAYERS + 1]; 
+int g_orgBeatSoundId[MAXPLAYERS + 1]; 
 
 /*----------  Run Variables  ----------*/
 float g_fPersonalRecord[MAXPLAYERS + 1];						// Clients personal record in map
@@ -602,9 +618,6 @@ char g_szCountry[MAXPLAYERS + 1][100];							// Country codes
 char g_szCountryCode[MAXPLAYERS + 1][16];						// Country codes
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
 char g_BlockedChatText[256][256];								// Blocked chat commands
-char g_szSoundRecordBonus[64];									// Sound for beating bonus record
-char g_szSoundRecordMap[64];										// Sound for beating map record
-char g_szSoundRecordBeat[64];									// Sound for beating your own record
 float g_fLastOverlay[MAXPLAYERS + 1];							// Last time an overlay was displayed
 int g_iAnimate;													// Counts seconds in order to allow for animating displays.
 int g_iAdvert;													// Counts seconds in order to allow for adverts which update differntly to displays.
@@ -848,6 +861,7 @@ public void OnMapStart()
 	*/
 	if (!g_bRenaming && !g_bInTransactionChain/* && IsServerProcessing()*/)
 	{
+		
 		db_selectMapZones();
 	}
 
@@ -863,7 +877,7 @@ public void OnMapStart()
 	// load configs
 	loadHiddenChatCommands();
 	loadCustomTitles();
-	
+	loadCustomSounds();
 	CheatFlag("bot_zombie", false, true);
 	for (int i = 0; i < MAXZONEGROUPS; i++)
 	{
@@ -874,6 +888,7 @@ public void OnMapStart()
 	
 	//precache
 	InitPrecache();
+	//soundPrecache();
 	SetCashState();
 
 	//timers
@@ -1735,9 +1750,6 @@ public void OnPluginStart()
 	g_hSpawnToStartZone = CreateConVar("ck_spawn_to_start_zone", "1.0", "1 = Automatically spawn to the start zone when the client joins the team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundEnabled = CreateConVar("ck_startzone_sound_enabled", "1.0", "Enable the sound after leaving the start zone", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hSoundPath = CreateConVar("ck_startzone_sound_path", "buttons\\button3.wav", "The path to the sound file that plays after the client leaves the start zone", FCVAR_NOTIFY);
-	g_hSoundRecordBonus = CreateConVar("ck_sound_record_bonus", "quake/holyshit.mp3", "The path to the sound file that plays after beating the bonus record", FCVAR_NOTIFY);
-	g_hSoundRecordMap = CreateConVar("ck_sound_record_map", "quake/wickedsick.mp3", "The path to the sound file that plays after beating the map record", FCVAR_NOTIFY);
-	g_hSoundRecordBeat = CreateConVar("ck_sound_record_beat", "quake/unstoppable.mp3", "The path to the sound file that plays after beating your record", FCVAR_NOTIFY);
 	g_hAnnounceRank = CreateConVar("ck_min_rank_announce", "0", "Higher ranks than this won't be announced to the everyone on the server. 0 = Announce all records", FCVAR_NOTIFY, true, 0.0);
 	g_hAnnounceRecord = CreateConVar("ck_chat_record_type", "0", "0: Announce all times to chat, 1: Only announce PB's to chat, 2: Only announce SR's to chat", FCVAR_NOTIFY, true, 0.0, true, 2.0);
 	g_hForceCT = CreateConVar("ck_force_players_ct", "0", "Forces all players to join the CT team", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -1963,7 +1975,11 @@ public void OnPluginStart()
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");
 	RegConsoleCmd("sm_nc", Command_ckNoClip, "[ckSurf] Player noclip on/off");
-
+	RegConsoleCmd("sm_sshop", Command_sound, "[ckSurf] Sound Shop"); 
+	RegConsoleCmd("sm_sshop", Command_sound, "[ckSurf] Sound Shop");
+	RegConsoleCmd("sm_soundshop", Command_sound, "[ckSurf] Sound Shop"); 	
+	RegConsoleCmd("sm_csound", Command_sound, "[ckSurf] Sound Shop"); 
+	RegConsoleCmd("sm_customsound", Command_sound, "[ckSurf] Sound Shop"); 
 	// Teleportation commands
 	RegConsoleCmd("sm_stages", Command_SelectStage, "[ckSurf] Opens up the stage selector");
 	RegConsoleCmd("sm_r", Command_Restart, "[ckSurf] Teleports player back to the start");

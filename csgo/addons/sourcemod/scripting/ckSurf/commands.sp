@@ -2645,9 +2645,9 @@ public void OptionMenu(int client)
 		menu.AddItem("Hide Players  -  Disabled", "Hide other players  -  Disabled");
 	// #1
 	if (g_bEnableQuakeSounds[client])
-		menu.AddItem("Quake sounds - Enabled", "Quake sounds - Enabled");
+		menu.AddItem("Custom sounds - Enabled", "Custom sounds - Enabled");
 	else
-		menu.AddItem("Quake sounds - Disabled", "Quake sounds - Disabled");
+		menu.AddItem("Custom sounds - Disabled", "Custom sounds - Disabled");
 	// #2
 	if (g_bShowTime[client])
 		menu.AddItem("Show Timer  -  Enabled", "Show timer text  -  Enabled");
@@ -2777,4 +2777,269 @@ public Action Client_InfoPanel(int client, int args)
 public void InfoPanel(int client)
 {
 	g_bInfoPanel[client] = !g_bInfoPanel[client];
+}
+public Action Command_sound(int client, int args)
+{
+	SoundMenu(client);
+	return Plugin_Handled;
+}
+
+public void SoundMenu(int client)
+{
+	Menu menu = new Menu(SoundMenuHandler);
+	menu.SetTitle("KZG - Sound Menu\n\nMap Record and Bonus record sound\nwill be played in the server\nto all players when you beat a record.\n\nPersonal Record sound will just be played\nTo you if you beat your own record.");
+	char Sound[128];
+	Format(Sound, 128, "Map record Sound: %s", g_szSoundName[g_SrSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	Format(Sound, 128, "Bonus record Sound: %s", g_szSoundName[g_BrSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	Format(Sound, 128, "Personal record Sound: %s", g_szSoundName[g_BeatSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	menu.OptionFlags = MENUFLAG_BUTTON_EXIT;
+	
+	DisplayMenuAtItem(menu, client, 0, MENU_TIME_FOREVER);
+}
+public int SoundMenuHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		switch (param2)
+		{
+			case 0:SoundMenu2(param1, 0);
+			case 1:SoundMenu2(param1, 1);
+			case 2:SoundMenu2(param1, 2);
+		}
+		
+	}
+}
+
+public void SoundMenu2(int client, int type)
+{
+	
+	Menu menu = new Menu(SoundMenu2Handler);
+	
+	switch(type)
+	{
+		case 0:drawSrMenu(menu, client);
+		case 1:drawBrMenu(menu, client);
+		case 2:drawBeatMenu(menu, client);
+	}
+	
+	//TODO Utilise variables to track what menu your in, and if to show up to a player.
+	menu.OptionFlags = MENUFLAG_BUTTON_EXIT;
+	DisplayMenuAtItem(menu, client, 0, MENU_TIME_FOREVER);
+}
+public void drawSrMenu(Menu menu, int client)
+{
+	menu.SetTitle("KZG - Server Record\n Custom Sound Menu");
+	g_iBuyingMenuType[client] = 0;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+		
+		
+		if (g_iSoundType[i] == 0 || g_iSoundType[i] == 3 || g_iSoundType[i] == 4 || g_iSoundType[i] == 5)
+		{
+			//Sound needs to be added to lookup
+			g_iBuyingMenuLookup[client][addindex] = i;	
+			addindex++;		
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) ADMIN", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+	}
+}
+public void drawBrMenu(Menu menu, int client)
+{
+	menu.SetTitle("KZG - Bonus Record\n Custom Sound Menu");
+	g_iBuyingMenuType[client] = 1;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+
+		
+		if (g_iSoundType[i] == 1 || g_iSoundType[i] == 3 || g_iSoundType[i] == 4 || g_iSoundType[i] == 6)
+		{
+			//Sound needs to be added to lookup
+			
+			g_iBuyingMenuLookup[client][addindex] = i;	
+			addindex++;
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) ADMIN", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+	}
+}
+public void drawBeatMenu(Menu menu, int client)
+{
+	
+
+	menu.SetTitle("KZG - Personal Record\n Custom Sound Menu");
+	g_iBuyingMenuType[client] = 2;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+
+		
+		if (g_iSoundType[i] == 2 || g_iSoundType[i] == 4 || g_iSoundType[i] == 6 || g_iSoundType[i] == 5)
+		{
+			//Sound needs to be added to lookup
+			
+			g_iBuyingMenuLookup[client][addindex] = i;
+			//1 0 = 3
+			
+			addindex++;
+			//TODO Add in credit system for buying titles.
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) STAFF", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+		
+	}
+}
+public int SoundMenu2Handler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		//g_iBuyingMenuLookup[client][i]
+		//setSrSound(param1, param2)
+		//Adding client with 3 at 1
+		//Adding client with 4 at 2
+		//SelectedSound 0, MenuNumber 1
+		int client = param1;
+		int selectedSound = g_iBuyingMenuLookup[param1][param2];
+		bool buyable = true;
+		if (g_iSoundType[selectedSound] == 1)
+			{
+			if (!g_bflagTitles[client][0])
+				{
+					PrintToChat(client, "[%c%s%c] This custom sound requires the VIP title.", MOSSGREEN, g_szChatPrefix, WHITE);
+					buyable = false;
+					
+				}
+			}
+		else if (g_iSoundType[selectedSound] == 2)
+			{
+			if (!CheckCommandAccess(client, "sm_mute", ADMFLAG_GENERIC, false)) 
+				{
+					PrintToChat(client, "[%c%s%c] This custom sound requires Staff.", MOSSGREEN, g_szChatPrefix, WHITE);
+					buyable = false;
+					
+				}
+			}
+		if(buyable)
+		{
+			switch(g_iBuyingMenuType[param1])
+			{
+				case 0:setSrSound(param1, selectedSound)
+				case 1:setBrSound(param1, selectedSound)
+				case 2:setBeatSound(param1, selectedSound)
+			}
+		}	
+	}
+}
+
+public void setSrSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %cServer Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_SrSoundId[client] = soundId;
+	TestRecordSound(client)
+}
+public void setBrSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Bonus Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_BrSoundId[client] = soundId;
+	TestBonusSound(client);
+}
+public void setBeatSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Personal Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_BeatSoundId[client] = soundId;
+	TestBeatSound(client);
+}
+
+
+public void TestRecordSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_SrSoundId[client]]);
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
+}
+public void TestBonusSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BrSoundId[client]]);
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
+}
+public void TestBeatSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BeatSoundId[client]]);
+	PrintToChat(client, buffer);
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
 }

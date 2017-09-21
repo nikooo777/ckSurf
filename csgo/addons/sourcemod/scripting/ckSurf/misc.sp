@@ -597,6 +597,44 @@ public bool loadCustomTitles()
 	return true;
 }
 
+
+public bool loadCustomSounds()
+{
+	//char g_szSoundPath[SOUND_COUNT][128];
+	//char g_szSoundName[SOUND_COUNT][128];
+	//int g_iSoundCost[SOUND_COUNT][128];
+	//int g_iSoundType[SOUND_COUNT][128];
+	//int g_iSoundPerm[SOUND_COUNT][128];
+	char sPath[PLATFORM_MAX_PATH];
+	
+	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", CUSTOM_SOUND);
+
+	Handle kv = CreateKeyValues("Custom Sounds");
+	FileToKeyValues(kv, sPath);
+	
+	if (!KvGotoFirstSubKey(kv))
+	{
+		
+		return false;
+	}
+
+	for (int i = 0; i < TITLE_COUNT; i++)
+	{
+		
+		KvGetString(kv, "sound_path", g_szSoundPath[i], 128);
+		KvGetString(kv, "sound_name", g_szSoundName[i], 128);
+		g_iSoundCost[i] = KvGetNum(kv, "sound_cost");
+		g_iSoundType[i] = KvGetNum(kv, "sound_type");
+		g_iSoundPerm[i] = KvGetNum(kv, "sound_perm");
+		
+		
+		if (!KvGotoNextKey(kv))
+			break;
+	}
+	CloseHandle(kv);
+	return true;
+}
+
 public void normalizeChatString(char[] ParseString, int size)
 {
 	//players are using special ASCII chars to simulate 0x** colors
@@ -1423,6 +1461,9 @@ public void SetClientDefaults(int client)
 	g_bViewModel[client] = true;
 	g_bCheckpointsEnabled[client] = true;
 	g_bEnableQuakeSounds[client] = true;
+	g_orgSrSoundId[client] = 0; 
+  	g_orgBrSoundId[client] = 1; 
+  	g_orgBeatSoundId[client] = 2; 
 }
 
 public void clearPlayerCheckPoints(int client)
@@ -1465,69 +1506,80 @@ public void SetCashState()
 	}
 }
 
-public void PlayRecordSound(int iRecordtype)
+public void PlayRecordSound(int iRecordtype, int client)
 {
 	char buffer[255];
-	if (iRecordtype == 1)
+	if (iRecordtype == 0)
 	{
 		for (int i = 1; i <= GetMaxClients(); i++)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i) && g_bEnableQuakeSounds[i] == true)
 			{
-				Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordBonus);
+				Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_SrSoundId[client]]);
 				ClientCommand(i, buffer);
 			}
 		}
 	}
-	else
-		if (iRecordtype == 2)
+	else if (iRecordtype == 1)
 	{
 		for (int i = 1; i <= GetMaxClients(); i++)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i) && g_bEnableQuakeSounds[i] == true)
 			{
-				Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordMap);
+				Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BrSoundId[client]]);
 				ClientCommand(i, buffer);
 			}
 		}
 	}
-}
-
-public void PlayUnstoppableSound(int client)
-{
-	char buffer[255];
-	Format(buffer, sizeof(buffer), "play *%s", g_szSoundRecordBeat);
-	if (!IsFakeClient(client) && g_bEnableQuakeSounds[client])
-		ClientCommand(client, buffer);
-	//spec stop sound
-	for (int i = 1; i <= MaxClients; i++)
+	else if  (iRecordtype == 2)
 	{
-		if (IsValidClient(i) && !IsPlayerAlive(i))
+		Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BeatSoundId[client]]);
+		if (!IsFakeClient(client) && g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		//spec stop sound
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			int SpecMode = GetEntProp(i, Prop_Send, "m_iObserverMode");
-			if (SpecMode == 4 || SpecMode == 5)
+			if (IsValidClient(i) && !IsPlayerAlive(i))
 			{
-				int Target = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
-				if (Target == client && g_bEnableQuakeSounds[i])
-					ClientCommand(i, buffer);
+				int SpecMode = GetEntProp(i, Prop_Send, "m_iObserverMode");
+				if (SpecMode == 4 || SpecMode == 5)
+				{
+					int Target = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
+					if (Target == client && g_bEnableQuakeSounds[i])
+						ClientCommand(i, buffer);
+				}
 			}
 		}
 	}
+	
 }
 
 public void InitPrecache()
 {
-	g_hSoundRecordBonus.GetString(g_szSoundRecordBonus, sizeof(g_szSoundRecordBonus));
-	g_hSoundRecordMap.GetString(g_szSoundRecordMap, sizeof(g_szSoundRecordMap));
-	g_hSoundRecordBeat.GetString(g_szSoundRecordBeat, sizeof(g_szSoundRecordBeat));
-
-	AddSoundToDownloadsTable(g_szSoundRecordBeat);
-	FakePrecacheSound(g_szSoundRecordBeat);
-	AddSoundToDownloadsTable(g_szSoundRecordMap);
-	FakePrecacheSound(g_szSoundRecordMap);
-	AddSoundToDownloadsTable(g_szSoundRecordBonus);
-	FakePrecacheSound(g_szSoundRecordBonus);
-
+	
+	g_iCustomSoundCount = 0;
+	for (int i = 0; i < sizeof(g_szSoundPath); i++)
+	{
+		char path[128];
+		Format(path, 128, g_szSoundPath[i]);
+		
+		if(path[0] != EOS)
+			{
+			g_iCustomSoundCount++;
+			PrintToServer("---------------------------------------------------------------------------");
+  			PrintToServer("[%s] Sound ID: %i Path: %s", g_szChatPrefix, i, g_szSoundPath[i]);
+  			
+  			char relativePath[128];
+  			char abspath[128];
+  			Format(relativePath, 128, "*%s", g_szSoundPath[i]);
+  			Format(abspath, 128, "%s", g_szSoundPath[i]);
+  			PrintToServer("Adding: rel: %s abs: %s", relativePath, abspath);
+  			PrintToServer("---------------------------------------------------------------------------");
+  			AddSoundToDownloadsTable(abspath);
+			FakePrecacheSound(abspath);
+  			}
+	}
+	
 	char szBuffer[256];
 	// Replay Player Model
 	GetConVarString(g_hReplayBotPlayerModel, szBuffer, 256);
@@ -1622,7 +1674,7 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 					else
 						if (g_bMapPBRecord[client]) // Own record
 						{
-							PlayUnstoppableSound(client);
+							PlayRecordSound(2, client);
 							PrintToChat(i, "%t", "MapFinished3", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, GREEN, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, g_MapRank[client], WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 							PrintToConsole(i, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], g_MapRank[client], count, g_szRecordMapTime);
 						}
@@ -1635,7 +1687,7 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 
 					if (g_bMapSRVRecord[client])
 					{
-						PlayRecordSound(2);
+						PlayRecordSound(0, client);
 						PrintToChat(i, "%t", "NewMapRecord", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE);
 						PrintToConsole(i, "[%s] %s scored a new MAP RECORD", g_szChatPrefix, szName);
 						char FancyMsg[64]; 
@@ -1657,7 +1709,7 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 				{
 					if (g_bMapPBRecord[client])
 					{
-						PlayUnstoppableSound(client);
+						PlayRecordSound(2, client);
 						PrintToChat(client, "%t", "MapFinished3", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, GREEN, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, g_MapRank[client], WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 						PrintToConsole(client, "%s finished the map with a time of (%s). Improving their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], g_MapRank[client], count, g_szRecordMapTime);
 					}
@@ -1777,7 +1829,7 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 	{
 		if (g_bBonusSRVRecord[client])
 		{
-			PlayRecordSound(1);
+			PlayRecordSound(1, client);
 			
 			RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
 			FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
@@ -1804,7 +1856,7 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		}
 		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
 		{
-			PlayUnstoppableSound(client);
+			PlayRecordSound(2, client);
 			PrintToChatAll("%t", "BonusFinished6", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_szBonusTimeDifference[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
 		}
 		if (g_bBonusFirstRecord[client] && !g_bBonusSRVRecord[client])
@@ -1820,7 +1872,7 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 	{
 		if (g_bBonusSRVRecord[client])
 		{
-			PlayRecordSound(1);
+			PlayRecordSound(1, client);
 			RecordDiff = g_fOldBonusRecordTime[zGroup] - g_fFinalTime[client];
 			FormatTimeFloat(client, RecordDiff, 3, szRecordDiff, 54);
 			Format(szRecordDiff, 54, "-%s", szRecordDiff);
@@ -1840,7 +1892,7 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		}
 		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
 		{
-			PlayUnstoppableSound(client);
+			PlayRecordSound(2 , client);
 			PrintToChat(client, "%t", "BonusFinished6", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, g_szBonusTimeDifference[client], GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szBonusFastestTime[zGroup], WHITE);
 		}
 		if (g_bBonusFirstRecord[client] && !g_bBonusSRVRecord[client])
@@ -2549,6 +2601,8 @@ public void SpecListMenuDead(int client) // What Spectators see
 						ObservedUser2 = GetEntPropEnt(x, Prop_Send, "m_hObserverTarget");
 						if (ObservedUser == ObservedUser2)
 						{
+						if (!SR_IsClientStealthed(x)) 
+             				{ 
 							count++;
 							//strip backslashes from names (causes lags and crashes?)
 							char cleanName[MAX_NAME_LENGTH];
@@ -2556,6 +2610,7 @@ public void SpecListMenuDead(int client) // What Spectators see
 							ReplaceString(cleanName,sizeof(cleanName),"\\","",false);
 							if (count < 6)
 								Format(sSpecs, 512, "%s%s\n", sSpecs, cleanName);
+							}
 						}
 						if (count == 6)
 							Format(sSpecs, 512, "%s...", sSpecs);
@@ -2578,7 +2633,6 @@ public void SpecListMenuDead(int client) // What Spectators see
 				else
 					Format(szPlayerRank, 32, "Rank: NA / %i", g_pr_RankedPlayers);
 			}
-
 			if (g_fPersonalRecord[ObservedUser] > 0.0)
 			{
 				FormatTimeFloat(client, g_fPersonalRecord[ObservedUser], 3, szTime2, sizeof(szTime2));
@@ -2680,7 +2734,6 @@ public void SpecListMenuDead(int client) // What Spectators see
 
 public void SpecListMenuAlive(int client) // What player sees
 {
-
 	if (IsFakeClient(client) || !g_bShowSpecs[client] || GetClientMenu(client) != MenuSource_None)
 		return;
 
@@ -2702,10 +2755,12 @@ public void SpecListMenuAlive(int client) // What player sees
 				Target = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
 				if (Target == client)
 				{
+				if (!SR_IsClientStealthed(i))  
+                	{ 
 					count++;
 					if (count < 6)
 						Format(sSpecs, 512, "%s%N\n", sSpecs, i);
-
+					}
 				}
 				if (count == 6)
 					Format(sSpecs, 512, "%s...", sSpecs);
