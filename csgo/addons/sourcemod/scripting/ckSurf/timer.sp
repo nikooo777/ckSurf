@@ -152,12 +152,26 @@ public Action AttackTimer(Handle timer)
 	}
 	return Plugin_Continue;
 }
-
+public Action tierTimer(Handle timer)
+{
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (IsValidClient(client))
+		{	
+			if(!g_bTierFound[0])
+			{
+				PrintToChat(client, "[%c%s%c] %cPlease give this map a tier. write %c!at <tiernumber>%c.", MOSSGREEN, g_szChatPrefix, WHITE, RED, YELLOW,RED);
+			}
+		}
+	}
+	return Plugin_Continue;
+}
 public Action CKTimer1(Handle timer)
 {
 	if (g_bRoundEnd)
 		return Plugin_Continue;
-
+	
+	
 	for (int client = 1; client <= MaxClients; client++)
 	{
 		if (IsValidClient(client))
@@ -205,6 +219,8 @@ public Action animateTimer(Handle timer)
 	{
 		g_iAnimate++;
 	}
+	
+	
 }
 
 public Action advertTimer(Handle timer)
@@ -348,7 +364,11 @@ public Action CKTimer2(Handle timer)
 	}
 	return Plugin_Continue;
 }
-
+public Action Timer_checkforrecord(Handle timer)
+{
+	db_CheckLatestRecords()
+	return Plugin_Continue;
+}
 //challenge start countdown
 public Action Timer_Countdown(Handle timer, any serial)
 {
@@ -356,6 +376,9 @@ public Action Timer_Countdown(Handle timer, any serial)
 	if (IsValidClient(client) && g_bChallenge[client] && !IsFakeClient(client))
 	{
 		PrintToChat(client, "[%c%s%c] %c%i", RED, g_szChatPrefix, WHITE, YELLOW, g_CountdownTime[client]);
+		ClientCommand(client, "play buttons\\bell1.wav");
+		SetEntityMoveType(client, MOVETYPE_NONE);
+		
 		g_CountdownTime[client]--;
 		if (g_CountdownTime[client] <= 0)
 		{
@@ -363,6 +386,8 @@ public Action Timer_Countdown(Handle timer, any serial)
 			PrintToChat(client, "%t", "ChallengeStarted1", RED, g_szChatPrefix, WHITE, YELLOW);
 			PrintToChat(client, "%t", "ChallengeStarted2", RED, g_szChatPrefix, WHITE, YELLOW);
 			PrintToChat(client, "%t", "ChallengeStarted3", RED, g_szChatPrefix, WHITE, YELLOW);
+			ClientCommand(client, "play animation\\jets\\jet_sonicboom_03.wav");
+			Command_Restart(client, 1);
 			return Plugin_Stop;
 		}
 	}
@@ -442,8 +467,11 @@ public Action CheckChallenge(Handle timer, any serial)
 
 			//chat msgs
 			if (IsValidClient(client))
+			{	
 				PrintToChat(client, "%t", "ChallengeWon", RED, g_szChatPrefix, WHITE, YELLOW, WHITE);
-
+				ClientCommand(client, "play weapons\\party_horn_01.wav");
+				
+			}
 			return Plugin_Stop;
 		}
 	}
@@ -511,6 +539,7 @@ public Action BotRestartTimer(Handle timer)
 }
 
 
+
 public Action WelcomeMsgTimer(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
@@ -534,6 +563,7 @@ public Action HelpMsgTimer(Handle timer, any serial)
 public Action AdvertTimer(Handle timer, any serial)
 {
 	g_Advert++;
+	
 	if ((g_Advert % 2) == 0)
 	{
 		if (g_bhasBonus)

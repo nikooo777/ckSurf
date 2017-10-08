@@ -1084,7 +1084,7 @@ public void PlayButtonSound(int client)
 	{
 		char buffer[255];
 		GetConVarString(g_hSoundPath, buffer, 255);
-		Format(buffer, sizeof(buffer), "play *%s", buffer);
+		Format(buffer, sizeof(buffer), "play %s", buffer);
 		ClientCommand(client, buffer);
 	}
 
@@ -1101,7 +1101,7 @@ public void PlayButtonSound(int client)
 				{
 					char szsound[255];
 					GetConVarString(g_hSoundPath, szsound, 256);
-					Format(szsound, sizeof(szsound), "play *%s", szsound);
+					Format(szsound, sizeof(szsound), "play %s", szsound);
 					ClientCommand(i, szsound);
 				}
 			}
@@ -1787,10 +1787,9 @@ void LchatBR(const char[] message)
 void HudMessage(int client, const char[] color,const char[] color2, const char[] effect, const char[] channel, const char[] message, const char[] posx, const char[] posy, const char[] fadein, const char[] fadeout, const char[] holdtime)
 {
 	
-  if(IsValidEntity(iGameText) == false)
-  {
-    iGameText = CreateEntityByName("game_text");
-  }
+  char szHoldTime[32];
+  Format(szHoldTime, sizeof(szHoldTime), "!self,Kill,,%s,-1", holdtime);
+  int iGameText = CreateEntityByName("game_text");
   DispatchKeyValue(iGameText, "channel", channel);
   DispatchKeyValue(iGameText, "color", color);
   DispatchKeyValue(iGameText, "color2", color2);
@@ -1806,6 +1805,8 @@ void HudMessage(int client, const char[] color,const char[] color2, const char[]
   DispatchSpawn(iGameText);
   SetVariantString("!activator");
   AcceptEntityInput(iGameText,"display",client);
+  DispatchKeyValue(iGameText, "OnUser1", szHoldTime);
+  AcceptEntityInput(iGameText, "FireUser1");
 
 }
 

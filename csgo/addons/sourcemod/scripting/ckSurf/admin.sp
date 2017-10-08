@@ -384,13 +384,46 @@ public Action Admin_insertMapTier(int client, int args)
 		tier = StringToInt(arg1);
 		GetCmdArg(1, arg1, sizeof(arg1));
 		zonegroup = StringToInt(arg1);
-		if ((tier < 7 || tier > 0) && (-1 < zonegroup < g_mapZoneGroupCount))
+		if ((tier < 8 || tier > 0) && (-1 < zonegroup < g_mapZoneGroupCount))
+		{
 			db_insertMapTier(tier, zonegroup);
+			PrintToChat(client, "[%c%s%c] Set map tier to: %i.", MOSSGREEN, g_szChatPrefix, WHITE, tier);
+		}
 		else
-			PrintToChat(client, "[%c%s%c] Invalid tier number or zone group. Please choose a tier number between 1-6 and a valid zone group.", MOSSGREEN, g_szChatPrefix, WHITE);
+			PrintToChat(client, "[%c%s%c] Invalid tier number or zone group. Please choose a tier number between 1-7 and a valid zone group.", MOSSGREEN, g_szChatPrefix, WHITE);
 	}
 	return Plugin_Handled;
 }
+
+public Action Admin_insertTier(int client, int args)
+{
+	if (!IsValidClient(client))
+		return Plugin_Handled;
+
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[CK] Usage: sm_at <Tier>");
+		
+	}
+	if (args > 0)
+	{
+		char arg1[3];
+		int tier, zonegroup;
+		GetCmdArg(1, arg1, sizeof(arg1));
+		tier = StringToInt(arg1);
+		
+		zonegroup = 0;
+		if ((tier < 8 || tier > 0) && (-1 < zonegroup < g_mapZoneGroupCount))
+		{
+			db_insertMapTier(tier, zonegroup);
+			PrintToChat(client, "[%c%s%c] Set map tier to: %i.", MOSSGREEN, g_szChatPrefix, WHITE, tier);
+		}
+		else
+			PrintToChat(client, "[%c%s%c] Invalid tier number. Please choose a tier number between 1-7.", MOSSGREEN, g_szChatPrefix, WHITE);
+	}
+	return Plugin_Handled;
+}
+
 
 public Action Admin_insertSpawnLocation(int client, int args)
 {

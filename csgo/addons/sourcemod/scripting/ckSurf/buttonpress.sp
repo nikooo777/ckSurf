@@ -1,3 +1,25 @@
+void showServerLoadingMenu(int from, char[] message)
+{
+	char title[100];
+	Format(title, 64, "[%s]", g_szChatPrefix);
+	
+	ReplaceString(message, 192, "\\n", "\n");
+	
+	Panel mSayPanel = new Panel();
+	mSayPanel.SetTitle(title);
+	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
+	mSayPanel.DrawText(message);
+	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
+	mSayPanel.CurrentKey = GetMaxPageItems(GetPanelStyle(mSayPanel));
+	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
+	mSayPanel.Send(from, Handler_DoNothing, 10);
+	delete mSayPanel;
+}
+public int Handler_DoNothing(Menu menu, MenuAction action, int param1, int param2)
+{
+	/* Do nothing */
+}
+
 // Start timer
 public void CL_OnStartTimerPress(int client)
 {
@@ -11,7 +33,8 @@ public void CL_OnStartTimerPress(int client)
 			if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 			{
 				PrintToChat(client, "[%c%s%c] The server hasn't finished loading it's settings, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
-				ClientCommand(client, "play buttons\\button10.wav");
+				showServerLoadingMenu(client, "The server hasn't finished loading it's settings, please wait.");
+				ClientCommand(client, "play buttons\\weapon_cant_buy.wav");
 				g_fErrorMessage[client] = GetGameTime();
 			}
 			return;
@@ -21,7 +44,8 @@ public void CL_OnStartTimerPress(int client)
 			if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 			{
 				PrintToChat(client, "[%c%s%c] Your settings are currently being loaded, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
-				ClientCommand(client, "play buttons\\button10.wav");
+				showServerLoadingMenu(client, "Your settings are currently being loaded, please wait.");
+				ClientCommand(client, "play buttons\\weapon_cant_buy.wav");
 				g_fErrorMessage[client] = GetGameTime();
 			}
 			return;
@@ -31,7 +55,8 @@ public void CL_OnStartTimerPress(int client)
 			if (GetGameTime() - g_fErrorMessage[client] > 1.0)
 			{
 				PrintToChat(client, "[%c%s%c] The server hasn't finished loading your settings, please wait.", MOSSGREEN, g_szChatPrefix, WHITE);
-				ClientCommand(client, "play buttons\\button10.wav");
+				showServerLoadingMenu(client, "The server hasn't finished loading your settings, please wait.");
+				ClientCommand(client, "play buttons\\weapon_cant_buy.wav");
 				g_fErrorMessage[client] = GetGameTime();
 			}
 			return;
@@ -293,22 +318,30 @@ public void CL_OnEndTimerPress(int client)
 				{
 					if (StrEqual(g_szSteamID[i], g_szChallenge_OpponentID[client]))
 					{
-						g_bChallenge[client] = false;
-						g_bChallenge[i] = false;
-						SetEntityRenderColor(i, 255, 255, 255, 255);
-						db_insertPlayerChallenge(client);
-						GetClientName(i, opponentName, MAX_NAME_LENGTH);
-						PrintToChatAll("%t", "ChallengeW", RED, g_szChatPrefix, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
-
-						if (g_Challenge_Bet[client] > 0)
+						if (g_CountdownTime[client] <= 0)
 						{
-							int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
-							PrintToChatAll("%t", "ChallengeL", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
-							RequestFrame(UpdatePlayerProfile, GetClientSerial(i));
-							g_pr_showmsg[client] = true;
+							g_bChallenge[client] = false;
+							g_bChallenge[i] = false;
+							SetEntityRenderColor(i, 255, 255, 255, 255);
+							db_insertPlayerChallenge(client);
+							GetClientName(i, opponentName, MAX_NAME_LENGTH);
+							PrintToChatAll("%t", "ChallengeW", RED, g_szChatPrefix, WHITE, MOSSGREEN, clientName, WHITE, MOSSGREEN, opponentName, WHITE);
+							for (int b = 1; b <= MaxClients; b++)
+							{
+								ClientCommand(b, "play weapons\\party_horn_01.wav");
+							}									
+							if (g_Challenge_Bet[client] > 0)
+							{
+								int lostpoints = g_Challenge_Bet[client] * g_pr_PointUnit;
+								PrintToChatAll("%t", "ChallengeL", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE, opponentName, GRAY, RED, lostpoints, GRAY);
+								RequestFrame(UpdatePlayerProfile, GetClientSerial(i));
+								g_pr_showmsg[client] = true;
+							}
+							break;
 						}
-
-						break;
+						else
+							PrintToChat(client, "[%c%s%c] %cCheater! %cFinishing the challenge before it began. %c Back to the start for you.", MOSSGREEN, g_szChatPrefix, WHITE, DARKRED, RED, DARKRED);
+							
 					}
 				}
 			}

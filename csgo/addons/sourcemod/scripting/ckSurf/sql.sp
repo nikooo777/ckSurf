@@ -73,8 +73,9 @@ char sql_deleteCheckpoints[] = "DELETE FROM ck_checkpoints WHERE mapname = '%s'"
 
 //TABLE LATEST 15 LOCAL RECORDS
 char sql_createLatestRecords[] = "CREATE TABLE IF NOT EXISTS ck_latestrecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date));";
-char sql_insertLatestRecords[] = "INSERT INTO ck_latestrecords (steamid, name, runtime, map) VALUES('%s','%s','%f','%s');";
-char sql_selectLatestRecords[] = "SELECT name, runtime, map, date FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
+char sql_insertLatestRecords[] = "INSERT INTO ck_latestrecords (steamid, name, runtime, map, servername) VALUES('%s','%s','%f','%s', '%s');";
+char sql_selectLatestRecords[] = "SELECT name, runtime, map, date, servername FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
+char sql_select30SecondRecords[] = "SELECT name, runtime, map, date, servername FROM ck_latestrecords WHERE date >= NOW() - INTERVAL 10 second ORDER BY date DESC";
 
 //TABLE PLAYEROPTIONS
 char sql_createPlayerOptions[] = "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', checkpoints INT(12) DEFAULT '1', srSound INT(12) NOT NULL  DEFAULT '0', brSound INT(12) NOT NULL DEFAULT '1',  beatSound INT(12) NOT NULL DEFAULT '2',   PRIMARY KEY(steamid));"; 
@@ -241,7 +242,7 @@ public void db_setupDatabase()
   	// - custom pos              // 
   	/////////////////////////////// 
   	SQL_FastQuery(g_hDb, sql_newPlayerOptions);  
-  	
+  	SQL_FastQuery(g_hDb, "ALTER TABLE `ck_latestrecords` ADD `servername` VARCHAR(128);");
   	//if (!SQL_FastQuery(g_hDb, "SELECT soundId FROM ck_sound LIMIT 1"))
   	//{
   		//PrintToServer("---------------------------------------------------------------------------");
@@ -3875,8 +3876,13 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 		g_bSettingsLoaded[client] = true;
 		g_bLoadingSettings[client] = false;
 		if (GetConVarBool(g_hTeleToStartWhenSettingsLoaded))
+		{
 			Command_Restart(client, 1);	
+			PrintToChat(client, "[%c%s%c] Your settings have been loaded. You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
 
+			ClientCommand(client, "play buttons\\weapon_confirm.wav");
+			
+		}
 		// Seach for next client to load
 		for (int i = 1; i < MAXPLAYERS + 1; i++)
 		{
@@ -4056,7 +4062,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 		for (int i = 0; i < 11; i++)
 		{
 			tier = SQL_FetchInt(hndl, i);
-			if (0 < tier < 7)
+			if (0 < tier < 8)
 			{
 				g_bTierFound[i] = true;
 				if (i == 0)
@@ -4070,6 +4076,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 						case 4:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], DARKBLUE, tier, GREEN);
 						case 5:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], RED, tier, GREEN);
 						case 6:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], DARKRED, tier, GREEN);
+						case 7:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], DARKRED, tier, GREEN);
 						default:Format(g_sTierString[0], 512, "%s%cTier %i %c| ", g_sTierString[0], GRAY, tier, GREEN);
 					}
 					switch (tier)
@@ -4079,7 +4086,9 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 						case 3:Format(g_sJustTier, 64, "<font color='#1364dd'>Tier: %i</font>", tier);
 						case 4:Format(g_sJustTier, 64, "<font color='#410dbc'>Tier: %i</font>", tier);
 						case 5:Format(g_sJustTier, 64, "<font color='#efe347'>Tier: %i</font>", tier);
-						case 6:Format(g_sJustTier, 64, "<font color='#990404'>Tier: %i</font>", tier);
+						case 6:Format(g_sJustTier, 64, "<font color='#f75a3b'>Tier: %i</font>", tier);
+						case 7:Format(g_sJustTier, 64, "<font color='#ff2a00'>Tier: %i</font>", tier);
+						
 						
 						default:Format(g_sJustTier, 64, "<font color='#70a83b'>Tier: %i</font>", tier);
 					}
@@ -4104,6 +4113,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 						case 4:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, DARKBLUE, g_szZoneGroupName[i], tier);
 						case 5:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, RED, g_szZoneGroupName[i], tier);
 						case 6:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, DARKRED, g_szZoneGroupName[i], tier);
+						case 7:Format(g_sTierString[i], 512, "[%c%s%c] &c%s Tier: %i", MOSSGREEN, g_szChatPrefix, WHITE, DARKRED, g_szZoneGroupName[i], tier);
 					}
 				}
 			}
@@ -5329,6 +5339,7 @@ public void sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const cha
 	char szMapName[64];
 	char szDate[64];
 	char szTime[32];
+	char szServerName[128];
 	float ftime;
 	PrintToConsole(data, "----------------------------------------------------------------------------------------------------");
 	PrintToConsole(data, "Last map records:");
@@ -5342,7 +5353,8 @@ public void sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const cha
 			FormatTimeFloat(data, ftime, 3, szTime, sizeof(szTime));
 			SQL_FetchString(hndl, 2, szMapName, 64);
 			SQL_FetchString(hndl, 3, szDate, 64);
-			PrintToConsole(data, "%s: %s on %s - Time %s", szDate, szName, szMapName, szTime);
+			SQL_FetchString(hndl, 4, szServerName, 128);
+			PrintToConsole(data, "%s: %s on %s - Time %s on %s", szDate, szName, szMapName, szTime, szServerName);
 			i++;
 		}
 		if (i == 1)
@@ -5354,10 +5366,57 @@ public void sql_selectLatestRecordsCallback(Handle owner, Handle hndl, const cha
 	PrintToChat(data, "[%c%s%c] See console for output!", MOSSGREEN, g_szChatPrefix, WHITE);
 }
 
+public void db_CheckLatestRecords()
+{
+	SQL_TQuery(g_hDb, sql_checkLatestRecordsCallback, sql_select30SecondRecords, DBPrio_Low);
+}
+
+public void sql_checkLatestRecordsCallback(Handle owner, Handle hndl, const char[] error, any data)
+{
+	if (hndl == null)
+	{
+		LogError("[%s] SQL Error (sql_checkLatestRecordsCallback): %s", g_szChatPrefix, error);
+		return;
+	}
+
+	char szName[64];
+	char szMapName[64];
+	char szDate[64];
+	char szTime[32];
+	char szServerName[128];
+	float ftime;
+	
+	if (SQL_HasResultSet(hndl) && (SQL_GetRowCount(hndl) != 0))
+	{
+		
+		int i = 1;
+		while (SQL_FetchRow(hndl))
+		{	
+			SQL_FetchString(hndl, 0, szName, 64);
+			ftime = SQL_FetchFloat(hndl, 1);
+			FormatTimeFloat(data, ftime, 3, szTime, sizeof(szTime));
+			SQL_FetchString(hndl, 2, szMapName, 64);
+			SQL_FetchString(hndl, 3, szDate, 64);
+			SQL_FetchString(hndl, 4, szServerName, 128);
+			if(!StrEqual(szServerName, g_szServerNameBrowser))
+			{
+				PrintToChatAll("%c %c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+				PrintToChatAll("　　　　　　　　[%c%s%c] %Announcement", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);
+				PrintToChatAll("　");
+				PrintToChatAll("%c %c%s%c has beaten the %c%s %cMAP RECORD%c with a time of %c%s%c in the %c%s",MOSSGREEN, LIMEGREEN, szName, GRAY, LIMEGREEN, szMapName, DARKBLUE, GRAY, LIMEGREEN, szTime , GRAY, LIMEGREEN, szServerName);
+				PrintToChatAll("　");
+				PrintToChatAll("%c %c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+			}
+			i++;
+		}
+		
+	}
+}
+
 public void db_InsertLatestRecords(char szSteamID[32], char szName[32], float FinalTime)
 {
 	char szQuery[512];
-	Format(szQuery, 512, sql_insertLatestRecords, szSteamID, szName, FinalTime, g_szMapName);
+	Format(szQuery, 512, sql_insertLatestRecords, szSteamID, szName, FinalTime, g_szMapName, g_szServerNameBrowser);
 	SQL_TQuery(g_hDb, SQL_CheckCallback, szQuery, DBPrio_Low);
 }
 
