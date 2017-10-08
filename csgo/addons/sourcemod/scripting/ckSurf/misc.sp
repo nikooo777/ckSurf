@@ -600,11 +600,7 @@ public bool loadCustomTitles()
 
 public bool loadCustomSounds()
 {
-	//char g_szSoundPath[SOUND_COUNT][128];
-	//char g_szSoundName[SOUND_COUNT][128];
-	//int g_iSoundCost[SOUND_COUNT][128];
-	//int g_iSoundType[SOUND_COUNT][128];
-	//int g_iSoundPerm[SOUND_COUNT][128];
+
 	char sPath[PLATFORM_MAX_PATH];
 	
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", CUSTOM_SOUND);
@@ -618,7 +614,7 @@ public bool loadCustomSounds()
 		return false;
 	}
 
-	for (int i = 0; i < TITLE_COUNT; i++)
+	for (int i = 0; i < SOUND_COUNT; i++)
 	{
 		
 		KvGetString(kv, "sound_path", g_szSoundPath[i], 128);
@@ -1564,20 +1560,13 @@ public void InitPrecache()
 		Format(path, 128, g_szSoundPath[i]);
 		
 		if(path[0] != EOS)
-			{
+		{
 			g_iCustomSoundCount++;
-			PrintToServer("---------------------------------------------------------------------------");
-  			PrintToServer("[%s] Sound ID: %i Path: %s", g_szChatPrefix, i, g_szSoundPath[i]);
-  			
-  			char relativePath[128];
   			char abspath[128];
-  			Format(relativePath, 128, "*%s", g_szSoundPath[i]);
   			Format(abspath, 128, "%s", g_szSoundPath[i]);
-  			PrintToServer("Adding: rel: %s abs: %s", relativePath, abspath);
-  			PrintToServer("---------------------------------------------------------------------------");
   			AddSoundToDownloadsTable(abspath);
 			FakePrecacheSound(abspath);
-  			}
+  		}
 	}
 	
 	char szBuffer[256];

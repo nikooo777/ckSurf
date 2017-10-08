@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.10"
+#define PLUGIN_VERSION "1.20.10.1"
 
 // Database definitions
 #define MYSQL 0
@@ -230,7 +230,7 @@ bool g_bAdminFlagTitlesTemp[MAXPLAYERS + 1][TITLE_COUNT]; 		// Which title admin
 int g_iAdminSelectedClient[MAXPLAYERS + 1]; 					// Which clientid did the admin select
 int g_iAdminEditingType[MAXPLAYERS + 1]; 						// What the admin is editing
 
-
+char g_szServerNameBrowser[128];
 /*----------  Custom Sounds  ----------*/
 char g_szSoundPath[SOUND_COUNT][128];
 char g_szSoundName[SOUND_COUNT][128];
@@ -356,7 +356,6 @@ ConVar g_hSlopeFixEnable;
 Handle g_MapFinishForward;
 Handle g_BonusFinishForward;
 Handle g_PracticeFinishForward;
-int iGameText = -1;
 /*----------  CVars  ----------*/
 // Zones
 int g_ZoneMenuFlag;
@@ -831,7 +830,9 @@ public void OnLibraryRemoved(const char[] name)
 public void OnMapStart()
 {
 	hasStarted = true;
-	
+	char sBuffer[256];
+	GetConVarString(FindConVar("hostname"), sBuffer,sizeof(sBuffer));
+	Format(g_szServerNameBrowser, 128, sBuffer)
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
 	// Load spawns
@@ -894,8 +895,12 @@ public void OnMapStart()
 	//timers
 	CreateTimer(0.1, CKTimer1, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(1.0, CKTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	CreateTimer(10.0, tierTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	CreateTimer(10.0, Timer_checkforrecord, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+	
 	CreateTimer(1.5, animateTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(0.25, advertTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+	
 	//Start Async as to not make adverts update at same time as display format.
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
@@ -1975,7 +1980,6 @@ public void OnPluginStart()
 	RegConsoleCmd("+noclip", NoClip, "[ckSurf] Player noclip on");
 	RegConsoleCmd("-noclip", UnNoClip, "[ckSurf] Player noclip off");
 	RegConsoleCmd("sm_nc", Command_ckNoClip, "[ckSurf] Player noclip on/off");
-	RegConsoleCmd("sm_sshop", Command_sound, "[ckSurf] Sound Shop"); 
 	RegConsoleCmd("sm_sshop", Command_sound, "[ckSurf] Sound Shop");
 	RegConsoleCmd("sm_soundshop", Command_sound, "[ckSurf] Sound Shop"); 	
 	RegConsoleCmd("sm_csound", Command_sound, "[ckSurf] Sound Shop"); 
@@ -2063,6 +2067,7 @@ public void OnPluginStart()
 
 	RegAdminCmd("sm_addmaptier", Admin_insertMapTier, g_AdminMenuFlag, "[ckSurf] Changes maps tier");
 	RegAdminCmd("sm_amt", Admin_insertMapTier, g_AdminMenuFlag, "[ckSurf] Changes maps tier");
+	RegAdminCmd("sm_at", Admin_insertTier, g_AdminMenuFlag, "[ckSurf] Changes maps tier");
 	RegAdminCmd("sm_addspawn", Admin_insertSpawnLocation, g_AdminMenuFlag, "[ckSurf] Changes the position !r takes players to");
 	RegAdminCmd("sm_delspawn", Admin_deleteSpawnLocation, g_AdminMenuFlag, "[ckSurf] Removes custom !r position");
 	RegAdminCmd("sm_clearassists", Admin_ClearAssists, g_AdminMenuFlag, "[ckSurf] Clears assist points (map progress) from all players");
