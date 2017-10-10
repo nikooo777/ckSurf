@@ -1682,6 +1682,24 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 						char FancyMsg[64]; 
 						Format(FancyMsg, 64, "[%s] %s has beaten the MAP RECORD", g_szChatPrefix, szName);
 						LchatSR(FancyMsg);
+						
+						//Integration for Discord Module:
+						/* Start function call */
+						Call_StartForward(g_MapRecordForward);
+
+						/* Push parameters one at a time */
+						Call_PushCell(client);
+						Call_PushFloat(g_fFinalTime[client]);
+						Call_PushString(g_szFinalTime[client]);
+						Call_PushString(g_szMapName);
+						Call_PushString(g_szServerNameBrowser);
+
+						/* Finish the call, get the result */
+						Call_Finish();
+						
+						
+						
+						
 					}
 				}
 			}
@@ -1742,65 +1760,7 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 	return;
 }
 
-void LchatSR(const char[] message)
-{		
-		
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i))
-		{
-			continue;
-		}
-
-		HudMessage(i, "255 0 255", "0 255 48", "2",  "3", message, "-1.0", "0.93", "0.05", "0.05", "15.0");
-		HudMessage(i, "255 0 255", "0 255 48", "2",  "3", message, "-1.0", "0.13", "0.05", "0.05", "15.0");
-	
-	}
-}
-void LchatBR(const char[] message)
-{		
-		
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (!IsClientInGame(i) || IsFakeClient(i))
-		{
-			continue;
-		}
-
-		HudMessage(i, "21 147 237", "255 165 0", "2",  "3", message, "-1.0", "0.93", "0.05", "0.05", "15.0");
-		HudMessage(i, "21 147 237", "255 165 0", "2",  "3", message, "-1.0", "0.13", "0.05", "0.05", "15.0");
-	
-	}
-}
-
-void HudMessage(int client, const char[] color,const char[] color2, const char[] effect, const char[] channel, const char[] message, const char[] posx, const char[] posy, const char[] fadein, const char[] fadeout, const char[] holdtime)
-{
-	
-  char szHoldTime[32];
-  Format(szHoldTime, sizeof(szHoldTime), "!self,Kill,,%s,-1", holdtime);
-  int iGameText = CreateEntityByName("game_text");
-  DispatchKeyValue(iGameText, "channel", channel);
-  DispatchKeyValue(iGameText, "color", color);
-  DispatchKeyValue(iGameText, "color2", color2);
-  DispatchKeyValue(iGameText, "effect", effect);
-  DispatchKeyValue(iGameText, "fadein", fadein);
-  DispatchKeyValue(iGameText, "fadeout", fadeout);
-  DispatchKeyValue(iGameText, "fxtime", "0.25");
-  DispatchKeyValue(iGameText, "holdtime", holdtime);
-  DispatchKeyValue(iGameText, "message", message);
-  DispatchKeyValue(iGameText, "spawnflags", "0");
-  DispatchKeyValue(iGameText, "x", posx);
-  DispatchKeyValue(iGameText, "y", posy);
-  DispatchSpawn(iGameText);
-  SetVariantString("!activator");
-  AcceptEntityInput(iGameText,"display",client);
-  DispatchKeyValue(iGameText, "OnUser1", szHoldTime);
-  AcceptEntityInput(iGameText, "FireUser1");
-
-}
-
-
-stock void PrintChatBonus (int client, int zGroup, int rank = 0)
+stock void PrintChatBonus(int client, int zGroup, int rank = 0)
 {
 	if (!IsValidClient(client))
 		return;
@@ -1831,6 +1791,22 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 			char FancyMsg[64]; 
 			Format(FancyMsg, 64, "[%s] %s has beaten the %s RECORD", g_szChatPrefix, szName, g_szZoneGroupName[zGroup]);
 			LchatBR(FancyMsg);
+			
+			//Integration for Discord Module:
+			/* Start function call */
+			Call_StartForward(g_BonusRecordForward);
+				
+			/* Push parameters one at a time */
+			Call_PushCell(client);
+			Call_PushFloat(g_fFinalTime[client]);
+			Call_PushString(g_szFinalTime[client]);
+			Call_PushString(g_szMapName);
+			Call_PushString(g_szServerNameBrowser);
+			Call_PushString(g_szZoneGroupName[zGroup]);
+			/* Finish the call, get the result */
+			Call_Finish();
+			
+			
 			if (g_tmpBonusCount[zGroup] == 0)
 				PrintToChatAll("%t", "BonusFinished3", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, WHITE, LIMEGREEN, g_szFinalTime[client], WHITE);
 			else
@@ -1842,6 +1818,22 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 			char FancyMsg[64]; 
 			Format(FancyMsg, 64, "[%s] %s has beaten the %s RECORD", g_szChatPrefix, szName, g_szZoneGroupName[zGroup]);
 			LchatBR(FancyMsg);
+			
+			//Integration for Discord Module:
+			/* Start function call */
+			Call_StartForward(g_BonusRecordForward);
+				
+			/* Push parameters one at a time */
+			Call_PushCell(client);
+			Call_PushFloat(g_fFinalTime[client]); 
+			Call_PushString(g_szFinalTime[client]);
+			Call_PushString(g_szMapName);
+			Call_PushString(g_szServerNameBrowser);
+			Call_PushString(g_szZoneGroupName[zGroup]);
+			/* Finish the call, get the result */
+			Call_Finish();
+			
+			
 			PrintToChatAll("%t", "BonusFinished5", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, YELLOW, g_szZoneGroupName[zGroup], GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, LIMEGREEN, szRecordDiff, GRAY, LIMEGREEN, g_MapRankBonus[zGroup][client], GRAY, g_iBonusCount[zGroup], LIMEGREEN, g_szFinalTime[client], WHITE);
 		}
 		if (g_bBonusPBRecord[client] && !g_bBonusSRVRecord[client])
@@ -1918,6 +1910,36 @@ stock void PrintChatBonus (int client, int zGroup, int rank = 0)
 		PrintToChat(client, "[%c%s%c] %cFailed to save your data correctly! Please contact an admin.", MOSSGREEN, g_szChatPrefix, WHITE, DARKRED, RED, DARKRED);
 
 	return;
+}
+
+void LchatSR(const char[] message)
+{		
+		
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		ClearSyncHud(i, g_hHudSync);
+		SetHudTextParams(-1.0, 0.13, 10.0, 107, 244, 66, 255, 2, 0.1, 0.1, 0.1);
+		ShowSyncHudText(i, g_hHudSync, "%s", message);
+	
+	}
+}
+void LchatBR(const char[] message)
+{		
+		
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		ClearSyncHud(i, g_hHudSync);
+		SetHudTextParams(-1.0, 0.13, 10.0, 200, 2, 255, 255, 2, 0.1, 0.1, 0.1);
+		ShowSyncHudText(i, g_hHudSync, "%s", message);
+	}
 }
 
 public void CheckMapRanks(int client)

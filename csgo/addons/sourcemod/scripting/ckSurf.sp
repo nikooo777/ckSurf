@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.10.1"
+#define PLUGIN_VERSION "1.20.10.8"
 
 // Database definitions
 #define MYSQL 0
@@ -300,6 +300,9 @@ bool g_bTierEntryFound;											// Tier data found?
 bool g_bTierFound[MAXZONEGROUPS];								// Tier data found in ZGrp
 Handle AnnounceTimer[MAXPLAYERS + 1];							// Tier announce timer
 
+/*----------      HUD MSG     ----------*/
+Handle g_hHudSync;
+
 /*----------  Zone Variables  ----------*/
 // Client
 bool g_bIgnoreZone[MAXPLAYERS + 1]; 							// Ignore end zone end touch if teleporting from inside a zone
@@ -355,6 +358,8 @@ ConVar g_hSlopeFixEnable;
 /*----------  Forwards  ----------*/
 Handle g_MapFinishForward;
 Handle g_BonusFinishForward;
+Handle g_MapRecordForward;
+Handle g_BonusRecordForward;
 Handle g_PracticeFinishForward;
 /*----------  CVars  ----------*/
 // Zones
@@ -1712,7 +1717,8 @@ public void OnPluginStart()
 	}
 
 	//CreateTimer(60.0, Event_ReloadMap);
-
+	if (g_hHudSync == null)
+		g_hHudSync = CreateHudSynchronizer();
 	//Get Server Tickate
 	g_Server_Tickrate = RoundFloat(1 / GetTickInterval());
 
@@ -2149,8 +2155,11 @@ public void OnPluginStart()
 	}
 
 	// Forwards
+	
 	g_MapFinishForward = CreateGlobalForward("ckSurf_OnMapFinished", ET_Event, Param_Cell, Param_Float, Param_String, Param_Cell, Param_Cell);
+	g_MapRecordForward = CreateGlobalForward("ckSurf_OnMapRecord", ET_Event, Param_Cell, Param_Float, Param_String, Param_String, Param_String);
 	g_BonusFinishForward = CreateGlobalForward("ckSurf_OnBonusFinished", ET_Event, Param_Cell, Param_Float, Param_String, Param_Cell, Param_Cell, Param_Cell);
+	g_BonusRecordForward = CreateGlobalForward("ckSurf_OnBonusRecord", ET_Event, Param_Cell, Param_Float, Param_String, Param_String, Param_String, Param_String);
 	g_PracticeFinishForward = CreateGlobalForward("ckSurf_OnPracticeFinished", ET_Event, Param_Cell, Param_Float, Param_String);
 
 	if (g_bLateLoaded)

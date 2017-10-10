@@ -5388,7 +5388,7 @@ public void sql_checkLatestRecordsCallback(Handle owner, Handle hndl, const char
 	
 	if (SQL_HasResultSet(hndl) && (SQL_GetRowCount(hndl) != 0))
 	{
-		
+		//TODO Log bonus records!
 		int i = 1;
 		while (SQL_FetchRow(hndl))
 		{	
@@ -5400,12 +5400,32 @@ public void sql_checkLatestRecordsCallback(Handle owner, Handle hndl, const char
 			SQL_FetchString(hndl, 4, szServerName, 128);
 			if(!StrEqual(szServerName, g_szServerNameBrowser))
 			{
-				PrintToChatAll("%c %c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+				
+				//Check if record was set on another server, set the new recrod to this, so we dont have multiple servers running the same maps simultantesoly
+				//But having differnt record threads :)
+				if(strcmp(szMapName, g_szMapName) == 0)
+				{
+					g_szRecordMapTime = szTime;
+					g_fRecordMapTime = ftime;
+				}
+				PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
 				PrintToChatAll("　　　　　　　　[%c%s%c] %Announcement", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);
+				PrintToChatAll("");
+				PrintToChatAll("%c　%c%s%c has beaten the %c%s %cMAP RECORD%c with a time of %c%s%c in the %c%s%c Server.",MOSSGREEN, LIMEGREEN, szName, GRAY, LIMEGREEN, szMapName, DARKBLUE, GRAY, LIMEGREEN, szTime , GRAY, LIMEGREEN, szServerName, GRAY);
 				PrintToChatAll("　");
-				PrintToChatAll("%c %c%s%c has beaten the %c%s %cMAP RECORD%c with a time of %c%s%c in the %c%s",MOSSGREEN, LIMEGREEN, szName, GRAY, LIMEGREEN, szMapName, DARKBLUE, GRAY, LIMEGREEN, szTime , GRAY, LIMEGREEN, szServerName);
-				PrintToChatAll("　");
-				PrintToChatAll("%c %c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+				PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+				for (int b = 1; b <= MaxClients; b++)
+				{	
+					if (IsValidClient(b) && !IsFakeClient(b))
+						{
+						//float vec[3];
+						//GetClientEyePosition(b, vec);
+						//EmitGameSound("weapons\\party_horn_01", vec, b, SNDLEVEL_AIRCRAFT);
+						//FadeClientVolume(b, 0.1, 0, 5, 0)
+						ClientCommand(b, "play resource\\warning.wav");
+						}
+				}
+									
 			}
 			i++;
 		}

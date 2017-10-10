@@ -59,7 +59,7 @@ public Action RefreshAdminMenu(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
 	if (IsValidClient(client) && !IsFakeClient(client))
-		ckAdminMenu(client);
+		ckAdminMenu(client); 		
 
 	return Plugin_Handled;
 }
@@ -156,7 +156,7 @@ public Action tierTimer(Handle timer)
 {
 	for (int client = 1; client <= MaxClients; client++)
 	{
-		if (IsValidClient(client))
+		if (IsValidClient(client) && (CheckCommandAccess(client, "sm_at", ADMFLAG_GENERIC, false)))
 		{	
 			if(!g_bTierFound[0])
 			{
@@ -469,7 +469,8 @@ public Action CheckChallenge(Handle timer, any serial)
 			if (IsValidClient(client))
 			{	
 				PrintToChat(client, "%t", "ChallengeWon", RED, g_szChatPrefix, WHITE, YELLOW, WHITE);
-				ClientCommand(client, "play weapons\\party_horn_01.wav");
+				//ClientCommand(client, "play weapons\\party_horn_01.wav");
+				ClientCommand(client, "play resource\\warning.wav");
 				
 			}
 			return Plugin_Stop;

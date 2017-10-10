@@ -94,6 +94,31 @@ forward Action:ckSurf_OnMapFinished(client, Float:fRunTime, String:sRunTime[54],
  */
 forward Action:ckSurf_OnBonusFinished(client, Float:fRunTime, String:sRunTime[54], rank, total, bonusid);
 
+
+/**
+ * Called when a player finishes a map
+ *
+ * @param int client     Player index.
+ * @param float runtime     Run time as xx.xx
+ * @param strng runtime     Run time as xx:xx:xx.
+ * @param string mapname     Map name
+ * @param string servernamee     Server Name
+ */
+forward Action:ckSurf_OnMapRecord(client, Float:fRunTime, String:sRunTime[54], String:mapName[128], String:serverName[128]);
+
+/**
+ * Called when a player finishes a bonus
+ *
+ * @param int client     Player index.
+ * @param float runtime     Run time as xx.xx
+ * @param strng runtime     Run time as xx:xx:xx.
+ * @param string mapname     Map name
+ * @param string servernamee     Server Name
+ * @param string bonusname     Bonus Name
+ * @return           Plugin_Handled; to stop the player from searching.
+ */
+forward Action:ckSurf_OnBonusRecord(client, Float:fRunTime, String:sRunTime[54], String:mapName[128], String:serverName[128], String:bonusName[128]);
+
 /**
  * Called when a player finishes a map in practice mode
  *

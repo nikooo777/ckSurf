@@ -644,7 +644,7 @@ public Action Command_ToBonus(int client, int args)
 		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
-	ClientCommand(client, "play buttons\\light_power_on_switch_01.wav");
+	ClientCommand(client, "play weapons\\usp\\usp1-distant.wav");
 	int zoneGrp;
 	
 	if (g_mapZoneGroupCount > 2) // If there is more than one bonus in the map, get the zGrp from command
@@ -2965,11 +2965,6 @@ public int SoundMenu2Handler(Menu menu, MenuAction action, int param1, int param
 	}
 	else if (action == MenuAction_Select)
 	{
-		//g_iBuyingMenuLookup[client][i]
-		//setSrSound(param1, param2)
-		//Adding client with 3 at 1
-		//Adding client with 4 at 2
-		//SelectedSound 0, MenuNumber 1
 		int client = param1;
 		int selectedSound = g_iBuyingMenuLookup[param1][param2];
 		bool buyable = true;
@@ -2999,9 +2994,10 @@ public int SoundMenu2Handler(Menu menu, MenuAction action, int param1, int param
 				case 1:setBrSound(param1, selectedSound)
 				case 2:setBeatSound(param1, selectedSound)
 			}
+			
 		}	
+		
 	}
-	
 
 }
 
@@ -3010,18 +3006,21 @@ public void setSrSound(int client, int soundId)
 	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %cServer Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
 	g_SrSoundId[client] = soundId;
 	TestRecordSound(client)
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 public void setBrSound(int client, int soundId) 
 {
 	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Bonus Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
 	g_BrSoundId[client] = soundId;
 	TestBonusSound(client);
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 public void setBeatSound(int client, int soundId) 
 {
 	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Personal Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
 	g_BeatSoundId[client] = soundId;
 	TestBeatSound(client);
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 
 
