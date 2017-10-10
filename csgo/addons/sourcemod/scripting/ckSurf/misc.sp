@@ -599,14 +599,7 @@ public bool loadCustomTitles()
 
 public void normalizeChatString(char[] ParseString, int size)
 {
-	//players are using special ASCII chars to simulate 0x** colors
-	//this will prevent it by replacing ASCII characters outside of the normal range with a space
-	//CTag comes from colors.inc
-	for (int i = 0 ; i < MAX_COLORS ; i++)
-	{
-		ReplaceString(ParseString, size, CTag[i], "", false);
-		ReplaceString(ParseString, size, CTagCode[i],"",false);
-	}
+	CRemoveColors(ParseString, size);
 }
 
 public void checkChangesInTitle(int client)
