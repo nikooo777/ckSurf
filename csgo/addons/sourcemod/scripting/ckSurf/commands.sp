@@ -1966,7 +1966,7 @@ public Action Client_Ranks(int client, int args)
 			}
 			Format(ChatLine, 512, "%s%s%c (%ip)   ", ChatLine, RankValue[RankNameColored], WHITE, RankValue[PointReq]);
 		}
-		PrintToChat(client, ChatLine);
+		CPrintToChat(client, ChatLine);
 	}
 	return Plugin_Handled;
 }
