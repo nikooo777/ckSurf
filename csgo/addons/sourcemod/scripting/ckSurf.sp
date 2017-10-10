@@ -22,7 +22,7 @@
 #include <mapchooser>
 #include <ckSurf>
 #include <ckSurf-misc>
-#include <StealthRevived> 
+#include <StealthRevived> 	
 
 /*====================================
 =            Declarations            =
@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.10.8"
+#define PLUGIN_VERSION "1.20.10.9"
 
 // Database definitions
 #define MYSQL 0
