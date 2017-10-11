@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.10.9"
+#define PLUGIN_VERSION "1.20.10.10"
 
 // Database definitions
 #define MYSQL 0

@@ -1651,6 +1651,7 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 			(GetConVarInt(g_hAnnounceRecord) == 2 && g_bMapSRVRecord[client])) &&
 			(rankThisRun <= GetConVarInt(g_hAnnounceRank) || GetConVarInt(g_hAnnounceRank) == 0))
 		{
+			bool sent = false;
 			for (int i = 1; i <= GetMaxClients(); i++)
 			{
 				if (IsValidClient(i) && !IsFakeClient(i))
@@ -1673,30 +1674,33 @@ stock void MapFinishedMsgs(int client, int rankThisRun = 0)
 								PrintToChat(i, "%t", "MapFinished5", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE, GRAY, LIMEGREEN, g_szFinalTime[client], GRAY, RED, g_szTimeDifference[client], GRAY, WHITE, LIMEGREEN, g_MapRank[client], WHITE, count, LIMEGREEN, g_szRecordMapTime, WHITE);
 								PrintToConsole(i, "%s finished the map with a time of (%s). Missing their best time by (%s).  [rank #%i/%i | record %s]", szName, g_szFinalTime[client], g_szTimeDifference[client], g_MapRank[client], count, g_szRecordMapTime);
 							}
-
+					
 					if (g_bMapSRVRecord[client])
 					{
-						PlayRecordSound(0, client);
+						
 						PrintToChat(i, "%t", "NewMapRecord", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, szName, GRAY, DARKBLUE);
 						PrintToConsole(i, "[%s] %s scored a new MAP RECORD", g_szChatPrefix, szName);
-						char FancyMsg[64]; 
-						Format(FancyMsg, 64, "[%s] %s has beaten the MAP RECORD", g_szChatPrefix, szName);
-						LchatSR(FancyMsg);
-						
-						//Integration for Discord Module:
-						/* Start function call */
-						Call_StartForward(g_MapRecordForward);
-
-						/* Push parameters one at a time */
-						Call_PushCell(client);
-						Call_PushFloat(g_fFinalTime[client]);
-						Call_PushString(g_szFinalTime[client]);
-						Call_PushString(g_szMapName);
-						Call_PushString(g_szServerNameBrowser);
-
-						/* Finish the call, get the result */
-						Call_Finish();
-						
+						if(!sent)
+						{
+							PlayRecordSound(0, client);
+							char FancyMsg[64]; 
+							Format(FancyMsg, 64, "[%s] %s has beaten the MAP RECORD", g_szChatPrefix, szName);
+							LchatSR(FancyMsg);
+							//Integration for Discord Module:
+							/* Start function call */
+							Call_StartForward(g_MapRecordForward);
+	
+							/* Push parameters one at a time */
+							Call_PushCell(client);
+							Call_PushFloat(g_fFinalTime[client]);
+							Call_PushString(g_szFinalTime[client]);
+							Call_PushString(g_szMapName);
+							Call_PushString(g_szServerNameBrowser);
+	
+							/* Finish the call, get the result */
+							Call_Finish();
+							sent = true;
+						}
 						
 						
 						
