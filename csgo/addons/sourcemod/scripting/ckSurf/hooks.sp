@@ -332,10 +332,12 @@ public Action Say_Hook(int client, const char[] command, int argc)
 
 			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || (StrEqual(g_pr_rankname[client], "ADMIN", false) && GetConVarBool(g_hAdminClantag))))
 			{
+				char szTeamColor[6];
+				szTeamColor = GetClientTeam(client) == CS_TEAM_CT ? "blue" : "yellow";
 				if (IsPlayerAlive(client))
-					CPrintToChatAll("{green}%s{default} %s {teamcolor}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
+					CPrintToChatAll("{green}%s{default} %s {%s}%s{default}: %s", g_szCountryCode[client], szChatRank, szTeamColor, szName, sText);
 				else
-					CPrintToChatAll("{green}%s{default} %s {teamcolor}*DEAD* %s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
+					CPrintToChatAll("{green}%s{default} %s {%s}*DEAD* %s{default}: %s", g_szCountryCode[client], szChatRank, szTeamColor, szName, sText);
 				return Plugin_Handled;
 			}
 			else
