@@ -994,7 +994,7 @@ stock void AddColors(Handle hTrie)
 		SetTrieString(hTrie, "grey2", "\x0D");
 
 		// Additional color names for ckSurf backwards compatibility
-		SetTrieString(hTrie, "orange", "\x03"); // just to remove the color tag, there is no orange in CS:GO
+		SetTrieString(hTrie, "orange", "\x10"); // using gold
 		SetTrieString(hTrie, "steelblue", "\x0D"); // using grey2
 		SetTrieString(hTrie, "pink", "\x0E"); // using orchid
 		SetTrieString(hTrie, "lightblue", "\x0A"); // using bluegrey
