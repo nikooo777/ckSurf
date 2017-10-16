@@ -994,6 +994,9 @@ stock void AddColors(Handle hTrie)
 		SetTrieString(hTrie, "grey2", "\x0D");
 
 		// Additional color names for ckSurf backwards compatibility
+		SetTrieString(hTrie, "bluegray", "\x0A"); // using bluegrey
+		SetTrieString(hTrie, "gray", "\x08"); // using gray
+		SetTrieString(hTrie, "gray2", "\x0D"); // using gray2
 		SetTrieString(hTrie, "orange", "\x10"); // using gold
 		SetTrieString(hTrie, "steelblue", "\x0D"); // using grey2
 		SetTrieString(hTrie, "pink", "\x0E"); // using orchid
