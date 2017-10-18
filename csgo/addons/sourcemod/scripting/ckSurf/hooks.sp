@@ -333,9 +333,9 @@ public Action Say_Hook(int client, const char[] command, int argc)
 			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || (StrEqual(g_pr_rankname[client], "ADMIN", false) && GetConVarBool(g_hAdminClantag))))
 			{
 				if (IsPlayerAlive(client))
-					CPrintToChatAll("{green}%s{default} %s {teamcolor}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
+					CPrintToChatAll("{green}%s{default} %s {default}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
 				else
-					CPrintToChatAll("{green}%s{default} %s {teamcolor}*DEAD* %s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
+					CPrintToChatAll("{green}%s{default} %s {default}*DEAD* %s{default}: %s", g_szCountryCode[client], szChatRank, szName, sText);
 				return Plugin_Handled;
 			}
 			else
