@@ -1,6 +1,5 @@
 // Custom titles for ckSurf
-// Available colors: {default}, {green}, {mossgreen}, {limegreen}, {gray}, {yellow}, {orange}, {darkgray}, {blue}, {darkblue}, {purple}, {lightblue}, {pink}, {lightred}, {darkred}, {red}
-// Known issues: Orange and Purple won't work if they are at the start of the title_name
+// Available colors: {default}, {red}, {lightred}, {darkred}, {bluegray}, {blue}, {darkblue}, {purple}, {orchid}, {yellow}, {gold}, {lightgreen}, {green}, {lime}, {gray}, {gray2}
 //
 // The first title grants access to the !vip menu
 //

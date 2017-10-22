@@ -633,14 +633,7 @@ public bool loadCustomSounds()
 
 public void normalizeChatString(char[] ParseString, int size)
 {
-	//players are using special ASCII chars to simulate 0x** colors
-	//this will prevent it by replacing ASCII characters outside of the normal range with a space
-	//CTag comes from colors.inc
-	for (int i = 0 ; i < MAX_COLORS ; i++)
-	{
-		ReplaceString(ParseString, size, CTag[i], "", false);
-		ReplaceString(ParseString, size, CTagCode[i],"",false);
-	}
+	CRemoveColors(ParseString, size);
 }
 
 public void checkChangesInTitle(int client)
@@ -2617,16 +2610,17 @@ public void SpecListMenuDead(int client) // What Spectators see
 						ObservedUser2 = GetEntPropEnt(x, Prop_Send, "m_hObserverTarget");
 						if (ObservedUser == ObservedUser2)
 						{
-						if (!SR_IsClientStealthed(x)) 
-             				{ 
+						//if (!SR_IsClientStealthed(x)) 
+             			//	{ 
 							count++;
 							//strip backslashes from names (causes lags and crashes?)
 							char cleanName[MAX_NAME_LENGTH];
 							Format(cleanName, sizeof(cleanName),"%N",x);
 							ReplaceString(cleanName,sizeof(cleanName),"\\","",false);
+							ReplaceString(cleanName,sizeof(cleanName),"#","",false);
 							if (count < 6)
 								Format(sSpecs, 512, "%s%s\n", sSpecs, cleanName);
-							}
+						//	}
 						}
 						if (count == 6)
 							Format(sSpecs, 512, "%s...", sSpecs);
@@ -2771,12 +2765,19 @@ public void SpecListMenuAlive(int client) // What player sees
 				Target = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
 				if (Target == client)
 				{
-				if (!SR_IsClientStealthed(i))  
-                	{ 
-					count++;
-					if (count < 6)
-						Format(sSpecs, 512, "%s%N\n", sSpecs, i);
-					}
+					//if (!SR_IsClientStealthed(i))  
+                		//{ 
+						count++;
+						if (count < 6)
+							{
+							char cleanName[MAX_NAME_LENGTH];
+							Format(cleanName, sizeof(cleanName),"%N", i);
+							ReplaceString(cleanName,sizeof(cleanName),"\\","",false);
+							ReplaceString(cleanName,sizeof(cleanName),"#","",false);
+							Format(sSpecs, 512, "%s%s\n", sSpecs, cleanName);
+							//Format(sSpecs, 512, "%s%N\n", sSpecs, i);
+							}
+						//}
 				}
 				if (count == 6)
 					Format(sSpecs, 512, "%s...", sSpecs);

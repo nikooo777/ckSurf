@@ -14,7 +14,7 @@
 #include <cstrike>
 #include <geoip>
 #include <basecomm>
-#include <colors>
+#include <colorvariables>
 #undef REQUIRE_EXTENSIONS
 #include <clientprefs>
 #undef REQUIRE_PLUGIN
@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.10.10"
+#define PLUGIN_VERSION "1.20.11"
 
 // Database definitions
 #define MYSQL 0
