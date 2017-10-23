@@ -408,7 +408,11 @@ public Action BeamBoxAll(Handle timer, any data)
 			{
 				if (IsValidClient(p) && !IsFakeClient(p))
 				{
-					if ( g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
+					// Only display zone to client if the client is in the zones zonegroup
+					if (g_iClientInZone[p][2] != g_mapZones[i][zoneGroup])
+						return Plugin_Handled;
+
+					if (g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
 					{
 						if (GetClientTeam(p) ==  g_mapZones[i][Vis] && g_ClientSelectedZone[p] != i)
 						{
