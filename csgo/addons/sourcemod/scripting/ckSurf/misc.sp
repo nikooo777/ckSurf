@@ -2681,7 +2681,7 @@ public void CreateNavFile()
 	}
 
 	// build nav file path
-	new String:DestFile[128];
+	char DestFile[128];
 	Format(DestFile, 128, "maps/%s.nav", g_szMapName);
 
 	// copy if doesn't exist and reload via changelevel
