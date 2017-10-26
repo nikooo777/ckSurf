@@ -329,20 +329,20 @@ public Action Say_Hook(int client, const char[] command, int argc)
   // build: rank
   if (bUseChatRank)
   {
-    Format(sTextFinal, sizeof(sTextFinal), "%s {green}%s{default}", szChatRank);
+    Format(sTextFinal, sizeof(sTextFinal), "%s {green}%s{default}", sTextFinal, szChatRank);
   }
 
   // build: spec/death inserts
   if (GetClientTeam(client) == TEAM_SPECTATOR)
-    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", "*SPEC*");
+    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", sTextFinal, "*SPEC*");
   else if (!IsPlayerAlive(client))
-    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", "*DEAD*");
+    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", sTextFinal, "*DEAD*");
 
   // build: player name & message
   if (GetClientTeam(client) == TEAM_SPECTATOR)
-    Format(sTextFinal, sizeof(sTextFinal), "%s {grey}%s{default}: %s", szName, sText);
+    Format(sTextFinal, sizeof(sTextFinal), "%s {grey}%s{default}: %s", sTextFinal, szName, sText);
   else
-    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}: %s", szName, sText);
+    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}: %s", sTextFinal, szName, sText);
 
   // print message to chat
   CPrintToChatAll("%s", sTextFinal);
