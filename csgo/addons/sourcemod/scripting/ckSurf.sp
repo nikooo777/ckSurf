@@ -815,9 +815,14 @@ public void OnMapStart()
 	
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
+
+	// create nav file
+	CreateNavFile();
+
 	// Load spawns
 	if (!g_bRenaming && !g_bInTransactionChain)
 		checkSpawnPoints();
+
 	// Workshop fix
 	char mapPieces[6][128];
 	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
@@ -2065,9 +2070,6 @@ public void OnPluginStart()
 
 	//button sound hook
 	//AddNormalSoundHook(NormalSHook_callback);
-
-	//nav files
-	CreateNavFiles();
 
 	// Botmimic 2
 	// https://forums.alliedmods.net/showthread.php?t=180114
