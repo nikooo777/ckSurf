@@ -272,7 +272,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
       return Plugin_Handled;
 
   // lowercase commands if first character is uppercase
-  if (IsChatTrigger() && IsCharUpper(sText[1]))
+  if ((sText[0] == '/' || sText[0] == '!') && IsCharUpper(sText[1]))
   {
     for (int i = 0; i <= strlen(sText); ++i)
     {
@@ -328,9 +328,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
 
   // build: rank
   if (bUseChatRank)
-  {
     Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}", sTextFinal, szChatRank);
-  }
 
   // build: spec/death inserts
   if (GetClientTeam(client) == TEAM_SPECTATOR)
