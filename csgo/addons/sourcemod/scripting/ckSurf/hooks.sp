@@ -329,7 +329,7 @@ public Action Say_Hook(int client, const char[] command, int argc)
   // build: rank
   if (bUseChatRank)
   {
-    Format(sTextFinal, sizeof(sTextFinal), "%s {green}%s{default}", sTextFinal, szChatRank);
+    Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}", sTextFinal, szChatRank);
   }
 
   // build: spec/death inserts
