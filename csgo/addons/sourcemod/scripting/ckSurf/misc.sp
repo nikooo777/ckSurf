@@ -2166,52 +2166,6 @@ public int GetSkillgroupFromPoints(int points)
 	return 0;
 }
 
-stock Action PrintSpecMessageAll(int client)
-{
-	char szName[64];
-	GetClientName(client, szName, sizeof(szName));
-	normalizeChatString(szName, 64);
-
-	char szTextToAll[1024];
-	GetCmdArgString(szTextToAll, sizeof(szTextToAll));
-	StripQuotes(szTextToAll);
-	if (StrEqual(szTextToAll, "") || StrEqual(szTextToAll, " ") || StrEqual(szTextToAll, "  "))
-		return Plugin_Handled;
-
-	normalizeChatString(szTextToAll, 1024);
-	char szChatRank[64];
-	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
-
-	if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
-		Format(szName,sizeof(szName),"%s%s",g_pr_rankColor[client],szName);
-
-	if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
-		CPrintToChatAll("{green}%s{default} %s *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, szTextToAll);
-	else
-		if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
-			CPrintToChatAll("%s *SPEC* {grey}%s{default}: %s", szChatRank, szName, szTextToAll);
-		else
-			if (GetConVarBool(g_hCountry))
-				CPrintToChatAll("[{green}%s{default}] *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szName, szTextToAll);
-			else
-				CPrintToChatAll("*SPEC* {grey}%s{default}: %s", szName, szTextToAll);
-
-	for (int i = 1; i <= MaxClients; i++)
-		if (IsValidClient(i))
-		{
-			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
-				PrintToConsole(i, "%s [%s] *SPEC* %s: %s", g_szCountryCode[client], g_pr_rankname[client], szName, szTextToAll);
-			else
-				if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
-					PrintToConsole(i, "[%s] *SPEC* %s: %s", g_szCountryCode[client], szName, szTextToAll);
-				else
-					if (GetConVarBool(g_hPointSystem))
-						PrintToConsole(i, "[%s] *SPEC* %s: %s", g_pr_rankname[client], szName, szTextToAll);
-					else
-						PrintToConsole(i, "*SPEC* %s: %s", szName, szTextToAll);
-		}
-	return Plugin_Handled;
-}
 //http://pastebin.com/YdUWS93H
 public bool CheatFlag(const char[] voice_inputfromfile, bool isCommand, bool remove)
 {
