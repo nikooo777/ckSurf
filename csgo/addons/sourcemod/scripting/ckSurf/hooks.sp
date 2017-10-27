@@ -280,8 +280,10 @@ public Action Say_Hook(int client, const char[] command, int argc)
   }
 
   // abort if client invoked hidden chat command (hidden_chat_commands.txt)
+  char commandlookup[128][128];
+  ExplodeString(sText, " ", commandlookup, 1, 128);
   for (int i = 0; i < sizeof(g_BlockedChatText); i++)
-    if (StrEqual(g_BlockedChatText[i], sText, true))
+    if (StrEqual(g_BlockedChatText[i], commandlookup[0], false))
       return Plugin_Handled;
 
   // check spam (warns/kicks spamming players), should be after blocked commands (for !r, etc.)
