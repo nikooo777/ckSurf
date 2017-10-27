@@ -266,11 +266,6 @@ public Action Say_Hook(int client, const char[] command, int argc)
   if (BaseComm_IsClientGagged(client))
     return Plugin_Handled;
 
-  // abort if client invoked hidden chat command (hidden_chat_commands.txt)
-  for (int i = 0; i < sizeof(g_BlockedChatText); i++)
-    if (StrEqual(g_BlockedChatText[i], sText, true))
-      return Plugin_Handled;
-
   // lowercase commands if first character is uppercase
   if ((sText[0] == '/' || sText[0] == '!') && IsCharUpper(sText[1]))
   {
@@ -283,6 +278,11 @@ public Action Say_Hook(int client, const char[] command, int argc)
     FakeClientCommand(client, "say %s", sText);
     return Plugin_Handled;
   }
+
+  // abort if client invoked hidden chat command (hidden_chat_commands.txt)
+  for (int i = 0; i < sizeof(g_BlockedChatText); i++)
+    if (StrEqual(g_BlockedChatText[i], sText, true))
+      return Plugin_Handled;
 
   // check spam (warns/kicks spamming players), should be after blocked commands (for !r, etc.)
   if (checkSpam(client))
