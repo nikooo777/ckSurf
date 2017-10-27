@@ -145,6 +145,7 @@ public void SaveRecording(int client, int zgroup)
 	{
 		CloseHandle(g_hRecordingAdditionalTeleport[client]);
 	}
+	g_hRecordingAdditionalTeleport[client] = null;
 
 	g_hRecordingAdditionalTeleport[client] = null;
 

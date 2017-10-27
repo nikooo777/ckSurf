@@ -406,9 +406,13 @@ public Action BeamBoxAll(Handle timer, any data)
 			getZoneTeamColor(g_mapZones[i][Team], tzColor);
 			for (int p = 1; p <= MaxClients; p++)
 			{
-				if (IsValidClient(p))
+				if (IsValidClient(p) && !IsFakeClient(p))
 				{
-					if ( g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
+					// Only display zone to client if the client is in the zones zonegroup
+					if (g_iClientInZone[p][2] != g_mapZones[i][zoneGroup])
+						return Plugin_Handled;
+
+					if (g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
 					{
 						if (GetClientTeam(p) ==  g_mapZones[i][Vis] && g_ClientSelectedZone[p] != i)
 						{
@@ -418,7 +422,8 @@ public Action BeamBoxAll(Handle timer, any data)
 								buffer_a[x] = g_mapZones[i][PointA][x];
 								buffer_b[x] = g_mapZones[i][PointB][x];
 							}
-							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 5.0, 5.0, 2, 1.0, tzColor, 0, 0, i);
+							// stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type, int zoneid = -1)
+							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 1.0, 1.0, 0, 0.0, tzColor, 0, 0, i);
 						}
 					}
 					else
@@ -431,7 +436,8 @@ public Action BeamBoxAll(Handle timer, any data)
 								buffer_a[x] = g_mapZones[i][PointA][x];
 								buffer_b[x] = g_mapZones[i][PointB][x];
 							}
-							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 5.0, 5.0, 2, 1.0, zColor, 0, 0, i);
+							// stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type, int zoneid = -1)
+							TE_SendBeamBoxToClient(p, buffer_a, buffer_b, g_BeamSprite, g_HaloSprite, 0, 30, GetConVarFloat(g_hChecker), 1.0, 1.0, 0, 0.0, zColor, 0, 0, i);
 						}
 					}
 				}
@@ -523,7 +529,7 @@ public void BeamBox_OnPlayerRunCmd(int client)
 stock void TE_SendBeamBoxToClient(int client, float uppercorner[3], float bottomcorner[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, float Life, float Width, float EndWidth, int FadeLength, float Amplitude, const int Color[4], int Speed, int type, int zoneid = -1)
 {
 	//0 = Do not display zones, 1 = Display the lower edges of zones, 2 = Display whole zone
-	if (!IsValidClient(client) || GetConVarInt(g_hZoneDisplayType) < 1)
+	if (!IsValidClient(client) || IsFakeClient(client) || GetConVarInt(g_hZoneDisplayType) < 1)
 		return;
 
 	if (GetConVarInt(g_hZoneDisplayType) > 1 || type == 1) // All sides

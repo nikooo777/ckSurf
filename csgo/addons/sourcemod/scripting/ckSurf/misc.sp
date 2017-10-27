@@ -1147,7 +1147,7 @@ public void LimitSpeed(int client)
 	if (CurVelVec[2] == 0.0)
 		CurVelVec[2] = 1.0;
 
-	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0));
+	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0) + Pow(CurVelVec[2], 2.0));
 
 	if (currentspeed > speedCap)
 	{
@@ -2825,31 +2825,26 @@ public void LoadInfoBot()
 	}
 }
 
-public void CreateNavFiles()
+public void CreateNavFile()
 {
-	char DestFile[256];
-	char SourceFile[256];
+	// check if source file exists
+	char SourceFile[128];
 	Format(SourceFile, sizeof(SourceFile), "maps/replay_bot.nav");
 	if (!FileExists(SourceFile))
 	{
 		LogError("<ckSurf> Failed to create .nav files. Reason: %s doesn't exist!", SourceFile);
 		return;
 	}
-	char map[256];
-	int mapListSerial = -1;
-	if (ReadMapList(g_MapList, mapListSerial, "mapcyclefile", MAPLIST_FLAG_CLEARARRAY | MAPLIST_FLAG_NO_DEFAULT) == null)
-		if (mapListSerial == -1)
-			return;
 
-	for (int i = 0; i < GetArraySize(g_MapList); i++)
+	// build nav file path
+	char DestFile[128];
+	Format(DestFile, 128, "maps/%s.nav", g_szMapName);
+
+	// copy if doesn't exist and reload via changelevel
+	if(!FileExists(DestFile))
 	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		if (map[0])
-		{
-			Format(DestFile, sizeof(DestFile), "maps/%s.nav", map);
-			if (!FileExists(DestFile))
-				File_Copy(SourceFile, DestFile);
-		}
+		File_Copy(SourceFile, DestFile);
+		ForceChangeLevel(g_szMapName, ".nav file generate");
 	}
 }
 
