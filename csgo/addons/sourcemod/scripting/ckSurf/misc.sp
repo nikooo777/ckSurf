@@ -2814,13 +2814,13 @@ public void SetInfoBotName(int ent)
 	if (!IsValidClient(g_InfoBot) || !GetConVarBool(g_hInfoBot))
 		return;
 	if (g_bMapChooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
-		Format(sNextMap, sizeof(sNextMap), "Pending Vote");
+		Format(sNextMap, sizeof(sNextMap), "Next Map: Pending Vote");
 	else
 	{
 		GetNextMap(sNextMap, sizeof(sNextMap));
 		char mapPieces[6][128];
 		int lastPiece = ExplodeString(sNextMap, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
-		Format(sNextMap, sizeof(sNextMap), "%s", mapPieces[lastPiece - 1]);
+		Format(sNextMap, sizeof(sNextMap), "Next Map: %s", mapPieces[lastPiece - 1]);
 	}
 	int iInfoBotTimeleft;
 	GetMapTimeLeft(iInfoBotTimeleft);
@@ -2833,13 +2833,13 @@ public void SetInfoBotName(int ent)
 	if (hTmp != null)
 		CloseHandle(hTmp);
 	if (GetConVarBool(g_hMapEnd) && iTimeLimit > 0)
-		Format(szBuffer, sizeof(szBuffer), "%s (in %s)", sNextMap, szTime);
+		Format(szBuffer, sizeof(szBuffer), "%s left.", sNextMap, szTime);
 	else
-		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");
-	SetClientName(g_InfoBot, szBuffer);
-	Client_SetScore(g_InfoBot, 9999);
-	CS_SetClientContributionScore(g_InfoBot, 99999);
-	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
+		Format(szBuffer, sizeof(szBuffer), "No Time Limit");
+	CS_SetClientClanTag(g_InfoBot, szTime);	
+	SetClientName(g_InfoBot, sNextMap);
+	Client_SetScore(g_InfoBot, 0);
+	CS_SetClientContributionScore(g_InfoBot, 2);	
 }
 
 public void CenterHudDead(int client)
