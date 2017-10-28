@@ -79,7 +79,7 @@ char sql_select30SecondRecords[] = "SELECT name, runtime, map, date, servername 
 
 //TABLE PLAYEROPTIONS
 char sql_createPlayerOptions[] = "CREATE TABLE IF NOT EXISTS ck_playeroptions (steamid VARCHAR(32), speedmeter INT(12) DEFAULT '0', quake_sounds INT(12) DEFAULT '1', autobhop INT(12) DEFAULT '0', shownames INT(12) DEFAULT '1', goto INT(12) DEFAULT '1', showtime INT(12) DEFAULT '1', hideplayers INT(12) DEFAULT '0', showspecs INT(12) DEFAULT '1', knife VARCHAR(32) DEFAULT 'weapon_knife', new1 INT(12) DEFAULT '0', new2 INT(12) DEFAULT '0', new3 INT(12) DEFAULT '0', checkpoints INT(12) DEFAULT '1', srSound INT(12) NOT NULL  DEFAULT '0', brSound INT(12) NOT NULL DEFAULT '1',  beatSound INT(12) NOT NULL DEFAULT '2',   PRIMARY KEY(steamid));"; 
-char sql_newPlayerOptions[] = "ALTER TABLE `ck_playeroptions`  ADD `srSound` INT(12) NOT NULL DEFAULT '0'  AFTER `checkpoints`,  ADD brSound INT(12) NOT NULL DEFAULT '1'  AFTER srSound,  ADD beatSound INT(12) NOT NULL DEFAULT '2'  AFTER `brSound`;" 
+char sql_newPlayerOptions[] = "ALTER TABLE `ck_playeroptions`  ADD `srSound` INT(12) NOT NULL DEFAULT '0'  AFTER `checkpoints`,  ADD brSound INT(12) NOT NULL DEFAULT '1'  AFTER srSound,  ADD beatSound INT(12) NOT NULL DEFAULT '2'  AFTER `brSound`;";
 char sql_insertPlayerOptions[] = "INSERT INTO ck_playeroptions (steamid, speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints, srSound, brSound, beatSound) VALUES('%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%s', '%i', '%i', '%i', '%i', '%i', '%i', '%i');"; 
 char sql_selectPlayerOptions[] = "SELECT speedmeter, quake_sounds, autobhop, shownames, goto, showtime, hideplayers, showspecs, knife, new1, new2, new3, checkpoints, srSound, brSound, beatSound FROM ck_playeroptions where steamid = '%s'"; 
 char sql_updatePlayerOptions[] = "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i', srSound = '%i', brSound = '%i', beatSound = '%i' where steamid = '%s'"; 
@@ -164,6 +164,7 @@ public void db_setupDatabase()
 	////////////////////////////////
 	// INIT CONNECTION TO DATABASE//
 	////////////////////////////////
+	debug_msg("Beginning connection to database.");
 	char szError[255];
 	g_hDb = SQL_Connect("cksurf", false, szError, 255);
 
@@ -1147,6 +1148,7 @@ public void db_editSpawnLocationsCallback(Handle owner, Handle hndl, const char[
 
 public void db_selectSpawnLocations()
 {
+	debug_msg("Started db_selectSpawnLocations");
 	for (int i = 0; i < MAXZONEGROUPS; i++)
 		g_bGotSpawnLocation[i] = false;
 
@@ -1161,7 +1163,7 @@ public void db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const cha
 	{
 		LogError("[%s] SQL Error (db_selectSpawnLocationsCallback): %s ", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
-			db_ClearLatestRecords();
+			db_GetMapRecord_Pro();
 		return;
 	}
 
@@ -1178,8 +1180,9 @@ public void db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const cha
 			g_fSpawnAngle[SQL_FetchInt(hndl, 7)][2] = SQL_FetchFloat(hndl, 6);
 		}
 	}
+	debug_msg("Ended db_selectSpawnLocations");
 	if (!g_bServerDataLoaded)
-		db_ClearLatestRecords();
+		db_GetMapRecord_Pro();
 	return;
 }
 
@@ -1189,6 +1192,7 @@ public void db_selectSpawnLocationsCallback(Handle owner, Handle hndl, const cha
 
 public void db_viewMapProRankCount()
 {
+	debug_msg(" Started db_viewMapProRankCount ");
 	g_MapTimesCount = 0;
 	char szQuery[512];
 	Format(szQuery, 512, sql_selectPlayerProCount, g_szMapName);
@@ -1209,7 +1213,7 @@ public void sql_selectPlayerProCountCallback(Handle owner, Handle hndl, const ch
 		g_MapTimesCount = SQL_GetRowCount(hndl);
 	else
 		g_MapTimesCount = 0;
-
+	debug_msg(" Ended sql_selectPlayerProCountCallback ");
 	if (!g_bServerDataLoaded)
 		db_viewFastestBonus();
 
@@ -2690,6 +2694,7 @@ public void db_resetPlayerRecords2(int client, char steamid[128], char szMapName
 
 public void db_GetMapRecord_Pro()
 {
+	debug_msg("Started db_GetMapRecord_Pro");
 	g_fRecordMapTime = 9999999.0;
 	char szQuery[512];
 	// SELECT MIN(runtimepro), name, steamid FROM ck_playertimes WHERE mapname = '%s' AND runtimepro > -1.0
@@ -2728,6 +2733,7 @@ public void sql_selectMapRecordCallback(Handle owner, Handle hndl, const char[] 
 		Format(g_szRecordMapTime, 64, "N/A");
 		g_fRecordMapTime = 9999999.0;
 	}
+	debug_msg(" Ended sql_selectMapRecordCallback ");
 	if (!g_bServerDataLoaded)
 		db_viewMapProRankCount();
 	return;
@@ -3792,6 +3798,7 @@ public void SQL_LastRunCallback(Handle owner, Handle hndl, const char[] error, a
 
 public void db_viewRecordCheckpointInMap()
 {
+	debug_msg(" Started db_viewRecordCheckpointInMap ");
 	for (int k = 0; k < MAXZONEGROUPS; k++)
 	{
 		g_bCheckpointRecordFound[k] = false;
@@ -3829,7 +3836,7 @@ public void sql_selectRecordCheckpointsCallback(Handle owner, Handle hndl, const
 			}
 		}
 	}
-
+	debug_msg(" Ended sql_selectRecordCheckpointsCallback ");
 	if (!g_bServerDataLoaded)
 		db_CalcAvgRunTime();
 
@@ -3884,11 +3891,16 @@ public void SQL_selectCheckpointsCallback(Handle owner, Handle hndl, const char[
 			ClientCommand(client, "play buttons\\weapon_confirm.wav");
 			
 		}
+		char buffer[412];
+		Format(buffer, 412, "Finished Loading: %N on map: %s", client, g_szMapName);
+		debug_msg(buffer);	
 		// Seach for next client to load
 		for (int i = 1; i < MAXPLAYERS + 1; i++)
 		{
 			if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i] && !g_bLoadingSettings[i])
 			{
+				Format(buffer, 412, "Started Loading: %N on map: %s", i, g_szMapName);
+				debug_msg(buffer);	
 				char szSteamID[32];
 				GetClientAuthId(i, AuthId_Steam2, szSteamID, 32, true);
 				db_viewPersonalRecords(i, szSteamID, g_szMapName);
@@ -4037,6 +4049,7 @@ public void db_insertMapTierCallback(Handle owner, Handle hndl, const char[] err
 
 public void db_selectMapTier()
 {
+	debug_msg(" Started db_selectMapTier ");
 	g_bTierEntryFound = false;
 
 	char szQuery[1024];
@@ -4122,7 +4135,7 @@ public void SQL_selectMapTierCallback(Handle owner, Handle hndl, const char[] er
 	}
 	else
 		g_bTierEntryFound = false;
-
+	debug_msg(" Ended SQL_selectMapTierCallback ");
 	if (!g_bServerDataLoaded)
 		db_viewRecordCheckpointInMap();
 
@@ -4284,6 +4297,7 @@ public void SQL_selectPersonalBonusRecordsCallback(Handle owner, Handle hndl, co
 
 public void db_viewFastestBonus()
 {
+	debug_msg(" Started db_viewFastestBonus ");
 	char szQuery[1024];
 	//SELECT name, MIN(runtime), zonegroup FROM ck_bonus WHERE mapname = '%s' GROUP BY zonegroup;
 	Format(szQuery, 1024, sql_selectFastestBonus, g_szMapName);
@@ -4325,7 +4339,7 @@ public void SQL_selectFastestBonusCallback(Handle owner, Handle hndl, const char
 		if (g_fBonusFastest[i] == 0.0)
 			g_fBonusFastest[i] = 9999999.0;
 	}
-
+	debug_msg(" Ended SQL_selectFastestBonusCallback ");
 	if (!g_bServerDataLoaded)
 		db_viewBonusTotalCount();
 
@@ -4340,6 +4354,7 @@ public void db_deleteBonus()
 }
 public void db_viewBonusTotalCount()
 {
+	debug_msg(" Started db_viewBonusTotalCount ");
 	char szQuery[1024];
 	//"SELECT zonegroup, count(1) FROM ck_bonus WHERE mapname = '%s' GROUP BY zonegroup";
 	Format(szQuery, 1024, sql_selectBonusCount, g_szMapName);
@@ -4368,7 +4383,7 @@ public void SQL_selectBonusTotalCountCallback(Handle owner, Handle hndl, const c
 			g_iBonusCount[zonegroup] = SQL_FetchInt(hndl, 1);
 		}
 	}
-
+	debug_msg(" Ended SQL_selectBonusTotalCountCallback ");
 	if (!g_bServerDataLoaded)
 		db_selectMapTier();
 
@@ -4948,6 +4963,7 @@ public checkZoneGroupIds(Handle owner, Handle hndl, const char[] error, any:data
 */
 public void db_selectMapZones()
 {
+	debug_msg("Started selectMapZones");
 	char szQuery[258];
 	Format(szQuery, 258, sql_selectMapZones, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_selectMapZonesCallback, szQuery, 1, DBPrio_High);
@@ -4959,7 +4975,7 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 	{
 		LogError("[%s] SQL Error (SQL_selectMapZonesCallback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
-			db_GetMapRecord_Pro();
+			db_selectSpawnLocations();
 		return;
 	}
 
@@ -5173,10 +5189,10 @@ public void SQL_selectMapZonesCallback(Handle owner, Handle hndl, const char[] e
 			for (int k = 0; k < ZONEAMOUNT; k++)
 				if (g_mapZonesTypeCount[x][k] > 0)
 					g_mapZoneCountinGroup[x]++;
-
+		debug_msg("Ended selectMapZones");
 		if (!g_bServerDataLoaded)
-			db_GetMapRecord_Pro();
-
+			db_selectSpawnLocations();
+		
 		return;
 	}
 }
@@ -5390,7 +5406,6 @@ public void sql_checkLatestRecordsCallback(Handle owner, Handle hndl, const char
 	if (SQL_HasResultSet(hndl) && (SQL_GetRowCount(hndl) != 0))
 	{
 		//TODO Log bonus records!
-		int i = 1;
 		while (SQL_FetchRow(hndl))
 		{	
 			SQL_FetchString(hndl, 0, szName, 64);
@@ -5403,32 +5418,29 @@ public void sql_checkLatestRecordsCallback(Handle owner, Handle hndl, const char
 			{
 				
 				//Check if record was set on another server, set the new recrod to this, so we dont have multiple servers running the same maps simultantesoly
-				//But having differnt record threads :)
+				//But having differnt record threads :) 
 				if(strcmp(szMapName, g_szMapName) == 0)
 				{
 					g_szRecordMapTime = szTime;
 					g_fRecordMapTime = ftime;
 				}
-				PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
-				PrintToChatAll("　　　　　　　　[%c%s%c] %Announcement", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);
-				PrintToChatAll("");
-				PrintToChatAll("%c　%c%s%c has beaten the %c%s %cMAP RECORD%c with a time of %c%s%c in the %c%s%c Server.",MOSSGREEN, LIMEGREEN, szName, GRAY, LIMEGREEN, szMapName, DARKBLUE, GRAY, LIMEGREEN, szTime , GRAY, LIMEGREEN, szServerName, GRAY);
-				PrintToChatAll("　");
-				PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
-				for (int b = 1; b <= MaxClients; b++)
-				{	
-					if (IsValidClient(b) && !IsFakeClient(b))
-						{
-						//float vec[3];
-						//GetClientEyePosition(b, vec);
-						//EmitGameSound("weapons\\party_horn_01", vec, b, SNDLEVEL_AIRCRAFT);
-						//FadeClientVolume(b, 0.1, 0, 5, 0)
-						ClientCommand(b, "play resource\\warning.wav");
-						}
+				if (g_hMultiServerAnnouncements.BoolValue)
+				{
+					PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+					PrintToChatAll("　　　　　　　　[%c%s%c] %Announcement", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);
+					PrintToChatAll("");
+					PrintToChatAll("%c　%c%s%c has beaten the %c%s %cMAP RECORD%c with a time of %c%s%c in the %c%s%c Server.",MOSSGREEN, LIMEGREEN, szName, GRAY, LIMEGREEN, szMapName, DARKBLUE, GRAY, LIMEGREEN, szTime , GRAY, LIMEGREEN, szServerName, GRAY);
+					PrintToChatAll("　");
+					PrintToChatAll("%c　%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",MOSSGREEN, YELLOW);
+					for (int b = 1; b <= MaxClients; b++)
+						{	
+						if (IsValidClient(b) && !IsFakeClient(b))
+							{
+							ClientCommand(b, "play resource\\warning.wav");
+							}
+						}							
 				}
-									
 			}
-			i++;
 		}
 		
 	}
@@ -5465,6 +5477,7 @@ public void GetDBNameCallback(Handle owner, Handle hndl, const char[] error, any
 
 public void db_CalcAvgRunTime()
 {
+	debug_msg(" Started db_CalcAvgRunTime ");
 	char szQuery[256];
 	Format(szQuery, 256, sql_selectAllMapTimesinMap, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunTimeCallback, szQuery, DBPrio_Low);
@@ -5505,7 +5518,7 @@ public void SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[
 			}
 		}
 	}
-
+	debug_msg(" Ended SQL_db_CalcAvgRunTimeCallback ");
 	if (g_bhasBonus)
 		db_CalcAvgRunTimeBonus();
 	else
@@ -5513,6 +5526,7 @@ public void SQL_db_CalcAvgRunTimeCallback(Handle owner, Handle hndl, const char[
 }
 public void db_CalcAvgRunTimeBonus()
 {
+	debug_msg(" Started db_CalcAvgRunTimeBonus ");
 	char szQuery[256];
 	Format(szQuery, 256, sql_selectAllBonusTimesinMap, g_szMapName);
 	SQL_TQuery(g_hDb, SQL_db_CalcAvgRunBonusTimeCallback, szQuery, 1, DBPrio_Low);
@@ -5549,7 +5563,7 @@ public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const 
 		for (int i = 1; i < MAXZONEGROUPS; i++)
 			g_fAvg_BonusTime[i] = runtime[i] / runtimes[i];
 	}
-
+	debug_msg(" Ended SQL_db_CalcAvgRunBonusTimeCallback ");
 	if (!g_bServerDataLoaded)
 		db_CalculatePlayerCount();
 
@@ -5558,6 +5572,7 @@ public void SQL_db_CalcAvgRunBonusTimeCallback(Handle owner, Handle hndl, const 
 
 public void db_GetDynamicTimelimit()
 {
+	debug_msg(" Started db_GetDynamicTimelimit ");
 	if (!GetConVarBool(g_hDynamicTimelimit))
 	{
 		if (!g_bServerDataLoaded)
@@ -5626,7 +5641,7 @@ public void SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const 
 		else
 			ServerCommand("mp_timelimit 50");
 	}
-
+	debug_msg(" Ended SQL_db_GetDynamicTimelimitCallback ");
 	if (!g_bServerDataLoaded)
 		loadAllClientSettings();
 
@@ -5635,6 +5650,7 @@ public void SQL_db_GetDynamicTimelimitCallback(Handle owner, Handle hndl, const 
 
 public void db_CalculatePlayerCount()
 {
+	debug_msg(" Started db_CalculatePlayerCount ");
 	char szQuery[255];
 	Format(szQuery, 255, sql_CountRankedPlayers);
 	SQL_TQuery(g_hDb, sql_CountRankedPlayersCallback, szQuery, DBPrio_Low);
@@ -5642,6 +5658,7 @@ public void db_CalculatePlayerCount()
 
 public void db_CalculatePlayersCountGreater0()
 {
+	debug_msg(" Started db_CalculatePlayersCountGreater0 ");
 	char szQuery[255];
 	Format(szQuery, 255, sql_CountRankedPlayers2);
 	SQL_TQuery(g_hDb, sql_CountRankedPlayers2Callback, szQuery, DBPrio_Low);
@@ -5664,6 +5681,7 @@ public void sql_CountRankedPlayersCallback(Handle owner, Handle hndl, const char
 		g_pr_AllPlayers = 1;
 
 	//get amount of players with actual player points
+	debug_msg(" Ended sql_CountRankedPlayersCallback ");
 	db_CalculatePlayersCountGreater0();
 	return;
 }
@@ -5674,7 +5692,7 @@ public void sql_CountRankedPlayers2Callback(Handle owner, Handle hndl, const cha
 	{
 		LogError("[%s] SQL Error (sql_CountRankedPlayers2Callback): %s", g_szChatPrefix, error);
 		if (!g_bServerDataLoaded)
-			db_selectSpawnLocations();
+			db_ClearLatestRecords();
 		return;
 	}
 
@@ -5684,20 +5702,21 @@ public void sql_CountRankedPlayers2Callback(Handle owner, Handle hndl, const cha
 	}
 	else
 		g_pr_RankedPlayers = 0;
-
+	debug_msg(" Ended sql_CountRankedPlayers2Callback ");
 	if (!g_bServerDataLoaded)
-		db_selectSpawnLocations();
+		db_ClearLatestRecords();
 
 	return;
 }
 
 public void db_ClearLatestRecords()
 {
+	debug_msg(" Started xxxxxx ");
 	if (g_DbType == MYSQL)
 		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_latestrecords WHERE date < NOW() - INTERVAL 1 WEEK", DBPrio_Low);
 	else
 		SQL_TQuery(g_hDb, SQL_CheckCallback, "DELETE FROM ck_latestrecords WHERE date <= date('now','-7 day')", DBPrio_Low);
-
+	debug_msg(" Ended db_ClearLatestRecords ");
 	if (!g_bServerDataLoaded)
 		db_GetDynamicTimelimit();
 		
