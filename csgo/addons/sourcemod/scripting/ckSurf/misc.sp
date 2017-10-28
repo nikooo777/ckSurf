@@ -3102,22 +3102,26 @@ public void CenterHudAlive(int client)
 			}
 			else
 				{
-					//SR Text: 
-					//PB TEXT: szPB
-					//RANK TEXT: szRank
-					//SERVER TEXT: g_szServerName1..3
-					//STAGE TEXT: szStage
-					//MAP TEXT: szMapName
-					//SPEED TEXT: szSpeed
-					//TIER TEXT: szTier
-					
-					switch(dispVersion)
+					if (!g_hCustomHud.BoolValue)
+						PrintHintText(client, "<font face='' size='21'><font color='#FF0000'>Stopped</font>%s %s\n<font color='#ffbb00'>PB:</font> %s%s\nStage: %s%s", pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, szSpeed);
+					else
 						{
-							case 0: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font> %s\n%s%s\n%s",timerText, szSR, szStage, szSpeed, szAdvert);
-							case 1: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t\t%s\n%s\t\t%s\n%s",timerText, szPB, szTier, szSpeed, szAdvert);
-							case 2: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t%s\n%s%s\n%s",timerText, szRank2, szStage, szSpeed, szAdvert);
-						}	
+						//SR Text: 
+						//PB TEXT: szPB
+						//RANK TEXT: szRank
+						//SERVER TEXT: g_szServerName1..3
+						//STAGE TEXT: szStage
+						//MAP TEXT: szMapName
+						//SPEED TEXT: szSpeed
+						//TIER TEXT: szTier
 					
+						switch(dispVersion)
+							{
+								case 0: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>%s\n%s%s\n%s",timerText, szSR, szStage, szSpeed, szAdvert);
+								case 1: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t\t%s\n%s\t\t%s\n%s",timerText, szPB, szTier, szSpeed, szAdvert);
+								case 2: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t%s\n%s%s\n%s",timerText, szRank2, szStage, szSpeed, szAdvert);
+							}	
+						}
 				}
 		}
 	}

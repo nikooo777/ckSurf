@@ -292,7 +292,6 @@ float g_fMaxPercCompleted[MAXPLAYERS + 1]; 						// The biggest % amount the pla
 
 /*----------  Advert variables  ----------*/
 int g_Advert; 													// Defines which advert to play
-
 /*----------  Maptier Variables  ----------*/
 char g_sTierString[MAXZONEGROUPS][512];							// The string for each zonegroup
 char g_sJustTier[64]; 												// Just the tier for the map
@@ -464,6 +463,8 @@ float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
 int g_messages[MAXPLAYERS + 1]; 								// Spam message count
 ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
 ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
+ConVar g_hCustomHud = null										// Use new style hud or old.
+ConVar g_hMultiServerAnnouncements = null;						// Announce latest records made on another server
 
 /*----------  SQL Variables  ----------*/
 Handle g_hDb = null; 											// SQL driver
@@ -1733,6 +1734,8 @@ public void OnPluginStart()
 	CreateConVar("ckSurf_version", PLUGIN_VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCustomHud = CreateConVar("ck_new_hud", "1", "Determine if the new hud is shown", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
 	g_hAdvert1 = CreateConVar("ck_advert_1", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
 	g_hAdvert2 = CreateConVar("ck_advert_2", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
@@ -1941,6 +1944,7 @@ public void OnPluginStart()
 	HookConVarChange(g_hAdvert1, OnSettingChanged);
 	GetConVarString(g_hAdvert2, g_szAdvert2, sizeof(g_szAdvert2));
 	HookConVarChange(g_hAdvert2, OnSettingChanged);
+
 
 	db_setupDatabase();
 
