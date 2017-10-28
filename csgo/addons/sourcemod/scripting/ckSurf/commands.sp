@@ -261,6 +261,22 @@ public Action Command_extend(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Admin_fixBot(int client, int args)
+{
+	Handle replay = FindConVar("ck_replay_bot");
+	Handle bonus = FindConVar("ck_bonus_bot");
+	
+	
+	SetConVarInt(replay, 0, true, true);
+	SetConVarInt(bonus, 0, true, false);
+	PrintToChatAll("[%c%s%c] Replay bots are being restarted.", MOSSGREEN, g_szChatPrefix, WHITE);
+	//CreateTimer(3.0, RefreshBonusBot, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.0, BotRestartTimer);
+	//CreateTimer(1.0, RefreshBot);
+	
+	return Plugin_Handled;
+}
+
 public Action Command_VoteExtend(int client, int args)
 {
 	if(!IsValidClient(client))
@@ -628,8 +644,9 @@ public Action Command_ToBonus(int client, int args)
 		ListBonuses(client, 1);
 		return Plugin_Handled;
 	}
-
+	ClientCommand(client, "play weapons\\usp\\usp1-distant.wav");
 	int zoneGrp;
+	
 	if (g_mapZoneGroupCount > 2) // If there is more than one bonus in the map, get the zGrp from command
 	{
 		char arg1[3];
@@ -650,6 +667,7 @@ public Action Command_ToBonus(int client, int args)
 		zoneGrp = 1;
 
 	teleportClient(client, zoneGrp, 1, true);
+	
 	return Plugin_Handled;
 }
 
@@ -718,6 +736,7 @@ public int MenuHandler_SelectStage(Menu tMenu, MenuAction action, int client, in
 			GetMenuItem(tMenu, item, aID, sizeof(aID));
 			int id = StringToInt(aID);
 			teleportClient(client, g_iClientInZone[client][2], id, true);
+			ClientCommand(client, "play buttons\\blip1.wav");
 		}
 		case MenuAction_End:
 		{
@@ -742,7 +761,7 @@ public Action Command_ToStage(int client, int args)
 		char arg1[3];
 		GetCmdArg(1, arg1, sizeof(arg1));
 		int StageId = StringToInt(arg1);
-
+		ClientCommand(client, "play buttons\\blip1.wav");
 		teleportClient(client, g_iClientInZone[client][2], StageId, true);
 	}
 
@@ -760,6 +779,7 @@ public Action Command_ToEnd(int client, int args)
 		return Plugin_Handled;
 	}
 	teleportClient(client, g_iClientInZone[client][2], -1, true);
+	ClientCommand(client, "play buttons\\blip1.wav");
 	return Plugin_Handled;
 }
 
@@ -779,7 +799,7 @@ public Action Command_Restart(int client, int args)
 			g_fClientRestarting[client] = GetGameTime();
 			g_bClientRestarting[client] = true;
 			PrintToChat(client, "[%c%s%c] Are you sure you want to restart your run? Use %c!r%c again to restart.", MOSSGREEN, g_szChatPrefix, WHITE, GREEN, WHITE);
-			ClientCommand(client, "play ambient/misc/clank4");
+			ClientCommand(client, "play ambient\\misc\\clank4");
 			return Plugin_Handled;
 		}
 	}
@@ -788,7 +808,7 @@ public Action Command_Restart(int client, int args)
 			PrintToChat(client, "[%c%s%c] You are still noclipping. To start your run type !ncr", MOSSGREEN, g_szChatPrefix, WHITE);	
 		} else
 		{
-		ClientCommand(client, "play ambient/misc/clank4");
+		ClientCommand(client, "play ambient\\misc\\clank4");
 		g_bNoclipWithoutR[client] = false;
 		}
 	g_bClientRestarting[client] = false;
@@ -816,11 +836,13 @@ public Action Command_RestartNC(int client, int args)
 					{
 					Action_UnNoClip(client);
 					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
-					ClientCommand(client, "play ambient/misc/clank3");
+					g_bNoclipWithoutR[client] = false;
+					ClientCommand(client, "play ambient\\misc\\clank3");
 					} else 
 					{
 					PrintToChat(client, "[%c%s%c] You may now begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
-					ClientCommand(client, "play ambient/misc/clank3");
+					g_bNoclipWithoutR[client] = false;
+					ClientCommand(client, "play ambient\\misc\\clank3");
 					}
 	g_bClientRestarting[client] = false;
 	teleportClient(client, 0, 1, true);
@@ -934,8 +956,11 @@ public Action Client_Wr(int client, int args)
 
 public Action Command_Tier(int client, int args)
 {
-	if (IsValidClient(client) && g_bTierFound[0]) //the second condition is only checked if the first passes
-		PrintToChat(client, g_sTierString[0]);
+	if (IsValidClient(client)) //the second condition is only checked if the first passes
+		if(g_bTierFound[0])
+			PrintToChat(client, g_sTierString[0]);
+		else
+			PrintToChat(client, "[%c%s%c] The map tier has not been set for this map yet.", MOSSGREEN, g_szChatPrefix, WHITE);
 }
 
 public Action Command_bTier(int client, int args)
@@ -1991,12 +2016,22 @@ public Action Client_RankingSystem(int client, int args)
 }
 
 public Action Client_Pause(int client, int args)
-{
+{	
 	if (g_iClientInZone[client][0] == 9) 
 	{
 		PrintToChat(client, "[%c%s%c]%c You may not pause where you are currently.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
 		return Plugin_Handled;
 	}
+	else if (g_iClientInZone[client][0] == 3 || g_iClientInZone[client][0] ==  5 || g_iClientInZone[client][0] ==  1)
+	{
+		//Skip
+	}
+	else 
+	{
+		PrintToChat(client, "[%c%s%c]%c You may only pause inside a start zone or a stage zone.", MOSSGREEN, g_szChatPrefix, WHITE, RED);
+		return Plugin_Handled;
+	}
+	
 	Client_Surrender(client, args);
 	if (GetClientTeam(client) == 1)return Plugin_Handled;
 	PauseMethod(client);
@@ -2620,9 +2655,9 @@ public void OptionMenu(int client)
 		menu.AddItem("Hide Players  -  Disabled", "Hide other players  -  Disabled");
 	// #1
 	if (g_bEnableQuakeSounds[client])
-		menu.AddItem("Quake sounds - Enabled", "Quake sounds - Enabled");
+		menu.AddItem("Custom sounds - Enabled", "Custom sounds - Enabled");
 	else
-		menu.AddItem("Quake sounds - Disabled", "Quake sounds - Disabled");
+		menu.AddItem("Custom sounds - Disabled", "Custom sounds - Disabled");
 	// #2
 	if (g_bShowTime[client])
 		menu.AddItem("Show Timer  -  Enabled", "Show timer text  -  Enabled");
@@ -2752,4 +2787,277 @@ public Action Client_InfoPanel(int client, int args)
 public void InfoPanel(int client)
 {
 	g_bInfoPanel[client] = !g_bInfoPanel[client];
+}
+public Action Command_sound(int client, int args)
+{
+	SoundMenu(client);
+	return Plugin_Handled;
+}
+
+public void SoundMenu(int client)
+{
+	Menu menu = new Menu(SoundMenuHandler);
+	char menutitle[500];
+	Format(menutitle, 500, "%s - Sound Menu\n\nMap Record and Bonus record sound\nwill be played in the server\nto all players when you beat a record.\n\nPersonal Record sound will just be played\nTo you if you beat your own record.", g_szChatPrefix);
+	menu.SetTitle(menutitle);
+	char Sound[128];
+	Format(Sound, 128, "Map record Sound: %s", g_szSoundName[g_SrSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	Format(Sound, 128, "Bonus record Sound: %s", g_szSoundName[g_BrSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	Format(Sound, 128, "Personal record Sound: %s", g_szSoundName[g_BeatSoundId[client]]);
+	menu.AddItem( Sound, Sound);
+	menu.OptionFlags = MENUFLAG_BUTTON_EXIT;
+	
+	DisplayMenuAtItem(menu, client, 0, MENU_TIME_FOREVER);
+}
+public int SoundMenuHandler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		switch (param2)
+		{
+			case 0:SoundMenu2(param1, 0);
+			case 1:SoundMenu2(param1, 1);
+			case 2:SoundMenu2(param1, 2);
+		}
+		
+	}
+}
+
+public void SoundMenu2(int client, int type)
+{
+	
+	Menu menu = new Menu(SoundMenu2Handler);
+	
+	switch(type)
+	{
+		case 0:drawSrMenu(menu, client);
+		case 1:drawBrMenu(menu, client);
+		case 2:drawBeatMenu(menu, client);
+	}
+	
+	//TODO Utilise variables to track what menu your in, and if to show up to a player.
+	menu.OptionFlags = MENUFLAG_BUTTON_EXIT;
+	DisplayMenuAtItem(menu, client, 0, MENU_TIME_FOREVER);
+}
+public void drawSrMenu(Menu menu, int client)
+{
+	char menutitle[64];
+	Format(menutitle, 64, "%s - Server Record\n Custom Sound Menu", g_szChatPrefix);
+	menu.SetTitle(menutitle);
+	g_iBuyingMenuType[client] = 0;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+		
+		
+		if (g_iSoundType[i] == 0 || g_iSoundType[i] == 3 || g_iSoundType[i] == 4 || g_iSoundType[i] == 5)
+		{
+			//Sound needs to be added to lookup
+			g_iBuyingMenuLookup[client][addindex] = i;	
+			addindex++;		
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) ADMIN", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+	}
+}
+public void drawBrMenu(Menu menu, int client)
+{
+	char menutitle[64];
+	Format(menutitle, 64, "%s - Bonus Record\n Custom Sound Menu", g_szChatPrefix);
+	menu.SetTitle(menutitle);
+	g_iBuyingMenuType[client] = 1;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+
+		
+		if (g_iSoundType[i] == 1 || g_iSoundType[i] == 3 || g_iSoundType[i] == 4 || g_iSoundType[i] == 6)
+		{
+			//Sound needs to be added to lookup
+			
+			g_iBuyingMenuLookup[client][addindex] = i;	
+			addindex++;
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) ADMIN", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+	}
+}
+public void drawBeatMenu(Menu menu, int client)
+{
+	
+	char menutitle[64];
+	Format(menutitle, 64, "%s - Personal Record\n Custom Sound Menu", g_szChatPrefix);
+	menu.SetTitle(menutitle);
+	g_iBuyingMenuType[client] = 2;
+	int addindex = 0;
+	for (int i = 0; i < g_iCustomSoundCount; i++)
+	{	
+		//Type 0 Means client opened SR Menu, we neeed to show them types 0,3,4,5
+		//	0 = SR
+		//	1 = BR
+		//	2 = Beat
+		//	3 = SR/BR
+		//	4 = SR/BR/BEAT
+		//	5 = SR/BEAT
+		//	6 = BR/BEAT
+
+		
+		if (g_iSoundType[i] == 2 || g_iSoundType[i] == 4 || g_iSoundType[i] == 6 || g_iSoundType[i] == 5)
+		{
+			//Sound needs to be added to lookup
+			
+			g_iBuyingMenuLookup[client][addindex] = i;
+			//1 0 = 3
+			
+			addindex++;
+			//TODO Add in credit system for buying titles.
+			char menuName[64];
+			if(g_iSoundPerm[i] == 1)
+				Format(menuName, 64, "%s (Free) VIP", g_szSoundName[i]);
+			else if(g_iSoundPerm[i] == 2)
+				Format(menuName, 64, "%s (Free) STAFF", g_szSoundName[i]);
+			else
+				Format(menuName, 64, "%s (Free)", g_szSoundName[i]);
+			menu.AddItem( menuName,menuName);
+		}
+		
+	}
+}
+public int SoundMenu2Handler(Menu menu, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_End)
+	{
+		delete menu;
+	}
+	else if (action == MenuAction_Select)
+	{
+		int client = param1;
+		int selectedSound = g_iBuyingMenuLookup[param1][param2];
+		bool buyable = true;
+		if (g_iSoundType[selectedSound] == 1)
+			{
+			if (!g_bflagTitles[client][0])
+				{
+					PrintToChat(client, "[%c%s%c] This custom sound requires the VIP title.", MOSSGREEN, g_szChatPrefix, WHITE);
+					buyable = false;
+					
+				}
+			}
+		else if (g_iSoundType[selectedSound] == 2)
+			{
+			if (!CheckCommandAccess(client, "sm_mute", ADMFLAG_GENERIC, false)) 
+				{
+					PrintToChat(client, "[%c%s%c] This custom sound requires Staff.", MOSSGREEN, g_szChatPrefix, WHITE);
+					buyable = false;
+					
+				}
+			}
+		if(buyable)
+		{
+			switch(g_iBuyingMenuType[param1])
+			{
+				case 0:setSrSound(param1, selectedSound);
+				case 1:setBrSound(param1, selectedSound);
+				case 2:setBeatSound(param1, selectedSound);
+			}
+			
+		}	
+		
+	}
+
+}
+
+public void setSrSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %cServer Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_SrSoundId[client] = soundId;
+	TestRecordSound(client);
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+public void setBrSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Bonus Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_BrSoundId[client] = soundId;
+	TestBonusSound(client);
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+public void setBeatSound(int client, int soundId) 
+{
+	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %Personal Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
+	g_BeatSoundId[client] = soundId;
+	TestBeatSound(client);
+	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+
+public void TestRecordSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_SrSoundId[client]]);
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
+}
+public void TestBonusSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BrSoundId[client]]);
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
+}
+public void TestBeatSound(int client)
+{
+	char buffer[255];
+	Format(buffer, sizeof(buffer), "play *%s", g_szSoundPath[g_BeatSoundId[client]]);
+	
+	if (!IsFakeClient(client))
+	{
+		if(g_bEnableQuakeSounds[client])
+			ClientCommand(client, buffer);
+		else
+			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
+	}
 }

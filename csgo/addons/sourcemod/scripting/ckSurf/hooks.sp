@@ -333,13 +333,13 @@ public Action Say_Hook(int client, const char[] command, int argc)
 		Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}", sTextFinal, szChatRank);
 
 	// build: spec/death inserts
-	if (GetClientTeam(client) == TEAM_SPECTATOR)
+	if (GetClientTeam(client) == CS_TEAM_SPECTATOR)
 		Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", sTextFinal, "*SPEC*");
 	else if (!IsPlayerAlive(client))
 		Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s", sTextFinal, "*DEAD*");
 
 	// build: player name & message
-	if (GetClientTeam(client) == TEAM_SPECTATOR)
+	if (GetClientTeam(client) == CS_TEAM_SPECTATOR)
 		Format(sTextFinal, sizeof(sTextFinal), "%s {grey}%s{default}: %s", sTextFinal, szName, sText);
 	else
 		Format(sTextFinal, sizeof(sTextFinal), "%s {default}%s{default}: %s", sTextFinal, szName, sText);
