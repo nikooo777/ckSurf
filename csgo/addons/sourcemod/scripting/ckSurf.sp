@@ -34,6 +34,7 @@
 
 // Require new syntax
 #pragma newdecls required
+#pragma semicolon 1
 
 // Plugin info
 #define PLUGIN_VERSION "1.21.0"
@@ -463,7 +464,7 @@ float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
 int g_messages[MAXPLAYERS + 1]; 								// Spam message count
 ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
 ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
-ConVar g_hCustomHud = null										// Use new style hud or old.
+ConVar g_hCustomHud = null;										// Use new style hud or old.
 ConVar g_hMultiServerAnnouncements = null;						// Announce latest records made on another server
 
 /*----------  SQL Variables  ----------*/
@@ -838,7 +839,7 @@ public void OnMapStart()
 	hasStarted = true;
 	char sBuffer[256];
 	GetConVarString(FindConVar("hostname"), sBuffer,sizeof(sBuffer));
-	Format(g_szServerNameBrowser, 128, sBuffer)
+	Format(g_szServerNameBrowser, 128, sBuffer);
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
 

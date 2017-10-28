@@ -362,7 +362,7 @@ public Action CKTimer2(Handle timer)
 }
 public Action Timer_checkforrecord(Handle timer)
 {
-	db_CheckLatestRecords()
+	db_CheckLatestRecords();
 	return Plugin_Continue;
 }
 //challenge start countdown
