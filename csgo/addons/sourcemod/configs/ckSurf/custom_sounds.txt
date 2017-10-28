@@ -1,0 +1,68 @@
+// Custom Sounds for ckSurf
+//
+//	Sound Name is what will appear in menu list
+//  Sound cost is what how much the thing will cost, if you dont have store enabled just set this to 0
+//  Currently Store is disabled as the db implementation is not yet developed, you will still need a sound_cost but just set it to 0.
+//  Sound type is as below:
+//	0 = SR
+//	1 = BR
+//	2 = Beat
+//	3 = SR/BR
+//	4 = SR/BR/BEAT
+//	5 = SR/BEAT
+//	6 = BR/BEAT
+
+//
+//	sound perm is as below:
+//	0 = Anyone
+//	1 = VIP
+//	2 = Admin
+//
+//	Sound path is the reelative path from your csgo server directorty.
+//  
+//	Maximum titles: 100 
+//	You must 
+//
+// Example:
+//
+//	"0"
+//	{
+//		"sound_name"		"Holy Shit"
+//		"sound_cost"		"0"
+//		"sound_type"		"0"
+//		"sound_perm"		"0"
+//		"sound_path"		"0"
+//	}
+//	Custom Sound 0 is the Default Server Record Sound
+//	Custom Sound 1 is the Default Bonus Record Sound
+//	Custom Sound 2 is the Default Personal Record Sound
+//	
+
+
+"Custom Sounds"
+{	
+	"0"
+	{
+		"sound_name"		"Wicked Sick"
+		"sound_cost"		"0"
+		"sound_type"		"0"
+		"sound_perm"		"0"
+		"sound_path"		"quake/wickedsick.mp3"
+	}
+	"1"
+	{
+		"sound_name"		"Holy Shit"
+		"sound_cost"		"0"
+		"sound_type"		"4"
+		"sound_perm"		"0"
+		"sound_path"		"quake/wickedsick.mp3"
+	}
+	"2"
+	{
+		"sound_name"		"Unstoppable"
+		"sound_cost"		"0"
+		"sound_type"		"4"
+		"sound_perm"		"0"
+		"sound_path"		"quake/unstoppable.mp3"
+	}
+}
