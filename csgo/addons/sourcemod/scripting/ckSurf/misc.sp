@@ -82,16 +82,21 @@ int IsInsideZone (float location[3], float extraSize = 0.0)
 
 public void loadAllClientSettings()
 {
+	debug_msg(" Started loadAllClientSettings ");
 	for (int i = 1; i < MAXPLAYERS + 1; i++)
 	{
 		if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i] && !g_bLoadingSettings[i])
 		{
+			char buffer[412];
+			Format(buffer, 412, "Started Loading: %N on map: %s", i, g_szMapName);
+			debug_msg(buffer);
 			db_viewPersonalRecords(i, g_szSteamID[i], g_szMapName);
 			g_bLoadingSettings[i] = true;
+			
 			break;
 		}
 	}
-
+	debug_msg(" Ended loadAllClientSettings ");
 	g_bServerDataLoaded = true;
 }
 public void getSteamIDFromClient(int client, char[] buffer, int length)
@@ -2814,13 +2819,13 @@ public void SetInfoBotName(int ent)
 	if (!IsValidClient(g_InfoBot) || !GetConVarBool(g_hInfoBot))
 		return;
 	if (g_bMapChooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
-		Format(sNextMap, sizeof(sNextMap), "Pending Vote");
+		Format(sNextMap, sizeof(sNextMap), "Next Map: Pending Vote");
 	else
 	{
 		GetNextMap(sNextMap, sizeof(sNextMap));
 		char mapPieces[6][128];
 		int lastPiece = ExplodeString(sNextMap, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
-		Format(sNextMap, sizeof(sNextMap), "%s", mapPieces[lastPiece - 1]);
+		Format(sNextMap, sizeof(sNextMap), "Next Map: %s", mapPieces[lastPiece - 1]);
 	}
 	int iInfoBotTimeleft;
 	GetMapTimeLeft(iInfoBotTimeleft);
@@ -2833,13 +2838,13 @@ public void SetInfoBotName(int ent)
 	if (hTmp != null)
 		CloseHandle(hTmp);
 	if (GetConVarBool(g_hMapEnd) && iTimeLimit > 0)
-		Format(szBuffer, sizeof(szBuffer), "%s (in %s)", sNextMap, szTime);
+		Format(szBuffer, sizeof(szBuffer), "%s left.", sNextMap, szTime);
 	else
-		Format(szBuffer, sizeof(szBuffer), "Pending Vote (no time limit)");
-	SetClientName(g_InfoBot, szBuffer);
-	Client_SetScore(g_InfoBot, 9999);
-	CS_SetClientContributionScore(g_InfoBot, 99999);
-	CS_SetClientClanTag(g_InfoBot, "NEXTMAP");
+		Format(szBuffer, sizeof(szBuffer), "No Time Limit");
+	CS_SetClientClanTag(g_InfoBot, szTime);	
+	SetClientName(g_InfoBot, sNextMap);
+	Client_SetScore(g_InfoBot, 0);
+	CS_SetClientContributionScore(g_InfoBot, 2);	
 }
 
 public void CenterHudDead(int client)
@@ -3102,22 +3107,26 @@ public void CenterHudAlive(int client)
 			}
 			else
 				{
-					//SR Text: 
-					//PB TEXT: szPB
-					//RANK TEXT: szRank
-					//SERVER TEXT: g_szServerName1..3
-					//STAGE TEXT: szStage
-					//MAP TEXT: szMapName
-					//SPEED TEXT: szSpeed
-					//TIER TEXT: szTier
-					
-					switch(dispVersion)
+					if (!g_hCustomHud.BoolValue)
+						PrintHintText(client, "<font face='' size='21'><font color='#FF0000'>Stopped</font>%s %s\n<font color='#ffbb00'>PB:</font> %s%s\nStage: %s%s", pAika, g_szLastSRDifference[client], g_szLastPBDifference[client], szRank, StageString, szSpeed);
+					else
 						{
-							case 0: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font> %s\n%s%s\n%s",timerText, szSR, szStage, szSpeed, szAdvert);
-							case 1: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t\t%s\n%s\t\t%s\n%s",timerText, szPB, szTier, szSpeed, szAdvert);
-							case 2: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t%s\n%s%s\n%s",timerText, szRank2, szStage, szSpeed, szAdvert);
-						}	
+						//SR Text: 
+						//PB TEXT: szPB
+						//RANK TEXT: szRank
+						//SERVER TEXT: g_szServerName1..3
+						//STAGE TEXT: szStage
+						//MAP TEXT: szMapName
+						//SPEED TEXT: szSpeed
+						//TIER TEXT: szTier
 					
+						switch(dispVersion)
+							{
+								case 0: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>%s\n%s%s\n%s",timerText, szSR, szStage, szSpeed, szAdvert);
+								case 1: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t\t%s\n%s\t\t%s\n%s",timerText, szPB, szTier, szSpeed, szAdvert);
+								case 2: PrintHintText(client, "<font face=''size='21'>%s<font color='#FF0000'>Stopped</font>\t%s\n%s%s\n%s",timerText, szRank2, szStage, szSpeed, szAdvert);
+							}	
+						}
 				}
 		}
 	}
@@ -3377,4 +3386,10 @@ void SetEntityOpacity(int ent, int iAlpha)
 		SetEntityRenderMode(ent, RENDER_TRANSCOLOR);
 		Entity_SetRenderColor(ent, -1, -1, -1, iAlpha);
 	}
+}
+
+void debug_msg(char[] msg)
+{
+if(g_hDebugMode.BoolValue)
+	LogMessage(msg);
 }

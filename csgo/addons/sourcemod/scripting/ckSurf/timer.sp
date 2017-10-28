@@ -225,10 +225,6 @@ public Action animateTimer(Handle timer)
 
 public Action advertTimer(Handle timer)
 {
-	CreateTimer(2.75, advertTimer2, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
-}
-public Action advertTimer2(Handle timer)
-{
 	if(g_iAdvert==3)
 	{
 		g_iAdvert = 0;
@@ -366,7 +362,7 @@ public Action CKTimer2(Handle timer)
 }
 public Action Timer_checkforrecord(Handle timer)
 {
-	db_CheckLatestRecords()
+	db_CheckLatestRecords();
 	return Plugin_Continue;
 }
 //challenge start countdown

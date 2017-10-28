@@ -2798,7 +2798,7 @@ public void SoundMenu(int client)
 {
 	Menu menu = new Menu(SoundMenuHandler);
 	char menutitle[500];
-	Format(menutitle, 500, "%s - Sound Menu\n\nMap Record and Bonus record sound\nwill be played in the server\nto all players when you beat a record.\n\nPersonal Record sound will just be played\nTo you if you beat your own record.", g_szChatPrefix)
+	Format(menutitle, 500, "%s - Sound Menu\n\nMap Record and Bonus record sound\nwill be played in the server\nto all players when you beat a record.\n\nPersonal Record sound will just be played\nTo you if you beat your own record.", g_szChatPrefix);
 	menu.SetTitle(menutitle);
 	char Sound[128];
 	Format(Sound, 128, "Map record Sound: %s", g_szSoundName[g_SrSoundId[client]]);
@@ -2848,7 +2848,7 @@ public void SoundMenu2(int client, int type)
 public void drawSrMenu(Menu menu, int client)
 {
 	char menutitle[64];
-	Format(menutitle, 64, "%s - Server Record\n Custom Sound Menu", g_szChatPrefix)
+	Format(menutitle, 64, "%s - Server Record\n Custom Sound Menu", g_szChatPrefix);
 	menu.SetTitle(menutitle);
 	g_iBuyingMenuType[client] = 0;
 	int addindex = 0;
@@ -2883,7 +2883,7 @@ public void drawSrMenu(Menu menu, int client)
 public void drawBrMenu(Menu menu, int client)
 {
 	char menutitle[64];
-	Format(menutitle, 64, "%s - Bonus Record\n Custom Sound Menu", g_szChatPrefix)
+	Format(menutitle, 64, "%s - Bonus Record\n Custom Sound Menu", g_szChatPrefix);
 	menu.SetTitle(menutitle);
 	g_iBuyingMenuType[client] = 1;
 	int addindex = 0;
@@ -2920,7 +2920,7 @@ public void drawBeatMenu(Menu menu, int client)
 {
 	
 	char menutitle[64];
-	Format(menutitle, 64, "%s - Personal Record\n Custom Sound Menu", g_szChatPrefix)
+	Format(menutitle, 64, "%s - Personal Record\n Custom Sound Menu", g_szChatPrefix);
 	menu.SetTitle(menutitle);
 	g_iBuyingMenuType[client] = 2;
 	int addindex = 0;
@@ -2990,9 +2990,9 @@ public int SoundMenu2Handler(Menu menu, MenuAction action, int param1, int param
 		{
 			switch(g_iBuyingMenuType[param1])
 			{
-				case 0:setSrSound(param1, selectedSound)
-				case 1:setBrSound(param1, selectedSound)
-				case 2:setBeatSound(param1, selectedSound)
+				case 0:setSrSound(param1, selectedSound);
+				case 1:setBrSound(param1, selectedSound);
+				case 2:setBeatSound(param1, selectedSound);
 			}
 			
 		}	
@@ -3005,7 +3005,7 @@ public void setSrSound(int client, int soundId)
 {
 	PrintToChat(client, "[%c%s%c] %cSuccess! %cYou have purchased and activated %c%s%c for your %cServer Record Sound.", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN, GRAY, ORANGE, g_szSoundName[soundId], GRAY, ORANGE);
 	g_SrSoundId[client] = soundId;
-	TestRecordSound(client)
+	TestRecordSound(client);
 	//CreateTimer(0.1, RefreshAdminMenu, GetClientSerial(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 public void setBrSound(int client, int soundId) 

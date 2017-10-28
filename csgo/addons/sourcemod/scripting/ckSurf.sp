@@ -34,6 +34,7 @@
 
 // Require new syntax
 #pragma newdecls required
+#pragma semicolon 1
 
 // Plugin info
 #define PLUGIN_VERSION "1.21.0"
@@ -292,7 +293,6 @@ float g_fMaxPercCompleted[MAXPLAYERS + 1]; 						// The biggest % amount the pla
 
 /*----------  Advert variables  ----------*/
 int g_Advert; 													// Defines which advert to play
-
 /*----------  Maptier Variables  ----------*/
 char g_sTierString[MAXZONEGROUPS][512];							// The string for each zonegroup
 char g_sJustTier[64]; 												// Just the tier for the map
@@ -464,6 +464,9 @@ float g_fLastChatMessage[MAXPLAYERS + 1]; 						// Last message time
 int g_messages[MAXPLAYERS + 1]; 								// Spam message count
 ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
 ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
+ConVar g_hCustomHud = null;										// Use new style hud or old.
+ConVar g_hMultiServerAnnouncements = null;						// Announce latest records made on another server
+ConVar g_hDebugMode = null;										// Log Debug Messages
 
 /*----------  SQL Variables  ----------*/
 Handle g_hDb = null; 											// SQL driver
@@ -837,7 +840,7 @@ public void OnMapStart()
 	hasStarted = true;
 	char sBuffer[256];
 	GetConVarString(FindConVar("hostname"), sBuffer,sizeof(sBuffer));
-	Format(g_szServerNameBrowser, 128, sBuffer)
+	Format(g_szServerNameBrowser, 128, sBuffer);
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
 
@@ -855,17 +858,17 @@ public void OnMapStart()
 
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
-	* 2. Get map record time (db_GetMapRecord_Pro)
-	* 3. Get the amount of players that have finished the map (db_viewMapProRankCount)
-	* 4. Get the fastest bonus times (db_viewFastestBonus)
-	* 5. Get the total amount of players that have finsihed the bonus (db_viewBonusTotalCount)
-	* 6. Get map tier (db_selectMapTier)
-	* 7. Get record checkpoints (db_viewRecordCheckpointInMap)
-	* 8. Calculate average run time (db_CalcAvgRunTime)
-	* 9. Calculate averate bonus time (db_CalcAvgRunTimeBonus)
-	* 10. Calculate player count (db_CalculatePlayerCount)
-	* 11. Calculate player count with points (db_CalculatePlayersCountGreater0) 
-	* 12. Get spawn locations (db_selectSpawnLocations)
+	* 2. Get spawn locations (db_selectSpawnLocations)
+	* 3. Get map record time (db_GetMapRecord_Pro)
+	* 4. Get the amount of players that have finished the map (db_viewMapProRankCount)
+	* 5. Get the fastest bonus times (db_viewFastestBonus)
+	* 6. Get the total amount of players that have finsihed the bonus (db_viewBonusTotalCount)
+	* 7. Get map tier (db_selectMapTier)
+	* 8. Get record checkpoints (db_viewRecordCheckpointInMap)
+	* 9. Calculate average run time (db_CalcAvgRunTime)
+	* 10. Calculate averate bonus time (db_CalcAvgRunTimeBonus)
+	* 11. Calculate player count (db_CalculatePlayerCount)
+	* 12. Calculate player count with points (db_CalculatePlayersCountGreater0)  
 	* 13. Clear latest records (db_ClearLatestRecords)
 	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
 	* -> loadAllClientSettings
@@ -909,8 +912,8 @@ public void OnMapStart()
 	CreateTimer(10.0, Timer_checkforrecord, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	
 	CreateTimer(1.5, animateTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
-	CreateTimer(0.25, advertTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
-	
+	CreateTimer(3.0, advertTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+
 	//Start Async as to not make adverts update at same time as display format.
 	CreateTimer(60.0, AttackTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	CreateTimer(600.0, PlayerRanksTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
@@ -1732,7 +1735,11 @@ public void OnPluginStart()
 
 	CreateConVar("ckSurf_version", PLUGIN_VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
+	g_hDebugMode = CreateConVar("ck_debug_mode", "0", "Log Debug Messages", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_hCustomHud = CreateConVar("ck_new_hud", "1", "Determine if the new hud is shown", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
 	g_hAdvert1 = CreateConVar("ck_advert_1", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
 	g_hAdvert2 = CreateConVar("ck_advert_2", "ckSurf | Surf Plugin", "A 40 Character Advert shown to players when the timer isnt running. Set to same as ck_server_name to hide this.", FCVAR_NOTIFY);
@@ -1941,6 +1948,7 @@ public void OnPluginStart()
 	HookConVarChange(g_hAdvert1, OnSettingChanged);
 	GetConVarString(g_hAdvert2, g_szAdvert2, sizeof(g_szAdvert2));
 	HookConVarChange(g_hAdvert2, OnSettingChanged);
+
 
 	db_setupDatabase();
 
