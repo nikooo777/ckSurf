@@ -82,16 +82,21 @@ int IsInsideZone (float location[3], float extraSize = 0.0)
 
 public void loadAllClientSettings()
 {
+	debug_msg(" Started loadAllClientSettings ");
 	for (int i = 1; i < MAXPLAYERS + 1; i++)
 	{
 		if (IsValidClient(i) && !IsFakeClient(i) && !g_bSettingsLoaded[i] && !g_bLoadingSettings[i])
 		{
+			char buffer[412];
+			Format(buffer, 412, "Started Loading: %N on map: %s", i, g_szMapName);
+			debug_msg(buffer);
 			db_viewPersonalRecords(i, g_szSteamID[i], g_szMapName);
 			g_bLoadingSettings[i] = true;
+			
 			break;
 		}
 	}
-
+	debug_msg(" Ended loadAllClientSettings ");
 	g_bServerDataLoaded = true;
 }
 public void getSteamIDFromClient(int client, char[] buffer, int length)
@@ -3381,4 +3386,10 @@ void SetEntityOpacity(int ent, int iAlpha)
 		SetEntityRenderMode(ent, RENDER_TRANSCOLOR);
 		Entity_SetRenderColor(ent, -1, -1, -1, iAlpha);
 	}
+}
+
+void debug_msg(char[] msg)
+{
+if(g_hDebugMode.BoolValue)
+	LogMessage(msg);
 }

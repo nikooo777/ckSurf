@@ -466,6 +466,7 @@ ConVar g_henableChatProcessing = null; 							// Is chat processing enabled
 ConVar g_hMultiServerMapcycle = null;							// Use multi server mapcycle
 ConVar g_hCustomHud = null;										// Use new style hud or old.
 ConVar g_hMultiServerAnnouncements = null;						// Announce latest records made on another server
+ConVar g_hDebugMode = null;										// Log Debug Messages
 
 /*----------  SQL Variables  ----------*/
 Handle g_hDb = null; 											// SQL driver
@@ -857,17 +858,17 @@ public void OnMapStart()
 
 	/** Start Loading Server Settings:
 	* 1. Load zones (db_selectMapZones)
-	* 2. Get map record time (db_GetMapRecord_Pro)
-	* 3. Get the amount of players that have finished the map (db_viewMapProRankCount)
-	* 4. Get the fastest bonus times (db_viewFastestBonus)
-	* 5. Get the total amount of players that have finsihed the bonus (db_viewBonusTotalCount)
-	* 6. Get map tier (db_selectMapTier)
-	* 7. Get record checkpoints (db_viewRecordCheckpointInMap)
-	* 8. Calculate average run time (db_CalcAvgRunTime)
-	* 9. Calculate averate bonus time (db_CalcAvgRunTimeBonus)
-	* 10. Calculate player count (db_CalculatePlayerCount)
-	* 11. Calculate player count with points (db_CalculatePlayersCountGreater0) 
-	* 12. Get spawn locations (db_selectSpawnLocations)
+	* 2. Get spawn locations (db_selectSpawnLocations)
+	* 3. Get map record time (db_GetMapRecord_Pro)
+	* 4. Get the amount of players that have finished the map (db_viewMapProRankCount)
+	* 5. Get the fastest bonus times (db_viewFastestBonus)
+	* 6. Get the total amount of players that have finsihed the bonus (db_viewBonusTotalCount)
+	* 7. Get map tier (db_selectMapTier)
+	* 8. Get record checkpoints (db_viewRecordCheckpointInMap)
+	* 9. Calculate average run time (db_CalcAvgRunTime)
+	* 10. Calculate averate bonus time (db_CalcAvgRunTimeBonus)
+	* 11. Calculate player count (db_CalculatePlayerCount)
+	* 12. Calculate player count with points (db_CalculatePlayersCountGreater0)  
 	* 13. Clear latest records (db_ClearLatestRecords)
 	* 14. Get dynamic timelimit (db_GetDynamicTimelimit)
 	* -> loadAllClientSettings
@@ -1733,6 +1734,8 @@ public void OnPluginStart()
 	LoadTranslations("ckSurf.phrases");
 
 	CreateConVar("ckSurf_version", PLUGIN_VERSION, "ckSurf Version", FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
+
+	g_hDebugMode = CreateConVar("ck_debug_mode", "0", "Log Debug Messages", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
 	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
