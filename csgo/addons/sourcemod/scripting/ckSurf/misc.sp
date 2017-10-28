@@ -1147,7 +1147,7 @@ public void LimitSpeed(int client)
 	if (CurVelVec[2] == 0.0)
 		CurVelVec[2] = 1.0;
 
-	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0));
+	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0) + Pow(CurVelVec[2], 2.0));
 
 	if (currentspeed > speedCap)
 	{
@@ -2311,52 +2311,6 @@ public int GetSkillgroupFromPoints(int points)
 	return 0;
 }
 
-stock Action PrintSpecMessageAll(int client)
-{
-	char szName[64];
-	GetClientName(client, szName, sizeof(szName));
-	normalizeChatString(szName, 64);
-
-	char szTextToAll[1024];
-	GetCmdArgString(szTextToAll, sizeof(szTextToAll));
-	StripQuotes(szTextToAll);
-	if (StrEqual(szTextToAll, "") || StrEqual(szTextToAll, " ") || StrEqual(szTextToAll, "  "))
-		return Plugin_Handled;
-
-	normalizeChatString(szTextToAll, 1024);
-	char szChatRank[64];
-	Format(szChatRank, 64, "%s", g_pr_chat_coloredrank[client]);
-
-	if (GetConVarBool(g_hPointSystem) && GetConVarBool(g_hColoredNames))
-		Format(szName,sizeof(szName),"%s%s",g_pr_rankColor[client],szName);
-
-	if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
-		CPrintToChatAll("{green}%s{default} %s *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szChatRank, szName, szTextToAll);
-	else
-		if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
-			CPrintToChatAll("%s *SPEC* {grey}%s{default}: %s", szChatRank, szName, szTextToAll);
-		else
-			if (GetConVarBool(g_hCountry))
-				CPrintToChatAll("[{green}%s{default}] *SPEC* {grey}%s{default}: %s", g_szCountryCode[client], szName, szTextToAll);
-			else
-				CPrintToChatAll("*SPEC* {grey}%s{default}: %s", szName, szTextToAll);
-
-	for (int i = 1; i <= MaxClients; i++)
-		if (IsValidClient(i))
-		{
-			if (GetConVarBool(g_hCountry) && (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag))))
-				PrintToConsole(i, "%s [%s] *SPEC* %s: %s", g_szCountryCode[client], g_pr_rankname[client], szName, szTextToAll);
-			else
-				if (GetConVarBool(g_hPointSystem) || ((StrEqual(g_pr_rankname[client], "ADMIN", false)) && GetConVarBool(g_hAdminClantag)))
-					PrintToConsole(i, "[%s] *SPEC* %s: %s", g_szCountryCode[client], szName, szTextToAll);
-				else
-					if (GetConVarBool(g_hPointSystem))
-						PrintToConsole(i, "[%s] *SPEC* %s: %s", g_pr_rankname[client], szName, szTextToAll);
-					else
-						PrintToConsole(i, "*SPEC* %s: %s", szName, szTextToAll);
-		}
-	return Plugin_Handled;
-}
 //http://pastebin.com/YdUWS93H
 public bool CheatFlag(const char[] voice_inputfromfile, bool isCommand, bool remove)
 {
@@ -2825,31 +2779,26 @@ public void LoadInfoBot()
 	}
 }
 
-public void CreateNavFiles()
+public void CreateNavFile()
 {
-	char DestFile[256];
-	char SourceFile[256];
+	// check if source file exists
+	char SourceFile[128];
 	Format(SourceFile, sizeof(SourceFile), "maps/replay_bot.nav");
 	if (!FileExists(SourceFile))
 	{
 		LogError("<ckSurf> Failed to create .nav files. Reason: %s doesn't exist!", SourceFile);
 		return;
 	}
-	char map[256];
-	int mapListSerial = -1;
-	if (ReadMapList(g_MapList, mapListSerial, "mapcyclefile", MAPLIST_FLAG_CLEARARRAY | MAPLIST_FLAG_NO_DEFAULT) == null)
-		if (mapListSerial == -1)
-			return;
 
-	for (int i = 0; i < GetArraySize(g_MapList); i++)
+	// build nav file path
+	char DestFile[128];
+	Format(DestFile, 128, "maps/%s.nav", g_szMapName);
+
+	// copy if doesn't exist and reload via changelevel
+	if(!FileExists(DestFile))
 	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		if (map[0])
-		{
-			Format(DestFile, sizeof(DestFile), "maps/%s.nav", map);
-			if (!FileExists(DestFile))
-				File_Copy(SourceFile, DestFile);
-		}
+		File_Copy(SourceFile, DestFile);
+		ForceChangeLevel(g_szMapName, ".nav file generate");
 	}
 }
 

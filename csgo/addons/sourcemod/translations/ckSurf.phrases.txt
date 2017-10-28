@@ -87,12 +87,12 @@
 	}
 	"SpecHelp"
 	{
-		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c},{8:c} "
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c},{8:c}"
 		"en"		"[{1}{2}Help{3}] {4}Write {5}!spec {6}to spec a player! After your finshed write {7}!r {8}."
 	}
 	"NCHelp"
 	{
-		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c},{8:c} "
+		"#format"	"{1:c},{2:s},{3:c},{4:c},{5:c},{6:c},{7:c},{8:c}"
 		"en"		"[{1}{2}Help{3}] {4}Write {5}!nc {6}to noclip around the map! After your finshed write {7}!ncr {8}."
 	}
 	"BonusNotFound"

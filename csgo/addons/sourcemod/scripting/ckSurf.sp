@@ -36,7 +36,7 @@
 #pragma newdecls required
 
 // Plugin info
-#define PLUGIN_VERSION "1.20.11"
+#define PLUGIN_VERSION "1.21.0"
 
 // Database definitions
 #define MYSQL 0
@@ -840,9 +840,14 @@ public void OnMapStart()
 	Format(g_szServerNameBrowser, 128, sBuffer)
 	// Get mapname
 	GetCurrentMap(g_szMapName, 128);
+
+	// create nav file
+	CreateNavFile();
+
 	// Load spawns
 	if (!g_bRenaming && !g_bInTransactionChain)
 		checkSpawnPoints();
+
 	// Workshop fix
 	char mapPieces[6][128];
 	int lastPiece = ExplodeString(g_szMapName, "/", mapPieces, sizeof(mapPieces), sizeof(mapPieces[]));
@@ -1751,7 +1756,7 @@ public void OnPluginStart()
 	g_hDynamicTimelimit = CreateConVar("ck_dynamic_timelimit", "0", "on/off - Sets a suitable timelimit by calculating the average run time (This method requires ck_map_end 1, greater than 5 map times and a default timelimit in your server config for maps with less than 5 times", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hExtraPoints = CreateConVar("ck_ranking_extra_points_improvements", "15.0", "Gives players x extra points for improving their time", FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	g_hExtraPoints2 = CreateConVar("ck_ranking_extra_points_firsttime", "50.0", "Gives players x extra points for finishing a map for the first time", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_hWelcomeMsg = CreateConVar("ck_welcome_msg", " {yellow}>>{default} {grey}Welcome! This server is using {lime}ckSurf", "Welcome message (supported color tags: {default}, {darkred}, {green}, {lightgreen}, {orange}, {blue}, {olive}, {lime}, {red}, {purple}, {grey}, {yellow}, {lightblue}, {steelblue}, {darkblue}, {pink}, {lightred})", FCVAR_NOTIFY);
+	g_hWelcomeMsg = CreateConVar("ck_welcome_msg", " {yellow}>>{default} {grey}Welcome! This server is using {lime}ckSurf", "Welcome message (supported color tags: {default}, {red}, {lightred}, {darkred}, {bluegray}, {blue}, {darkblue}, {purple}, {orchid}, {yellow}, {gold}, {lightgreen}, {green}, {lime}, {gray}, {gray2})", FCVAR_NOTIFY);
 	g_hChecker = CreateConVar("ck_zone_checker", "5.0", "The duration in seconds when the beams around zones are refreshed", FCVAR_NOTIFY);
 	g_hZoneDisplayType = CreateConVar("ck_zone_drawstyle", "1", "0 = Do not display zones, 1 = display the lower edges of zones, 2 = display whole zones", FCVAR_NOTIFY);
 	g_hZonesToDisplay = CreateConVar("ck_zone_drawzones", "1", "Which zones are visible for players. 1 = draw start & end zones, 2 = draw start, end, stage and bonus zones, 3 = draw all zones", FCVAR_NOTIFY);
@@ -2122,9 +2127,6 @@ public void OnPluginStart()
 
 	//button sound hook
 	//AddNormalSoundHook(NormalSHook_callback);
-
-	//nav files
-	CreateNavFiles();
 
 	// Botmimic 2
 	// https://forums.alliedmods.net/showthread.php?t=180114
