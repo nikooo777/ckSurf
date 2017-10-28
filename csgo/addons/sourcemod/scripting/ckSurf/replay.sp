@@ -278,7 +278,7 @@ public void PlayRecord(int client, int type)
 	int iFileHeader[FILE_HEADER_LENGTH];
 	BuildPath(Path_SM, sPath, sizeof(sPath), "%s", sPath);
 	LoadRecordFromFile(sPath, iFileHeader, false);
-
+	CS_SetClientContributionScore(client, 1);
 	if (type == 0)
 	{
 		Format(g_szReplayTime, sizeof(g_szReplayTime), "%s", iFileHeader[view_as<int>(FH_Time)]);
