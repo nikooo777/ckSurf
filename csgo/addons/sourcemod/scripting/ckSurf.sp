@@ -204,6 +204,7 @@ public Plugin myinfo =
 =            Variables            =
 =================================*/
 
+bool stealthFound = false;
 //used to fix the hibernation bug
 bool hasStarted = false;
 /*----------  Stages  ----------*/
@@ -236,8 +237,8 @@ char g_szServerNameBrowser[128];
 char g_szSoundPath[SOUND_COUNT][128];
 char g_szSoundName[SOUND_COUNT][128];
 int g_iSoundCost[SOUND_COUNT];
-int g_iSoundType[SOUND_COUNT];
-int g_iSoundPerm[SOUND_COUNT];
+int g_iSoundType[SOUND_COUNT]; 
+int g_iSoundPerm[SOUND_COUNT]; 
 int g_iBuyingMenuLookup[MAXPLAYERS + 1][SOUND_COUNT];
 int g_iBuyingMenuType[MAXPLAYERS + 1];
 int g_iCustomSoundCount; 										// How many custom Sounds are loaded
@@ -803,6 +804,11 @@ public void OnLibraryAdded(const char[] name)
 		}
 	}
 }
+public void OnAllPluginsLoaded()
+{
+	stealthFound = LibraryExists("StealthRevived");
+}
+ 
 
 public void OnPluginEnd()
 {
