@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.1"
+#define PLUGIN_VERSION "1.21.1.2"
 
 // Database definitions
 #define MYSQL 0
@@ -318,6 +318,7 @@ int g_mapZoneGroupCount;										// Zone group cound
 float g_fZoneCorners[MAXZONES][8][3];							// Additional zone corners, can't store multi dimensional arrays in enums..
 
 // Editing zones
+ConVar g_hAutoZoneHeight;
 bool g_bAutoZone[MAXPLAYERS + 1];
 float g_fAutoZoneBlock[MAXPLAYERS + 1][2][3];
 bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
@@ -1746,6 +1747,7 @@ public void OnPluginStart()
 	g_hDebugMode = CreateConVar("ck_debug_mode", "0", "Log Debug Messages", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hAutoZoneHeight = CreateConVar("ck_autozone_height", "66.0", "Sets the automatic height for autozoning", FCVAR_NOTIFY, true, 0.0, true, 500.0);
 	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCustomHud = CreateConVar("ck_new_hud", "1", "Determine if the new hud is shown", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);

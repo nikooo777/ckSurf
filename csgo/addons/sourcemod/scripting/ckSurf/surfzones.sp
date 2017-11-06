@@ -1891,8 +1891,9 @@ public void autoZone(int client)
 		//Set Client to be paused 
 		g_Editing[client] = 2;
 		PrintToChat(client, "[%c%s%c] %cZone Found. Press Save To save zone", MOSSGREEN, g_szChatPrefix, WHITE, LIMEGREEN);
-		//Add 50.0 units in height onto zone. Not sure about this part. Could be a ck_autozone_height cvar...?
-		g_Positions[client][0][2] = FloatAdd(g_Positions[client][0][2], 50.0);
+		//Add 50.0 units in height onto zone. Not sure about this part.
+		float height = GetConVarFloat(g_hAutoZoneHeight);
+		g_Positions[client][0][2] = FloatAdd(g_Positions[client][0][2], height);
 		//Draw the zone to the client, because as the g_editing is paused it will not refresh automatically.
 		DrawBeamBox(client);
 	}
