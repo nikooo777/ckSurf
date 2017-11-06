@@ -1965,6 +1965,11 @@ public void OnPluginStart()
 	//RegConsoleCmd("sm_rtimes", Command_rTimes, "[%s] spawns a usp silencer", g_szChatPrefix);
 
 	//client commands
+	RegConsoleCmd("sm_mapmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_musicmute", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopsound", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_mapsound", Client_mapmusic, "[ckSurf] Stops Map Music");
 	RegConsoleCmd("sm_usp", Client_Usp, "[ckSurf] spawns a usp silencer");
 	RegConsoleCmd("sm_avg", Client_Avg, "[ckSurf] prints in chat the average time of the current map");
 	RegConsoleCmd("sm_accept", Client_Accept, "[ckSurf] allows you to accept a challenge request");

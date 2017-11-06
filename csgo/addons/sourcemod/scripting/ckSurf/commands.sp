@@ -68,6 +68,17 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 	}
 }
 
+public Action Client_mapmusic(int client, int args)
+{
+	if (IsValidClient(client))
+	{
+		ClientCommand(client,"snd_playsounds Music.StopAllExceptMusic");
+		ReplyToCommand(client, "[%c%s%c] Map music has been stopped.", MOSSGREEN, g_szChatPrefix, WHITE);
+	}
+	return Plugin_Handled;
+}
+
+
 public Action Command_MutePlayer(int client, int args)
 {
 	if (!IsValidClient(client))
