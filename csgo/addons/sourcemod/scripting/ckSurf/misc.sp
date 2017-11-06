@@ -1585,8 +1585,8 @@ public void InitPrecache()
 	AddFileToDownloadsTable(szBuffer);
 	PrecacheModel(szBuffer, true);
 
-	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true);
-	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true);
+ 	g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt", true); 
+ 	g_HaloSprite = PrecacheModel("materials/sprites/halo.vmt", true); 
 	PrecacheModel(ZONE_MODEL);
 }
 

@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.0"
+#define PLUGIN_VERSION "1.21.1"
 
 // Database definitions
 #define MYSQL 0
@@ -318,6 +318,8 @@ int g_mapZoneGroupCount;										// Zone group cound
 float g_fZoneCorners[MAXZONES][8][3];							// Additional zone corners, can't store multi dimensional arrays in enums..
 
 // Editing zones
+bool g_bAutoZone[MAXPLAYERS + 1];
+float g_fAutoZoneBlock[MAXPLAYERS + 1][2][3];
 bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
 char g_CurrentZoneName[MAXPLAYERS + 1][64];						// Selected zone's name
 float g_Positions[MAXPLAYERS + 1][2][3];						// Selected zone's position
