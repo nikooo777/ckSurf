@@ -184,12 +184,13 @@ public void StartTouch(int client, int action[3])
 			{
 				Client_Stop(client, 1);
 			}
-			if (g_bPracticeMode[client]) // Go back to normal mode if checkpoint mode is on
+			//Do we really need to restart a player....
+			/*if (g_bPracticeMode[client]) // Go back to normal mode if checkpoint mode is on
 			{
 				Command_normalMode(client, 1);
 				clearPlayerCheckPoints(client);
 				g_fLastTimePracUsed[client] = GetGameTime();
-			}
+			}*/
 			// Resetting checkpoints
 			lastCheckpoint[g_iClientInZone[client][2]][client] = 999;
 		}

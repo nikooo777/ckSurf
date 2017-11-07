@@ -1760,7 +1760,8 @@ public void db_resetPlayerRecords(int client, char steamid[128])
 	Handle pack = CreateDataPack();
 	WritePackCell(pack, client);
 	WritePackString(pack, steamid);
-	SQL_TQuery(g_hDb, SQL_CheckCallback3, "UPDATE ck_playerrank SET multiplier ='0' WHERE steamid = '%s'", pack, szsteamid);
+	Format(szQuery, 255, "UPDATE ck_playerrank SET multiplier ='0' WHERE steamid = '%s'", szsteamid);
+	SQL_TQuery(g_hDb, SQL_CheckCallback3, szQuery, pack);
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsValidClient(i))
