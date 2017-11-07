@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.0"
+#define PLUGIN_VERSION "1.21.1.3"
 
 // Database definitions
 #define MYSQL 0
@@ -204,6 +204,7 @@ public Plugin myinfo =
 =            Variables            =
 =================================*/
 
+bool stealthFound = false;
 //used to fix the hibernation bug
 bool hasStarted = false;
 /*----------  Stages  ----------*/
@@ -236,8 +237,8 @@ char g_szServerNameBrowser[128];
 char g_szSoundPath[SOUND_COUNT][128];
 char g_szSoundName[SOUND_COUNT][128];
 int g_iSoundCost[SOUND_COUNT];
-int g_iSoundType[SOUND_COUNT];
-int g_iSoundPerm[SOUND_COUNT];
+int g_iSoundType[SOUND_COUNT]; 
+int g_iSoundPerm[SOUND_COUNT]; 
 int g_iBuyingMenuLookup[MAXPLAYERS + 1][SOUND_COUNT];
 int g_iBuyingMenuType[MAXPLAYERS + 1];
 int g_iCustomSoundCount; 										// How many custom Sounds are loaded
@@ -317,6 +318,9 @@ int g_mapZoneGroupCount;										// Zone group cound
 float g_fZoneCorners[MAXZONES][8][3];							// Additional zone corners, can't store multi dimensional arrays in enums..
 
 // Editing zones
+ConVar g_hAutoZoneHeight;
+bool g_bAutoZone[MAXPLAYERS + 1];
+float g_fAutoZoneBlock[MAXPLAYERS + 1][2][3];
 bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
 char g_CurrentZoneName[MAXPLAYERS + 1][64];						// Selected zone's name
 float g_Positions[MAXPLAYERS + 1][2][3];						// Selected zone's position
@@ -803,6 +807,11 @@ public void OnLibraryAdded(const char[] name)
 		}
 	}
 }
+public void OnAllPluginsLoaded()
+{
+	stealthFound = LibraryExists("StealthRevived");
+}
+ 
 
 public void OnPluginEnd()
 {
@@ -1738,6 +1747,7 @@ public void OnPluginStart()
 	g_hDebugMode = CreateConVar("ck_debug_mode", "0", "Log Debug Messages", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hAutoZoneHeight = CreateConVar("ck_autozone_height", "66.0", "Sets the automatic height for autozoning", FCVAR_NOTIFY, true, 0.0, true, 500.0);
 	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCustomHud = CreateConVar("ck_new_hud", "1", "Determine if the new hud is shown", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
@@ -1955,6 +1965,11 @@ public void OnPluginStart()
 	//RegConsoleCmd("sm_rtimes", Command_rTimes, "[%s] spawns a usp silencer", g_szChatPrefix);
 
 	//client commands
+	RegConsoleCmd("sm_mapmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_musicmute", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopsound", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_mapsound", Client_mapmusic, "[ckSurf] Stops Map Music");
 	RegConsoleCmd("sm_usp", Client_Usp, "[ckSurf] spawns a usp silencer");
 	RegConsoleCmd("sm_avg", Client_Avg, "[ckSurf] prints in chat the average time of the current map");
 	RegConsoleCmd("sm_accept", Client_Accept, "[ckSurf] allows you to accept a challenge request");
