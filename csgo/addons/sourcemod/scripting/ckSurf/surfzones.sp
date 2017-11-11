@@ -200,10 +200,11 @@ public void StartTouch(int client, int action[3])
 					//This tempfix probably introduces the exploit that allows huge start speeds
 					Command_normalMode(client, 1); // Temp fix. Need to track stages checkpoints were made in.
 				}
+				/* Allows for practising Telehops.
 				else 
 				{
 					Command_goToPlayerCheckpoint(client, 1);
-				}
+				}*/
 			}
 			else
 			{  // Setting valid to false, in case of checkers
@@ -271,6 +272,11 @@ public void EndTouch(int client, int action[3])
 					{
 						ClientCommand(client, "play buttons\\button10.wav");
 						PrintToChat(client, "[%c%s%c] You have noclipped and have not restarted, please type !r to begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
+					}
+					else if(!(GetEntityGravity(client) == 1 || 0))
+					{
+						PrintToChat(client, "[%c%s%c] Your Gravity (%f) is not correct. Change team to start.", MOSSGREEN, g_szChatPrefix, WHITE, GetEntityGravity(client));
+						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
 					{

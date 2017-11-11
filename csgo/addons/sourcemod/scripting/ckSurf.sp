@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.2.4"
+#define PLUGIN_VERSION "1.21.2.5"
 
 // Database definitions
 #define MYSQL 0
