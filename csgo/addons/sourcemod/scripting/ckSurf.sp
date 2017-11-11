@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.1.3"
+#define PLUGIN_VERSION "1.21.2.1"
 
 // Database definitions
 #define MYSQL 0
@@ -656,6 +656,8 @@ int g_AdminMenuFlag; 											// Admin flag required for !ckadmin
 ConVar g_hAdminMenuFlag = null;
 Handle g_hAdminMenu = null; 									// Add !ckadmin to !admin
 int g_AdminMenuLastPage[MAXPLAYERS + 1]; 						// Weird admin menu trickery TODO: wtf
+int g_CurrentTierMenu[MAXPLAYERS + 1];
+char g_szTierMapName[MAXPLAYERS + 1][256];
 
 /*----------  Challenge variables  ----------*/ 
 /**
@@ -2055,6 +2057,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "[ckSurf] Vote to extend the map");
 	RegConsoleCmd("sm_vmute", Command_MutePlayer, "[ckSurf] Mute a player");
+	RegConsoleCmd("sm_maps", Command_ShowMapTiers, "[ckSurf] List All Maps By Tier.");
 
 	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");

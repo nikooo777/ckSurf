@@ -155,6 +155,10 @@ char sql_resetRecordPro[] = "UPDATE ck_playertimes SET runtimepro = '-1.0' WHERE
 char sql_resetCheckpoints[] = "DELETE FROM ck_checkpoints WHERE steamid = '%s' AND mapname LIKE '%s';";
 char sql_resetMapRecords[] = "DELETE FROM ck_playertimes WHERE mapname = '%s'";
 
+char sql_selectTieredMaps[] = "SELECT distinct z.mapname as 'mapname', IFNULL((SELECT COUNT(mapname) FROM ck_playertimes WHERE mapname = z.mapname), 0) as 'maptimes', mt.tier FROM ck_playertimes t LEFT JOIN ck_zones z ON t.mapname = z.mapname  LEFT JOIN ck_maptier mt ON mt.mapname = z.mapname %s GROUP BY z.mapname ORDER BY maptimes DESC";
+ 
+
+
 ////////////////////////
 //// DATABASE SETUP/////
 ////////////////////////
@@ -6610,4 +6614,227 @@ public void RecordPanelHandler2(Handle menu, MenuAction action, int param1, int 
 	{
 		ckTopMenu(param1);
 	}
-} 
+}
+
+
+public void db_showMapTiers(int client)
+{
+	Menu menu = CreateMenu(TierHandler);
+	SetMenuTitle(menu, "What Map do you want to see");
+	AddMenuItem(menu, "0", "All Maps");
+	AddMenuItem(menu, "1", "Tier 1");
+	AddMenuItem(menu, "2", "Tier 2");
+	AddMenuItem(menu, "3", "Tier 3");
+	AddMenuItem(menu, "4", "Tier 4");
+	AddMenuItem(menu, "5", "Tier 5");
+	AddMenuItem(menu, "6", "Tier 6");
+	AddMenuItem(menu, "7", "Tier 7");
+	AddMenuItem(menu, "8", "Tier ?");
+	SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);	
+
+}
+public int TierHandler(Handle menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_Select)
+	{
+		db_selectMapTiers(client, item);
+	}
+	else
+		if (action == MenuAction_End)
+		{
+			CloseHandle(menu);
+		}
+}
+
+
+
+public void db_selectMapTiers(int client, int tier)
+{
+	char szQuery[512];
+	char whereClause[128];
+	if(tier == 8)
+	{
+		Format(whereClause, 128, "WHERE mt.tier IS NULL");
+	}
+	else if (tier == 0)
+	{
+		Format(whereClause, 128, "");
+	}
+	else
+	{
+		Format(whereClause, 128, "WHERE mt.tier = %i", tier);
+	}
+	Format(szQuery, 512, sql_selectTieredMaps, whereClause);
+ 	g_CurrentTierMenu[client] = tier;
+	SQL_TQuery(g_hDb, db_selectMapWithTierCallback, szQuery, client, DBPrio_Low);
+}
+
+
+
+public void db_selectMapWithTierCallback(Handle owner, Handle hndl, const char[] error, any client)
+{
+
+	int tier = g_CurrentTierMenu[client];
+	if (hndl == null)
+	{
+		LogError("[%s] SQL Error (db_selectMapWithTierCallback): %s", g_szChatPrefix, error);
+		return;
+	}
+
+	char szMapName[128];
+	int times;
+	char sztier[2];
+	char szValue[256];
+	Menu menu = new Menu(MapHandler);
+	char title[128];
+	if(tier == 8)
+	{ 
+		Format(title, 128, "Untierd Maps");
+	}
+	else if (tier == 0)
+	{
+		Format(title, 128, "All Maps");
+	}
+	else
+	{
+		Format(title, 128, "Tier %i Maps", tier);
+	}
+	menu.SetTitle("    %s\n    Completes  Tier | Mapname", title);
+	menu.Pagination = 5;
+	
+	if (SQL_HasResultSet(hndl))
+	{
+		int i = 1;
+		while (SQL_FetchRow(hndl))
+		{
+			SQL_FetchString(hndl, 0, szMapName, 64);
+			times = SQL_FetchInt(hndl, 1);
+			SQL_FetchString(hndl, 2, sztier, 2);
+			if(StrEqual(sztier, ""))
+			{
+				Format(sztier, 2, "?");
+			}
+			char szLenTimes[16];
+			IntToString(times, szLenTimes, 16);
+			if (strlen(szLenTimes) == 1)
+				Format(szValue, 128, " %i                %s     | %s",times,sztier,szMapName);
+			else if (strlen(szLenTimes) == 2)
+				Format(szValue, 128, " %i              %s     | %s",times,sztier,szMapName);
+			else if (strlen(szLenTimes) == 3)
+				Format(szValue, 128, " %i            %s     | %s",times,sztier,szMapName);
+			else if (strlen(szLenTimes) == 4)
+				Format(szValue, 128, " %i          %s     | %s",times,sztier,szMapName);
+			else if (strlen(szLenTimes) == 5)
+				Format(szValue, 128, " %i        %s     | %s",times,sztier,szMapName);
+			else
+				Format(szValue, 128, " %i    %s     | %s",times,sztier,szMapName);
+			if(CheckCommandAccess(client, "sm_ckadmin", g_AdminMenuFlag, false))
+				menu.AddItem(szMapName, szValue, ITEMDRAW_DEFAULT);
+			else
+				menu.AddItem(szMapName, szValue, ITEMDRAW_DISABLED);
+			i++;
+		}
+		if (i == 1)
+		{
+			menu.AddItem("No Maps Found", "No Maps Found", ITEMDRAW_DISABLED);
+		}
+	}
+	else
+	{
+		menu.AddItem("No Maps Found", "No Maps Found", ITEMDRAW_DISABLED);
+	}
+	menu.OptionFlags = MENUFLAG_BUTTON_EXITBACK;
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+public int MapHandler(Handle menu, MenuAction action, int client, int item)
+{
+	if (action == MenuAction_Select)
+	{
+		char mapName[256];
+		GetMenuItem(menu, item, mapName, sizeof(mapName));
+		g_szTierMapName[client] = mapName;
+		db_editMapTier(client);
+	}
+	else
+		if (action == MenuAction_Cancel)
+		{
+			if (1 <= client <= MaxClients && IsValidClient(client))
+			{
+				db_showMapTiers(client);
+			}
+		}
+		else
+		if (action == MenuAction_End)
+		{
+			CloseHandle(menu);
+		}
+}
+public void db_editMapTier(int client)
+{
+	Menu menu = CreateMenu(EditTierHandler);
+	SetMenuTitle(menu, "Choose Tier for: %s", g_szTierMapName[client]);
+	AddMenuItem(menu, "1", "Tier 1");
+	AddMenuItem(menu, "2", "Tier 2");
+	AddMenuItem(menu, "3", "Tier 3");
+	AddMenuItem(menu, "4", "Tier 4");
+	AddMenuItem(menu, "5", "Tier 5");
+	AddMenuItem(menu, "6", "Tier 6");
+	AddMenuItem(menu, "7", "Tier 7");
+	AddMenuItem(menu, "8", "Remove Tier");
+	if(g_CurrentTierMenu[client] == 10)
+		SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXIT);
+	else
+		SetMenuOptionFlags(menu, MENUFLAG_BUTTON_EXITBACK);
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);	
+}
+
+public int EditTierHandler(Handle menu, MenuAction action, int client, int tier)
+{
+	
+	if (action == MenuAction_Select)
+	{
+		//as array of menu select starts at 0 we need to increment tier.
+		tier += 1;
+		char szQuery[512];
+		if(tier == 8)
+		{
+			Format(szQuery, 512, "DELETE FROM ck_maptier WHERE mapname ='%s';",  g_szTierMapName[client] );
+			
+		}
+		else
+		{
+			Format(szQuery, 512, "UPDATE ck_maptier SET tier = %i WHERE mapname = '%s';", tier, g_szTierMapName[client] );
+		}
+	 	g_CurrentTierMenu[client] = tier;
+		SQL_TQuery(g_hDb, db_updateMapTierCallback, szQuery, client, DBPrio_Low);
+		db_selectMapTiers(client, g_CurrentTierMenu[client]);
+	}
+	else
+		if (action == MenuAction_Cancel)
+		{
+			if (1 <= client <= MaxClients && IsValidClient(client))
+			{
+				if(g_CurrentTierMenu[client] != 10)
+					db_selectMapTiers(client, g_CurrentTierMenu[client]);
+	
+			}
+		}
+		else
+		if (action == MenuAction_End)
+		{
+			CloseHandle(menu);
+		}
+}
+public void db_updateMapTierCallback(Handle owner, Handle hndl, const char[] error, any client)
+{
+
+	if (hndl == null)
+	{
+		LogError("[%s] SQL Error (db_selectMapWithTierCallback): %s", g_szChatPrefix, error);
+		PrintToChat(client, "[%c%s%c] Error whilst updating map tier.", MOSSGREEN, g_szChatPrefix, WHITE);
+		return;
+	}
+	PrintToChat(client, "[%c%s%c] Success: %s tier has been changed to %i", MOSSGREEN, g_szChatPrefix, WHITE,g_szTierMapName[client],g_CurrentTierMenu[client]);
+}
