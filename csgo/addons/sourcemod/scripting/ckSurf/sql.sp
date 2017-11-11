@@ -6803,7 +6803,7 @@ public int EditTierHandler(Handle menu, MenuAction action, int client, int tier)
 			Format(szQuery, 512, "DELETE FROM ck_maptier WHERE mapname ='%s';",  g_szTierMapName[client] );
 			
 		}
-		else
+		else	
 		{
 			Format(szQuery, 512, "UPDATE ck_maptier SET tier = %i WHERE mapname = '%s';", tier, g_szTierMapName[client] );
 		}

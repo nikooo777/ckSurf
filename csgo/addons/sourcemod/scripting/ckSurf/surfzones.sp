@@ -275,7 +275,8 @@ public void EndTouch(int client, int action[3])
 					}
 					else if(GetEntityGravity(client) != 0)
 					{
-						PrintToChat(client, "[%c%s%c] Your Gravity (%f) is not correct. Change team to start.", MOSSGREEN, g_szChatPrefix, WHITE, GetEntityGravity(client));
+						PrintToChat(client, "[%c%s%c] Your Gravity (%f) was not correct. You will need to restart to start your time.", MOSSGREEN, g_szChatPrefix, WHITE, GetEntityGravity(client));
+						SetEntityGravity(client, 0.00);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check

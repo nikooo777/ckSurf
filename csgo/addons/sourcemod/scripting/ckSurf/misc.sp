@@ -1151,7 +1151,7 @@ public void LimitSpeed(int client)
 	if (CurVelVec[2] == 0.0)
 		CurVelVec[2] = 1.0;
 
-	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0) + Pow(CurVelVec[2], 2.0));
+	float currentspeed = SquareRoot(Pow(CurVelVec[0], 2.0) + Pow(CurVelVec[1], 2.0));
 
 	if (currentspeed > speedCap)
 	{
