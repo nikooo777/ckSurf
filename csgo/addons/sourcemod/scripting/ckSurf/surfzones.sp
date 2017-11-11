@@ -273,7 +273,7 @@ public void EndTouch(int client, int action[3])
 						ClientCommand(client, "play buttons\\button10.wav");
 						PrintToChat(client, "[%c%s%c] You have noclipped and have not restarted, please type !r to begin your run.", MOSSGREEN, g_szChatPrefix, WHITE);
 					}
-					else if(!(GetEntityGravity(client) == 1 || 0))
+					else if(GetEntityGravity(client) != 0)
 					{
 						PrintToChat(client, "[%c%s%c] Your Gravity (%f) is not correct. Change team to start.", MOSSGREEN, g_szChatPrefix, WHITE, GetEntityGravity(client));
 						ClientCommand(client, "play buttons\\button10.wav");

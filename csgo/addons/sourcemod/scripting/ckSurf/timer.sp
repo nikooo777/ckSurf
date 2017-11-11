@@ -270,6 +270,8 @@ public Action CKTimer2(Handle timer)
 						g_bRoundEnd = true;
 						ServerCommand("mp_ignore_round_win_conditions 0");
 						PrintToChatAll("%t", "TimeleftCounter", LIGHTRED, WHITE, 1);
+						for (int i = 1; i <= MaxClients; i++)
+							ForcePlayerSuicide(i);
 						CreateTimer(1.0, TerminateRoundTimer, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 					}
 				}
