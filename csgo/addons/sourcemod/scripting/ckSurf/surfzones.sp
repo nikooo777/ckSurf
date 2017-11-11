@@ -337,23 +337,29 @@ public void getZoneTeamColor(int team, int color[4])
 
 public void DrawBeamBox(int client)
 {
-	int zColor[4];
-	getZoneTeamColor(g_CurrentZoneTeam[client], zColor);
-	TE_SendBeamBoxToClient(client, g_Positions[client][1], g_Positions[client][0], g_BeamSprite, g_HaloSprite, 0, 30, 1.0, 5.0, 5.0, 2, 1.0, zColor, 0, 1);
-	CreateTimer(1.0, BeamBox, GetClientSerial(client), TIMER_REPEAT);
+	if (IsValidClient(client) && !IsFakeClient(client))
+	{
+		int zColor[4];
+		getZoneTeamColor(g_CurrentZoneTeam[client], zColor);
+		TE_SendBeamBoxToClient(client, g_Positions[client][1], g_Positions[client][0], g_BeamSprite, g_HaloSprite, 0, 30, 1.0, 5.0, 5.0, 2, 1.0, zColor, 0, 1);
+		CreateTimer(1.0, BeamBox, GetClientSerial(client), TIMER_REPEAT);
+	}
 }
 
 public Action BeamBox(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
-	if (IsClientInGame(client))
+	if (IsValidClient(client) && !IsFakeClient(client))
 	{
-		if (g_Editing[client] == 2)
+		if (IsClientInGame(client) )
 		{
-			int zColor[4];
-			getZoneTeamColor(g_CurrentZoneTeam[client], zColor);
-			TE_SendBeamBoxToClient(client, g_Positions[client][1], g_Positions[client][0], g_BeamSprite, g_HaloSprite, 0, 30, 1.0, 5.0, 5.0, 2, 1.0, zColor, 0, 1);
-			return Plugin_Continue;
+			if (g_Editing[client] == 2)
+			{
+				int zColor[4];
+				getZoneTeamColor(g_CurrentZoneTeam[client], zColor);
+				TE_SendBeamBoxToClient(client, g_Positions[client][1], g_Positions[client][0], g_BeamSprite, g_HaloSprite, 0, 30, 1.0, 5.0, 5.0, 2, 1.0, zColor, 0, 1);
+				return Plugin_Continue;
+			}
 		}
 	}
 	return Plugin_Stop;
