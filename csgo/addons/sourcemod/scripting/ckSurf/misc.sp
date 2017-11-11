@@ -939,7 +939,6 @@ public void PrintConsoleInfo(int client)
 	PrintToConsole(client, "Kills: Time in seconds");
 	PrintToConsole(client, "Assists: Number of % finished on current map");
 	PrintToConsole(client, "Score: How many players are lower ranked than the player. Higher number means higher rank");
-	PrintToConsole(client, "MVP Stars: Number of finished map runs on the current map");
 	PrintToConsole(client, " ");
 	PrintToConsole(client, "Practice Mode:");
 	PrintToConsole(client, "Create checkpoints with !cp / !checkpoint");

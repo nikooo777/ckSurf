@@ -161,18 +161,14 @@ public void StartTouch(int client, int action[3])
 		}
 		else if (action[0] == 1 || action[0] == 5) // Start Zone or Speed Start
 		{
-			if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // If practice mode is on
+			/*if (g_Stage[g_iClientInZone[client][2]][client] == 1 && g_bPracticeMode[client]) // If practice mode is on
 			{
 				Command_goToPlayerCheckpoint(client, 1);
-			}
-			else
-			{
-				g_Stage[g_iClientInZone[client][2]][client] = 1;
-
-				Client_Stop(client, 1);
-				// Resetting last checkpoint
-				lastCheckpoint[g_iClientInZone[client][2]][client] = 1;
-			}
+			}*/
+			g_Stage[g_iClientInZone[client][2]][client] = 1;
+			Client_Stop(client, 1);
+			// Resetting last checkpoint
+			lastCheckpoint[g_iClientInZone[client][2]][client] = 1;
 		}
 		else if (action[0] == 2) // End Zone
 		{
@@ -278,7 +274,7 @@ public void EndTouch(int client, int action[3])
 					}
 					else if((GetGameTime() - g_fLastTimePracUsed[client]) < 3.0) //practice mode check
 					{
-						PrintToChat(client, "[%c%s%c] You have been using practice in the past few seconds, timer @!!@!@disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
+						PrintToChat(client, "[%c%s%c] You have been using practice in the past few seconds, timer disabled.", MOSSGREEN, g_szChatPrefix, WHITE);
 						ClientCommand(client, "play buttons\\button10.wav");
 					}
 					else
