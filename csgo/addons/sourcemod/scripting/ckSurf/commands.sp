@@ -68,6 +68,17 @@ public int h_vipEffects(Menu tMenu, MenuAction action, int client, int item)
 	}
 }
 
+public Action Client_mapmusic(int client, int args)
+{
+	if (IsValidClient(client))
+	{
+		ClientCommand(client,"snd_playsounds Music.StopAllExceptMusic");
+		ReplyToCommand(client, "[%c%s%c] Map music has been stopped.", MOSSGREEN, g_szChatPrefix, WHITE);
+	}
+	return Plugin_Handled;
+}
+
+
 public Action Command_MutePlayer(int client, int args)
 {
 	if (!IsValidClient(client))
@@ -3060,4 +3071,32 @@ public void TestBeatSound(int client)
 		else
 			PrintToChat(client, "[%c%s%c] %cYou need to enabled custom sounds in !options to hear the sound.", MOSSGREEN, g_szChatPrefix, WHITE, PURPLE);	
 	}
+}
+
+public Action Command_ShowMapTiers(int client, int args)
+{
+	if (args != 1)
+	{
+		//TODO Display Tier Menu for All Tiers/Maps
+		db_showMapTiers(client);
+		
+	}
+	else if (args == 1)
+	{
+		char szMapName[128];
+		GetCmdArg(1, szMapName, 128);
+		char displayName[PLATFORM_MAX_PATH];
+		if (FindMap(szMapName, displayName, sizeof(displayName)) == FindMap_NotFound)
+		{
+			PrintToChat(client, "[%c%s%c] %cMap was not found.", MOSSGREEN, g_szChatPrefix, WHITE, RED);	
+			return Plugin_Handled;
+		}
+		//We'll track the current tier as 10, so the menu doesnt skip logic flow. 
+		g_CurrentTierMenu[client] = 10;
+		g_szTierMapName[client] = displayName;
+		db_editMapTier(client);
+		//TODO 
+	}
+	return Plugin_Handled;
+
 }

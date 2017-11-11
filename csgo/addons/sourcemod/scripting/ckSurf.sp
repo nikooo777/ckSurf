@@ -37,7 +37,7 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.0"
+#define PLUGIN_VERSION "1.21.2.1"
 
 // Database definitions
 #define MYSQL 0
@@ -318,6 +318,9 @@ int g_mapZoneGroupCount;										// Zone group cound
 float g_fZoneCorners[MAXZONES][8][3];							// Additional zone corners, can't store multi dimensional arrays in enums..
 
 // Editing zones
+ConVar g_hAutoZoneHeight;
+bool g_bAutoZone[MAXPLAYERS + 1];
+float g_fAutoZoneBlock[MAXPLAYERS + 1][2][3];
 bool g_bEditZoneType[MAXPLAYERS + 1];							// If editing zone type
 char g_CurrentZoneName[MAXPLAYERS + 1][64];						// Selected zone's name
 float g_Positions[MAXPLAYERS + 1][2][3];						// Selected zone's position
@@ -653,6 +656,8 @@ int g_AdminMenuFlag; 											// Admin flag required for !ckadmin
 ConVar g_hAdminMenuFlag = null;
 Handle g_hAdminMenu = null; 									// Add !ckadmin to !admin
 int g_AdminMenuLastPage[MAXPLAYERS + 1]; 						// Weird admin menu trickery TODO: wtf
+int g_CurrentTierMenu[MAXPLAYERS + 1];
+char g_szTierMapName[MAXPLAYERS + 1][256];
 
 /*----------  Challenge variables  ----------*/ 
 /**
@@ -1744,6 +1749,7 @@ public void OnPluginStart()
 	g_hDebugMode = CreateConVar("ck_debug_mode", "0", "Log Debug Messages", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
 	g_hChatPrefix = CreateConVar("ck_chat_prefix", "SURF", "Determines the prefix used for chat messages", FCVAR_NOTIFY);
+	g_hAutoZoneHeight = CreateConVar("ck_autozone_height", "66.0", "Sets the automatic height for autozoning", FCVAR_NOTIFY, true, 0.0, true, 500.0);
 	g_hMultiServerAnnouncements = CreateConVar("ck_announce_records", "1", "on/off Determine if records from other servers should be announced on this server", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hCustomHud = CreateConVar("ck_new_hud", "1", "Determine if the new hud is shown", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hServerName = CreateConVar("ck_server_name", "ckSurf | Surf Plugin", "Determines the server name displayed in the timer text whilst in the start zone", FCVAR_NOTIFY);
@@ -1961,6 +1967,11 @@ public void OnPluginStart()
 	//RegConsoleCmd("sm_rtimes", Command_rTimes, "[%s] spawns a usp silencer", g_szChatPrefix);
 
 	//client commands
+	RegConsoleCmd("sm_mapmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopmusic", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_musicmute", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_stopsound", Client_mapmusic, "[ckSurf] Stops Map Music");
+	RegConsoleCmd("sm_mapsound", Client_mapmusic, "[ckSurf] Stops Map Music");
 	RegConsoleCmd("sm_usp", Client_Usp, "[ckSurf] spawns a usp silencer");
 	RegConsoleCmd("sm_avg", Client_Avg, "[ckSurf] prints in chat the average time of the current map");
 	RegConsoleCmd("sm_accept", Client_Accept, "[ckSurf] allows you to accept a challenge request");
@@ -2046,6 +2057,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "[ckSurf] Vote to extend the map");
 	RegConsoleCmd("sm_vmute", Command_MutePlayer, "[ckSurf] Mute a player");
+	RegConsoleCmd("sm_maps", Command_ShowMapTiers, "[ckSurf] List All Maps By Tier.");
 
 	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");
