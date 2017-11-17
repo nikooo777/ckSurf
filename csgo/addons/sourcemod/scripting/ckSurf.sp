@@ -37,7 +37,8 @@
 #pragma semicolon 1
 
 // Plugin info
-#define PLUGIN_VERSION "1.21.2.6.1"
+#define PLUGIN_VERSION "1.21.2.6.2"
+#define DEV_BUILD
 
 // Database definitions
 #define MYSQL 0
@@ -109,7 +110,9 @@
 // UI definitions
 #define HIDE_RADAR (1 << 12)
 #define HIDE_CHAT ( 1<<7 )
+#define HIDE_ROUNDTIMER (1 << 13)
 #define HIDE_CROSSHAIR 1<<8
+
 
 // Replay definitions
 #define BM_MAGIC 0xBAADF00D
@@ -1797,7 +1800,7 @@ public void OnPluginStart()
 	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10", "The time in minutes that is added to the remaining map time if a vote extend is successful", FCVAR_NOTIFY);
 	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "3", "The max number of VIP vote extends", FCVAR_NOTIFY);
 	g_hMaxVoteExtendsUniquePlayers = CreateConVar("ck_max_vote_extends_unique_players", "1", "on/off - Prohibit multiple extends of a person", FCVAR_NOTIFY);
-	g_hVoteExtendMapTimeLimit = CreateConVar("ck_vote_extend_map_limit_time", "2", "The vote extend is not active during this amount of time in minutes before the map ends", FCVAR_NOTIFY);
+	g_hVoteExtendMapTimeLimit = CreateConVar("ck_vote_extend_map_limit_time", "3", "The vote extend is not active during this amount of time in seconds before the map ends", FCVAR_NOTIFY);
 	g_hDoubleRestartCommand = CreateConVar("ck_double_restart_command", "0", "(1 / 0) Requires 2 successive !r commands to restart the player to prevent accidental usage", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hBackupReplays = CreateConVar("ck_replay_backup", "1", "(1 / 0) Back up replay files, when they are being replaced", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_hReplaceReplayTime = 	CreateConVar("ck_replay_replace_faster", "1", "(1 / 0) Replace record bots if a players time is faster than the bot, even if the time is not a server record", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -2057,7 +2060,7 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_howto", Command_HowTo, "[ckSurf] Displays a youtube video on how to surf");
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "[ckSurf] Vote to extend the map");
 	RegConsoleCmd("sm_vmute", Command_MutePlayer, "[ckSurf] Mute a player");
-	RegConsoleCmd("sm_maps", Command_ShowMapTiers, "[ckSurf] List All Maps By Tier.");
+	//RegConsoleCmd("sm_maps", Command_ShowMapTiers, "[ckSurf] List All Maps By Tier."); WIP TODO
 
 	// Teleport to the start of the stage
 	RegConsoleCmd("sm_stuck", Command_Teleport, "[ckSurf] Teleports player back to the start of the stage");

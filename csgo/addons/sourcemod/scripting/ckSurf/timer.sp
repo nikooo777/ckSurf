@@ -546,7 +546,9 @@ public Action WelcomeMsgTimer(Handle timer, any serial)
 	GetConVarString(g_hWelcomeMsg, szBuffer, 512);
 	if (IsValidClient(client) && !IsFakeClient(client) && szBuffer[0])
 		CPrintToChat(client, "%s", szBuffer);
-
+	#if defined DEV_BUILD 
+	PrintToChat(client, "THIS PLUGIN VERSION IS A DEVELOPEMNT BUILD. IT SHOULD NOT BE USED IN PRODUCTION.");
+	#endif
 	return Plugin_Handled;
 }
 
@@ -643,18 +645,18 @@ public void HideHud(any serial)
 		{
 			// Display
 			if (!g_bHideChat[client])
-				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_ROUNDTIMER);
 			else
-				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT);
+				SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CHAT | HIDE_ROUNDTIMER);
 
 		}
 		else
 		{
 			// Hiding
 			if (!g_bHideChat[client])
-				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CROSSHAIR);
+				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CROSSHAIR | HIDE_ROUNDTIMER);
 			else
-				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
+				SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR | HIDE_ROUNDTIMER);
 		}
 	}
 	return;

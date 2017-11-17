@@ -298,45 +298,17 @@ public Action Command_VoteExtend(int client, int args)
 		PrintToChat(client, "[%c%s%c] This command requires the VIP title.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
-
-	if (IsVoteInProgress())
-	{
-		PrintToChat(client, "[%c%s%c] Please wait until the current vote has finished.", MOSSGREEN, g_szChatPrefix, WHITE);
-		return Plugin_Handled;
-	}
-
-	char finalOutput[1024];
-	int timeleft;
-	if (GetMapTimeLeft(timeleft))
-	{
-		int mins, secs;
-		if (timeleft > 0)
-		{
-			mins = timeleft / 60;
-			secs = timeleft % 60;
-			FormatEx(finalOutput, sizeof(finalOutput), "Time remaining for map: %d:%02d", mins, secs);
-			PrintToChat(client, "[%c%s%c] %s", MOSSGREEN, g_szChatPrefix, WHITE, finalOutput);
-			if (mins < g_hVoteExtendMapTimeLimit.IntValue)
-			{
-				PrintToChat(client, "[%c%s%c] Vote Extend can not be used during last %i minute(s) of the game.", MOSSGREEN, g_szChatPrefix, WHITE, g_hVoteExtendMapTimeLimit.IntValue);
-				return Plugin_Handled;
-			}
-
-		}
-	}
-
-	if (timeleft < 0)
-	{
-		PrintToChat(client, "[%c%s%c] Vote Extend can not be used during this time.", MOSSGREEN, g_szChatPrefix, WHITE);
-		return Plugin_Handled;					
-	}
-
 	if (g_VoteExtends >= g_hMaxVoteExtends.IntValue)
 	{
 		PrintToChat(client, "[%c%s%c] There have been too many extends this map.", MOSSGREEN, g_szChatPrefix, WHITE);
 		return Plugin_Handled;
 	}
-
+	if (IsVoteInProgress())
+	{
+		PrintToChat(client, "[%c%s%c] Please wait until the current vote has finished.", MOSSGREEN, g_szChatPrefix, WHITE);
+		return Plugin_Handled;
+	}
+	
 	// Here we go through and make sure this user has not already voted. This persists throughout map.
 	for (int i = 0; i < g_VoteExtends; i++)
 	{
@@ -346,7 +318,30 @@ public Action Command_VoteExtend(int client, int args)
 			return Plugin_Handled;
 		}
 	}
+	char finalOutput[1024];
+	int timeleft;
+	if (GetMapTimeLeft(timeleft))
+	{
+		int mins, secs;
+		if (timeleft > 0)
+		{
+			if (timeleft < g_hVoteExtendMapTimeLimit.IntValue)
+			{
+				PrintToChat(client, "[%c%s%c] Vote Extend can not be used during last %i seconds(s) of the game.", MOSSGREEN, g_szChatPrefix, WHITE, g_hVoteExtendMapTimeLimit.IntValue);
+				return Plugin_Handled;
+			}
+			mins = timeleft / 60;
+			secs = timeleft % 60;
+			FormatEx(finalOutput, sizeof(finalOutput), "Time remaining for map: %d:%02d", mins, secs);
+			PrintToChat(client, "[%c%s%c] %s", MOSSGREEN, g_szChatPrefix, WHITE, finalOutput);
 
+		} 
+		else
+		{
+			PrintToChat(client, "[%c%s%c] Vote Extend can not be used during this time.", MOSSGREEN, g_szChatPrefix, WHITE);
+			return Plugin_Handled;		
+		}
+	}
 	StartVoteExtend(client);
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
@@ -876,17 +871,17 @@ public void HideChat(int client)
 	{
 		// Hiding
 		if (g_bViewModel[client])
-			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR);
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_CROSSHAIR | HIDE_ROUNDTIMER);
 		else
-			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT);
+			SetEntProp(client, Prop_Send, "m_iHideHUD", GetEntProp(client, Prop_Send, "m_iHideHUD") | HIDE_RADAR | HIDE_CHAT | HIDE_ROUNDTIMER);
 	}
 	else
 	{
 		// Displaying
 		if (g_bViewModel[client])
-			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CROSSHAIR);
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_CROSSHAIR | HIDE_ROUNDTIMER);
 		else
-			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR);
+			SetEntProp(client, Prop_Send, "m_iHideHUD", HIDE_RADAR | HIDE_ROUNDTIMER);
 	}
 
 	g_bHideChat[client] = !g_bHideChat[client];

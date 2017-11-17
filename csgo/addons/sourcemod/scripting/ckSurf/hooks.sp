@@ -224,6 +224,8 @@ public Action Say_Hook(int client, const char[] command, int argc)
 	GetCmdArgString(sText, sizeof(sText));
 	StripQuotes(sText);
 	TrimString(sText);
+	CRemoveColors(sText, 1024);
+	ReplaceString(sText, 1024, "%", "%%%%");
 
 	// skip if invalid client
 	if (!IsValidClient(client))

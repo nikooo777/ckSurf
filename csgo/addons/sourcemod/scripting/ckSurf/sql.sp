@@ -6801,40 +6801,32 @@ public int EditTierHandler(Handle menu, MenuAction action, int client, int tier)
 		if(tier == 8)
 		{
 			Format(szQuery, 512, "DELETE FROM ck_maptier WHERE mapname ='%s';",  g_szTierMapName[client] );
+			if (!SQL_FastQuery(g_hDb, szQuery))
+				{
+					PrintToChat(client, "[%c%s%c] Error whilst removing map tier.", MOSSGREEN, g_szChatPrefix, WHITE);
+				}
+			PrintToChat(client, "[%c%s%c] Success: %s tier has been removed.", MOSSGREEN, g_szChatPrefix, WHITE, g_szTierMapName[client]);
 			
 		}
 		else	
 		{
 			Format(szQuery, 512, "UPDATE ck_maptier SET tier = %i WHERE mapname = '%s';", tier, g_szTierMapName[client] );
+			if (!SQL_FastQuery(g_hDb, szQuery))
+				{
+					PrintToChat(client, "[%c%s%c] Error whilst setting map tier.", MOSSGREEN, g_szChatPrefix, WHITE);
+				}
+			PrintToChat(client, "[%c%s%c] Success: %s tier has been changed to %i", MOSSGREEN, g_szChatPrefix, WHITE,g_szTierMapName[client], tier);
 		}
-	 	g_CurrentTierMenu[client] = tier;
-		SQL_TQuery(g_hDb, db_updateMapTierCallback, szQuery, client, DBPrio_Low);
-		db_selectMapTiers(client, g_CurrentTierMenu[client]);
+	 	//g_CurrentTierMenu[client] = tier;
 	}
 	else
-		if (action == MenuAction_Cancel)
+		if (action == MenuAction_End)
 		{
+			CloseHandle(menu);
 			if (1 <= client <= MaxClients && IsValidClient(client))
 			{
 				if(g_CurrentTierMenu[client] != 10)
 					db_selectMapTiers(client, g_CurrentTierMenu[client]);
-	
 			}
 		}
-		else
-		if (action == MenuAction_End)
-		{
-			CloseHandle(menu);
-		}
-}
-public void db_updateMapTierCallback(Handle owner, Handle hndl, const char[] error, any client)
-{
-
-	if (hndl == null)
-	{
-		LogError("[%s] SQL Error (db_selectMapWithTierCallback): %s", g_szChatPrefix, error);
-		PrintToChat(client, "[%c%s%c] Error whilst updating map tier.", MOSSGREEN, g_szChatPrefix, WHITE);
-		return;
-	}
-	PrintToChat(client, "[%c%s%c] Success: %s tier has been changed to %i", MOSSGREEN, g_szChatPrefix, WHITE,g_szTierMapName[client],g_CurrentTierMenu[client]);
 }
