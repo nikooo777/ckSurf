@@ -410,7 +410,7 @@ public Action BeamBoxAll(Handle timer, any data)
 				{
 					// Only display zone to client if the client is in the zones zonegroup
 					if (g_iClientInZone[p][2] != g_mapZones[i][zoneGroup])
-						return Plugin_Handled;
+						continue;
 
 					if (g_mapZones[i][Vis] == 2 ||  g_mapZones[i][Vis] == 3)
 					{
