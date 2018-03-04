@@ -50,7 +50,7 @@ char sql_updateBonusTier[] = "UPDATE ck_maptier SET btier%i = %i WHERE mapname =
 char sql_insertBonusTier[] = "INSERT INTO ck_maptier (mapname, btier%i) VALUES ('%s', '%i');";
 
 //TABLE BONUS
-char sql_createBonus[] = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup));";
+char sql_createBonus[] = "CREATE TABLE IF NOT EXISTS ck_bonus (steamid VARCHAR(32), name VARCHAR(32), mapname VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', zonegroup INT(12) NOT NULL DEFAULT 1, PRIMARY KEY(steamid, mapname, zonegroup)); ALTER TABLE ck_bonus MODIFY COLUMN name VARCHAR(64) CHARACTER SET utf8 COLLATE utf8_general_ci;";
 char sql_createBonusIndex[] = "CREATE INDEX bonusrank ON ck_bonus (mapname,runtime,zonegroup);";
 char sql_insertBonus[] = "INSERT INTO ck_bonus (steamid, name, mapname, runtime, zonegroup) VALUES ('%s', '%s', '%s', '%f', '%i')";
 char sql_updateBonus[] = "UPDATE ck_bonus SET runtime = '%f', name = '%s' WHERE steamid = '%s' AND mapname = '%s' AND zonegroup = %i";
@@ -72,7 +72,7 @@ char sql_selectRecordCheckpoints[] = "SELECT zonegroup, cp1, cp2, cp3, cp4, cp5,
 char sql_deleteCheckpoints[] = "DELETE FROM ck_checkpoints WHERE mapname = '%s'";
 
 //TABLE LATEST 15 LOCAL RECORDS
-char sql_createLatestRecords[] = "CREATE TABLE IF NOT EXISTS ck_latestrecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date));";
+char sql_createLatestRecords[] = "CREATE TABLE IF NOT EXISTS ck_latestrecords (steamid VARCHAR(32), name VARCHAR(32), runtime FLOAT NOT NULL DEFAULT '-1.0', map VARCHAR(32), date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(steamid,map,date)); ALTER TABLE ck_latestrecords MODIFY COLUMN name VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_general_ci;";
 char sql_insertLatestRecords[] = "INSERT INTO ck_latestrecords (steamid, name, runtime, map) VALUES('%s','%s','%f','%s');";
 char sql_selectLatestRecords[] = "SELECT name, runtime, map, date FROM ck_latestrecords ORDER BY date DESC LIMIT 50";
 
@@ -83,7 +83,7 @@ char sql_selectPlayerOptions[] = "SELECT speedmeter, quake_sounds, autobhop, sho
 char sql_updatePlayerOptions[] = "UPDATE ck_playeroptions SET speedmeter ='%i', quake_sounds ='%i', autobhop ='%i', shownames ='%i', goto ='%i', showtime ='%i', hideplayers ='%i', showspecs ='%i', knife ='%s', new1 = '%i', new2 = '%i', new3 = '%i', checkpoints = '%i' where steamid = '%s'";
 
 //TABLE PLAYERRANK
-char sql_createPlayerRank[] = "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12) unsigned  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) unsigned DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid));";
+char sql_createPlayerRank[] = "CREATE TABLE IF NOT EXISTS ck_playerrank (steamid VARCHAR(32), name VARCHAR(32), country VARCHAR(32), points INT(12) unsigned  DEFAULT '0', winratio INT(12)  DEFAULT '0', pointsratio INT(12)  DEFAULT '0',finishedmaps INT(12) DEFAULT '0', multiplier INT(12) unsigned DEFAULT '0', finishedmapspro INT(12) DEFAULT '0', lastseen DATE, PRIMARY KEY(steamid)); ALTER TABLE ck_playerrank MODIFY COLUMN name VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;";
 char sql_insertPlayerRank[] = "INSERT INTO ck_playerrank (steamid, name, country) VALUES('%s', '%s', '%s');";
 char sql_updatePlayerRankPoints[] = "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i' where steamid='%s'";
 char sql_updatePlayerRankPoints2[] = "UPDATE ck_playerrank SET name ='%s', points ='%i', finishedmapspro='%i',winratio = '%i',pointsratio = '%i', country ='%s' where steamid='%s'";
@@ -102,7 +102,7 @@ char sql_CountRankedPlayers[] = "SELECT COUNT(steamid) FROM ck_playerrank";
 char sql_CountRankedPlayers2[] = "SELECT COUNT(steamid) FROM ck_playerrank where points > 0";
 
 //TABLE PLAYERTIMES
-char sql_createPlayertimes[] = "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname));";
+char sql_createPlayertimes[] = "CREATE TABLE IF NOT EXISTS ck_playertimes (steamid VARCHAR(32), mapname VARCHAR(32), name VARCHAR(32), runtimepro FLOAT NOT NULL DEFAULT '-1.0', PRIMARY KEY(steamid,mapname)); ALTER TABLE ck_playertimes MODIFY COLUMN name VARCHAR(32) CHARACTER SET utf8 COLLATE utf8_general_ci;";
 char sql_createPlayertimesIndex[] = "CREATE INDEX maprank ON ck_playertimes (mapname, runtimepro);";
 char sql_insertPlayer[] = "INSERT INTO ck_playertimes (steamid, mapname, name) VALUES('%s', '%s', '%s');";
 char sql_insertPlayerTime[] = "INSERT INTO ck_playertimes (steamid, mapname, name,runtimepro) VALUES('%s', '%s', '%s', '%f');";
@@ -2111,18 +2111,18 @@ public void sql_selectTopChallengersCallback(Handle owner, Handle hndl, const ch
 				Format(szPointsRatio, 32, "%ip", pointsratio);
 
 			if (pointsratio < 10)
-				Format(szValue, 128, "       %s         » %s (%s)", szPointsRatio, szName, szWinRatio);
+				Format(szValue, 128, "       %s         Â» %s (%s)", szPointsRatio, szName, szWinRatio);
 			else
 				if (pointsratio < 100)
-					Format(szValue, 128, "       %s       » %s (%s)", szPointsRatio, szName, szWinRatio);
+					Format(szValue, 128, "       %s       Â» %s (%s)", szPointsRatio, szName, szWinRatio);
 				else
 					if (pointsratio < 1000)
-						Format(szValue, 128, "       %s     » %s (%s)", szPointsRatio, szName, szWinRatio);
+						Format(szValue, 128, "       %s     Â» %s (%s)", szPointsRatio, szName, szWinRatio);
 					else
 						if (pointsratio < 10000)
-							Format(szValue, 128, "       %s   » %s (%s)", szPointsRatio, szName, szWinRatio);
+							Format(szValue, 128, "       %s   Â» %s (%s)", szPointsRatio, szName, szWinRatio);
 						else
-							Format(szValue, 128, "       %s » %s (%s)", szPointsRatio, szName, szWinRatio);
+							Format(szValue, 128, "       %s Â» %s (%s)", szPointsRatio, szName, szWinRatio);
 
 			topChallengersMenu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
@@ -2650,9 +2650,9 @@ public void sql_selectProSurfersCallback(Handle owner, Handle hndl, const char[]
 			if (time < 3600.0)
 				Format(szTime, 32, "  %s", szTime);
 			if (i < 10)
-				Format(szValue, 128, "[0%i.] %s    » %s", i, szTime, szName);
+				Format(szValue, 128, "[0%i.] %s    Â» %s", i, szTime, szName);
 			else
-				Format(szValue, 128, "[%i.] %s    » %s", i, szTime, szName);
+				Format(szValue, 128, "[%i.] %s    Â» %s", i, szTime, szName);
 			AddMenuItem(topSurfersMenu, szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
 		}
@@ -2838,11 +2838,11 @@ public void sql_selectTopBonusSurfersCallback(Handle owner, Handle hndl, const c
 					if (time < 3600.0)
 						Format(szTime, 32, "   %s", szTime);
 					if (i == 100)
-						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
 					if (i >= 10)
-						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
 					else
-						Format(szValue, 128, "[0%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[0%i.] %s |    Â» %s", i, szTime, szName);
 					topMenu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 					PushArrayString(stringArray, szName);
 					if (i == 1)
@@ -2920,11 +2920,11 @@ public void sql_selectTopSurfersCallback(Handle owner, Handle hndl, const char[]
 					if (time < 3600.0)
 						Format(szTime, 32, "   %s", szTime);
 					if (i == 100)
-						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
 					if (i >= 10)
-						Format(szValue, 128, "[%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[%i.] %s |    Â» %s", i, szTime, szName);
 					else
-						Format(szValue, 128, "[0%i.] %s |    » %s", i, szTime, szName);
+						Format(szValue, 128, "[0%i.] %s |    Â» %s", i, szTime, szName);
 					AddMenuItem(menu, szSteamID, szValue, ITEMDRAW_DEFAULT);
 					PushArrayString(stringArray, szName);
 					if (i == 1)
@@ -6094,7 +6094,7 @@ public void db_sql_selectMapRecordHoldersCallback2(Handle owner, Handle hndl, co
 		CloseHandle(data);
 
 		SQL_FetchString(hndl, 1, szName, MAX_NAME_LENGTH);
-		Format(szValue, 128, "      %s       »  %s", szRecords, szName);
+		Format(szValue, 128, "      %s       Â»  %s", szRecords, szName);
 		g_menuTopSurfersMenu[client].AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 		if (count == 1)
 		{
@@ -6160,21 +6160,21 @@ public void db_selectTop100PlayersCallback(Handle owner, Handle hndl, const char
 						Format(szPerc, 16, "%.1f%c  ", fperc, PERCENT);
 
 			if (points < 10)
-				Format(szValue, 128, "%s      %ip       %s     » %s", szRank, points, szPerc, szName);
+				Format(szValue, 128, "%s      %ip       %s     Â» %s", szRank, points, szPerc, szName);
 			else
 				if (points < 100)
-					Format(szValue, 128, "%s     %ip       %s     » %s", szRank, points, szPerc, szName);
+					Format(szValue, 128, "%s     %ip       %s     Â» %s", szRank, points, szPerc, szName);
 				else
 					if (points < 1000)
-						Format(szValue, 128, "%s   %ip       %s     » %s", szRank, points, szPerc, szName);
+						Format(szValue, 128, "%s   %ip       %s     Â» %s", szRank, points, szPerc, szName);
 					else
 						if (points < 10000)
-							Format(szValue, 128, "%s %ip       %s     » %s", szRank, points, szPerc, szName);
+							Format(szValue, 128, "%s %ip       %s     Â» %s", szRank, points, szPerc, szName);
 						else
 							if (points < 100000)
-								Format(szValue, 128, "%s %ip     %s     » %s", szRank, points, szPerc, szName);
+								Format(szValue, 128, "%s %ip     %s     Â» %s", szRank, points, szPerc, szName);
 							else
-								Format(szValue, 128, "%s %ip   %s     » %s", szRank, points, szPerc, szName);
+								Format(szValue, 128, "%s %ip   %s     Â» %s", szRank, points, szPerc, szName);
 
 			menu.AddItem(szSteamID, szValue, ITEMDRAW_DEFAULT);
 			i++;
