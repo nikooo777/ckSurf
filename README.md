@@ -1,3 +1,5 @@
+Unmaintained! you should now use https://github.com/fluffyst/Surftimer
+
 
 <h1>ckSurf 1.21</h1>
 <p><strong>Remember to backup your database before updating to a beta version</strong></p><br />
